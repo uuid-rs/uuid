@@ -514,11 +514,10 @@ impl rand::Rand for Uuid {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use super::{Uuid, VariantMicrosoft, VariantNCS, VariantRFC4122,
                 Version1Mac, Version2Dce, Version3Md5, Version4Random,
                 Version5Sha1};
-    use std::io::MemWriter;
     use std::rand;
 
     #[test]
@@ -789,7 +788,6 @@ mod test {
     #[test]
     fn test_serialize_round_trip() {
         use serialize::json;
-        use serialize::{Encodable, Decodable};
 
         let u = Uuid::new_v4();
         let s = json::encode(&u);
