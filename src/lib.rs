@@ -321,8 +321,8 @@ impl Uuid {
         let mut s: Vec<u8> = Vec::from_elem(32, 0u8);
         for i in range(0u, 16u) {
             let digit = format!("{:02x}", self.bytes[i] as uint);
-            *s.get_mut(i*2+0) = digit.as_bytes()[0];
-            *s.get_mut(i*2+1) = digit.as_bytes()[1];
+            s[i*2+0] = digit.as_bytes()[0];
+            s[i*2+1] = digit.as_bytes()[1];
         }
         String::from_utf8(s).unwrap()
     }
