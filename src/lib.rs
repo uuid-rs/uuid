@@ -138,7 +138,7 @@ struct UuidFields {
 }
 
 /// Error details for string parsing failures
-#[allow(missing_doc)]
+#[allow(missing_docs)]
 pub enum ParseError {
     ErrorInvalidLength(uint),
     ErrorInvalidCharacter(char, uint),
