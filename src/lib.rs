@@ -757,7 +757,7 @@ mod tests {
 
         let b_out = u.as_bytes();
 
-        assert!(b_in == b_out);
+        assert_eq!(b_in.as_slice(), b_out);
     }
 
     #[test]
