@@ -7,6 +7,4 @@ license = "MIT/APL2"
 readme = "README.md"
 repository = "https://github.com/rust-lang/uuid"
 homepage = "https://github.com/rust-lang/uuid"
-description = """
-A library to generate and parse UUIDs.
-"""
+description = """A library to generate and parse UUIDs."""
