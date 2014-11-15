@@ -75,7 +75,7 @@ use std::fmt;
 use std::from_str::FromStr;
 use std::hash;
 use std::mem::{transmute,transmute_copy};
-use std::num::FromStrRadix;
+use std::num::{FromStrRadix, Int};
 use std::rand;
 use std::rand::Rng;
 use std::slice;
