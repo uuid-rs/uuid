@@ -82,6 +82,13 @@ use std::slice;
 
 use serialize::{Encoder, Encodable, Decoder, Decodable};
 
+use self::ParseError::{ErrorInvalidCharacter, ErrorInvalidGroups,
+                       ErrorInvalidLength, ErrorInvalidGroupLength};
+use self::UuidVariant::{VariantFuture, VariantMicrosoft, 
+                        VariantNCS, VariantRFC4122};
+use self::UuidVersion::{Version1Mac, Version2Dce, Version3Md5,
+                        Version4Random, Version5Sha1};
+
 /// A 128-bit (16 byte) buffer containing the ID
 pub type UuidBytes = [u8, ..16];
 
@@ -516,9 +523,11 @@ impl rand::Rand for Uuid {
 
 #[cfg(test)]
 mod tests {
-    use super::{Uuid, VariantMicrosoft, VariantNCS, VariantRFC4122,
-                Version1Mac, Version2Dce, Version3Md5, Version4Random,
-                Version5Sha1};
+    use super::Uuid;
+    use super::UuidVariant::{VariantMicrosoft, 
+                             VariantNCS, VariantRFC4122};
+    use super::UuidVersion::{Version1Mac, Version2Dce, Version3Md5,
+                             Version4Random, Version5Sha1};
     use std::rand;
 
     #[test]
@@ -581,8 +590,10 @@ mod tests {
 
     #[test]
     fn test_parse_uuid_v4() {
-        use super::{ErrorInvalidCharacter, ErrorInvalidGroups,
-                    ErrorInvalidGroupLength, ErrorInvalidLength};
+        use super::ParseError::{ErrorInvalidCharacter,
+                                ErrorInvalidGroups,
+                                ErrorInvalidLength,
+                                ErrorInvalidGroupLength};
 
         // Invalid
         assert!(Uuid::parse_str("").is_err());
