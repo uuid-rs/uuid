@@ -72,7 +72,7 @@ extern crate serialize;
 use std::char::Char;
 use std::default::Default;
 use std::fmt;
-use std::from_str::FromStr;
+use std::str::FromStr;
 use std::hash;
 use std::mem::{transmute,transmute_copy};
 use std::num::{FromStrRadix, Int};
