@@ -82,13 +82,6 @@ use std::slice;
 
 use serialize::{Encoder, Encodable, Decoder, Decodable};
 
-use self::ParseError::{ErrorInvalidCharacter, ErrorInvalidGroups,
-                       ErrorInvalidLength, ErrorInvalidGroupLength};
-use self::UuidVariant::{VariantFuture, VariantMicrosoft, 
-                        VariantNCS, VariantRFC4122};
-use self::UuidVersion::{Version1Mac, Version2Dce, Version3Md5,
-                        Version4Random, Version5Sha1};
-
 /// A 128-bit (16 byte) buffer containing the ID
 pub type UuidBytes = [u8, ..16];
 
@@ -96,28 +89,28 @@ pub type UuidBytes = [u8, ..16];
 #[deriving(PartialEq)]
 pub enum UuidVersion {
     /// Version 1: MAC address
-    Version1Mac    = 1,
+    Mac    = 1,
     /// Version 2: DCE Security
-    Version2Dce    = 2,
+    Dce    = 2,
     /// Version 3: MD5 hash
-    Version3Md5    = 3,
+    Md5    = 3,
     /// Version 4: Random
-    Version4Random = 4,
+    Random = 4,
     /// Version 5: SHA-1 hash
-    Version5Sha1   = 5,
+    Sha1   = 5,
 }
 
 /// The reserved variants of UUIDs
 #[deriving(PartialEq)]
 pub enum UuidVariant {
     /// Reserved by the NCS for backward compatibility
-    VariantNCS,
+    NCS,
     /// As described in the RFC4122 Specification (default)
-    VariantRFC4122,
+    RFC4122,
     /// Reserved by Microsoft for backward compatibility
-    VariantMicrosoft,
+    Microsoft,
     /// Reserved for future expansion
-    VariantFuture,
+    Future,
 }
 
 /// A Universally Unique Identifier (UUID)
@@ -147,26 +140,26 @@ struct UuidFields {
 /// Error details for string parsing failures
 #[allow(missing_docs)]
 pub enum ParseError {
-    ErrorInvalidLength(uint),
-    ErrorInvalidCharacter(char, uint),
-    ErrorInvalidGroups(uint),
-    ErrorInvalidGroupLength(uint, uint, uint),
+    InvalidLength(uint),
+    InvalidCharacter(char, uint),
+    InvalidGroups(uint),
+    InvalidGroupLength(uint, uint, uint),
 }
 
 /// Converts a ParseError to a string
 impl fmt::Show for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            ErrorInvalidLength(found) =>
+            ParseError::InvalidLength(found) =>
                 write!(f, "Invalid length; expecting 32, 36 or 45 chars, \
                            found {}", found),
-            ErrorInvalidCharacter(found, pos) =>
+            ParseError::InvalidCharacter(found, pos) =>
                 write!(f, "Invalid character; found `{}` (0x{:02x}) at \
                            offset {}", found, found as uint, pos),
-            ErrorInvalidGroups(found) =>
+            ParseError::InvalidGroups(found) =>
                 write!(f, "Malformed; wrong number of groups: expected 1 \
                            or 5, found {}", found),
-            ErrorInvalidGroupLength(group, found, expecting) =>
+            ParseError::InvalidGroupLength(group, found, expecting) =>
                 write!(f, "Malformed; length of group {} was {}, \
                            expecting {}", group, found, expecting),
         }
@@ -188,7 +181,7 @@ impl Uuid {
     /// Create a new UUID of the specified version
     pub fn new(v: UuidVersion) -> Option<Uuid> {
         match v {
-            Version4Random => Some(Uuid::new_v4()),
+            UuidVersion::Random => Some(Uuid::new_v4()),
             _ => None
         }
     }
@@ -201,9 +194,9 @@ impl Uuid {
     pub fn new_v4() -> Uuid {
         let ub = rand::task_rng().gen_iter::<u8>().take(16).collect::<Vec<_>>();
         let mut uuid = Uuid{ bytes: [0, .. 16] };
-        slice::bytes::copy_memory(uuid.bytes, ub.as_slice());
-        uuid.set_variant(VariantRFC4122);
-        uuid.set_version(Version4Random);
+        slice::bytes::copy_memory(&mut uuid.bytes, ub.as_slice());
+        uuid.set_variant(UuidVariant::RFC4122);
+        uuid.set_version(UuidVersion::Random);
         uuid
     }
 
@@ -226,7 +219,7 @@ impl Uuid {
         fields.data1 = d1.to_be();
         fields.data2 = d2.to_be();
         fields.data3 = d3.to_be();
-        slice::bytes::copy_memory(fields.data4, d4);
+        slice::bytes::copy_memory(&mut fields.data4, d4);
 
         unsafe {
             transmute(fields)
@@ -243,7 +236,7 @@ impl Uuid {
         }
 
         let mut uuid = Uuid{ bytes: [0, .. 16] };
-        slice::bytes::copy_memory(uuid.bytes, b);
+        slice::bytes::copy_memory(&mut uuid.bytes, b);
         Some(uuid)
     }
 
@@ -251,13 +244,13 @@ impl Uuid {
     fn set_variant(&mut self, v: UuidVariant) {
         // Octet 8 contains the variant in the most significant 3 bits
         match v {
-            VariantNCS =>        // b0xx...
+            UuidVariant::NCS =>        // b0xx...
                 self.bytes[8] =  self.bytes[8] & 0x7f,
-            VariantRFC4122 =>    // b10x...
+            UuidVariant::RFC4122 =>    // b10x...
                 self.bytes[8] = (self.bytes[8] & 0x3f) | 0x80,
-            VariantMicrosoft =>  // b110...
+            UuidVariant::Microsoft =>  // b110...
                 self.bytes[8] = (self.bytes[8] & 0x1f) | 0xc0,
-            VariantFuture =>     // b111...
+            UuidVariant::Future =>     // b111...
                 self.bytes[8] = (self.bytes[8] & 0x1f) | 0xe0,
         }
     }
@@ -270,13 +263,13 @@ impl Uuid {
     /// * [Variant Reference](http://tools.ietf.org/html/rfc4122#section-4.1.1)
     pub fn get_variant(&self) -> Option<UuidVariant> {
         if self.bytes[8] & 0x80 == 0x00 {
-            Some(VariantNCS)
+            Some(UuidVariant::NCS)
         } else if self.bytes[8] & 0xc0 == 0x80 {
-            Some(VariantRFC4122)
+            Some(UuidVariant::RFC4122)
         } else if self.bytes[8] & 0xe0 == 0xc0  {
-            Some(VariantMicrosoft)
+            Some(UuidVariant::Microsoft)
         } else if self.bytes[8] & 0xe0 == 0xe0 {
-            Some(VariantFuture)
+            Some(UuidVariant::Future)
         } else  {
             None
         }
@@ -308,11 +301,11 @@ impl Uuid {
     pub fn get_version(&self) -> Option<UuidVersion> {
         let v = self.bytes[6] >> 4;
         match v {
-            1 => Some(Version1Mac),
-            2 => Some(Version2Dce),
-            3 => Some(Version3Md5),
-            4 => Some(Version4Random),
-            5 => Some(Version5Sha1),
+            1 => Some(UuidVersion::Mac),
+            2 => Some(UuidVersion::Dce),
+            3 => Some(UuidVersion::Md5),
+            4 => Some(UuidVersion::Random),
+            5 => Some(UuidVersion::Sha1),
             _ => None
         }
     }
@@ -378,7 +371,7 @@ impl Uuid {
 
         // Ensure length is valid for any of the supported formats
         if orig_len != 32 && orig_len != 36 && orig_len != 45 {
-            return Err(ErrorInvalidLength(orig_len));
+            return Err(ParseError::InvalidLength(orig_len));
         }
 
         // Strip off URN prefix if present
@@ -390,7 +383,7 @@ impl Uuid {
         for (i, c) in us.chars().enumerate() {
             match c {
                 '0'...'9' | 'A'...'F' | 'a'...'f' | '-' => {},
-                _ => return Err(ErrorInvalidCharacter(c, i)),
+                _ => return Err(ParseError::InvalidCharacter(c, i)),
             }
         }
 
@@ -405,7 +398,7 @@ impl Uuid {
             // Single group, no hyphens
             1 => {
                 if group_lens[0] != 32 {
-                    return Err(ErrorInvalidLength(group_lens[0]));
+                    return Err(ParseError::InvalidLength(group_lens[0]));
                 }
             },
             // Five groups, hyphens in between each
@@ -414,12 +407,12 @@ impl Uuid {
                 for (i, (&gl, &expected)) in
                     group_lens.iter().zip(UuidGroupLens.iter()).enumerate() {
                     if gl != expected {
-                        return Err(ErrorInvalidGroupLength(i, gl, expected))
+                        return Err(ParseError::InvalidGroupLength(i, gl, expected))
                     }
                 }
             },
             _ => {
-                return Err(ErrorInvalidGroups(group_lens.len()));
+                return Err(ParseError::InvalidGroups(group_lens.len()));
             }
         }
 
@@ -440,7 +433,7 @@ impl Uuid {
                                                  16).unwrap();
         }
 
-        Ok(Uuid::from_bytes(ub).unwrap())
+        Ok(Uuid::from_bytes(&mut ub).unwrap())
     }
 
     /// Tests if the UUID is nil
@@ -514,20 +507,16 @@ impl rand::Rand for Uuid {
     fn rand<R: rand::Rng>(rng: &mut R) -> Uuid {
         let ub = rng.gen_iter::<u8>().take(16).collect::<Vec<_>>();
         let mut uuid = Uuid{ bytes: [0, .. 16] };
-        slice::bytes::copy_memory(uuid.bytes, ub.as_slice());
-        uuid.set_variant(VariantRFC4122);
-        uuid.set_version(Version4Random);
+        slice::bytes::copy_memory(&mut uuid.bytes, ub.as_slice());
+        uuid.set_variant(UuidVariant::RFC4122);
+        uuid.set_version(UuidVersion::Random);
         uuid
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::Uuid;
-    use super::UuidVariant::{VariantMicrosoft, 
-                             VariantNCS, VariantRFC4122};
-    use super::UuidVersion::{Version1Mac, Version2Dce, Version3Md5,
-                             Version4Random, Version5Sha1};
+    use super::{Uuid, UuidVariant, UuidVersion};
     use std::rand;
 
     #[test]
@@ -542,32 +531,32 @@ mod tests {
     #[test]
     fn test_new() {
         // Supported
-        let uuid1 = Uuid::new(Version4Random).unwrap();
+        let uuid1 = Uuid::new(UuidVersion::Random).unwrap();
         let s = uuid1.to_simple_string();
 
         assert!(s.len() == 32);
-        assert!(uuid1.get_version().unwrap() == Version4Random);
+        assert!(uuid1.get_version().unwrap() == UuidVersion::Random);
 
         // Test unsupported versions
-        assert!(Uuid::new(Version1Mac) == None);
-        assert!(Uuid::new(Version2Dce) == None);
-        assert!(Uuid::new(Version3Md5) == None);
-        assert!(Uuid::new(Version5Sha1) == None);
+        assert!(Uuid::new(UuidVersion::Mac) == None);
+        assert!(Uuid::new(UuidVersion::Dce) == None);
+        assert!(Uuid::new(UuidVersion::Md5) == None);
+        assert!(Uuid::new(UuidVersion::Sha1) == None);
     }
 
     #[test]
     fn test_new_v4() {
         let uuid1 = Uuid::new_v4();
 
-        assert!(uuid1.get_version().unwrap() == Version4Random);
-        assert!(uuid1.get_variant().unwrap() == VariantRFC4122);
+        assert!(uuid1.get_version().unwrap() == UuidVersion::Random);
+        assert!(uuid1.get_variant().unwrap() == UuidVariant::RFC4122);
     }
 
     #[test]
     fn test_get_version() {
         let uuid1 = Uuid::new_v4();
 
-        assert!(uuid1.get_version().unwrap() == Version4Random);
+        assert!(uuid1.get_version().unwrap() == UuidVersion::Random);
         assert!(uuid1.get_version_num() == 4);
     }
 
@@ -580,20 +569,17 @@ mod tests {
         let uuid5 = Uuid::parse_str("F9168C5E-CEB2-4faa-D6BF-329BF39FA1E4").unwrap();
         let uuid6 = Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
 
-        assert!(uuid1.get_variant().unwrap() == VariantRFC4122);
-        assert!(uuid2.get_variant().unwrap() == VariantRFC4122);
-        assert!(uuid3.get_variant().unwrap() == VariantRFC4122);
-        assert!(uuid4.get_variant().unwrap() == VariantMicrosoft);
-        assert!(uuid5.get_variant().unwrap() == VariantMicrosoft);
-        assert!(uuid6.get_variant().unwrap() == VariantNCS);
+        assert!(uuid1.get_variant().unwrap() == UuidVariant::RFC4122);
+        assert!(uuid2.get_variant().unwrap() == UuidVariant::RFC4122);
+        assert!(uuid3.get_variant().unwrap() == UuidVariant::RFC4122);
+        assert!(uuid4.get_variant().unwrap() == UuidVariant::Microsoft);
+        assert!(uuid5.get_variant().unwrap() == UuidVariant::Microsoft);
+        assert!(uuid6.get_variant().unwrap() == UuidVariant::NCS);
     }
 
     #[test]
     fn test_parse_uuid_v4() {
-        use super::ParseError::{ErrorInvalidCharacter,
-                                ErrorInvalidGroups,
-                                ErrorInvalidLength,
-                                ErrorInvalidGroupLength};
+        use super::ParseError;
 
         // Invalid
         assert!(Uuid::parse_str("").is_err());
@@ -633,16 +619,16 @@ mod tests {
 
         // Test error reporting
         let e = Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c").unwrap_err();
-        assert!(match e { ErrorInvalidLength(n) => n==31, _ => false });
+        assert!(match e { ParseError::InvalidLength(n) => n==31, _ => false });
 
         let e = Uuid::parse_str("67e550X410b1426f9247bb680e5fe0cd").unwrap_err();
-        assert!(match e { ErrorInvalidCharacter(c, n) => c=='X' && n==6, _ => false });
+        assert!(match e { ParseError::InvalidCharacter(c, n) => c=='X' && n==6, _ => false });
 
         let e = Uuid::parse_str("67e550-4105b1426f9247bb680e5fe0c").unwrap_err();
-        assert!(match e { ErrorInvalidGroups(n) => n==2, _ => false });
+        assert!(match e { ParseError::InvalidGroups(n) => n==2, _ => false });
 
         let e = Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF1-02BF39FA1E4").unwrap_err();
-        assert!(match e { ErrorInvalidGroupLength(g, n, e) => g==3 && n==5 && e==4, _ => false });
+        assert!(match e { ParseError::InvalidGroupLength(g, n, e) => g==3 && n==5 && e==4, _ => false });
     }
 
     #[test]
@@ -764,7 +750,7 @@ mod tests {
         let b_in: [u8, ..16] = [ 0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2,
                                  0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8 ];
 
-        let u = Uuid::from_bytes(b_in.clone()).unwrap();
+        let u = Uuid::from_bytes(&mut b_in.clone()).unwrap();
 
         let b_out = u.as_bytes();
 
