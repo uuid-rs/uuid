@@ -194,7 +194,7 @@ impl Uuid {
     pub fn new_v4() -> Uuid {
         let ub = rand::task_rng().gen_iter::<u8>().take(16).collect::<Vec<_>>();
         let mut uuid = Uuid{ bytes: [0, .. 16] };
-        slice::bytes::copy_memory(uuid.bytes, ub.as_slice());
+        slice::bytes::copy_memory(&mut uuid.bytes, ub.as_slice());
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Random);
         uuid
@@ -219,7 +219,7 @@ impl Uuid {
         fields.data1 = d1.to_be();
         fields.data2 = d2.to_be();
         fields.data3 = d3.to_be();
-        slice::bytes::copy_memory(fields.data4, d4);
+        slice::bytes::copy_memory(&mut fields.data4, d4);
 
         unsafe {
             transmute(fields)
@@ -236,7 +236,7 @@ impl Uuid {
         }
 
         let mut uuid = Uuid{ bytes: [0, .. 16] };
-        slice::bytes::copy_memory(uuid.bytes, b);
+        slice::bytes::copy_memory(&mut uuid.bytes, b);
         Some(uuid)
     }
 
@@ -433,7 +433,7 @@ impl Uuid {
                                                  16).unwrap();
         }
 
-        Ok(Uuid::from_bytes(ub).unwrap())
+        Ok(Uuid::from_bytes(&mut ub).unwrap())
     }
 
     /// Tests if the UUID is nil
@@ -507,7 +507,7 @@ impl rand::Rand for Uuid {
     fn rand<R: rand::Rng>(rng: &mut R) -> Uuid {
         let ub = rng.gen_iter::<u8>().take(16).collect::<Vec<_>>();
         let mut uuid = Uuid{ bytes: [0, .. 16] };
-        slice::bytes::copy_memory(uuid.bytes, ub.as_slice());
+        slice::bytes::copy_memory(&mut uuid.bytes, ub.as_slice());
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Random);
         uuid
@@ -750,7 +750,7 @@ mod tests {
         let b_in: [u8, ..16] = [ 0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2,
                                  0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8 ];
 
-        let u = Uuid::from_bytes(b_in.clone()).unwrap();
+        let u = Uuid::from_bytes(&mut b_in.clone()).unwrap();
 
         let b_out = u.as_bytes();
 
