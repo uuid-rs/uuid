@@ -750,7 +750,7 @@ mod tests {
         let b_in: [u8, ..16] = [ 0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2,
                                  0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8 ];
 
-        let u = Uuid::from_bytes(&mut b_in.clone()).unwrap();
+        let u = Uuid::from_bytes(&b_in).unwrap();
 
         let b_out = u.as_bytes();
 
