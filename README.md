@@ -11,9 +11,9 @@ A Rust library to generate and parse UUIDs.
 Add this to your `Cargo.toml`:
 
 ```toml
-[dependencies.uuid]
+[dependencies]
 
-git = "https://github.com/rust-lang/uuid.git"
+uuid = "*"
 ```
 
 and this to your crate root:
