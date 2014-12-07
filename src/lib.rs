@@ -420,7 +420,7 @@ impl Uuid {
 
         // At this point, we know we have a valid hex string, without hyphens
         assert!(vs.len() == 32);
-        assert!(vs.as_slice().chars().all(|c| c.is_digit_radix(16)));
+        assert!(vs.as_slice().chars().all(|c| c.is_digit(16)));
 
         // Allocate output UUID buffer
         let mut ub = [0u8, ..16];
