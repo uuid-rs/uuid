@@ -110,7 +110,7 @@ pub enum UuidVariant {
 }
 
 /// A Universally Unique Identifier (UUID)
-#[allow(missing_copy_implementations)]
+#[deriving(Copy)]
 pub struct Uuid {
     /// The 128-bit number stored in 16 bytes
     bytes: UuidBytes
