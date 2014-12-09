@@ -82,7 +82,7 @@ use serialize::{Encoder, Encodable, Decoder, Decodable};
 pub type UuidBytes = [u8, ..16];
 
 /// The version of the UUID, denoting the generating algorithm
-#[deriving(PartialEq)]
+#[deriving(PartialEq,Copy)]
 pub enum UuidVersion {
     /// Version 1: MAC address
     Mac    = 1,
@@ -97,7 +97,7 @@ pub enum UuidVersion {
 }
 
 /// The reserved variants of UUIDs
-#[deriving(PartialEq)]
+#[deriving(PartialEq,Copy)]
 pub enum UuidVariant {
     /// Reserved by the NCS for backward compatibility
     NCS,
@@ -110,6 +110,7 @@ pub enum UuidVariant {
 }
 
 /// A Universally Unique Identifier (UUID)
+#[allow(missing_copy_implementations)]
 pub struct Uuid {
     /// The 128-bit number stored in 16 bytes
     bytes: UuidBytes
@@ -122,6 +123,7 @@ impl<S: hash::Writer> hash::Hash<S> for Uuid {
 }
 
 /// A UUID stored as fields (identical to UUID, used only for conversions)
+#[deriving(Copy)]
 struct UuidFields {
     /// First field, 32-bit word
     data1: u32,
@@ -135,6 +137,7 @@ struct UuidFields {
 
 /// Error details for string parsing failures
 #[allow(missing_docs)]
+#[deriving(Copy)]
 pub enum ParseError {
     InvalidLength(uint),
     InvalidCharacter(char, uint),
@@ -447,7 +450,9 @@ impl Default for Uuid {
 
 impl Clone for Uuid {
     /// Returns a copy of the UUID
-    fn clone(&self) -> Uuid { *self }
+    fn clone(&self) -> Uuid {
+        Uuid { bytes: self.bytes }
+    }
 }
 
 impl FromStr for Uuid {
@@ -633,7 +638,7 @@ mod tests {
         let s = uuid1.to_simple_string();
 
         assert!(s.len() == 32);
-        assert!(s.as_slice().chars().all(|c| c.is_digit_radix(16)));
+        assert!(s.as_slice().chars().all(|c| c.is_digit(16)));
     }
 
     #[test]
@@ -642,7 +647,7 @@ mod tests {
         let s = uuid1.to_string();
 
         assert!(s.len() == 32);
-        assert!(s.as_slice().chars().all(|c| c.is_digit_radix(16)));
+        assert!(s.as_slice().chars().all(|c| c.is_digit(16)));
     }
 
     #[test]
@@ -651,7 +656,7 @@ mod tests {
         let s = uuid1.to_hyphenated_string();
 
         assert!(s.len() == 36);
-        assert!(s.as_slice().chars().all(|c| c.is_digit_radix(16) || c == '-'));
+        assert!(s.as_slice().chars().all(|c| c.is_digit(16) || c == '-'));
     }
 
     #[test]
@@ -664,7 +669,7 @@ mod tests {
         assert!(s.len() == 36);
         assert!(s.as_slice()
                  .chars()
-                 .all(|c| c.is_digit_radix(16) || c == '-'));
+                 .all(|c| c.is_digit(16) || c == '-'));
     }
 
     #[test]
@@ -795,7 +800,7 @@ mod tests {
         let mut set = HashSet::new();
         let id1 = Uuid::new_v4();
         let id2 = Uuid::new_v4();
-        set.insert(id1);
+        set.insert(id1.clone());
         assert!(set.contains(&id1));
         assert!(!set.contains(&id2));
     }
