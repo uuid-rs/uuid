@@ -638,7 +638,7 @@ mod tests {
         let s = uuid1.to_simple_string();
 
         assert!(s.len() == 32);
-        assert!(s.as_slice().chars().all(|c| c.is_digit_radix(16)));
+        assert!(s.as_slice().chars().all(|c| c.is_digit(16)));
     }
 
     #[test]
@@ -647,7 +647,7 @@ mod tests {
         let s = uuid1.to_string();
 
         assert!(s.len() == 32);
-        assert!(s.as_slice().chars().all(|c| c.is_digit_radix(16)));
+        assert!(s.as_slice().chars().all(|c| c.is_digit(16)));
     }
 
     #[test]
@@ -656,7 +656,7 @@ mod tests {
         let s = uuid1.to_hyphenated_string();
 
         assert!(s.len() == 36);
-        assert!(s.as_slice().chars().all(|c| c.is_digit_radix(16) || c == '-'));
+        assert!(s.as_slice().chars().all(|c| c.is_digit(16) || c == '-'));
     }
 
     #[test]
@@ -669,7 +669,7 @@ mod tests {
         assert!(s.len() == 36);
         assert!(s.as_slice()
                  .chars()
-                 .all(|c| c.is_digit_radix(16) || c == '-'));
+                 .all(|c| c.is_digit(16) || c == '-'));
     }
 
     #[test]
