@@ -69,13 +69,13 @@ extern crate serialize;
 use std::char::Char;
 use std::default::Default;
 use std::fmt;
-use std::str::FromStr;
 use std::hash;
 use std::mem::{transmute,transmute_copy};
 use std::num::{FromStrRadix, Int};
-use std::rand;
 use std::rand::Rng;
+use std::rand;
 use std::slice;
+use std::str::FromStr;
 
 use serialize::{Encoder, Encodable, Decoder, Decodable};
 
