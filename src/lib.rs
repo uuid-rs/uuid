@@ -262,11 +262,11 @@ impl Uuid {
             Some(UuidVariant::NCS)
         } else if self.bytes[8] & 0xc0 == 0x80 {
             Some(UuidVariant::RFC4122)
-        } else if self.bytes[8] & 0xe0 == 0xc0  {
+        } else if self.bytes[8] & 0xe0 == 0xc0 {
             Some(UuidVariant::Microsoft)
         } else if self.bytes[8] & 0xe0 == 0xe0 {
             Some(UuidVariant::Future)
-        } else  {
+        } else {
             None
         }
     }
