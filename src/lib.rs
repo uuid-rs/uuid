@@ -174,8 +174,7 @@ static UuidGroupLens: [uint, ..5] = [8u, 4u, 4u, 4u, 12u];
 impl Uuid {
     /// Returns a nil or empty UUID (containing all zeroes)
     pub fn nil() -> Uuid {
-        let uuid = Uuid{ bytes: [0, .. 16] };
-        uuid
+        Uuid{ bytes: [0, .. 16] }
     }
 
     /// Create a new UUID of the specified version
@@ -434,7 +433,7 @@ impl Uuid {
 
     /// Tests if the UUID is nil
     pub fn is_nil(&self) -> bool {
-        return self.bytes.iter().all(|&b| b == 0);
+        self.bytes.iter().all(|&b| b == 0)
     }
 }
 
