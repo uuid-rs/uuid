@@ -69,13 +69,13 @@ extern crate serialize;
 use std::char::Char;
 use std::default::Default;
 use std::fmt;
-use std::str::FromStr;
 use std::hash;
 use std::mem::{transmute,transmute_copy};
 use std::num::{FromStrRadix, Int};
-use std::rand;
 use std::rand::Rng;
+use std::rand;
 use std::slice;
+use std::str::FromStr;
 
 use serialize::{Encoder, Encodable, Decoder, Decodable};
 
@@ -174,8 +174,7 @@ static UuidGroupLens: [uint, ..5] = [8u, 4u, 4u, 4u, 12u];
 impl Uuid {
     /// Returns a nil or empty UUID (containing all zeroes)
     pub fn nil() -> Uuid {
-        let uuid = Uuid{ bytes: [0, .. 16] };
-        uuid
+        Uuid{ bytes: [0, .. 16] }
     }
 
     /// Create a new UUID of the specified version
@@ -243,15 +242,11 @@ impl Uuid {
     /// Specifies the variant of the UUID structure
     fn set_variant(&mut self, v: UuidVariant) {
         // Octet 8 contains the variant in the most significant 3 bits
-        match v {
-            UuidVariant::NCS =>        // b0xx...
-                self.bytes[8] =  self.bytes[8] & 0x7f,
-            UuidVariant::RFC4122 =>    // b10x...
-                self.bytes[8] = (self.bytes[8] & 0x3f) | 0x80,
-            UuidVariant::Microsoft =>  // b110...
-                self.bytes[8] = (self.bytes[8] & 0x1f) | 0xc0,
-            UuidVariant::Future =>     // b111...
-                self.bytes[8] = (self.bytes[8] & 0x1f) | 0xe0,
+        self.bytes[8] = match v {
+            UuidVariant::NCS       =>  self.bytes[8] & 0x7f,          // b0xx...
+            UuidVariant::RFC4122   => (self.bytes[8] & 0x3f) | 0x80,  // b10x...
+            UuidVariant::Microsoft => (self.bytes[8] & 0x1f) | 0xc0,  // b110...
+            UuidVariant::Future    => (self.bytes[8] & 0x1f) | 0xe0,  // b111...
         }
     }
 
@@ -262,16 +257,12 @@ impl Uuid {
     ///
     /// * [Variant Reference](http://tools.ietf.org/html/rfc4122#section-4.1.1)
     pub fn get_variant(&self) -> Option<UuidVariant> {
-        if self.bytes[8] & 0x80 == 0x00 {
-            Some(UuidVariant::NCS)
-        } else if self.bytes[8] & 0xc0 == 0x80 {
-            Some(UuidVariant::RFC4122)
-        } else if self.bytes[8] & 0xe0 == 0xc0  {
-            Some(UuidVariant::Microsoft)
-        } else if self.bytes[8] & 0xe0 == 0xe0 {
-            Some(UuidVariant::Future)
-        } else  {
-            None
+        match self.bytes[8] {
+            x if x & 0x80 == 0x00 => Some(UuidVariant::NCS),
+            x if x & 0xc0 == 0x80 => Some(UuidVariant::RFC4122),
+            x if x & 0xe0 == 0xc0 => Some(UuidVariant::Microsoft),
+            x if x & 0xe0 == 0xe0 => Some(UuidVariant::Future),
+            _                     => None
         }
     }
 
@@ -438,7 +429,7 @@ impl Uuid {
 
     /// Tests if the UUID is nil
     pub fn is_nil(&self) -> bool {
-        return self.bytes.iter().all(|&b| b == 0);
+        self.bytes.iter().all(|&b| b == 0)
     }
 }
 
