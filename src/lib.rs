@@ -51,10 +51,6 @@
 //! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](
 //!     http://tools.ietf.org/html/rfc4122)
 
-#![crate_name = "uuid"]
-#![experimental]
-#![crate_type = "rlib"]
-#![crate_type = "dylib"]
 #![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/uuid/")]
@@ -64,7 +60,7 @@
 // test harness access
 #[cfg(test)]
 extern crate test;
-extern crate serialize;
+extern crate "rustc-serialize" as rustc_serialize;
 
 use std::char::Char;
 use std::default::Default;
@@ -77,7 +73,7 @@ use std::rand;
 use std::slice;
 use std::str::FromStr;
 
-use serialize::{Encoder, Encodable, Decoder, Decodable};
+use rustc_serialize::{Encoder, Encodable, Decoder, Decodable};
 
 /// A 128-bit (16 byte) buffer containing the ID
 pub type UuidBytes = [u8, ..16];
@@ -490,7 +486,7 @@ impl<T: Encoder<E>, E> Encodable<T, E> for Uuid {
 impl<T: Decoder<E>, E> Decodable<T, E> for Uuid {
     /// Decode a UUID from a string
     fn decode(d: &mut T) -> Result<Uuid, E> {
-        Ok(from_str(try!(d.read_str()).as_slice()).unwrap())
+        Ok(try!(d.read_str()).parse().unwrap())
     }
 }
 
@@ -778,7 +774,7 @@ mod tests {
 
     #[test]
     fn test_serialize_round_trip() {
-        use serialize::json;
+        use rustc_serialize::json;
 
         let u = Uuid::new_v4();
         let s = json::encode(&u);

@@ -1,7 +1,7 @@
 [package]
 
 name = "uuid"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["The Rust Project Developers"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
@@ -11,3 +11,6 @@ documentation = "http://doc.rust-lang.org/uuid"
 description = """
 A library to generate and parse UUIDs.
 """
+
+[dependencies]
+rustc-serialize = "0.1"
