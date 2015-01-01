@@ -187,7 +187,7 @@ impl Uuid {
     /// of random numbers. Use the rand::Rand trait to supply
     /// a custom generator if required.
     pub fn new_v4() -> Uuid {
-        let ub = rand::task_rng().gen_iter::<u8>().take(16).collect::<Vec<_>>();
+        let ub = rand::thread_rng().gen_iter::<u8>().take(16).collect::<Vec<_>>();
         let mut uuid = Uuid{ bytes: [0, .. 16] };
         slice::bytes::copy_memory(&mut uuid.bytes, ub.as_slice());
         uuid.set_variant(UuidVariant::RFC4122);
@@ -667,11 +667,10 @@ mod tests {
         let hs = uuid1.to_hyphenated_string();
         let ss = uuid1.to_string();
 
-        let hsn = String::from_chars(hs.as_slice()
-                                    .chars()
-                                    .filter(|&c| c != '-')
-                                    .collect::<Vec<char>>()
-                                    .as_slice());
+        let hsn = hs.as_slice()
+            .chars()
+            .filter(|&c| c != '-')
+            .collect::<String>();
 
         assert!(hsn == ss);
     }
@@ -764,7 +763,7 @@ mod tests {
 
     #[test]
     fn test_rand_rand() {
-        let mut rng = rand::task_rng();
+        let mut rng = rand::thread_rng();
         let u: Uuid = rand::Rand::rand(&mut rng);
         let ub = u.as_bytes();
 
