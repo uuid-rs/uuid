@@ -66,6 +66,7 @@ use std::char::Char;
 use std::default::Default;
 use std::fmt;
 use std::hash;
+use std::iter::repeat;
 use std::mem::{transmute,transmute_copy};
 use std::num::{FromStrRadix, Int};
 use std::rand::Rng;
@@ -306,7 +307,7 @@ impl Uuid {
     ///
     /// Example: `936DA01F9ABD4d9d80C702AF85C822A8`
     pub fn to_simple_string(&self) -> String {
-        let mut s: Vec<u8> = Vec::from_elem(32, 0u8);
+        let mut s = repeat(0u8).take(32).collect::<Vec<_>>();
         for i in range(0u, 16u) {
             let digit = format!("{:02x}", self.bytes[i] as uint);
             s[i*2+0] = digit.as_bytes()[0];
@@ -404,7 +405,7 @@ impl Uuid {
         }
 
         // Normalise into one long hex string
-        let vs = hex_groups.concat();
+        let vs: String = hex_groups.concat();
 
         // At this point, we know we have a valid hex string, without hyphens
         assert!(vs.len() == 32);
