@@ -55,7 +55,7 @@
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/uuid/")]
 
-#![feature(default_type_params)]
+#![feature(default_type_params, old_orphan_check)]
 
 // test harness access
 #[cfg(test)]
@@ -77,10 +77,10 @@ use std::str::FromStr;
 use rustc_serialize::{Encoder, Encodable, Decoder, Decodable};
 
 /// A 128-bit (16 byte) buffer containing the ID
-pub type UuidBytes = [u8, ..16];
+pub type UuidBytes = [u8; 16];
 
 /// The version of the UUID, denoting the generating algorithm
-#[deriving(PartialEq,Copy)]
+#[derive(PartialEq,Copy)]
 pub enum UuidVersion {
     /// Version 1: MAC address
     Mac    = 1,
@@ -95,7 +95,7 @@ pub enum UuidVersion {
 }
 
 /// The reserved variants of UUIDs
-#[deriving(PartialEq,Copy)]
+#[derive(PartialEq,Copy)]
 pub enum UuidVariant {
     /// Reserved by the NCS for backward compatibility
     NCS,
@@ -121,7 +121,7 @@ impl<S: hash::Writer> hash::Hash<S> for Uuid {
 }
 
 /// A UUID stored as fields (identical to UUID, used only for conversions)
-#[deriving(Copy)]
+#[derive(Copy)]
 struct UuidFields {
     /// First field, 32-bit word
     data1: u32,
@@ -130,12 +130,12 @@ struct UuidFields {
     /// Third field, 16-bit short
     data3: u16,
     /// Fourth field, 8 bytes
-    data4: [u8, ..8]
+    data4: [u8; 8]
 }
 
 /// Error details for string parsing failures
 #[allow(missing_docs)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub enum ParseError {
     InvalidLength(uint),
     InvalidCharacter(char, uint),
@@ -165,13 +165,13 @@ impl fmt::Show for ParseError {
 
 // Length of each hyphenated group in hex digits
 #[allow(non_upper_case_globals)]
-static UuidGroupLens: [uint, ..5] = [8u, 4u, 4u, 4u, 12u];
+static UuidGroupLens: [uint; 5] = [8u, 4u, 4u, 4u, 12u];
 
 /// UUID support
 impl Uuid {
     /// Returns a nil or empty UUID (containing all zeroes)
     pub fn nil() -> Uuid {
-        Uuid{ bytes: [0, .. 16] }
+        Uuid{ bytes: [0; 16] }
     }
 
     /// Create a new UUID of the specified version
@@ -189,7 +189,7 @@ impl Uuid {
     /// a custom generator if required.
     pub fn new_v4() -> Uuid {
         let ub = rand::thread_rng().gen_iter::<u8>().take(16).collect::<Vec<_>>();
-        let mut uuid = Uuid{ bytes: [0, .. 16] };
+        let mut uuid = Uuid{ bytes: [0; 16] };
         slice::bytes::copy_memory(&mut uuid.bytes, ub.as_slice());
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Random);
@@ -209,7 +209,7 @@ impl Uuid {
                 data1: 0,
                 data2: 0,
                 data3: 0,
-                data4: [0, ..8]
+                data4: [0; 8]
         };
 
         fields.data1 = d1.to_be();
@@ -231,7 +231,7 @@ impl Uuid {
             return None
         }
 
-        let mut uuid = Uuid{ bytes: [0, .. 16] };
+        let mut uuid = Uuid{ bytes: [0; 16] };
         slice::bytes::copy_memory(&mut uuid.bytes, b);
         Some(uuid)
     }
@@ -412,7 +412,7 @@ impl Uuid {
         assert!(vs.as_slice().chars().all(|c| c.is_digit(16)));
 
         // Allocate output UUID buffer
-        let mut ub = [0u8, ..16];
+        let mut ub = [0u8; 16];
 
         // Extract each hex digit from the string
         for i in range(0u, 16u) {
@@ -496,7 +496,7 @@ impl rand::Rand for Uuid {
     #[inline]
     fn rand<R: rand::Rng>(rng: &mut R) -> Uuid {
         let ub = rng.gen_iter::<u8>().take(16).collect::<Vec<_>>();
-        let mut uuid = Uuid{ bytes: [0, .. 16] };
+        let mut uuid = Uuid{ bytes: [0; 16] };
         slice::bytes::copy_memory(&mut uuid.bytes, ub.as_slice());
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Random);
@@ -736,7 +736,7 @@ mod tests {
 
     #[test]
     fn test_bytes_roundtrip() {
-        let b_in: [u8, ..16] = [ 0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2,
+        let b_in: [u8; 16] = [ 0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2,
                                  0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8 ];
 
         let u = Uuid::from_bytes(&b_in).unwrap();
