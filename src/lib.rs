@@ -62,7 +62,6 @@
 extern crate test;
 extern crate "rustc-serialize" as rustc_serialize;
 
-use std::char::Char;
 use std::default::Default;
 use std::fmt;
 use std::hash;
@@ -477,16 +476,16 @@ impl PartialEq for Uuid {
 impl Eq for Uuid {}
 
 // FIXME #9845: Test these more thoroughly
-impl<T: Encoder<E>, E> Encodable<T, E> for Uuid {
+impl Encodable for Uuid {
     /// Encode a UUID as a hyphenated string
-    fn encode(&self, e: &mut T) -> Result<(), E> {
+    fn encode<E: Encoder>(&self, e: &mut E) -> Result<(), E::Error> {
         e.emit_str(self.to_hyphenated_string().as_slice())
     }
 }
 
-impl<T: Decoder<E>, E> Decodable<T, E> for Uuid {
+impl Decodable for Uuid {
     /// Decode a UUID from a string
-    fn decode(d: &mut T) -> Result<Uuid, E> {
+    fn decode<D: Decoder>(d: &mut D) -> Result<Uuid, D::Error> {
         Ok(try!(d.read_str()).parse().unwrap())
     }
 }
