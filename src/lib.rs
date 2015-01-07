@@ -55,8 +55,6 @@
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/uuid/")]
 
-#![feature(default_type_params, old_orphan_check)]
-
 // test harness access
 #[cfg(test)]
 extern crate test;
