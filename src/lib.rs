@@ -55,6 +55,8 @@
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/uuid/")]
 
+#![allow(unstable)]
+
 // test harness access
 #[cfg(test)]
 extern crate test;
@@ -111,7 +113,7 @@ pub struct Uuid {
     bytes: UuidBytes
 }
 
-impl<S: hash::Writer> hash::Hash<S> for Uuid {
+impl<S: hash::Writer + hash::Hasher> hash::Hash<S> for Uuid {
     fn hash(&self, state: &mut S) {
         self.bytes.hash(state)
     }
@@ -134,10 +136,10 @@ struct UuidFields {
 #[allow(missing_docs)]
 #[derive(Copy)]
 pub enum ParseError {
-    InvalidLength(uint),
-    InvalidCharacter(char, uint),
-    InvalidGroups(uint),
-    InvalidGroupLength(uint, uint, uint),
+    InvalidLength(usize),
+    InvalidCharacter(char, usize),
+    InvalidGroups(usize),
+    InvalidGroupLength(usize, usize, usize),
 }
 
 /// Converts a ParseError to a string
@@ -149,7 +151,7 @@ impl fmt::Show for ParseError {
                            found {}", found),
             ParseError::InvalidCharacter(found, pos) =>
                 write!(f, "Invalid character; found `{}` (0x{:02x}) at \
-                           offset {}", found, found as uint, pos),
+                           offset {}", found, found as usize, pos),
             ParseError::InvalidGroups(found) =>
                 write!(f, "Malformed; wrong number of groups: expected 1 \
                            or 5, found {}", found),
@@ -162,7 +164,7 @@ impl fmt::Show for ParseError {
 
 // Length of each hyphenated group in hex digits
 #[allow(non_upper_case_globals)]
-static UuidGroupLens: [uint; 5] = [8u, 4u, 4u, 4u, 12u];
+static UuidGroupLens: [usize; 5] = [8us, 4us, 4us, 4us, 12us];
 
 /// UUID support
 impl Uuid {
@@ -276,8 +278,8 @@ impl Uuid {
     /// details.
     ///
     /// * [Version Reference](http://tools.ietf.org/html/rfc4122#section-4.1.3)
-    pub fn get_version_num(&self) -> uint {
-        (self.bytes[6] >> 4) as uint
+    pub fn get_version_num(&self) -> usize {
+        (self.bytes[6] >> 4) as usize
     }
 
     /// Returns the version of the UUID
@@ -305,8 +307,8 @@ impl Uuid {
     /// Example: `936DA01F9ABD4d9d80C702AF85C822A8`
     pub fn to_simple_string(&self) -> String {
         let mut s = repeat(0u8).take(32).collect::<Vec<_>>();
-        for i in range(0u, 16u) {
-            let digit = format!("{:02x}", self.bytes[i] as uint);
+        for i in range(0, 16) {
+            let digit = format!("{:02x}", self.bytes[i] as usize);
             s[i*2+0] = digit.as_bytes()[0];
             s[i*2+1] = digit.as_bytes()[1];
         }
@@ -376,7 +378,7 @@ impl Uuid {
         let hex_groups: Vec<&str> = us.split_str("-").collect();
 
         // Get the length of each group
-        let group_lens: Vec<uint> = hex_groups.iter().map(|&v| v.len()).collect();
+        let group_lens: Vec<usize> = hex_groups.iter().map(|&v| v.len()).collect();
 
         // Ensure the group lengths are valid
         match group_lens.len() {
@@ -412,7 +414,7 @@ impl Uuid {
         let mut ub = [0u8; 16];
 
         // Extract each hex digit from the string
-        for i in range(0u, 16u) {
+        for i in range(0, 16) {
             ub[i] = FromStrRadix::from_str_radix(vs.as_slice()
                                                    .slice(i*2, (i+1)*2),
                                                  16).unwrap();
@@ -457,6 +459,12 @@ impl FromStr for Uuid {
 
 /// Convert the UUID to a hexadecimal-based string representation
 impl fmt::Show for Uuid {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_simple_string())
+    }
+}
+/// Convert the UUID to a hexadecimal-based string representation
+impl fmt::String for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_simple_string())
     }
