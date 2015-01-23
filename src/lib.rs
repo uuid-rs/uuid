@@ -56,6 +56,7 @@
        html_root_url = "http://doc.rust-lang.org/uuid/")]
 
 #![allow(unstable)]
+#![cfg_attr(test, deny(warnings))]
 
 // test harness access
 #[cfg(test)]
@@ -108,6 +109,7 @@ pub enum UuidVariant {
 
 /// A Universally Unique Identifier (UUID)
 #[allow(missing_copy_implementations)]
+#[derive(Debug)]
 pub struct Uuid {
     /// The 128-bit number stored in 16 bytes
     bytes: UuidBytes
@@ -134,7 +136,7 @@ struct UuidFields {
 
 /// Error details for string parsing failures
 #[allow(missing_docs)]
-#[derive(Copy)]
+#[derive(Copy, Debug)]
 pub enum ParseError {
     InvalidLength(usize),
     InvalidCharacter(char, usize),
@@ -143,7 +145,7 @@ pub enum ParseError {
 }
 
 /// Converts a ParseError to a string
-impl fmt::Show for ParseError {
+impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             ParseError::InvalidLength(found) =>
@@ -363,7 +365,7 @@ impl Uuid {
 
         // Strip off URN prefix if present
         if us.starts_with("urn:uuid:") {
-            us = us.slice(9, orig_len);
+            us = &us[9..orig_len];
         }
 
         // Make sure all chars are either hex digits or hyphen
@@ -415,8 +417,7 @@ impl Uuid {
 
         // Extract each hex digit from the string
         for i in range(0, 16) {
-            ub[i] = FromStrRadix::from_str_radix(vs.as_slice()
-                                                   .slice(i*2, (i+1)*2),
+            ub[i] = FromStrRadix::from_str_radix(&vs[i*2 .. (i+1)*2],
                                                  16).unwrap();
         }
 
@@ -458,13 +459,7 @@ impl FromStr for Uuid {
 }
 
 /// Convert the UUID to a hexadecimal-based string representation
-impl fmt::Show for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_simple_string())
-    }
-}
-/// Convert the UUID to a hexadecimal-based string representation
-impl fmt::String for Uuid {
+impl fmt::Display for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.to_simple_string())
     }
@@ -657,7 +652,7 @@ mod tests {
     fn test_to_urn_string() {
         let uuid1 = Uuid::new_v4();
         let ss = uuid1.to_urn_string();
-        let s = ss.as_slice().slice(9, ss.len());
+        let s = &ss[9..];
 
         assert!(ss.as_slice().starts_with("urn:uuid:"));
         assert!(s.len() == 36);
@@ -782,7 +777,7 @@ mod tests {
         use rustc_serialize::json;
 
         let u = Uuid::new_v4();
-        let s = json::encode(&u);
+        let s = json::encode(&u).unwrap();
         let u2 = json::decode(s.as_slice()).unwrap();
         assert_eq!(u, u2);
     }
