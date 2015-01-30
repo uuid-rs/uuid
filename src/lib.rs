@@ -51,11 +51,12 @@
 //! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](
 //!     http://tools.ietf.org/html/rfc4122)
 
+#![feature(collections, core, hash, rand, unicode)]
 #![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/uuid/")]
 
-#![allow(unstable)]
+#![cfg_attr(test, feature(test, unicode))]
 #![cfg_attr(test, deny(warnings))]
 
 // test harness access
