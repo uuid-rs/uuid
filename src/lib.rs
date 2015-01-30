@@ -309,7 +309,7 @@ impl Uuid {
     /// Example: `936DA01F9ABD4d9d80C702AF85C822A8`
     pub fn to_simple_string(&self) -> String {
         let mut s = repeat(0u8).take(32).collect::<Vec<_>>();
-        for i in range(0, 16) {
+        for i in 0..16 {
             let digit = format!("{:02x}", self.bytes[i] as usize);
             s[i*2+0] = digit.as_bytes()[0];
             s[i*2+1] = digit.as_bytes()[1];
@@ -416,7 +416,7 @@ impl Uuid {
         let mut ub = [0u8; 16];
 
         // Extract each hex digit from the string
-        for i in range(0, 16) {
+        for i in 0..16 {
             ub[i] = FromStrRadix::from_str_radix(&vs[i*2 .. (i+1)*2],
                                                  16).unwrap();
         }
