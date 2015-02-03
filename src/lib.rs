@@ -446,16 +446,14 @@ impl Clone for Uuid {
 }
 
 impl FromStr for Uuid {
+    type Err = ParseError;
+
     /// Parse a hex string and interpret as a UUID
     ///
     /// Accepted formats are a sequence of 32 hexadecimal characters,
     /// with or without hyphens (grouped as 8, 4, 4, 4, 12).
-    fn from_str(us: &str) -> Option<Uuid> {
-        let result = Uuid::parse_str(us);
-        match result {
-            Ok(u) => Some(u),
-            Err(_) => None
-        }
+    fn from_str(us: &str) -> Result<Uuid, ParseError> {
+        Uuid::parse_str(us)
     }
 }
 
