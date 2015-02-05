@@ -51,7 +51,7 @@
 //! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](
 //!     http://tools.ietf.org/html/rfc4122)
 
-#![feature(collections, core, hash, rand, unicode)]
+#![feature(collections, core, hash, unicode)]
 #![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/uuid/")]
@@ -63,6 +63,7 @@
 #[cfg(test)]
 extern crate test;
 extern crate "rustc-serialize" as rustc_serialize;
+extern crate rand;
 
 use std::default::Default;
 use std::fmt;
@@ -70,11 +71,10 @@ use std::hash;
 use std::iter::repeat;
 use std::mem::{transmute,transmute_copy};
 use std::num::{FromStrRadix, Int};
-use std::rand::Rng;
-use std::rand;
 use std::slice;
 use std::str::FromStr;
 
+use rand::Rng;
 use rustc_serialize::{Encoder, Encodable, Decoder, Decodable};
 
 /// A 128-bit (16 byte) buffer containing the ID
@@ -506,7 +506,7 @@ impl rand::Rand for Uuid {
 #[cfg(test)]
 mod tests {
     use super::{Uuid, UuidVariant, UuidVersion};
-    use std::rand;
+    use rand;
 
     #[test]
     fn test_nil() {
