@@ -51,7 +51,7 @@
 //! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](
 //!     http://tools.ietf.org/html/rfc4122)
 
-#![feature(collections, core, hash, unicode)]
+#![feature(collections, core, unicode)]
 #![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/uuid/")]
@@ -116,8 +116,8 @@ pub struct Uuid {
     bytes: UuidBytes
 }
 
-impl<S: hash::Writer + hash::Hasher> hash::Hash<S> for Uuid {
-    fn hash(&self, state: &mut S) {
+impl hash::Hash for Uuid {
+    fn hash<S: hash::Hasher>(&self, state: &mut S) {
         self.bytes.hash(state)
     }
 }
@@ -167,7 +167,7 @@ impl fmt::Display for ParseError {
 
 // Length of each hyphenated group in hex digits
 #[allow(non_upper_case_globals)]
-static UuidGroupLens: [usize; 5] = [8us, 4us, 4us, 4us, 12us];
+static UuidGroupLens: [usize; 5] = [8, 4, 4, 4, 12];
 
 /// UUID support
 impl Uuid {
