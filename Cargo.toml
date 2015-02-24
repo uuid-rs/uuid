@@ -13,5 +13,5 @@ A library to generate and parse UUIDs.
 """
 
 [dependencies]
-rustc-serialize = "0.2"
+rustc-serialize = "0.3"
 rand = "0.1"
