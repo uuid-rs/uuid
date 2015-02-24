@@ -14,7 +14,7 @@ Add this to your `Cargo.toml`:
 ```toml
 [dependencies]
 
-uuid = "*"
+uuid = "0.1"
 ```
 
 and this to your crate root:
