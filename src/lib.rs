@@ -51,7 +51,7 @@
 //! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](
 //!     http://tools.ietf.org/html/rfc4122)
 
-#![feature(collections, core, unicode)]
+#![feature(core, unicode)]
 #![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/uuid/")]
@@ -378,7 +378,7 @@ impl Uuid {
         }
 
         // Split string up by hyphens into groups
-        let hex_groups: Vec<&str> = us.split_str("-").collect();
+        let hex_groups: Vec<&str> = us.split("-").collect();
 
         // Get the length of each group
         let group_lens: Vec<usize> = hex_groups.iter().map(|&v| v.len()).collect();
