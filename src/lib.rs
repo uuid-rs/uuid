@@ -51,12 +51,12 @@
 //! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](
 //!     http://tools.ietf.org/html/rfc4122)
 
-#![feature(core, unicode)]
 #![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/uuid/")]
 
-#![cfg_attr(test, feature(test, unicode))]
+#![feature(core)]
+#![cfg_attr(test, feature(test))]
 #![cfg_attr(test, deny(warnings))]
 
 // test harness access
@@ -71,7 +71,6 @@ use std::hash;
 use std::iter::repeat;
 use std::mem::{transmute,transmute_copy};
 use std::num::{FromStrRadix, Int};
-use std::slice;
 use std::str::FromStr;
 
 use rand::Rng;
@@ -192,7 +191,7 @@ impl Uuid {
     pub fn new_v4() -> Uuid {
         let ub = rand::thread_rng().gen_iter::<u8>().take(16).collect::<Vec<_>>();
         let mut uuid = Uuid{ bytes: [0; 16] };
-        slice::bytes::copy_memory(&mut uuid.bytes, ub.as_slice());
+        copy_memory(&mut uuid.bytes, &ub);
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Random);
         uuid
@@ -217,7 +216,7 @@ impl Uuid {
         fields.data1 = d1.to_be();
         fields.data2 = d2.to_be();
         fields.data3 = d3.to_be();
-        slice::bytes::copy_memory(&mut fields.data4, d4);
+        copy_memory(&mut fields.data4, d4);
 
         unsafe {
             transmute(fields)
@@ -234,7 +233,7 @@ impl Uuid {
         }
 
         let mut uuid = Uuid{ bytes: [0; 16] };
-        slice::bytes::copy_memory(&mut uuid.bytes, b);
+        copy_memory(&mut uuid.bytes, b);
         Some(uuid)
     }
 
@@ -301,9 +300,7 @@ impl Uuid {
     }
 
     /// Return an array of 16 octets containing the UUID data
-    pub fn as_bytes<'a>(&'a self) -> &'a [u8] {
-        self.bytes.as_slice()
-    }
+    pub fn as_bytes<'a>(&'a self) -> &'a [u8] { &self.bytes }
 
     /// Returns the UUID as a string of 16 hexadecimal digits
     ///
@@ -411,7 +408,7 @@ impl Uuid {
 
         // At this point, we know we have a valid hex string, without hyphens
         assert!(vs.len() == 32);
-        assert!(vs.as_slice().chars().all(|c| c.is_digit(16)));
+        assert!(vs.chars().all(|c| c.is_digit(16)));
 
         // Allocate output UUID buffer
         let mut ub = [0u8; 16];
@@ -428,6 +425,12 @@ impl Uuid {
     /// Tests if the UUID is nil
     pub fn is_nil(&self) -> bool {
         self.bytes.iter().all(|&b| b == 0)
+    }
+}
+
+fn copy_memory(dst: &mut [u8], src: &[u8]) {
+    for (slot, val) in dst.iter_mut().zip(src.iter()) {
+        *slot = *val;
     }
 }
 
@@ -479,7 +482,7 @@ impl Eq for Uuid {}
 impl Encodable for Uuid {
     /// Encode a UUID as a hyphenated string
     fn encode<E: Encoder>(&self, e: &mut E) -> Result<(), E::Error> {
-        e.emit_str(self.to_hyphenated_string().as_slice())
+        e.emit_str(&self.to_hyphenated_string())
     }
 }
 
@@ -496,7 +499,7 @@ impl rand::Rand for Uuid {
     fn rand<R: rand::Rng>(rng: &mut R) -> Uuid {
         let ub = rng.gen_iter::<u8>().take(16).collect::<Vec<_>>();
         let mut uuid = Uuid{ bytes: [0; 16] };
-        slice::bytes::copy_memory(&mut uuid.bytes, ub.as_slice());
+        copy_memory(&mut uuid.bytes, &ub);
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Random);
         uuid
@@ -603,7 +606,7 @@ mod tests {
         // Round-trip
         let uuid_orig = Uuid::new_v4();
         let orig_str = uuid_orig.to_string();
-        let uuid_out = Uuid::parse_str(orig_str.as_slice()).unwrap();
+        let uuid_out = Uuid::parse_str(&orig_str).unwrap();
         assert!(uuid_orig == uuid_out);
 
         // Test error reporting
@@ -626,7 +629,7 @@ mod tests {
         let s = uuid1.to_simple_string();
 
         assert!(s.len() == 32);
-        assert!(s.as_slice().chars().all(|c| c.is_digit(16)));
+        assert!(s.chars().all(|c| c.is_digit(16)));
     }
 
     #[test]
@@ -635,7 +638,7 @@ mod tests {
         let s = uuid1.to_string();
 
         assert!(s.len() == 32);
-        assert!(s.as_slice().chars().all(|c| c.is_digit(16)));
+        assert!(s.chars().all(|c| c.is_digit(16)));
     }
 
     #[test]
@@ -644,7 +647,7 @@ mod tests {
         let s = uuid1.to_hyphenated_string();
 
         assert!(s.len() == 36);
-        assert!(s.as_slice().chars().all(|c| c.is_digit(16) || c == '-'));
+        assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
     }
 
     #[test]
@@ -653,11 +656,9 @@ mod tests {
         let ss = uuid1.to_urn_string();
         let s = &ss[9..];
 
-        assert!(ss.as_slice().starts_with("urn:uuid:"));
+        assert!(ss.starts_with("urn:uuid:"));
         assert!(s.len() == 36);
-        assert!(s.as_slice()
-                 .chars()
-                 .all(|c| c.is_digit(16) || c == '-'));
+        assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
     }
 
     #[test]
@@ -667,10 +668,7 @@ mod tests {
         let hs = uuid1.to_hyphenated_string();
         let ss = uuid1.to_string();
 
-        let hsn = hs.as_slice()
-            .chars()
-            .filter(|&c| c != '-')
-            .collect::<String>();
+        let hsn = hs.chars().filter(|&c| c != '-').collect::<String>();
 
         assert!(hsn == ss);
     }
@@ -680,11 +678,11 @@ mod tests {
         let uuid = Uuid::new_v4();
 
         let hs = uuid.to_hyphenated_string();
-        let uuid_hs = Uuid::parse_str(hs.as_slice()).unwrap();
+        let uuid_hs = Uuid::parse_str(&hs).unwrap();
         assert!(uuid_hs == uuid);
 
         let ss = uuid.to_string();
-        let uuid_ss = Uuid::parse_str(ss.as_slice()).unwrap();
+        let uuid_ss = Uuid::parse_str(&ss).unwrap();
         assert!(uuid_ss == uuid);
     }
 
@@ -706,7 +704,7 @@ mod tests {
         let d3: u16 = 0xc1c2;
         let d4: Vec<u8> = vec!(0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8);
 
-        let u = Uuid::from_fields(d1, d2, d3, d4.as_slice());
+        let u = Uuid::from_fields(d1, d2, d3, &d4);
 
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8".to_string();
         let result = u.to_simple_string();
@@ -718,7 +716,7 @@ mod tests {
         let b = vec!( 0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2,
                    0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8 );
 
-        let u = Uuid::from_bytes(b.as_slice()).unwrap();
+        let u = Uuid::from_bytes(&b).unwrap();
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8".to_string();
 
         assert!(u.to_simple_string() == expected);
@@ -742,7 +740,7 @@ mod tests {
 
         let b_out = u.as_bytes();
 
-        assert_eq!(b_in.as_slice(), b_out);
+        assert_eq!(&b_in, b_out);
     }
 
     #[test]
@@ -777,7 +775,7 @@ mod tests {
 
         let u = Uuid::new_v4();
         let s = json::encode(&u).unwrap();
-        let u2 = json::decode(s.as_slice()).unwrap();
+        let u2 = json::decode(&s).unwrap();
         assert_eq!(u, u2);
     }
 
