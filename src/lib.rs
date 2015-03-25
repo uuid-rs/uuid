@@ -62,7 +62,7 @@
 // test harness access
 #[cfg(test)]
 extern crate test;
-extern crate "rustc-serialize" as rustc_serialize;
+extern crate rustc_serialize;
 extern crate rand;
 
 use std::default::Default;
