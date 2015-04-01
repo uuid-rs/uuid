@@ -55,7 +55,6 @@
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/uuid/")]
 
-#![feature(core)]
 #![cfg_attr(test, feature(test))]
 #![cfg_attr(test, deny(warnings))]
 
@@ -70,7 +69,6 @@ use std::fmt;
 use std::hash;
 use std::iter::repeat;
 use std::mem::{transmute,transmute_copy};
-use std::num::{FromStrRadix, Int};
 use std::str::FromStr;
 
 use rand::Rng;
@@ -415,8 +413,7 @@ impl Uuid {
 
         // Extract each hex digit from the string
         for i in 0..16 {
-            ub[i] = FromStrRadix::from_str_radix(&vs[i*2 .. (i+1)*2],
-                                                 16).unwrap();
+            ub[i] = u8::from_str_radix(&vs[i*2 .. (i+1)*2], 16).unwrap();
         }
 
         Ok(Uuid::from_bytes(&mut ub).unwrap())
