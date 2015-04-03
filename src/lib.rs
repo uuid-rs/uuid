@@ -78,7 +78,7 @@ use rustc_serialize::{Encoder, Encodable, Decoder, Decodable};
 pub type UuidBytes = [u8; 16];
 
 /// The version of the UUID, denoting the generating algorithm
-#[derive(PartialEq,Copy)]
+#[derive(PartialEq, Copy, Clone)]
 pub enum UuidVersion {
     /// Version 1: MAC address
     Mac    = 1,
@@ -93,7 +93,7 @@ pub enum UuidVersion {
 }
 
 /// The reserved variants of UUIDs
-#[derive(PartialEq,Copy)]
+#[derive(PartialEq, Copy, Clone)]
 pub enum UuidVariant {
     /// Reserved by the NCS for backward compatibility
     NCS,
@@ -120,7 +120,7 @@ impl hash::Hash for Uuid {
 }
 
 /// A UUID stored as fields (identical to UUID, used only for conversions)
-#[derive(Copy)]
+#[derive(Copy, Clone)]
 struct UuidFields {
     /// First field, 32-bit word
     data1: u32,
@@ -134,7 +134,7 @@ struct UuidFields {
 
 /// Error details for string parsing failures
 #[allow(missing_docs)]
-#[derive(Copy, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum ParseError {
     InvalidLength(usize),
     InvalidCharacter(char, usize),
