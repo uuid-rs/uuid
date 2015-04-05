@@ -106,8 +106,7 @@ pub enum UuidVariant {
 }
 
 /// A Universally Unique Identifier (UUID)
-#[allow(missing_copy_implementations)]
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct Uuid {
     /// The 128-bit number stored in 16 bytes
     bytes: UuidBytes
@@ -435,13 +434,6 @@ impl Default for Uuid {
     /// Returns the nil UUID, which is all zeroes
     fn default() -> Uuid {
         Uuid::nil()
-    }
-}
-
-impl Clone for Uuid {
-    /// Returns a copy of the UUID
-    fn clone(&self) -> Uuid {
-        Uuid { bytes: self.bytes }
     }
 }
 
