@@ -1,9 +1,9 @@
 language: rust
 sudo: false
 script:
-  - cargo build --verbose
-  - cargo test --verbose
-  - cargo doc
+  - cargo build --verbose --features="v5"
+  - cargo test --verbose --features="v5"
+  - cargo doc --features="v5"
 after_success: |
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
