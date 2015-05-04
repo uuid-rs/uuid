@@ -478,7 +478,10 @@ impl Encodable for Uuid {
 impl Decodable for Uuid {
     /// Decode a UUID from a string
     fn decode<D: Decoder>(d: &mut D) -> Result<Uuid, D::Error> {
-        Ok(try!(d.read_str()).parse().unwrap())
+        let string = try!(d.read_str());
+        string.parse().map_err(|err| {
+            d.error(&format!("{}", err))
+        })
     }
 }
 
