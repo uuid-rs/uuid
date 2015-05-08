@@ -12,6 +12,10 @@ description = """
 A library to generate and parse UUIDs.
 """
 
+[features]
+v5 = ["sha1"]
+
 [dependencies]
 rustc-serialize = "0.3"
 rand = "0.3"
+sha1 = { version = "0.1.0", optional = true }
