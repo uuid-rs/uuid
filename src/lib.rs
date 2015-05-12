@@ -139,6 +139,7 @@ pub enum ParseError {
     InvalidCharacter(char, usize),
     InvalidGroups(usize),
     InvalidGroupLength(usize, usize, usize),
+    InvalidVersion(char),
 }
 
 /// Converts a ParseError to a string
@@ -157,6 +158,9 @@ impl fmt::Display for ParseError {
             ParseError::InvalidGroupLength(group, found, expecting) =>
                 write!(f, "Malformed; length of group {} was {}, \
                            expecting {}", group, found, expecting),
+            ParseError::InvalidVersion(version) =>
+                write!(f, "Invalid version; expecting 1, 2, 3, 4, or 5, \
+                           found {}", version),
         }
     }
 }
@@ -407,6 +411,18 @@ impl Uuid {
         assert!(vs.len() == 32);
         assert!(vs.chars().all(|c| c.is_digit(16)));
 
+        // Return early if it is a null uuid
+        if vs.chars().all(|c| c == '0') {
+            return Ok(Uuid::from_bytes(&[0u8; 16]).unwrap());
+        }
+
+        // Check that the uuid version is one of the allowed versions.
+        let version = vs.chars().nth(12).unwrap();
+        match version {
+            '1'...'5' => {},
+            _ => return Err(ParseError::InvalidVersion(version))
+        }
+
         // Allocate output UUID buffer
         let mut ub = [0u8; 16];
 
@@ -581,14 +597,31 @@ mod tests {
         assert!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0cg8").is_err());
         assert!(Uuid::parse_str("67e5504410b1426%9247bb680e5fe0c8").is_err());
 
-        // Valid
+        // The most significant 4 bits of the timestamp must be a valid uuid version.
+        //                                     v 
+        // Valid Versions
+        assert!(Uuid::parse_str("67e55044-10b1-126f-9247-bb680e5fe0c8").is_ok());
+        assert!(Uuid::parse_str("67e55044-10b1-226f-9247-bb680e5fe0c8").is_ok());
+        assert!(Uuid::parse_str("67e55044-10b1-326f-9247-bb680e5fe0c8").is_ok());
+        assert!(Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").is_ok());
+        assert!(Uuid::parse_str("67e55044-10b1-526f-9247-bb680e5fe0c8").is_ok());
+        // Invalid Versions
+        assert!(Uuid::parse_str("67e55044-10b1-626f-9247-bb680e5fe0c8").is_err());
+        assert!(Uuid::parse_str("67e55044-10b1-726f-9247-bb680e5fe0c8").is_err());
+        assert!(Uuid::parse_str("67e55044-10b1-826f-9247-bb680e5fe0c8").is_err());
+        assert!(Uuid::parse_str("67e55044-10b1-926f-9247-bb680e5fe0c8").is_err());
+        assert!(Uuid::parse_str("67e55044-10b1-026f-9247-bb680e5fe0c8").is_err());
+
+        // Valid (special case for nil uuid
         assert!(Uuid::parse_str("00000000000000000000000000000000").is_ok());
+
+        // Valid
         assert!(Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").is_ok());
         assert!(Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").is_ok());
         assert!(Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4").is_ok());
         assert!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c8").is_ok());
-        assert!(Uuid::parse_str("01020304-1112-2122-3132-414243444546").is_ok());
-        assert!(Uuid::parse_str("urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8").is_ok());
+        assert!(Uuid::parse_str("01020304-1112-4122-3132-414243444546").is_ok());
+        assert!(Uuid::parse_str("urn:uuid:67e55044-40b1-426f-9247-bb680e5fe0c8").is_ok());
 
         // Nil
         let nil = Uuid::nil();
