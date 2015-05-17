@@ -55,12 +55,8 @@
        html_favicon_url = "http://www.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/uuid/")]
 
-#![cfg_attr(test, feature(test))]
 #![cfg_attr(test, deny(warnings))]
 
-// test harness access
-#[cfg(test)]
-extern crate test;
 extern crate rustc_serialize;
 extern crate rand;
 
@@ -783,6 +779,8 @@ mod tests {
     }
 }
 
+/*
+TODO: when benchmarking is stable, re-add these
 #[cfg(test)]
 mod bench {
     extern crate test;
@@ -812,3 +810,4 @@ mod bench {
         })
     }
 }
+*/
