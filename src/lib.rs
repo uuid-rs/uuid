@@ -102,7 +102,7 @@ pub enum UuidVariant {
 }
 
 /// A Universally Unique Identifier (UUID)
-#[derive(Debug, Copy, Clone)]
+#[derive(Copy, Clone)]
 pub struct Uuid {
     /// The 128-bit number stored in 16 bytes
     bytes: UuidBytes
@@ -445,10 +445,17 @@ impl FromStr for Uuid {
     }
 }
 
+/// Convert the UUID to a hexadecimal-based string representation wrapped in `Uuid()`
+impl fmt::Debug for Uuid {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Uuid(\"{}\")", self.to_hyphenated_string())
+    }
+}
+
 /// Convert the UUID to a hexadecimal-based string representation
 impl fmt::Display for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_simple_string())
+        write!(f, "{}", self.to_hyphenated_string())
     }
 }
 
@@ -625,8 +632,8 @@ mod tests {
         let uuid1 = Uuid::new_v4();
         let s = uuid1.to_string();
 
-        assert!(s.len() == 32);
-        assert!(s.chars().all(|c| c.is_digit(16)));
+        assert!(s.len() == 36);
+        assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
     }
 
     #[test]
@@ -650,11 +657,11 @@ mod tests {
     }
 
     #[test]
-    fn test_to_str_matching() {
+    fn test_to_simple_string_matching() {
         let uuid1 = Uuid::new_v4();
 
         let hs = uuid1.to_hyphenated_string();
-        let ss = uuid1.to_string();
+        let ss = uuid1.to_simple_string();
 
         let hsn = hs.chars().filter(|&c| c != '-').collect::<String>();
 
