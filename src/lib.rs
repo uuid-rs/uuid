@@ -295,7 +295,7 @@ impl Uuid {
     /// Return an array of 16 octets containing the UUID data
     pub fn as_bytes<'a>(&'a self) -> &'a [u8] { &self.bytes }
 
-    /// Returns the UUID as a string of 16 hexadecimal digits
+    /// Returns the UUID as a string of 32 hexadecimal digits
     ///
     /// Example: `936DA01F9ABD4d9d80C702AF85C822A8`
     pub fn to_simple_string(&self) -> String {
