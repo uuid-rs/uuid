@@ -58,6 +58,8 @@
 #![cfg_attr(test, deny(warnings))]
 
 extern crate rustc_serialize;
+#[cfg(feature = "serde")]
+extern crate serde;
 extern crate rand;
 
 use std::default::Default;
@@ -69,6 +71,8 @@ use std::str::FromStr;
 
 use rand::Rng;
 use rustc_serialize::{Encoder, Encodable, Decoder, Decodable};
+#[cfg(feature = "serde")]
+use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 /// A 128-bit (16 byte) buffer containing the ID
 pub type UuidBytes = [u8; 16];
@@ -485,6 +489,34 @@ impl Decodable for Uuid {
         string.parse().map_err(|err| {
             d.error(&format!("{}", err))
         })
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Serialize for Uuid {
+    fn serialize<S: Serializer>(&self, serializer: &mut S) -> Result<(), S::Error> {
+        serializer.visit_str(&self.to_hyphenated_string())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Deserialize for Uuid {
+    fn deserialize<D: Deserializer>(deserializer: &mut D) -> Result<Self, D::Error> {
+        struct UuidVisitor;
+
+        impl de::Visitor for UuidVisitor {
+            type Value = Uuid;
+
+            fn visit_str<E: de::Error>(&mut self, value: &str) -> Result<Uuid, E> {
+                value.parse().map_err(|err| E::syntax(&format!("{}", err)))
+            }
+
+            fn visit_bytes<E: de::Error>(&mut self, value: &[u8]) -> Result<Uuid, E> {
+                Uuid::from_bytes(value).ok_or(E::syntax("Expected 16 bytes."))
+            }
+        }
+
+        deserializer.visit(UuidVisitor)
     }
 }
 
