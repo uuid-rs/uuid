@@ -7,7 +7,7 @@ license = "MIT/Apache-2.0"
 readme = "README.md"
 repository = "https://github.com/rust-lang/uuid"
 homepage = "https://github.com/rust-lang/uuid"
-documentation = "http://doc.rust-lang.org/uuid"
+documentation = "https://doc.rust-lang.org/uuid"
 description = """
 A library to generate and parse UUIDs.
 """
