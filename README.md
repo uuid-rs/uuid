@@ -3,7 +3,7 @@ uuid
 
 A Rust library to generate and parse UUIDs.
 
-[![Build Status](https://travis-ci.org/rust-lang/uuid.svg?branch=master)](https://travis-ci.org/rust-lang/uuid)
+[![Build Status](https://travis-ci.org/rust-lang-nursery/uuid.svg?branch=master)](https://travis-ci.org/rust-lang-nursery/uuid)
 
 [Documentation](https://doc.rust-lang.org/uuid)
 
