@@ -63,6 +63,7 @@ extern crate serde;
 extern crate rand;
 
 use std::default::Default;
+use std::error::Error;
 use std::fmt;
 use std::hash;
 use std::iter::repeat;
@@ -158,6 +159,12 @@ impl fmt::Display for ParseError {
                 write!(f, "Malformed; length of group {} was {}, \
                            expecting {}", group, found, expecting),
         }
+    }
+}
+
+impl Error for ParseError {
+    fn description(&self) -> &str {
+        "UUID parse error"
     }
 }
 
