@@ -31,8 +31,19 @@
 //! use uuid::Uuid;
 //!
 //! fn main() {
-//!     let uuid1 = Uuid::new_v4();
-//!     println!("{}", uuid1.to_string());
+//!     let my_uuid = Uuid::new_v4();
+//!     println!("{}", my_uuid);
+//! }
+//! ```
+//!
+//! To parse parse a UUID in the simple format and print it as a urn:
+//!
+//! ```rust
+//! use uuid::Uuid;
+//!
+//! fn main() {
+//!     let my_uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
+//!     println!("{}", my_uuid.to_urn_string());
 //! }
 //! ```
 //!
