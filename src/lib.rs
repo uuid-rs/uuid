@@ -78,7 +78,7 @@ use std::error::Error;
 use std::fmt;
 use std::hash;
 use std::iter::repeat;
-use std::mem::{transmute,transmute_copy};
+use std::mem::{transmute, transmute_copy};
 use std::str::FromStr;
 
 use rand::Rng;
@@ -93,15 +93,15 @@ pub type UuidBytes = [u8; 16];
 #[derive(PartialEq, Copy, Clone)]
 pub enum UuidVersion {
     /// Version 1: MAC address
-    Mac    = 1,
+    Mac = 1,
     /// Version 2: DCE Security
-    Dce    = 2,
+    Dce = 2,
     /// Version 3: MD5 hash
-    Md5    = 3,
+    Md5 = 3,
     /// Version 4: Random
     Random = 4,
     /// Version 5: SHA-1 hash
-    Sha1   = 5,
+    Sha1 = 5,
 }
 
 /// The reserved variants of UUIDs
@@ -121,7 +121,7 @@ pub enum UuidVariant {
 #[derive(Copy, Clone)]
 pub struct Uuid {
     /// The 128-bit number stored in 16 bytes
-    bytes: UuidBytes
+    bytes: UuidBytes,
 }
 
 impl hash::Hash for Uuid {
@@ -140,7 +140,7 @@ struct UuidFields {
     /// Third field, 16-bit short
     data3: u16,
     /// Fourth field, 8 bytes
-    data4: [u8; 8]
+    data4: [u8; 8],
 }
 
 /// Error details for string parsing failures
@@ -158,17 +158,25 @@ impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             ParseError::InvalidLength(found) =>
-                write!(f, "Invalid length; expecting 32 or 36 chars, \
-                           found {}", found),
+                write!(f,
+                       "Invalid length; expecting 32 or 36 chars, found {}",
+                       found),
             ParseError::InvalidCharacter(found, pos) =>
-                write!(f, "Invalid character; found `{}` (0x{:02x}) at \
-                           offset {}", found, found as usize, pos),
+                write!(f,
+                       "Invalid character; found `{}` (0x{:02x}) at offset {}",
+                       found,
+                       found as usize,
+                       pos),
             ParseError::InvalidGroups(found) =>
-                write!(f, "Malformed; wrong number of groups: expected 1 \
-                           or 5, found {}", found),
+                write!(f,
+                       "Malformed; wrong number of groups: expected 1 or 5, found {}",
+                       found),
             ParseError::InvalidGroupLength(group, found, expecting) =>
-                write!(f, "Malformed; length of group {} was {}, \
-                           expecting {}", group, found, expecting),
+                write!(f,
+                       "Malformed; length of group {} was {}, expecting {}",
+                       group,
+                       found,
+                       expecting),
         }
     }
 }
@@ -188,14 +196,14 @@ const ACC_GROUP_LENS: [u8; 5] = [8, 12, 16, 20, 32];
 impl Uuid {
     /// Returns a nil or empty UUID (containing all zeroes)
     pub fn nil() -> Uuid {
-        Uuid{ bytes: [0; 16] }
+        Uuid { bytes: [0; 16] }
     }
 
     /// Create a new UUID of the specified version
     pub fn new(v: UuidVersion) -> Option<Uuid> {
         match v {
             UuidVersion::Random => Some(Uuid::new_v4()),
-            _ => None
+            _ => None,
         }
     }
 
@@ -206,7 +214,7 @@ impl Uuid {
     /// a custom generator if required.
     pub fn new_v4() -> Uuid {
         let ub = rand::thread_rng().gen_iter::<u8>().take(16).collect::<Vec<_>>();
-        let mut uuid = Uuid{ bytes: [0; 16] };
+        let mut uuid = Uuid { bytes: [0; 16] };
         copy_memory(&mut uuid.bytes, &ub);
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Random);
@@ -223,10 +231,10 @@ impl Uuid {
     pub fn from_fields(d1: u32, d2: u16, d3: u16, d4: &[u8]) -> Uuid {
         // First construct a temporary field-based struct
         let mut fields = UuidFields {
-                data1: 0,
-                data2: 0,
-                data3: 0,
-                data4: [0; 8]
+            data1: 0,
+            data2: 0,
+            data3: 0,
+            data4: [0; 8],
         };
 
         fields.data1 = d1.to_be();
@@ -234,9 +242,7 @@ impl Uuid {
         fields.data3 = d3.to_be();
         copy_memory(&mut fields.data4, d4);
 
-        unsafe {
-            transmute(fields)
-        }
+        unsafe { transmute(fields) }
     }
 
     /// Creates a UUID using the supplied bytes
@@ -248,7 +254,7 @@ impl Uuid {
             return None
         }
 
-        let mut uuid = Uuid{ bytes: [0; 16] };
+        let mut uuid = Uuid { bytes: [0; 16] };
         copy_memory(&mut uuid.bytes, b);
         Some(uuid)
     }
@@ -257,10 +263,10 @@ impl Uuid {
     fn set_variant(&mut self, v: UuidVariant) {
         // Octet 8 contains the variant in the most significant 3 bits
         self.bytes[8] = match v {
-            UuidVariant::NCS       =>  self.bytes[8] & 0x7f,          // b0xx...
-            UuidVariant::RFC4122   => (self.bytes[8] & 0x3f) | 0x80,  // b10x...
-            UuidVariant::Microsoft => (self.bytes[8] & 0x1f) | 0xc0,  // b110...
-            UuidVariant::Future    => (self.bytes[8] & 0x1f) | 0xe0,  // b111...
+            UuidVariant::NCS => self.bytes[8] & 0x7f,                // b0xx...
+            UuidVariant::RFC4122 => (self.bytes[8] & 0x3f) | 0x80,   // b10x...
+            UuidVariant::Microsoft => (self.bytes[8] & 0x1f) | 0xc0, // b110...
+            UuidVariant::Future => (self.bytes[8] & 0x1f) | 0xe0,    // b111...
         }
     }
 
@@ -276,7 +282,7 @@ impl Uuid {
             x if x & 0xc0 == 0x80 => Some(UuidVariant::RFC4122),
             x if x & 0xe0 == 0xc0 => Some(UuidVariant::Microsoft),
             x if x & 0xe0 == 0xe0 => Some(UuidVariant::Future),
-            _                     => None
+            _ => None,
         }
     }
 
@@ -311,12 +317,14 @@ impl Uuid {
             3 => Some(UuidVersion::Md5),
             4 => Some(UuidVersion::Random),
             5 => Some(UuidVersion::Sha1),
-            _ => None
+            _ => None,
         }
     }
 
     /// Return an array of 16 octets containing the UUID data
-    pub fn as_bytes<'a>(&'a self) -> &'a [u8] { &self.bytes }
+    pub fn as_bytes<'a>(&'a self) -> &'a [u8] {
+        &self.bytes
+    }
 
     /// Returns the UUID as a string of 32 hexadecimal digits
     ///
@@ -325,8 +333,8 @@ impl Uuid {
         let mut s = repeat(0u8).take(32).collect::<Vec<_>>();
         for i in 0..16 {
             let digit = format!("{:02x}", self.bytes[i] as usize);
-            s[i*2+0] = digit.as_bytes()[0];
-            s[i*2+1] = digit.as_bytes()[1];
+            s[i * 2 + 0] = digit.as_bytes()[0];
+            s[i * 2 + 1] = digit.as_bytes()[1];
         }
         String::from_utf8(s).unwrap()
     }
@@ -344,13 +352,18 @@ impl Uuid {
         uf.data1 = uf.data1.to_be();
         uf.data2 = uf.data2.to_be();
         uf.data3 = uf.data3.to_be();
-        let s = format!("{:08x}-{:04x}-{:04x}-{:02x}{:02x}-\
-                         {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            uf.data1,
-            uf.data2, uf.data3,
-            uf.data4[0], uf.data4[1],
-            uf.data4[2], uf.data4[3], uf.data4[4],
-            uf.data4[5], uf.data4[6], uf.data4[7]);
+        let s = format!("{:08x}-{:04x}-{:04x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+                        uf.data1,
+                        uf.data2,
+                        uf.data3,
+                        uf.data4[0],
+                        uf.data4[1],
+                        uf.data4[2],
+                        uf.data4[3],
+                        uf.data4[4],
+                        uf.data4[5],
+                        uf.data4[6],
+                        uf.data4[7]);
         s
     }
 
@@ -399,13 +412,14 @@ impl Uuid {
                             } else {
                                 digit
                             };
-                            return Err(ParseError::InvalidGroupLength(
-                                group, found as usize, GROUP_LENS[group]));
+                            return Err(ParseError::InvalidGroupLength(group,
+                                                                      found as usize,
+                                                                      GROUP_LENS[group]));
                         }
                         // Next group, decrement digit, it is incremented again at the bottom.
                         group += 1;
-                        digit -=1;
-                    },
+                        digit -= 1;
+                    }
                     _ => return Err(ParseError::InvalidCharacter(chr, i_char)),
                 }
             } else {
@@ -422,9 +436,10 @@ impl Uuid {
                         } else {
                             digit
                         };
-                        return Err(ParseError::InvalidGroupLength(
-                            group, found as usize, GROUP_LENS[group]));
-                    },
+                        return Err(ParseError::InvalidGroupLength(group,
+                                                                  found as usize,
+                                                                  GROUP_LENS[group]));
+                    }
                     _ => return Err(ParseError::InvalidCharacter(chr, i_char)),
                 }
                 buffer[(digit / 2) as usize] = acc;
@@ -436,8 +451,9 @@ impl Uuid {
         if group != 0 && group != 4 {
             return Err(ParseError::InvalidGroups(group + 1));
         } else if ACC_GROUP_LENS[4] != digit {
-            return Err(ParseError::InvalidGroupLength(
-                group, (digit - ACC_GROUP_LENS[3]) as usize, GROUP_LENS[4]));
+            return Err(ParseError::InvalidGroupLength(group,
+                                                      (digit - ACC_GROUP_LENS[3]) as usize,
+                                                      GROUP_LENS[4]));
         }
 
         Ok(Uuid::from_bytes(&mut buffer).unwrap())
@@ -511,9 +527,7 @@ impl Decodable for Uuid {
     /// Decode a UUID from a string
     fn decode<D: Decoder>(d: &mut D) -> Result<Uuid, D::Error> {
         let string = try!(d.read_str());
-        string.parse().map_err(|err| {
-            d.error(&format!("{}", err))
-        })
+        string.parse().map_err(|err| d.error(&format!("{}", err)))
     }
 }
 
@@ -550,7 +564,7 @@ impl rand::Rand for Uuid {
     #[inline]
     fn rand<R: rand::Rng>(rng: &mut R) -> Uuid {
         let ub = rng.gen_iter::<u8>().take(16).collect::<Vec<_>>();
-        let mut uuid = Uuid{ bytes: [0; 16] };
+        let mut uuid = Uuid { bytes: [0; 16] };
         copy_memory(&mut uuid.bytes, &ub);
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Random);
@@ -630,20 +644,26 @@ mod tests {
         assert_eq!(Uuid::parse_str("!"), Err(InvalidLength(1)));
         assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E45"),
                    Err(InvalidLength(37)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-BBF-329BF39FA1E4"), Err(InvalidLength(35)));
+        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-BBF-329BF39FA1E4"),
+                   Err(InvalidLength(35)));
         assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4"),
                    Err(InvalidCharacter('G', 20)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4"), Err(InvalidGroups(4)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa"), Err(InvalidLength(18)));
+        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4"),
+                   Err(InvalidGroups(4)));
+        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa"),
+                   Err(InvalidLength(18)));
         assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faaXB6BFF329BF39FA1E4"),
                    Err(InvalidCharacter('X', 18)));
         assert_eq!(Uuid::parse_str("F9168C5E-CEB-24fa-eB6BFF32-BF39FA1E4"),
                    Err(InvalidGroupLength(1, 3, 4)));
         assert_eq!(Uuid::parse_str("01020304-1112-2122-3132-41424344"),
                    Err(InvalidGroupLength(4, 8, 12)));
-        assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"), Err(InvalidLength(31)));
-        assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c88"), Err(InvalidLength(33)));
-        assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0cg8"), Err(InvalidLength(33)));
+        assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"),
+                   Err(InvalidLength(31)));
+        assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c88"),
+                   Err(InvalidLength(33)));
+        assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0cg8"),
+                   Err(InvalidLength(33)));
         assert_eq!(Uuid::parse_str("67e5504410b1426%9247bb680e5fe0c8"),
                    Err(InvalidCharacter('%', 15)));
 
@@ -657,7 +677,7 @@ mod tests {
 
         // Nil
         let nil = Uuid::nil();
-        assert!(Uuid::parse_str("00000000000000000000000000000000").unwrap()  == nil);
+        assert!(Uuid::parse_str("00000000000000000000000000000000").unwrap() == nil);
         assert!(Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap() == nil);
 
         // Round-trip
@@ -667,7 +687,8 @@ mod tests {
         assert!(uuid_orig == uuid_out);
 
         // Test error reporting
-        assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"), Err(InvalidLength(31)));
+        assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"),
+                   Err(InvalidLength(31)));
         assert_eq!(Uuid::parse_str("67e550X410b1426f9247bb680e5fe0cd"),
                    Err(InvalidCharacter('X', 6)));
         assert_eq!(Uuid::parse_str("67e550-4105b1426f9247bb680e5fe0c"),
@@ -766,8 +787,22 @@ mod tests {
 
     #[test]
     fn test_from_bytes() {
-        let b = vec!( 0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2,
-                   0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8 );
+        let b = vec!(0xa1,
+                     0xa2,
+                     0xa3,
+                     0xa4,
+                     0xb1,
+                     0xb2,
+                     0xc1,
+                     0xc2,
+                     0xd1,
+                     0xd2,
+                     0xd3,
+                     0xd4,
+                     0xd5,
+                     0xd6,
+                     0xd7,
+                     0xd8);
 
         let u = Uuid::from_bytes(&b).unwrap();
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8".to_string();
@@ -781,13 +816,13 @@ mod tests {
         let ub = u.as_bytes();
 
         assert!(ub.len() == 16);
-        assert!(! ub.iter().all(|&b| b == 0));
+        assert!(!ub.iter().all(|&b| b == 0));
     }
 
     #[test]
     fn test_bytes_roundtrip() {
-        let b_in: [u8; 16] = [ 0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2,
-                                 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8 ];
+        let b_in: [u8; 16] = [0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
+                              0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
 
         let u = Uuid::from_bytes(&b_in).unwrap();
 
@@ -819,7 +854,7 @@ mod tests {
         let ub = u.as_bytes();
 
         assert!(ub.len() == 16);
-        assert!(! ub.iter().all(|&b| b == 0));
+        assert!(!ub.iter().all(|&b| b == 0));
     }
 
     #[test]
