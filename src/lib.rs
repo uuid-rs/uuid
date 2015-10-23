@@ -725,16 +725,6 @@ mod tests {
         assert_eq!(s, uuid1.to_hyphenated_string());
     }
 
-    /// Verifies that the debug format matches the hyphenated string output with the type name.
-    /// This is to ensure future compatability.
-    #[test]
-    fn test_debug() {
-        let uuid1 = Uuid::new_v4();
-        let s = format!("{:?}", uuid1);
-
-        assert_eq!(s, "Uuid(\"".to_owned() + &uuid1.to_hyphenated_string() + "\")");
-    }
-
     #[test]
     fn test_to_hyphenated_string() {
         let uuid1 = Uuid::new_v4();
