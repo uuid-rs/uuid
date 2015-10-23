@@ -715,6 +715,16 @@ mod tests {
         assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
     }
 
+    /// Verifies that the display format matches the hyphenated string output.
+    /// This is to ensure future compatability.
+    #[test]
+    fn test_display() {
+        let uuid1 = Uuid::new_v4();
+        let s = format!("{}", uuid1);
+
+        assert_eq!(s, uuid1.to_hyphenated_string());
+    }
+
     #[test]
     fn test_to_hyphenated_string() {
         let uuid1 = Uuid::new_v4();
