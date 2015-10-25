@@ -249,14 +249,15 @@ impl Uuid {
     ///
     /// # Arguments
     /// * `b` An array or slice of 16 bytes
-    pub fn from_bytes(b: &[u8]) -> Option<Uuid> {
-        if b.len() != 16 {
-            return None
+    pub fn from_bytes(b: &[u8]) -> Result<Uuid, ParseError> {
+        let len = b.len();
+        if len != 16 {
+            return Err(ParseError::InvalidLength(len));
         }
 
         let mut uuid = Uuid { bytes: [0; 16] };
         copy_memory(&mut uuid.bytes, b);
-        Some(uuid)
+        Ok(uuid)
     }
 
     /// Specifies the variant of the UUID structure
@@ -551,7 +552,7 @@ impl Deserialize for Uuid {
             }
 
             fn visit_bytes<E: de::Error>(&mut self, value: &[u8]) -> Result<Uuid, E> {
-                Uuid::from_bytes(value).ok_or(E::syntax("Expected 16 bytes."))
+                Uuid::from_bytes(value).or(Err(E::syntax("Expected 16 bytes.")))
             }
         }
 
