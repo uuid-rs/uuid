@@ -534,7 +534,7 @@ impl Decodable for Uuid {
 #[cfg(feature = "serde")]
 impl Serialize for Uuid {
     fn serialize<S: Serializer>(&self, serializer: &mut S) -> Result<(), S::Error> {
-        serializer.visit_str(&self.to_hyphenated_string())
+        serializer.serialize_str(&self.to_hyphenated_string())
     }
 }
 
@@ -547,15 +547,15 @@ impl Deserialize for Uuid {
             type Value = Uuid;
 
             fn visit_str<E: de::Error>(&mut self, value: &str) -> Result<Uuid, E> {
-                value.parse().map_err(|err| E::syntax(&format!("{}", err)))
+                value.parse().map_err(|err| E::custom(format!("{}", err)))
             }
 
             fn visit_bytes<E: de::Error>(&mut self, value: &[u8]) -> Result<Uuid, E> {
-                Uuid::from_bytes(value).ok_or(E::syntax("Expected 16 bytes."))
+                Uuid::from_bytes(value).ok_or(E::custom("Expected 16 bytes."))
             }
         }
 
-        deserializer.visit(UuidVisitor)
+        deserializer.deserialize(UuidVisitor)
     }
 }
 
