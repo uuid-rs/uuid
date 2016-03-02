@@ -151,6 +151,7 @@ pub enum ParseError {
     InvalidCharacter(char, usize),
     InvalidGroups(usize),
     InvalidGroupLength(usize, usize, u8),
+    Unknown,
 }
 
 /// Converts a ParseError to a string
@@ -177,6 +178,8 @@ impl fmt::Display for ParseError {
                        group,
                        found,
                        expecting),
+            ParseError::Unknown =>
+                write!(f, "Parsing failed for unknown reason"),
         }
     }
 }
@@ -456,7 +459,7 @@ impl Uuid {
                                                       GROUP_LENS[4]));
         }
 
-        Ok(Uuid::from_bytes(&mut buffer).unwrap())
+        Uuid::from_bytes(&mut buffer).ok_or(ParseError::Unknown)
     }
 
     /// Tests if the UUID is nil
