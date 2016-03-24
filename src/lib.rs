@@ -326,6 +326,11 @@ impl Uuid {
         &self.bytes
     }
 
+    /// Return an array of 16 octets containing the UUID data, consumes Uuid
+    pub fn to_bytes(self) -> UuidBytes {
+        self.bytes
+    }
+
     /// Returns the UUID as a string of 32 hexadecimal digits
     ///
     /// Example: `936DA01F9ABD4d9d80C702AF85C822A8`
@@ -839,6 +844,18 @@ mod tests {
         let b_out = u.as_bytes();
 
         assert_eq!(&b_in, b_out);
+    }
+
+    #[test]
+    fn test_to_bytes() {
+        let u = Uuid::new_v4();
+        let u1 = u.clone();
+        
+        let ub = Uuid::to_bytes(u);
+
+        let u2 = Uuid::from_bytes(&ub).unwrap();
+
+        assert_eq!(u1, u2);
     }
 
     #[test]
