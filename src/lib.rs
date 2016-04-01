@@ -535,11 +535,11 @@ impl Deserialize for Uuid {
             type Value = Uuid;
 
             fn visit_str<E: de::Error>(&mut self, value: &str) -> Result<Uuid, E> {
-                value.parse().map_err(|err| E::custom(format!("{}", err)))
+                value.parse::<Uuid>().map_err(|e| E::custom(e.to_string()))
             }
 
             fn visit_bytes<E: de::Error>(&mut self, value: &[u8]) -> Result<Uuid, E> {
-                Uuid::from_bytes(value).or(Err(E::custom("expected 16 bytes")))
+                Uuid::from_bytes(value).map_err(|e| E::custom(e.to_string()))
             }
         }
 
@@ -549,11 +549,9 @@ impl Deserialize for Uuid {
 
 /// Generates a random instance of UUID (V4 conformant)
 impl rand::Rand for Uuid {
-    #[inline]
     fn rand<R: rand::Rng>(rng: &mut R) -> Uuid {
-        let ub = rng.gen_iter::<u8>().take(16).collect::<Vec<_>>();
         let mut uuid = Uuid { bytes: [0; 16] };
-        copy_memory(&mut uuid.bytes, &ub);
+        rng.fill_bytes(&mut uuid.bytes);
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Random);
         uuid
