@@ -11,17 +11,18 @@
 //! Generate and parse UUIDs
 //!
 //! Provides support for Universally Unique Identifiers (UUIDs). A UUID is a
-//! unique 128-bit number, stored as 16 octets.  UUIDs are used to  assign unique
-//! identifiers to entities without requiring a central allocating authority.
+//! unique 128-bit number, stored as 16 octets.  UUIDs are used to  assign
+//! unique identifiers to entities without requiring a central allocating
+//! authority.
 //!
 //! They are particularly useful in distributed systems, though can be used in
-//! disparate areas, such as databases and network protocols.  Typically a UUID is
-//! displayed in a readable string form as a sequence of hexadecimal digits,
+//! disparate areas, such as databases and network protocols.  Typically a UUID
+//! is displayed in a readable string form as a sequence of hexadecimal digits,
 //! separated into groups by hyphens.
 //!
-//! The uniqueness property is not strictly guaranteed, however for all practical
-//! purposes, it can be assumed that an unintentional collision would be extremely
-//! unlikely.
+//! The uniqueness property is not strictly guaranteed, however for all
+//! practical purposes, it can be assumed that an unintentional collision would
+//! be extremely unlikely.
 //!
 //! # Examples
 //!
@@ -66,7 +67,7 @@
        html_favicon_url = "https://www.rust-lang.org/favicon.ico",
        html_root_url = "https://doc.rust-lang.org/uuid/")]
 
-#![cfg_attr(test, deny(warnings))]
+#![deny(warnings)]
 
 #[cfg(feature = "rustc-serialize")]
 extern crate rustc_serialize;
@@ -74,12 +75,10 @@ extern crate rustc_serialize;
 extern crate serde;
 extern crate rand;
 
-use std::default::Default;
 use std::error::Error;
 use std::fmt;
 use std::hash;
 use std::iter::repeat;
-use std::mem::{transmute, transmute_copy};
 use std::str::FromStr;
 
 use rand::Rng;
@@ -132,19 +131,6 @@ impl hash::Hash for Uuid {
     }
 }
 
-/// A UUID stored as fields (identical to UUID, used only for conversions)
-#[derive(Copy, Clone)]
-struct UuidFields {
-    /// First field, 32-bit word
-    data1: u32,
-    /// Second field, 16-bit short
-    data2: u16,
-    /// Third field, 16-bit short
-    data3: u16,
-    /// Fourth field, 8 bytes
-    data4: [u8; 8],
-}
-
 /// Error details for string parsing failures
 #[allow(missing_docs)]
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
@@ -159,26 +145,30 @@ pub enum ParseError {
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            ParseError::InvalidLength(found) =>
+            ParseError::InvalidLength(found) => {
                 write!(f,
                        "Invalid length; expecting 32 or 36 chars, found {}",
-                       found),
-            ParseError::InvalidCharacter(found, pos) =>
+                       found)
+            }
+            ParseError::InvalidCharacter(found, pos) => {
                 write!(f,
                        "Invalid character; found `{}` (0x{:02x}) at offset {}",
                        found,
                        found as usize,
-                       pos),
-            ParseError::InvalidGroups(found) =>
+                       pos)
+            }
+            ParseError::InvalidGroups(found) => {
                 write!(f,
                        "Malformed; wrong number of groups: expected 1 or 5, found {}",
-                       found),
-            ParseError::InvalidGroupLength(group, found, expecting) =>
+                       found)
+            }
+            ParseError::InvalidGroupLength(group, found, expecting) => {
                 write!(f,
                        "Malformed; length of group {} was {}, expecting {}",
                        group,
                        found,
-                       expecting),
+                       expecting)
+            }
         }
     }
 }
@@ -194,7 +184,6 @@ const GROUP_LENS: [u8; 5] = [8, 4, 4, 4, 12];
 // Accumulated length of each hyphenated group in hex digits.
 const ACC_GROUP_LENS: [u8; 5] = [8, 12, 16, 20, 32];
 
-/// UUID support
 impl Uuid {
     /// Returns a nil or empty UUID (containing all zeroes)
     pub fn nil() -> Uuid {
@@ -230,21 +219,27 @@ impl Uuid {
     /// * `d2` A 16-bit word
     /// * `d3` A 16-bit word
     /// * `d4` Array of 8 octets
-    pub fn from_fields(d1: u32, d2: u16, d3: u16, d4: &[u8]) -> Uuid {
-        // First construct a temporary field-based struct
-        let mut fields = UuidFields {
-            data1: 0,
-            data2: 0,
-            data3: 0,
-            data4: [0; 8],
-        };
+    pub fn from_fields(d1: u32,
+                       d2: u16,
+                       d3: u16,
+                       d4: &[u8]) -> Result<Uuid, ParseError>  {
+        if d4.len() != 8 {
+            return Err(ParseError::InvalidLength(d4.len()))
+        }
 
-        fields.data1 = d1.to_be();
-        fields.data2 = d2.to_be();
-        fields.data3 = d3.to_be();
-        copy_memory(&mut fields.data4, d4);
-
-        unsafe { transmute(fields) }
+        Ok(Uuid {
+            bytes: [
+                (d1 >> 24) as u8,
+                (d1 >> 16) as u8,
+                (d1 >>  8) as u8,
+                (d1 >>  0) as u8,
+                (d2 >>  8) as u8,
+                (d2 >>  0) as u8,
+                (d3 >>  8) as u8,
+                (d3 >>  0) as u8,
+                d4[0], d4[1], d4[2], d4[3], d4[4], d4[5], d4[6], d4[7]
+            ],
+        })
     }
 
     /// Creates a UUID using the supplied bytes
@@ -346,27 +341,27 @@ impl Uuid {
     ///
     /// Example: `550e8400-e29b-41d4-a716-446655440000`
     pub fn to_hyphenated_string(&self) -> String {
-        // Convert to field-based struct as it matches groups in output.
-        // Ensure fields are in network byte order, as per RFC.
-        let mut uf: UuidFields;
-        unsafe {
-            uf = transmute_copy(&self.bytes);
-        }
-        uf.data1 = uf.data1.to_be();
-        uf.data2 = uf.data2.to_be();
-        uf.data3 = uf.data3.to_be();
+        let data1 = ((self.bytes[0] as u32) << 24) |
+                    ((self.bytes[1] as u32) << 16) |
+                    ((self.bytes[2] as u32) <<  8) |
+                    ((self.bytes[3] as u32) <<  0);
+        let data2 = ((self.bytes[4] as u16) <<  8) |
+                    ((self.bytes[5] as u16) <<  0);
+        let data3 = ((self.bytes[6] as u16) <<  8) |
+                    ((self.bytes[7] as u16) <<  0);
+
         let s = format!("{:08x}-{:04x}-{:04x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                        uf.data1,
-                        uf.data2,
-                        uf.data3,
-                        uf.data4[0],
-                        uf.data4[1],
-                        uf.data4[2],
-                        uf.data4[3],
-                        uf.data4[4],
-                        uf.data4[5],
-                        uf.data4[6],
-                        uf.data4[7]);
+                        data1,
+                        data2,
+                        data3,
+                        self.bytes[8],
+                        self.bytes[9],
+                        self.bytes[10],
+                        self.bytes[11],
+                        self.bytes[12],
+                        self.bytes[13],
+                        self.bytes[14],
+                        self.bytes[15]);
         s
     }
 
@@ -781,11 +776,11 @@ mod tests {
         let d3: u16 = 0xc1c2;
         let d4: Vec<u8> = vec!(0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8);
 
-        let u = Uuid::from_fields(d1, d2, d3, &d4);
+        let u = Uuid::from_fields(d1, d2, d3, &d4).unwrap();
 
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8".to_string();
         let result = u.to_simple_string();
-        assert!(result == expected);
+        assert_eq!(result, expected);
     }
 
     #[test]
