@@ -32,7 +32,7 @@
 //!
 //! * `use_std` - adds in functionality available when linking to the standard
 //!   library, currently this is only the `impl Error for ParseError`.
-//! * `rand` - adds the `Uuid::new_v4` function and the ability to randomly
+//! * `v4` - adds the `Uuid::new_v4` function and the ability to randomly
 //!   generate a `Uuid`.
 //! * `rustc-serialize` - adds the ability to serialize and deserialize a `Uuid`
 //!   using the `rustc-serialize` crate.
@@ -50,7 +50,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = { version = "0.2", features = ["serde"] }
+//! uuid = { version = "0.2", features = ["serde", "v4"] }
 //! ```
 //!
 //! # Examples
@@ -101,7 +101,7 @@
 #![deny(warnings)]
 #![no_std]
 
-#[cfg(feature = "rand")]
+#[cfg(feature = "v4")]
 extern crate rand;
 
 use core::fmt;
@@ -119,7 +119,7 @@ mod rustc_serialize;
 #[cfg(feature = "serde")]
 mod serde;
 
-#[cfg(feature = "rand")]
+#[cfg(feature = "v4")]
 use rand::Rng;
 
 /// A 128-bit (16 byte) buffer containing the ID
@@ -237,7 +237,7 @@ impl Uuid {
     /// feature must be enabled for this crate.
     pub fn new(v: UuidVersion) -> Option<Uuid> {
         match v {
-            #[cfg(feature = "rand")]
+            #[cfg(feature = "v4")]
             UuidVersion::Random => Some(Uuid::new_v4()),
             _ => None,
         }
@@ -248,7 +248,7 @@ impl Uuid {
     /// Uses the `rand` module's default RNG task as the source
     /// of random numbers. Use the rand::Rand trait to supply
     /// a custom generator if required.
-    #[cfg(feature = "rand")]
+    #[cfg(feature = "v4")]
     pub fn new_v4() -> Uuid {
         rand::thread_rng().gen()
     }
@@ -304,7 +304,7 @@ impl Uuid {
     }
 
     /// Specifies the variant of the UUID structure
-    #[cfg(feature = "rand")]
+    #[cfg(feature = "v4")]
     fn set_variant(&mut self, v: UuidVariant) {
         // Octet 8 contains the variant in the most significant 3 bits
         self.bytes[8] = match v {
@@ -332,7 +332,7 @@ impl Uuid {
     }
 
     /// Specifies the version number of the UUID
-    #[cfg(feature = "rand")]
+    #[cfg(feature = "v4")]
     fn set_version(&mut self, v: UuidVersion) {
         self.bytes[6] = (self.bytes[6] & 0xF) | ((v as u8) << 4);
     }
@@ -598,7 +598,7 @@ impl<'a> fmt::Display for Urn<'a> {
 }
 
 /// Generates a random instance of UUID (V4 conformant)
-#[cfg(feature = "rand")]
+#[cfg(feature = "v4")]
 impl rand::Rand for Uuid {
     fn rand<R: rand::Rng>(rng: &mut R) -> Uuid {
         let mut uuid = Uuid { bytes: [0; 16] };
@@ -617,7 +617,7 @@ mod tests {
 
     use super::{Uuid, UuidVariant, UuidVersion};
 
-    #[cfg(feature = "rand")]
+    #[cfg(feature = "v4")]
     use rand;
 
     fn new() -> Uuid {
@@ -639,7 +639,7 @@ mod tests {
 
     #[test]
     fn test_new() {
-        if cfg!(feature = "rand") {
+        if cfg!(feature = "v4") {
             let uuid1 = Uuid::new(UuidVersion::Random).unwrap();
             let s = uuid1.simple().to_string();
 
@@ -657,7 +657,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "rand")]
+    #[cfg(feature = "v4")]
     fn test_new_v4() {
         let uuid1 = Uuid::new_v4();
 
@@ -666,7 +666,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "rand")]
+    #[cfg(feature = "v4")]
     fn test_get_version() {
         let uuid1 = Uuid::new_v4();
 
@@ -898,7 +898,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "rand")]
+    #[cfg(feature = "v4")]
     fn test_rand_rand() {
         let mut rng = rand::thread_rng();
         let u: Uuid = rand::Rand::rand(&mut rng);
