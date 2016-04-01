@@ -323,7 +323,7 @@ impl Uuid {
     }
 
     /// Return an array of 16 octets containing the UUID data
-    pub fn as_bytes<'a>(&'a self) -> &'a [u8] {
+    pub fn as_bytes(&self) -> &[u8; 16] {
         &self.bytes
     }
 
