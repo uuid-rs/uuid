@@ -23,6 +23,7 @@ env:
     - FEATURES=""
     - FEATURES="rustc-serialize"
     - FEATURES="serde"
+    - FEATURES="use_std"
     - FEATURES="rustc-serialize serde"
 notifications:
   email:

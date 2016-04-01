@@ -24,18 +24,36 @@
 //! practical purposes, it can be assumed that an unintentional collision would
 //! be extremely unlikely.
 //!
-//! # Examples
+//! # Dependencies
 //!
-//! To create a new random (V4) UUID and print it out in hexadecimal form:
+//! This crate by default has no dependencies and is `#![no_std]` compatible.
+//! The following Cargo features, however, can be used to enable various pieces
+//! of functionality.
 //!
-//! ```rust
-//! use uuid::Uuid;
+//! * `use_std` - adds in functionality available when linking to the standard
+//!   library, currently this is only the `impl Error for ParseError`.
+//! * `rand` - adds the `Uuid::new_v4` function and the ability to randomly
+//!   generate a `Uuid`.
+//! * `rustc-serialize` - adds the ability to serialize and deserialize a `Uuid`
+//!   using the `rustc-serialize` crate.
+//! * `serde` - adds the ability to serialize and deserialize a `Uuid` using the
+//!   `serde` crate.
 //!
-//! fn main() {
-//!     let my_uuid = Uuid::new_v4();
-//!     println!("{}", my_uuid);
-//! }
+//! By default, `uuid` can be depended on with:
+//!
+//! ```toml
+//! [dependencies]
+//! uuid = "0.2"
 //! ```
+//!
+//! To activate various features, use syntax like:
+//!
+//! ```toml
+//! [dependencies]
+//! uuid = { version = "0.2", features = ["serde"] }
+//! ```
+//!
+//! # Examples
 //!
 //! To parse parse a UUID in the simple format and print it as a urn:
 //!
@@ -44,7 +62,20 @@
 //!
 //! fn main() {
 //!     let my_uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
-//!     println!("{}", my_uuid.to_urn_string());
+//!     println!("{}", my_uuid.urn());
+//! }
+//! ```
+//!
+//! To create a new random (V4) UUID and print it out in hexadecimal form:
+//!
+//! ```ignore,rust
+//! // Note that this requires the `rand` feature enabled in the uuid crate.
+//!
+//! use uuid::Uuid;
+//!
+//! fn main() {
+//!     let my_uuid = Uuid::new_v4();
+//!     println!("{}", my_uuid);
 //! }
 //! ```
 //!
@@ -68,24 +99,28 @@
        html_root_url = "https://doc.rust-lang.org/uuid/")]
 
 #![deny(warnings)]
+#![no_std]
 
-#[cfg(feature = "rustc-serialize")]
-extern crate rustc_serialize;
-#[cfg(feature = "serde")]
-extern crate serde;
+#[cfg(feature = "rand")]
 extern crate rand;
 
-use std::error::Error;
-use std::fmt;
-use std::hash;
-use std::iter::repeat;
-use std::str::FromStr;
+use core::fmt;
+use core::hash;
+use core::str::FromStr;
 
-use rand::Rng;
+// rustc-serialize and serde link to std, so go ahead an pull in our own std
+// support in those situations as well.
+#[cfg(any(feature = "use_std",
+          feature = "rustc-serialize",
+          feature = "serde"))]
+mod std_support;
 #[cfg(feature = "rustc-serialize")]
-use rustc_serialize::{Encoder, Encodable, Decoder, Decodable};
+mod rustc_serialize;
 #[cfg(feature = "serde")]
-use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+mod serde;
+
+#[cfg(feature = "rand")]
+use rand::Rng;
 
 /// A 128-bit (16 byte) buffer containing the ID
 pub type UuidBytes = [u8; 16];
@@ -125,10 +160,19 @@ pub struct Uuid {
     bytes: UuidBytes,
 }
 
-impl hash::Hash for Uuid {
-    fn hash<S: hash::Hasher>(&self, state: &mut S) {
-        self.bytes.hash(state)
-    }
+/// Adaptor for formatting a Uuid as a simple string.
+pub struct Simple<'a> {
+    inner: &'a Uuid,
+}
+
+/// Adaptor for formatting a Uuid as a hyphenated string.
+pub struct Hyphenated<'a> {
+    inner: &'a Uuid,
+}
+
+/// Adaptor for formatting a Uuid as a URN string.
+pub struct Urn<'a> {
+    inner: &'a Uuid,
 }
 
 /// Error details for string parsing failures
@@ -173,12 +217,6 @@ impl fmt::Display for ParseError {
     }
 }
 
-impl Error for ParseError {
-    fn description(&self) -> &str {
-        "UUID parse error"
-    }
-}
-
 // Length of each hyphenated group in hex digits.
 const GROUP_LENS: [u8; 5] = [8, 4, 4, 4, 12];
 // Accumulated length of each hyphenated group in hex digits.
@@ -190,9 +228,16 @@ impl Uuid {
         Uuid { bytes: [0; 16] }
     }
 
-    /// Create a new UUID of the specified version
+    /// Create a new UUID of the specified version.
+    ///
+    /// Note that not all versions can be generated currently and `None` will be
+    /// returned if the specified version cannot be generated.
+    ///
+    /// To generate a random UUID (`UuidVersion::Random`), then the `rand`
+    /// feature must be enabled for this crate.
     pub fn new(v: UuidVersion) -> Option<Uuid> {
         match v {
+            #[cfg(feature = "rand")]
             UuidVersion::Random => Some(Uuid::new_v4()),
             _ => None,
         }
@@ -203,22 +248,23 @@ impl Uuid {
     /// Uses the `rand` module's default RNG task as the source
     /// of random numbers. Use the rand::Rand trait to supply
     /// a custom generator if required.
+    #[cfg(feature = "rand")]
     pub fn new_v4() -> Uuid {
-        let ub = rand::thread_rng().gen_iter::<u8>().take(16).collect::<Vec<_>>();
-        let mut uuid = Uuid { bytes: [0; 16] };
-        copy_memory(&mut uuid.bytes, &ub);
-        uuid.set_variant(UuidVariant::RFC4122);
-        uuid.set_version(UuidVersion::Random);
-        uuid
+        rand::thread_rng().gen()
     }
 
     /// Creates a UUID using the supplied field values
     ///
     /// # Arguments
+    ///
     /// * `d1` A 32-bit word
     /// * `d2` A 16-bit word
     /// * `d3` A 16-bit word
     /// * `d4` Array of 8 octets
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if `d4`'s length is not 8 bytes.
     pub fn from_fields(d1: u32,
                        d2: u16,
                        d3: u16,
@@ -258,6 +304,7 @@ impl Uuid {
     }
 
     /// Specifies the variant of the UUID structure
+    #[cfg(feature = "rand")]
     fn set_variant(&mut self, v: UuidVariant) {
         // Octet 8 contains the variant in the most significant 3 bits
         self.bytes[8] = match v {
@@ -285,6 +332,7 @@ impl Uuid {
     }
 
     /// Specifies the version number of the UUID
+    #[cfg(feature = "rand")]
     fn set_version(&mut self, v: UuidVersion) {
         self.bytes[6] = (self.bytes[6] & 0xF) | ((v as u8) << 4);
     }
@@ -324,54 +372,52 @@ impl Uuid {
         &self.bytes
     }
 
-    /// Returns the UUID as a string of 32 hexadecimal digits
+    /// Returns a wrapper which when formatted via `fmt::Display` will format a
+    /// string of 32 hexadecimal digits.
     ///
-    /// Example: `936DA01F9ABD4d9d80C702AF85C822A8`
-    pub fn to_simple_string(&self) -> String {
-        let mut s = repeat(0u8).take(32).collect::<Vec<_>>();
-        for i in 0..16 {
-            let digit = format!("{:02x}", self.bytes[i] as usize);
-            s[i * 2 + 0] = digit.as_bytes()[0];
-            s[i * 2 + 1] = digit.as_bytes()[1];
-        }
-        String::from_utf8(s).unwrap()
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    /// assert_eq!(uuid.simple().to_string(),
+    ///            "00000000000000000000000000000000");
+    /// ```
+    pub fn simple(&self) -> Simple {
+        Simple { inner: self }
     }
 
-    /// Returns a string of hexadecimal digits, separated into groups with a hyphen.
+    /// Returns a wrapper which when formatted via `fmt::Display` will format a
+    /// string of hexadecimal digits separated into gropus with a hyphen.
     ///
-    /// Example: `550e8400-e29b-41d4-a716-446655440000`
-    pub fn to_hyphenated_string(&self) -> String {
-        let data1 = ((self.bytes[0] as u32) << 24) |
-                    ((self.bytes[1] as u32) << 16) |
-                    ((self.bytes[2] as u32) <<  8) |
-                    ((self.bytes[3] as u32) <<  0);
-        let data2 = ((self.bytes[4] as u16) <<  8) |
-                    ((self.bytes[5] as u16) <<  0);
-        let data3 = ((self.bytes[6] as u16) <<  8) |
-                    ((self.bytes[7] as u16) <<  0);
-
-        let s = format!("{:08x}-{:04x}-{:04x}-{:02x}{:02x}-{:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-                        data1,
-                        data2,
-                        data3,
-                        self.bytes[8],
-                        self.bytes[9],
-                        self.bytes[10],
-                        self.bytes[11],
-                        self.bytes[12],
-                        self.bytes[13],
-                        self.bytes[14],
-                        self.bytes[15]);
-        s
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    /// assert_eq!(uuid.hyphenated().to_string(),
+    ///            "00000000-0000-0000-0000-000000000000");
+    /// ```
+    pub fn hyphenated(&self) -> Hyphenated {
+        Hyphenated { inner: self }
     }
 
-    /// Returns the UUID formatted as a full URN string
+    /// Returns a wrapper which when formatted via `fmt::Display` will format a
+    /// string of the UUID as a full URN string.
     ///
-    /// This is the same as the hyphenated format, but with the "urn:uuid:" prefix.
+    /// # Examples
     ///
-    /// Example: `urn:uuid:F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4`
-    pub fn to_urn_string(&self) -> String {
-        format!("urn:uuid:{}", self.to_hyphenated_string())
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    /// assert_eq!(uuid.urn().to_string(),
+    ///            "urn:uuid:00000000-0000-0000-0000-000000000000");
+    /// ```
+    pub fn urn(&self) -> Urn {
+        Urn { inner: self }
     }
 
     /// Parses a UUID from a string of hexadecimal digits with optional hyphens
@@ -488,66 +534,71 @@ impl FromStr for Uuid {
     }
 }
 
-/// Convert the UUID to a hexadecimal-based string representation wrapped in `Uuid()`
 impl fmt::Debug for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Uuid(\"{}\")", self.to_hyphenated_string())
+        write!(f, "Uuid(\"{}\")", self.hyphenated())
     }
 }
 
-/// Convert the UUID to a hexadecimal-based string representation
 impl fmt::Display for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_hyphenated_string())
+        self.hyphenated().fmt(f)
     }
 }
 
-#[cfg(feature = "rustc-serialize")]
-impl Encodable for Uuid {
-    /// Encode a UUID as a hyphenated string
-    fn encode<E: Encoder>(&self, e: &mut E) -> Result<(), E::Error> {
-        e.emit_str(&self.to_hyphenated_string())
+impl hash::Hash for Uuid {
+    fn hash<S: hash::Hasher>(&self, state: &mut S) {
+        self.bytes.hash(state)
     }
 }
 
-#[cfg(feature = "rustc-serialize")]
-impl Decodable for Uuid {
-    /// Decode a UUID from a string
-    fn decode<D: Decoder>(d: &mut D) -> Result<Uuid, D::Error> {
-        let string = try!(d.read_str());
-        string.parse().map_err(|err| d.error(&format!("{}", err)))
-    }
-}
-
-#[cfg(feature = "serde")]
-impl Serialize for Uuid {
-    fn serialize<S: Serializer>(&self, serializer: &mut S) -> Result<(), S::Error> {
-        serializer.serialize_str(&self.to_hyphenated_string())
-    }
-}
-
-#[cfg(feature = "serde")]
-impl Deserialize for Uuid {
-    fn deserialize<D: Deserializer>(deserializer: &mut D) -> Result<Self, D::Error> {
-        struct UuidVisitor;
-
-        impl de::Visitor for UuidVisitor {
-            type Value = Uuid;
-
-            fn visit_str<E: de::Error>(&mut self, value: &str) -> Result<Uuid, E> {
-                value.parse::<Uuid>().map_err(|e| E::custom(e.to_string()))
-            }
-
-            fn visit_bytes<E: de::Error>(&mut self, value: &[u8]) -> Result<Uuid, E> {
-                Uuid::from_bytes(value).map_err(|e| E::custom(e.to_string()))
-            }
+impl<'a> fmt::Display for Simple<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for byte in self.inner.bytes.iter() {
+            try!(write!(f, "{:02x}", byte));
         }
+        Ok(())
+    }
+}
 
-        deserializer.deserialize(UuidVisitor)
+impl<'a> fmt::Display for Hyphenated<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let data1 = ((self.inner.bytes[0] as u32) << 24) |
+                    ((self.inner.bytes[1] as u32) << 16) |
+                    ((self.inner.bytes[2] as u32) <<  8) |
+                    ((self.inner.bytes[3] as u32) <<  0);
+        let data2 = ((self.inner.bytes[4] as u16) <<  8) |
+                    ((self.inner.bytes[5] as u16) <<  0);
+        let data3 = ((self.inner.bytes[6] as u16) <<  8) |
+                    ((self.inner.bytes[7] as u16) <<  0);
+
+        write!(f, "{:08x}-\
+                   {:04x}-\
+                   {:04x}-\
+                   {:02x}{:02x}-\
+                   {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+               data1,
+               data2,
+               data3,
+               self.inner.bytes[8],
+               self.inner.bytes[9],
+               self.inner.bytes[10],
+               self.inner.bytes[11],
+               self.inner.bytes[12],
+               self.inner.bytes[13],
+               self.inner.bytes[14],
+               self.inner.bytes[15])
+    }
+}
+
+impl<'a> fmt::Display for Urn<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "urn:uuid:{}", self.inner.hyphenated())
     }
 }
 
 /// Generates a random instance of UUID (V4 conformant)
+#[cfg(feature = "rand")]
 impl rand::Rand for Uuid {
     fn rand<R: rand::Rng>(rng: &mut R) -> Uuid {
         let mut uuid = Uuid { bytes: [0; 16] };
@@ -560,13 +611,27 @@ impl rand::Rand for Uuid {
 
 #[cfg(test)]
 mod tests {
+    extern crate std;
+
+    use self::std::prelude::v1::*;
+
     use super::{Uuid, UuidVariant, UuidVersion};
+
+    #[cfg(feature = "rand")]
     use rand;
+
+    fn new() -> Uuid {
+        Uuid::parse_str("F9168C5E-CEB2-4FAA-B6BF-329BF39FA1E4").unwrap()
+    }
+
+    fn new2() -> Uuid {
+        Uuid::parse_str("F9168C5E-CEB2-4FAB-B6BF-329BF39FA1E4").unwrap()
+    }
 
     #[test]
     fn test_nil() {
         let nil = Uuid::nil();
-        let not_nil = Uuid::new_v4();
+        let not_nil = new();
 
         assert!(nil.is_nil());
         assert!(!not_nil.is_nil());
@@ -574,12 +639,15 @@ mod tests {
 
     #[test]
     fn test_new() {
-        // Supported
-        let uuid1 = Uuid::new(UuidVersion::Random).unwrap();
-        let s = uuid1.to_simple_string();
+        if cfg!(feature = "rand") {
+            let uuid1 = Uuid::new(UuidVersion::Random).unwrap();
+            let s = uuid1.simple().to_string();
 
-        assert!(s.len() == 32);
-        assert!(uuid1.get_version().unwrap() == UuidVersion::Random);
+            assert!(s.len() == 32);
+            assert!(uuid1.get_version().unwrap() == UuidVersion::Random);
+        } else {
+            assert!(Uuid::new(UuidVersion::Random).is_none());
+        }
 
         // Test unsupported versions
         assert!(Uuid::new(UuidVersion::Mac) == None);
@@ -589,6 +657,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "rand")]
     fn test_new_v4() {
         let uuid1 = Uuid::new_v4();
 
@@ -597,6 +666,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "rand")]
     fn test_get_version() {
         let uuid1 = Uuid::new_v4();
 
@@ -606,7 +676,7 @@ mod tests {
 
     #[test]
     fn test_get_variant() {
-        let uuid1 = Uuid::new_v4();
+        let uuid1 = new();
         let uuid2 = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
         let uuid3 = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").unwrap();
         let uuid4 = Uuid::parse_str("936DA01F9ABD4d9dC0C702AF85C822A8").unwrap();
@@ -667,7 +737,7 @@ mod tests {
         assert!(Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap() == nil);
 
         // Round-trip
-        let uuid_orig = Uuid::new_v4();
+        let uuid_orig = new();
         let orig_str = uuid_orig.to_string();
         let uuid_out = Uuid::parse_str(&orig_str).unwrap();
         assert!(uuid_orig == uuid_out);
@@ -685,8 +755,8 @@ mod tests {
 
     #[test]
     fn test_to_simple_string() {
-        let uuid1 = Uuid::new_v4();
-        let s = uuid1.to_simple_string();
+        let uuid1 = new();
+        let s = uuid1.simple().to_string();
 
         assert!(s.len() == 32);
         assert!(s.chars().all(|c| c.is_digit(16)));
@@ -694,27 +764,25 @@ mod tests {
 
     #[test]
     fn test_to_string() {
-        let uuid1 = Uuid::new_v4();
+        let uuid1 = new();
         let s = uuid1.to_string();
 
         assert!(s.len() == 36);
         assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
     }
 
-    /// Verifies that the display format matches the hyphenated string output.
-    /// This is to ensure future compatability.
     #[test]
     fn test_display() {
-        let uuid1 = Uuid::new_v4();
-        let s = format!("{}", uuid1);
+        let uuid1 = new();
+        let s = uuid1.to_string();
 
-        assert_eq!(s, uuid1.to_hyphenated_string());
+        assert_eq!(s, uuid1.hyphenated().to_string());
     }
 
     #[test]
     fn test_to_hyphenated_string() {
-        let uuid1 = Uuid::new_v4();
-        let s = uuid1.to_hyphenated_string();
+        let uuid1 = new();
+        let s = uuid1.hyphenated().to_string();
 
         assert!(s.len() == 36);
         assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
@@ -722,8 +790,8 @@ mod tests {
 
     #[test]
     fn test_to_urn_string() {
-        let uuid1 = Uuid::new_v4();
-        let ss = uuid1.to_urn_string();
+        let uuid1 = new();
+        let ss = uuid1.urn().to_string();
         let s = &ss[9..];
 
         assert!(ss.starts_with("urn:uuid:"));
@@ -733,10 +801,10 @@ mod tests {
 
     #[test]
     fn test_to_simple_string_matching() {
-        let uuid1 = Uuid::new_v4();
+        let uuid1 = new();
 
-        let hs = uuid1.to_hyphenated_string();
-        let ss = uuid1.to_simple_string();
+        let hs = uuid1.hyphenated().to_string();
+        let ss = uuid1.simple().to_string();
 
         let hsn = hs.chars().filter(|&c| c != '-').collect::<String>();
 
@@ -745,21 +813,21 @@ mod tests {
 
     #[test]
     fn test_string_roundtrip() {
-        let uuid = Uuid::new_v4();
+        let uuid = new();
 
-        let hs = uuid.to_hyphenated_string();
+        let hs = uuid.hyphenated().to_string();
         let uuid_hs = Uuid::parse_str(&hs).unwrap();
-        assert!(uuid_hs == uuid);
+        assert_eq!(uuid_hs, uuid);
 
         let ss = uuid.to_string();
         let uuid_ss = Uuid::parse_str(&ss).unwrap();
-        assert!(uuid_ss == uuid);
+        assert_eq!(uuid_ss, uuid);
     }
 
     #[test]
     fn test_compare() {
-        let uuid1 = Uuid::new_v4();
-        let uuid2 = Uuid::new_v4();
+        let uuid1 = new();
+        let uuid2 = new2();
 
         assert!(uuid1 == uuid1);
         assert!(uuid2 == uuid2);
@@ -772,46 +840,32 @@ mod tests {
         let d1: u32 = 0xa1a2a3a4;
         let d2: u16 = 0xb1b2;
         let d3: u16 = 0xc1c2;
-        let d4: Vec<u8> = vec!(0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8);
+        let d4 = [0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
 
         let u = Uuid::from_fields(d1, d2, d3, &d4).unwrap();
 
-        let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8".to_string();
-        let result = u.to_simple_string();
+        let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
+        let result = u.simple().to_string();
         assert_eq!(result, expected);
     }
 
     #[test]
     fn test_from_bytes() {
-        let b = vec!(0xa1,
-                     0xa2,
-                     0xa3,
-                     0xa4,
-                     0xb1,
-                     0xb2,
-                     0xc1,
-                     0xc2,
-                     0xd1,
-                     0xd2,
-                     0xd3,
-                     0xd4,
-                     0xd5,
-                     0xd6,
-                     0xd7,
-                     0xd8);
+        let b = [0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2,
+                 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
 
         let u = Uuid::from_bytes(&b).unwrap();
-        let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8".to_string();
+        let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
 
-        assert!(u.to_simple_string() == expected);
+        assert_eq!(u.simple().to_string(), expected);
     }
 
     #[test]
     fn test_as_bytes() {
-        let u = Uuid::new_v4();
+        let u = new();
         let ub = u.as_bytes();
 
-        assert!(ub.len() == 16);
+        assert_eq!(ub.len(), 16);
         assert!(!ub.iter().all(|&b| b == 0));
     }
 
@@ -829,9 +883,9 @@ mod tests {
 
     #[test]
     fn test_operator_eq() {
-        let u1 = Uuid::new_v4();
+        let u1 = new();
         let u2 = u1.clone();
-        let u3 = Uuid::new_v4();
+        let u3 = new2();
 
         assert!(u1 == u1);
         assert!(u1 == u2);
@@ -844,6 +898,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "rand")]
     fn test_rand_rand() {
         let mut rng = rand::thread_rng();
         let u: Uuid = rand::Rand::rand(&mut rng);
@@ -853,58 +908,13 @@ mod tests {
         assert!(!ub.iter().all(|&b| b == 0));
     }
 
-    #[cfg(feature = "rustc-serialize")]
-    #[test]
-    fn test_serialize_round_trip() {
-        use rustc_serialize::json;
-
-        let u = Uuid::new_v4();
-        let s = json::encode(&u).unwrap();
-        let u2 = json::decode(&s).unwrap();
-        assert_eq!(u, u2);
-    }
-
     #[test]
     fn test_iterbytes_impl_for_uuid() {
-        use std::collections::HashSet;
-        let mut set = HashSet::new();
-        let id1 = Uuid::new_v4();
-        let id2 = Uuid::new_v4();
+        let mut set = std::collections::HashSet::new();
+        let id1 = new();
+        let id2 = new2();
         set.insert(id1.clone());
         assert!(set.contains(&id1));
         assert!(!set.contains(&id2));
     }
 }
-
-/*
-TODO: when benchmarking is stable, re-add these
-#[cfg(test)]
-mod bench {
-    extern crate test;
-    use self::test::Bencher;
-    use super::Uuid;
-
-    #[bench]
-    pub fn create_uuids(b: &mut Bencher) {
-        b.iter(|| {
-            Uuid::new_v4();
-        })
-    }
-
-    #[bench]
-    pub fn uuid_to_string(b: &mut Bencher) {
-        let u = Uuid::new_v4();
-        b.iter(|| {
-            u.to_string();
-        })
-    }
-
-    #[bench]
-    pub fn parse_str(b: &mut Bencher) {
-        let s = "urn:uuid:F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4";
-        b.iter(|| {
-            Uuid::parse_str(s).unwrap();
-        })
-    }
-}
-*/
