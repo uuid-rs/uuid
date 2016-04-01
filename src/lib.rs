@@ -120,7 +120,7 @@ pub enum UuidVariant {
 }
 
 /// A Universally Unique Identifier (UUID)
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Uuid {
     /// The 128-bit number stored in 16 bytes
     bytes: UuidBytes,
@@ -507,18 +507,6 @@ impl fmt::Display for Uuid {
     }
 }
 
-/// Test two UUIDs for equality
-///
-/// UUIDs are equal only when they are byte-for-byte identical
-impl PartialEq for Uuid {
-    fn eq(&self, other: &Uuid) -> bool {
-        self.bytes == other.bytes
-    }
-}
-
-impl Eq for Uuid {}
-
-// FIXME #9845: Test these more thoroughly
 #[cfg(feature = "rustc-serialize")]
 impl Encodable for Uuid {
     /// Encode a UUID as a hyphenated string
@@ -556,7 +544,7 @@ impl Deserialize for Uuid {
             }
 
             fn visit_bytes<E: de::Error>(&mut self, value: &[u8]) -> Result<Uuid, E> {
-                Uuid::from_bytes(value).or(Err(E::syntax("Expected 16 bytes.")))
+                Uuid::from_bytes(value).or(Err(E::custom("expected 16 bytes")))
             }
         }
 

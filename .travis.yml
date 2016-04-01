@@ -26,6 +26,8 @@ env:
   matrix:
     - FEATURES=""
     - FEATURES="rustc-serialize"
+    - FEATURES="serde"
+    - FEATURES="rustc-serialize serde"
 notifications:
   email:
     on_success: never
