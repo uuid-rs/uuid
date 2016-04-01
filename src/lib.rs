@@ -68,6 +68,7 @@
 
 #![cfg_attr(test, deny(warnings))]
 
+#[cfg(feature = "rustc-serialize")]
 extern crate rustc_serialize;
 #[cfg(feature = "serde")]
 extern crate serde;
@@ -82,6 +83,7 @@ use std::mem::{transmute, transmute_copy};
 use std::str::FromStr;
 
 use rand::Rng;
+#[cfg(feature = "rustc-serialize")]
 use rustc_serialize::{Encoder, Encodable, Decoder, Decodable};
 #[cfg(feature = "serde")]
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
@@ -517,6 +519,7 @@ impl PartialEq for Uuid {
 impl Eq for Uuid {}
 
 // FIXME #9845: Test these more thoroughly
+#[cfg(feature = "rustc-serialize")]
 impl Encodable for Uuid {
     /// Encode a UUID as a hyphenated string
     fn encode<E: Encoder>(&self, e: &mut E) -> Result<(), E::Error> {
@@ -524,6 +527,7 @@ impl Encodable for Uuid {
     }
 }
 
+#[cfg(feature = "rustc-serialize")]
 impl Decodable for Uuid {
     /// Decode a UUID from a string
     fn decode<D: Decoder>(d: &mut D) -> Result<Uuid, D::Error> {
@@ -868,6 +872,7 @@ mod tests {
         assert!(!ub.iter().all(|&b| b == 0));
     }
 
+    #[cfg(feature = "rustc-serialize")]
     #[test]
     fn test_serialize_round_trip() {
         use rustc_serialize::json;
