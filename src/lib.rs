@@ -273,7 +273,7 @@ impl Uuid {
         unsafe {
             // init last two bytes,
             if random_node[5] == 0 {
-                random_node[0] = rand::thread_rng().gen::<u8>();
+                random_node[0] = rand::thread_rng().gen::<u8>() | 0x01;
                 random_node[1] = rand::thread_rng().gen::<u8>();
                 random_node[2] = rand::thread_rng().gen::<u8>();
                 random_node[3] = rand::thread_rng().gen::<u8>();
