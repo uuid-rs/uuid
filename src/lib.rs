@@ -270,15 +270,17 @@ impl Uuid {
     /// TODO: generate node use real MAC address
     #[cfg(feature = "v1")]
     pub fn fill_node(node: &mut [u8]) {
-        static mut static_node: [u8; 6] = [0xff; 6];
+        static mut static_node: [u8; 6] = [0u8; 6];
         static NODE: Once = ONCE_INIT;
 
         // init static_node
         unsafe {
-            NODE.call_once(|| {
-                static_node = rand::thread_rng().gen();
-                static_node[0] = static_node[0] | 0x01;
-            });
+            if static_node[0] == 0u8 {
+                NODE.call_once(|| {
+                    static_node = rand::thread_rng().gen();
+                    static_node[0] = static_node[0] | 0x01;
+                });
+            }
         }
 
         // fill node via argument
@@ -298,8 +300,8 @@ impl Uuid {
     /// TODO: support the real MAC address
     #[cfg(feature = "v1")]
     pub fn new_v1_of(given_node: Option<&[u8; 6]>,
-                  given_clock_seq: Option<&[u8; 2]>)
-                  -> Uuid {
+                     given_clock_seq: Option<&[u8; 2]>)
+                     -> Uuid {
         let timestamp = Uuid::get_timestamp();
         let time_low = timestamp & 0xffffffff;
         let time_mid = (timestamp >> 32) & 0xffff;
