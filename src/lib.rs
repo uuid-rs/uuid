@@ -105,10 +105,12 @@
 #[cfg(feature = "v4")]
 extern crate rand;
 extern crate time;
+extern crate std;
 
 use core::fmt;
 use core::hash;
 use core::str::FromStr;
+use std::sync::{ONCE_INIT, Once};
 
 // rustc-serialize and serde link to std, so go ahead an pull in our own std
 // support in those situations as well.
@@ -262,47 +264,27 @@ impl Uuid {
     ///
     /// currently does not using a real MAC address.
     /// As many applications running on docker which using a virtual MAC address,
-    /// use a random(or docker version) virtual MAC address is ok in a way.
+    /// something like 02:42:ac:11:??:??.
+    /// so, maybe to use a random virtual MAC address is ok in a way.
     ///
     /// TODO: generate node use real MAC address
     #[cfg(feature = "v1")]
-    pub fn fill_node(node: &mut [u8], mac: &'static str) {
-        // using docker virtual MAC address temporarily
-        static mut mac_node: [u8; 6] = [0x02, 0x42, 0xac, 0x11, 0, 0];
-        static mut random_node: [u8; 6] = [0; 6];
+    pub fn fill_node(node: &mut [u8]) {
+        static mut static_node: [u8; 6] = [0xff; 6];
+        static NODE: Once = ONCE_INIT;
+
+        // init static_node
         unsafe {
-            // init last two bytes,
-            if random_node[5] == 0 {
-                random_node[0] = rand::thread_rng().gen::<u8>() | 0x01;
-                random_node[1] = rand::thread_rng().gen::<u8>();
-                random_node[2] = rand::thread_rng().gen::<u8>();
-                random_node[3] = rand::thread_rng().gen::<u8>();
-                random_node[4] = rand::thread_rng().gen::<u8>();
-                // ensure last one is not 0
-                // then it will not change next fn call.
-                loop {
-                    random_node[5] = rand::thread_rng().gen::<u8>();
-                    if random_node[5] != 0 {
-                        break;
-                    }
-                }
-                mac_node[4] = random_node[4];
-                mac_node[5] = random_node[5];
-            }
-            match mac {
-                "random" => {
-                    for (i, &v) in random_node.iter().enumerate() {
-                        node[i] = v;
-                    }
-                }
-                "mac" => {
-                    for (i, &v) in mac_node.iter().enumerate() {
-                        node[i] = v;
-                    }
-                }
-                _ => {
-                    panic!("Not supported type MAC: {}", mac);
-                }
+            NODE.call_once(|| {
+                static_node = rand::thread_rng().gen();
+                static_node[0] = static_node[0] | 0x01;
+            });
+        }
+
+        // fill node via argument
+        unsafe {
+            for (i, &v) in static_node.iter().enumerate() {
+                node[i] = v;
             }
         }
     }
@@ -316,8 +298,7 @@ impl Uuid {
     /// TODO: support the real MAC address
     #[cfg(feature = "v1")]
     pub fn get_v1(given_node: Option<&[u8; 6]>,
-                  given_clock_seq: Option<&[u8; 2]>,
-                  mac: Option<&'static str>)
+                  given_clock_seq: Option<&[u8; 2]>)
                   -> Uuid {
         let timestamp = Uuid::get_timestamp();
         let time_low = timestamp & 0xffffffff;
@@ -337,11 +318,7 @@ impl Uuid {
                 node = arr;
             }
             None => {
-                let mac = match mac {
-                    Some(s) => s,
-                    None => "random",
-                };
-                Uuid::fill_node(&mut node, mac);
+                Uuid::fill_node(&mut node);
             }
         }
 
@@ -365,20 +342,12 @@ impl Uuid {
         }
     }
 
-    /// The default v1(time-based UUID), with a random MAC address.
+    /// To generate v1(time-based) UUID with a random MAC address.
     ///
-    /// TODO: switch to use the real MAC address
+    /// TODO: support to use the real MAC address
     #[cfg(feature = "v1")]
     pub fn new_v1() -> Uuid {
-        Uuid::get_v1(None, None, None)
-    }
-
-    /// Another v1(time-based UUID), with a real MAC address.
-    ///
-    /// TODO: replace docker virtual MAC with real MAC
-    #[cfg(feature = "v1")]
-    pub fn new_mac() -> Uuid {
-        Uuid::get_v1(None, None, Some("mac"))
+        Uuid::get_v1(None, None)
     }
 
     /// Creates a new random UUID
