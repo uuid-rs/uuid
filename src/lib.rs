@@ -297,7 +297,7 @@ impl Uuid {
     ///
     /// TODO: support the real MAC address
     #[cfg(feature = "v1")]
-    pub fn get_v1(given_node: Option<&[u8; 6]>,
+    pub fn new_v1_of(given_node: Option<&[u8; 6]>,
                   given_clock_seq: Option<&[u8; 2]>)
                   -> Uuid {
         let timestamp = Uuid::get_timestamp();
@@ -347,7 +347,7 @@ impl Uuid {
     /// TODO: support to use the real MAC address
     #[cfg(feature = "v1")]
     pub fn new_v1() -> Uuid {
-        Uuid::get_v1(None, None)
+        Uuid::new_v1_of(None, None)
     }
 
     /// Creates a new random UUID
