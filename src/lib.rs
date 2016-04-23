@@ -104,13 +104,10 @@
 
 #[cfg(feature = "v4")]
 extern crate rand;
-extern crate time;
-extern crate std;
 
 use core::fmt;
 use core::hash;
 use core::str::FromStr;
-use std::sync::{ONCE_INIT, Once};
 
 // rustc-serialize and serde link to std, so go ahead an pull in our own std
 // support in those situations as well.
@@ -243,86 +240,27 @@ impl Uuid {
         match v {
             #[cfg(feature = "v4")]
             UuidVersion::Random => Some(Uuid::new_v4()),
-            #[cfg(feature = "v1")]
-            UuidVersion::Mac => Some(Uuid::new_v1()),
             _ => None,
         }
     }
 
-    /// get timestamp
-    ///
-    /// TODO
-    #[cfg(feature = "v1")]
-    pub fn get_timestamp() -> u64 {
-        let timespec = time::get_time();
-        let nsec: u64 = timespec.sec as u64 * 1000000000 + timespec.nsec as u64;
-        let timestamp = nsec / 100 + 0x01b21dd213814000;
-        timestamp
-    }
-
-    /// get node
-    ///
-    /// currently does not using a real MAC address.
-    /// As many applications running on docker which using a virtual MAC address,
-    /// something like 02:42:ac:11:??:??.
-    /// so, maybe to use a random virtual MAC address is ok in a way.
-    ///
-    /// TODO: generate node use real MAC address
-    #[cfg(feature = "v1")]
-    pub fn fill_node(node: &mut [u8]) {
-        static mut static_node: [u8; 6] = [0u8; 6];
-        static NODE: Once = ONCE_INIT;
-
-        // init static_node
-        unsafe {
-            if static_node[0] == 0u8 {
-                NODE.call_once(|| {
-                    static_node = rand::thread_rng().gen();
-                    static_node[0] = static_node[0] | 0x01;
-                });
-            }
-        }
-
-        // fill node via argument
-        unsafe {
-            for (i, &v) in static_node.iter().enumerate() {
-                node[i] = v;
-            }
-        }
-    }
-
     /// Creates a new time-based UUID
-    ///
-    /// You can choose if you can use a random or a real MAC address
-    /// as the node bytes; given_node and given_clock_seq can be provided,
-    /// or random(or use MAC for node) bytes will be generated instead.
-    ///
-    /// TODO: support the real MAC address
+    /// using given node(MAC), timestamp, and clock_seq
     #[cfg(feature = "v1")]
-    pub fn new_v1_of(given_node: Option<&[u8; 6]>,
-                     given_clock_seq: Option<&[u8; 2]>)
-                     -> Uuid {
-        let timestamp = Uuid::get_timestamp();
+    pub fn new_v1(timestamp: u64,
+                  clock_seq: Option<&[u8; 2]>,
+                  node: &[u8; 6])
+                  -> Uuid {
         let time_low = timestamp & 0xffffffff;
         let time_mid = (timestamp >> 32) & 0xffff;
         let time_hi_version = (timestamp >> 48) & 0x0fff;
 
-        let clock_seq: [u8; 2] = match given_clock_seq {
-            None => rand::thread_rng().gen(),
+        let clock_seq: [u8; 2] = match clock_seq {
             Some(&arr) => arr,
+            None => rand::thread_rng().gen(),
         };
         let clock_seq_low = clock_seq[0] & 0xff;
         let clock_seq_hi_variant = clock_seq[1] & 0x3f;
-
-        let mut node: [u8; 6] = [0; 6];
-        match given_node {
-            Some(&arr) => {
-                node = arr;
-            }
-            None => {
-                Uuid::fill_node(&mut node);
-            }
-        }
 
         Uuid {
             bytes: [(time_low >> 24) as u8,
@@ -342,14 +280,6 @@ impl Uuid {
                     node[4],
                     node[5]],
         }
-    }
-
-    /// To generate v1(time-based) UUID with a random MAC address.
-    ///
-    /// TODO: support to use the real MAC address
-    #[cfg(feature = "v1")]
-    pub fn new_v1() -> Uuid {
-        Uuid::new_v1_of(None, None)
     }
 
     /// Creates a new random UUID

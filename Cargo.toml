@@ -16,7 +16,6 @@ A library to generate and parse UUIDs.
 rustc-serialize = { version = "0.3", optional = true }
 serde = { version = "^0.7.0", optional = true }
 rand = { version = "0.3", optional = true }
-time = "0.1"
 
 [features]
 use_std = []
