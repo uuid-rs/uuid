@@ -722,6 +722,8 @@ mod tests {
                    Err(InvalidLength(33)));
         assert_eq!(Uuid::parse_str("67e5504410b1426%9247bb680e5fe0c8"),
                    Err(InvalidCharacter('%', 15)));
+        assert_eq!(Uuid::parse_str("231231212212423424324323477343246663"),
+                   Err(InvalidLength(36)));
 
         // Valid
         assert!(Uuid::parse_str("00000000000000000000000000000000").is_ok());
