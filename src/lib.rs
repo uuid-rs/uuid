@@ -185,14 +185,17 @@ pub enum ParseError {
     InvalidGroupLength(usize, usize, u8),
 }
 
+const SIMPLE_LENGTH: usize = 32;
+const HYPHENATED_LENGTH: usize = 36;
+
 /// Converts a ParseError to a string
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             ParseError::InvalidLength(found) => {
                 write!(f,
-                       "Invalid length; expecting 32 or 36 chars, found {}",
-                       found)
+                       "Invalid length; expecting {} or {} chars, found {}",
+                       SIMPLE_LENGTH, HYPHENATED_LENGTH, found)
             }
             ParseError::InvalidCharacter(found, pos) => {
                 write!(f,
@@ -427,9 +430,9 @@ impl Uuid {
     pub fn parse_str(mut input: &str) -> Result<Uuid, ParseError> {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
-        if len == 45 && input.starts_with("urn:uuid:") {
+        if len == (HYPHENATED_LENGTH + 9) && input.starts_with("urn:uuid:") {
             input = &input[9..];
-        } else if len != 32 && len != 36 {
+        } else if len != SIMPLE_LENGTH && len != HYPHENATED_LENGTH {
             return Err(ParseError::InvalidLength(len));
         }
 
@@ -440,6 +443,10 @@ impl Uuid {
         let mut buffer = [0u8; 16];
 
         for (i_char, chr) in input.chars().enumerate() {
+            if digit as usize >= SIMPLE_LENGTH && group == 0 {
+                return Err(ParseError::InvalidLength(len));
+            }
+
             if digit % 2 == 0 {
                 // First digit of the byte.
                 match chr {
@@ -722,6 +729,8 @@ mod tests {
                    Err(InvalidLength(33)));
         assert_eq!(Uuid::parse_str("67e5504410b1426%9247bb680e5fe0c8"),
                    Err(InvalidCharacter('%', 15)));
+        assert_eq!(Uuid::parse_str("231231212212423424324323477343246663"),
+                   Err(InvalidLength(36)));
 
         // Valid
         assert!(Uuid::parse_str("00000000000000000000000000000000").is_ok());
