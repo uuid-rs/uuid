@@ -440,6 +440,10 @@ impl Uuid {
         let mut buffer = [0u8; 16];
 
         for (i_char, chr) in input.chars().enumerate() {
+            if digit as usize >= 32 && group == 0 {
+                return Err(ParseError::InvalidLength(len));
+            }
+
             if digit % 2 == 0 {
                 // First digit of the byte.
                 match chr {
