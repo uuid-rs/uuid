@@ -69,7 +69,7 @@
 //! To create a new random (V4) UUID and print it out in hexadecimal form:
 //!
 //! ```ignore,rust
-//! // Note that this requires the `rand` feature enabled in the uuid crate.
+//! // Note that this requires the `v4` feature enabled in the uuid crate.
 //!
 //! use uuid::Uuid;
 //!
@@ -236,7 +236,7 @@ impl Uuid {
     /// Note that not all versions can be generated currently and `None` will be
     /// returned if the specified version cannot be generated.
     ///
-    /// To generate a random UUID (`UuidVersion::Random`), then the `rand`
+    /// To generate a random UUID (`UuidVersion::Random`), then the `v4`
     /// feature must be enabled for this crate.
     pub fn new(v: UuidVersion) -> Option<Uuid> {
         match v {
