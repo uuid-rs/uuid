@@ -20,3 +20,4 @@ rand = { version = "0.3", optional = true }
 [features]
 use_std = []
 v4 = ["rand"]
+v1 = []

@@ -61,7 +61,8 @@
 //! use uuid::Uuid;
 //!
 //! fn main() {
-//!     let my_uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
+//! let my_uuid =
+//! Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
 //!     println!("{}", my_uuid.urn());
 //! }
 //! ```
@@ -246,6 +247,44 @@ impl Uuid {
         }
     }
 
+    /// Creates a new time-based UUID
+    /// using given node(MAC), timestamp, and clock_seq
+    #[cfg(feature = "v1")]
+    pub fn new_v1(timestamp: u64,
+                  clock_seq: Option<&[u8; 2]>,
+                  node: &[u8; 6])
+                  -> Uuid {
+        let time_low = timestamp & 0xffffffff;
+        let time_mid = (timestamp >> 32) & 0xffff;
+        let time_hi_version = (timestamp >> 48) & 0x0fff;
+
+        let clock_seq: [u8; 2] = match clock_seq {
+            Some(&arr) => arr,
+            None => rand::thread_rng().gen(),
+        };
+        let clock_seq_low = clock_seq[0] & 0xff;
+        let clock_seq_hi_variant = clock_seq[1] & 0x3f;
+
+        Uuid {
+            bytes: [(time_low >> 24) as u8,
+                    (time_low >> 16) as u8,
+                    (time_low >> 8) as u8,
+                    (time_low >> 0) as u8,
+                    (time_mid >> 8) as u8,
+                    (time_mid >> 0) as u8,
+                    (time_hi_version >> 8) as u8,
+                    (time_hi_version >> 0) as u8,
+                    clock_seq_hi_variant,
+                    clock_seq_low,
+                    node[0],
+                    node[1],
+                    node[2],
+                    node[3],
+                    node[4],
+                    node[5]],
+        }
+    }
+
     /// Creates a new random UUID
     ///
     /// Uses the `rand` module's default RNG task as the source
@@ -271,23 +310,29 @@ impl Uuid {
     pub fn from_fields(d1: u32,
                        d2: u16,
                        d3: u16,
-                       d4: &[u8]) -> Result<Uuid, ParseError>  {
+                       d4: &[u8])
+                       -> Result<Uuid, ParseError> {
         if d4.len() != 8 {
-            return Err(ParseError::InvalidLength(d4.len()))
+            return Err(ParseError::InvalidLength(d4.len()));
         }
 
         Ok(Uuid {
-            bytes: [
-                (d1 >> 24) as u8,
-                (d1 >> 16) as u8,
-                (d1 >>  8) as u8,
-                (d1 >>  0) as u8,
-                (d2 >>  8) as u8,
-                (d2 >>  0) as u8,
-                (d3 >>  8) as u8,
-                (d3 >>  0) as u8,
-                d4[0], d4[1], d4[2], d4[3], d4[4], d4[5], d4[6], d4[7]
-            ],
+            bytes: [(d1 >> 24) as u8,
+                    (d1 >> 16) as u8,
+                    (d1 >> 8) as u8,
+                    (d1 >> 0) as u8,
+                    (d2 >> 8) as u8,
+                    (d2 >> 0) as u8,
+                    (d3 >> 8) as u8,
+                    (d3 >> 0) as u8,
+                    d4[0],
+                    d4[1],
+                    d4[2],
+                    d4[3],
+                    d4[4],
+                    d4[5],
+                    d4[6],
+                    d4[7]],
         })
     }
 
@@ -457,7 +502,8 @@ impl Uuid {
                     // Found a group delimiter
                     '-' => {
                         if ACC_GROUP_LENS[group] != digit {
-                            // Calculate how many digits this group consists of in the input.
+                            // Calculate how many digits this group consists of
+                            // in the input.
                             let found = if group > 0 {
                                 digit - ACC_GROUP_LENS[group - 1]
                             } else {
@@ -467,7 +513,8 @@ impl Uuid {
                                                                       found as usize,
                                                                       GROUP_LENS[group]));
                         }
-                        // Next group, decrement digit, it is incremented again at the bottom.
+                        // Next group, decrement digit, it is incremented again
+                        // at the bottom.
                         group += 1;
                         digit -= 1;
                     }
@@ -572,14 +619,15 @@ impl<'a> fmt::Display for Hyphenated<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let data1 = ((self.inner.bytes[0] as u32) << 24) |
                     ((self.inner.bytes[1] as u32) << 16) |
-                    ((self.inner.bytes[2] as u32) <<  8) |
-                    ((self.inner.bytes[3] as u32) <<  0);
-        let data2 = ((self.inner.bytes[4] as u16) <<  8) |
-                    ((self.inner.bytes[5] as u16) <<  0);
-        let data3 = ((self.inner.bytes[6] as u16) <<  8) |
-                    ((self.inner.bytes[7] as u16) <<  0);
+                    ((self.inner.bytes[2] as u32) << 8) |
+                    ((self.inner.bytes[3] as u32) << 0);
+        let data2 = ((self.inner.bytes[4] as u16) << 8) |
+                    ((self.inner.bytes[5] as u16) << 0);
+        let data3 = ((self.inner.bytes[6] as u16) << 8) |
+                    ((self.inner.bytes[7] as u16) << 0);
 
-        write!(f, "{:08x}-\
+        write!(f,
+               "{:08x}-\
                    {:04x}-\
                    {:04x}-\
                    {:02x}{:02x}-\
@@ -684,11 +732,16 @@ mod tests {
     #[test]
     fn test_get_variant() {
         let uuid1 = new();
-        let uuid2 = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
-        let uuid3 = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").unwrap();
-        let uuid4 = Uuid::parse_str("936DA01F9ABD4d9dC0C702AF85C822A8").unwrap();
-        let uuid5 = Uuid::parse_str("F9168C5E-CEB2-4faa-D6BF-329BF39FA1E4").unwrap();
-        let uuid6 = Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
+        let uuid2 = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000")
+                        .unwrap();
+        let uuid3 = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8")
+                        .unwrap();
+        let uuid4 = Uuid::parse_str("936DA01F9ABD4d9dC0C702AF85C822A8")
+                        .unwrap();
+        let uuid5 = Uuid::parse_str("F9168C5E-CEB2-4faa-D6BF-329BF39FA1E4")
+                        .unwrap();
+        let uuid6 = Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6")
+                        .unwrap();
 
         assert!(uuid1.get_variant().unwrap() == UuidVariant::RFC4122);
         assert!(uuid2.get_variant().unwrap() == UuidVariant::RFC4122);
@@ -734,16 +787,22 @@ mod tests {
 
         // Valid
         assert!(Uuid::parse_str("00000000000000000000000000000000").is_ok());
-        assert!(Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").is_ok());
-        assert!(Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4").is_ok());
+        assert!(Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8")
+                    .is_ok());
+        assert!(Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4")
+                    .is_ok());
         assert!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c8").is_ok());
-        assert!(Uuid::parse_str("01020304-1112-2122-3132-414243444546").is_ok());
-        assert!(Uuid::parse_str("urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8").is_ok());
+        assert!(Uuid::parse_str("01020304-1112-2122-3132-414243444546")
+                    .is_ok());
+        assert!(Uuid::parse_str("urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8")
+                    .is_ok());
 
         // Nil
         let nil = Uuid::nil();
-        assert!(Uuid::parse_str("00000000000000000000000000000000").unwrap() == nil);
-        assert!(Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap() == nil);
+        assert!(Uuid::parse_str("00000000000000000000000000000000")
+                    .unwrap() == nil);
+        assert!(Uuid::parse_str("00000000-0000-0000-0000-000000000000")
+                    .unwrap() == nil);
 
         // Round-trip
         let uuid_orig = new();
@@ -880,8 +939,8 @@ mod tests {
 
     #[test]
     fn test_bytes_roundtrip() {
-        let b_in: [u8; 16] = [0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
-                              0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
+        let b_in: [u8; 16] = [0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2,
+                              0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
 
         let u = Uuid::from_bytes(&b_in).unwrap();
 
