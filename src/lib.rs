@@ -122,10 +122,10 @@ mod serde;
 #[cfg(feature = "v4")]
 use rand::Rng;
 
-/// A 128-bit (16 byte) buffer containing the ID
+/// A 128-bit (16 byte) buffer containing the ID.
 pub type UuidBytes = [u8; 16];
 
-/// The version of the UUID, denoting the generating algorithm
+/// The version of the UUID, denoting the generating algorithm.
 #[derive(PartialEq, Copy, Clone)]
 pub enum UuidVersion {
     /// Version 1: MAC address
@@ -140,7 +140,7 @@ pub enum UuidVersion {
     Sha1 = 5,
 }
 
-/// The reserved variants of UUIDs
+/// The reserved variants of UUIDs.
 #[derive(PartialEq, Copy, Clone)]
 pub enum UuidVariant {
     /// Reserved by the NCS for backward compatibility
@@ -153,29 +153,29 @@ pub enum UuidVariant {
     Future,
 }
 
-/// A Universally Unique Identifier (UUID)
+/// A Universally Unique Identifier (UUID).
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Uuid {
     /// The 128-bit number stored in 16 bytes
     bytes: UuidBytes,
 }
 
-/// Adaptor for formatting a Uuid as a simple string.
+/// An adaptor for formatting a `Uuid` as a simple string.
 pub struct Simple<'a> {
     inner: &'a Uuid,
 }
 
-/// Adaptor for formatting a Uuid as a hyphenated string.
+/// An adaptor for formatting a `Uuid` as a hyphenated string.
 pub struct Hyphenated<'a> {
     inner: &'a Uuid,
 }
 
-/// Adaptor for formatting a Uuid as a URN string.
+/// An adaptor for formatting a `Uuid` as a URN string.
 pub struct Urn<'a> {
     inner: &'a Uuid,
 }
 
-/// Error details for string parsing failures
+/// Error details for string parsing failures.
 #[allow(missing_docs)]
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum ParseError {
@@ -188,7 +188,7 @@ pub enum ParseError {
 const SIMPLE_LENGTH: usize = 32;
 const HYPHENATED_LENGTH: usize = 36;
 
-/// Converts a ParseError to a string
+/// Converts a ParseError to a string.
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
@@ -226,12 +226,30 @@ const GROUP_LENS: [u8; 5] = [8, 4, 4, 4, 12];
 const ACC_GROUP_LENS: [u8; 5] = [8, 12, 16, 20, 32];
 
 impl Uuid {
-    /// Returns a nil or empty UUID (containing all zeroes)
+    /// The 'nil UUID'.
+    ///
+    /// The nil UUID is special form of UUID that is specified to have all
+    /// 128 bits set to zero, as defined in [IETF RFC 4122 Section 4.1.7][RFC].
+    ///
+    /// [RFC]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    ///
+    /// assert_eq!(uuid.hyphenated().to_string(),
+    ///            "00000000-0000-0000-0000-000000000000");
+    /// ```
     pub fn nil() -> Uuid {
         Uuid { bytes: [0; 16] }
     }
 
-    /// Create a new UUID of the specified version.
+    /// Creates a new `Uuid`.
     ///
     /// Note that not all versions can be generated currently and `None` will be
     /// returned if the specified version cannot be generated.
@@ -246,28 +264,65 @@ impl Uuid {
         }
     }
 
-    /// Creates a new random UUID
+    /// Creates a random `Uuid`.
     ///
-    /// Uses the `rand` module's default RNG task as the source
-    /// of random numbers. Use the rand::Rand trait to supply
-    /// a custom generator if required.
+    /// This uses the `rand` crate's default task RNG as the source of random numbers.
+    /// If you'd like to use a custom generator, don't use this method: use the
+    /// [`rand::Rand trait`]'s `rand()` method instead.
+    ///
+    /// [`rand::Rand trait`]: ../../rand/rand/trait.Rand.html#tymethod.rand
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::new_v4();
+    /// ```
     #[cfg(feature = "v4")]
     pub fn new_v4() -> Uuid {
         rand::thread_rng().gen()
     }
 
-    /// Creates a UUID using the supplied field values
-    ///
-    /// # Arguments
-    ///
-    /// * `d1` A 32-bit word
-    /// * `d2` A 16-bit word
-    /// * `d3` A 16-bit word
-    /// * `d4` Array of 8 octets
+    /// Creates a `Uuid` from four field values.
     ///
     /// # Errors
     ///
     /// This function will return an error if `d4`'s length is not 8 bytes.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let d4 = [12, 3, 9, 56, 54, 43, 8, 9];
+    ///
+    /// let uuid = Uuid::from_fields(42, 12, 5, &d4);
+    /// let uuid = uuid.map(|uuid| uuid.hyphenated().to_string());
+    ///
+    /// let expected_uuid = Ok(String::from("0000002a-000c-0005-0c03-0938362b0809"));
+    ///
+    /// assert_eq!(expected_uuid, uuid);
+    /// ```
+    ///
+    /// An invalid length:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    /// use uuid::ParseError;
+    ///
+    /// let d4 = [12];
+    ///
+    /// let uuid = Uuid::from_fields(42, 12, 5, &d4);
+    ///
+    /// let expected_uuid = Err(ParseError::InvalidLength(1));
+    ///
+    /// assert_eq!(expected_uuid, uuid);
+    /// ```
     pub fn from_fields(d1: u32,
                        d2: u16,
                        d3: u16,
@@ -291,10 +346,44 @@ impl Uuid {
         })
     }
 
-    /// Creates a UUID using the supplied bytes
+    /// Creates a `Uuid` using the supplied bytes.
     ///
-    /// # Arguments
-    /// * `b` An array or slice of 16 bytes
+    /// # Errors
+    ///
+    /// This function will return an error if `b` has any length other than 16.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76,
+    ///              32, 50, 87, 5, 1, 33, 43, 87];
+    ///
+    /// let uuid = Uuid::from_bytes(&bytes);
+    /// let uuid = uuid.map(|uuid| uuid.hyphenated().to_string());
+    ///
+    /// let expected_uuid = Ok(String::from("0436430c-2b02-624c-2032-570501212b57"));
+    ///
+    /// assert_eq!(expected_uuid, uuid);
+    /// ```
+    ///
+    /// An incorrect number of bytes:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    /// use uuid::ParseError;
+    ///
+    /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76];
+    ///
+    /// let uuid = Uuid::from_bytes(&bytes);
+    ///
+    /// let expected_uuid = Err(ParseError::InvalidLength(8));
+    ///
+    /// assert_eq!(expected_uuid, uuid);
+    /// ```
     pub fn from_bytes(b: &[u8]) -> Result<Uuid, ParseError> {
         let len = b.len();
         if len != 16 {
@@ -318,7 +407,7 @@ impl Uuid {
         }
     }
 
-    /// Returns the variant of the UUID structure
+    /// Returns the variant of the `Uuid` structure.
     ///
     /// This determines the interpretation of the structure of the UUID.
     /// Currently only the RFC4122 variant is generated by this module.
@@ -334,13 +423,13 @@ impl Uuid {
         }
     }
 
-    /// Specifies the version number of the UUID
+    /// Specifies the version number of the `Uuid`.
     #[cfg(feature = "v4")]
     fn set_version(&mut self, v: UuidVersion) {
         self.bytes[6] = (self.bytes[6] & 0xF) | ((v as u8) << 4);
     }
 
-    /// Returns the version number of the UUID
+    /// Returns the version number of the `Uuid`.
     ///
     /// This represents the algorithm used to generate the contents.
     ///
@@ -355,7 +444,7 @@ impl Uuid {
         (self.bytes[6] >> 4) as usize
     }
 
-    /// Returns the version of the UUID
+    /// Returns the version of the `Uuid`.
     ///
     /// This represents the algorithm used to generate the contents
     pub fn get_version(&self) -> Option<UuidVersion> {
@@ -370,7 +459,7 @@ impl Uuid {
         }
     }
 
-    /// Return an array of 16 octets containing the UUID data
+    /// Return an array of 16 octets containing the `Uuid` data.
     pub fn as_bytes(&self) -> &[u8; 16] {
         &self.bytes
     }
@@ -423,7 +512,7 @@ impl Uuid {
         Urn { inner: self }
     }
 
-    /// Parses a UUID from a string of hexadecimal digits with optional hyphens
+    /// Parses a `Uuid` from a string of hexadecimal digits with optional hyphens.
     ///
     /// Any of the formats generated by this module (simple, hyphenated, urn) are
     /// supported by this parsing function.
@@ -532,7 +621,7 @@ impl Default for Uuid {
 impl FromStr for Uuid {
     type Err = ParseError;
 
-    /// Parse a hex string and interpret as a UUID
+    /// Parse a hex string and interpret as a `Uuid`.
     ///
     /// Accepted formats are a sequence of 32 hexadecimal characters,
     /// with or without hyphens (grouped as 8, 4, 4, 4, 12).
@@ -604,7 +693,7 @@ impl<'a> fmt::Display for Urn<'a> {
     }
 }
 
-/// Generates a random instance of UUID (V4 conformant)
+/// Generates a random `Uuid` (V4 conformant).
 #[cfg(feature = "v4")]
 impl rand::Rand for Uuid {
     fn rand<R: rand::Rng>(rng: &mut R) -> Uuid {
