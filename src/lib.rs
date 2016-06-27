@@ -55,7 +55,7 @@
 //!
 //! # Examples
 //!
-//! To parse parse a UUID in the simple format and print it as a urn:
+//! To parse a UUID given in the simple format and print it as a urn:
 //!
 //! ```rust
 //! use uuid::Uuid;
