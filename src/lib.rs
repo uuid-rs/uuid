@@ -371,6 +371,20 @@ impl Uuid {
     }
 
     /// Return an array of 16 octets containing the UUID data
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    /// assert_eq!(uuid.as_bytes(), &[0; 16]);
+    ///
+    /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
+    /// assert_eq!(uuid.as_bytes(),
+    ///            &[147, 109, 160, 31, 154, 189, 77, 157,
+    ///              128, 199, 2, 175, 133, 200, 34, 168]);
+    /// ```
     pub fn as_bytes(&self) -> &[u8; 16] {
         &self.bytes
     }
