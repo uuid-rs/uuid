@@ -304,6 +304,9 @@ impl Uuid {
     ///
     /// [`rand::Rand trait`]: ../../rand/rand/trait.Rand.html#tymethod.rand
     ///
+    /// Note that usage of this method requires the `v4` feature of this crate
+    /// to be enabled.
+    ///
     /// # Examples
     ///
     /// Basic usage:
@@ -326,6 +329,9 @@ impl Uuid {
     /// * `NAMESPACE_URL`
     /// * `NAMESPACE_OID`
     /// * `NAMESPACE_X500`
+    ///
+    /// Note that usage of this method requires the `v5` feature of this crate
+    /// to be enabled.
     #[cfg(feature = "v5")]
     pub fn new_v5(namespace: &Uuid, name: &str) -> Uuid {
         let mut hash = Sha1::new();
@@ -449,7 +455,7 @@ impl Uuid {
     }
 
     /// Specifies the variant of the UUID structure
-    #[cfg(feature = "v4")]
+    #[allow(dead_code)]
     fn set_variant(&mut self, v: UuidVariant) {
         // Octet 8 contains the variant in the most significant 3 bits
         self.bytes[8] = match v {
@@ -477,7 +483,7 @@ impl Uuid {
     }
 
     /// Specifies the version number of the `Uuid`.
-    #[cfg(feature = "v4")]
+    #[allow(dead_code)]
     fn set_version(&mut self, v: UuidVersion) {
         self.bytes[6] = (self.bytes[6] & 0xF) | ((v as u8) << 4);
     }
