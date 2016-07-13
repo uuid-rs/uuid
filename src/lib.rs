@@ -34,6 +34,8 @@
 //!   library, currently this is only the `impl Error for ParseError`.
 //! * `v4` - adds the `Uuid::new_v4` function and the ability to randomly
 //!   generate a `Uuid`.
+//! * `v5` - adds the `Uuid::new_v5` function and the ability to create a V5
+//!   UUID based on the SHA1 hash of some data.
 //! * `rustc-serialize` - adds the ability to serialize and deserialize a `Uuid`
 //!   using the `rustc-serialize` crate.
 //! * `serde` - adds the ability to serialize and deserialize a `Uuid` using the
@@ -286,14 +288,20 @@ impl Uuid {
         rand::thread_rng().gen()
     }
 
-    /// Creates a UUID using a name from a namespace, based on the SHA-1 hash
+    /// Creates a UUID using a name from a namespace, based on the SHA-1 hash.
+    ///
+    /// A number of namespaces are available as constants in this crate:
+    ///
+    /// * `NAMESPACE_DNS`
+    /// * `NAMESPACE_URL`
+    /// * `NAMESPACE_OID`
+    /// * `NAMESPACE_X500`
     #[cfg(feature = "v5")]
     pub fn new_v5(namespace: &Uuid, name: &str) -> Uuid {
         let mut hash = Sha1::new();
         hash.update(namespace.as_bytes());
         hash.update(name.as_bytes());
-        let mut buffer: [u8; 20] = [0; 20];
-        hash.output(&mut buffer);
+        let buffer = hash.digest().bytes();
         let mut uuid = Uuid { bytes: [0; 16] };
         copy_memory(&mut uuid.bytes, &buffer[..16]);
         uuid.set_variant(UuidVariant::RFC4122);
@@ -750,13 +758,18 @@ mod tests {
 
     #[test]
     fn test_predefined_namespaces() {
-        assert_eq!(NAMESPACE_DNS.to_hyphenated_string(), "6ba7b810-9dad-11d1-80b4-00c04fd430c8");
-        assert_eq!(NAMESPACE_URL.to_hyphenated_string(), "6ba7b811-9dad-11d1-80b4-00c04fd430c8");
-        assert_eq!(NAMESPACE_OID.to_hyphenated_string(), "6ba7b812-9dad-11d1-80b4-00c04fd430c8");
-        assert_eq!(NAMESPACE_X500.to_hyphenated_string(), "6ba7b814-9dad-11d1-80b4-00c04fd430c8");
+        assert_eq!(NAMESPACE_DNS.hyphenated().to_string(),
+                   "6ba7b810-9dad-11d1-80b4-00c04fd430c8");
+        assert_eq!(NAMESPACE_URL.hyphenated().to_string(),
+                   "6ba7b811-9dad-11d1-80b4-00c04fd430c8");
+        assert_eq!(NAMESPACE_OID.hyphenated().to_string(),
+                   "6ba7b812-9dad-11d1-80b4-00c04fd430c8");
+        assert_eq!(NAMESPACE_X500.hyphenated().to_string(),
+                   "6ba7b814-9dad-11d1-80b4-00c04fd430c8");
     }
 
     #[test]
+    #[cfg(feature = "v4")]
     fn test_get_version_v4() {
         let uuid1 = Uuid::new_v4();
 
@@ -894,7 +907,7 @@ mod tests {
     fn test_v5_to_hypenated_string() {
         for &(ref ns, ref name, ref expected) in FIXTURE_V5 {
             let uuid = Uuid::new_v5(*ns, *name);
-            assert_eq!(uuid.to_hyphenated_string(), *expected);
+            assert_eq!(uuid.hyphenated().to_string(), *expected);
         }
     }
 
