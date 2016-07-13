@@ -57,7 +57,7 @@
 //!
 //! # Examples
 //!
-//! To parse parse a UUID in the simple format and print it as a urn:
+//! To parse a UUID given in the simple format and print it as a urn:
 //!
 //! ```rust
 //! use uuid::Uuid;
@@ -71,7 +71,7 @@
 //! To create a new random (V4) UUID and print it out in hexadecimal form:
 //!
 //! ```ignore,rust
-//! // Note that this requires the `rand` feature enabled in the uuid crate.
+//! // Note that this requires the `v4` feature enabled in the uuid crate.
 //!
 //! use uuid::Uuid;
 //!
@@ -268,7 +268,7 @@ impl Uuid {
     /// Note that not all versions can be generated currently and `None` will be
     /// returned if the specified version cannot be generated.
     ///
-    /// To generate a random UUID (`UuidVersion::Random`), then the `rand`
+    /// To generate a random UUID (`UuidVersion::Random`), then the `v4`
     /// feature must be enabled for this crate.
     pub fn new(v: UuidVersion) -> Option<Uuid> {
         match v {
@@ -424,6 +424,20 @@ impl Uuid {
     }
 
     /// Return an array of 16 octets containing the UUID data
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    /// assert_eq!(uuid.as_bytes(), &[0; 16]);
+    ///
+    /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
+    /// assert_eq!(uuid.as_bytes(),
+    ///            &[147, 109, 160, 31, 154, 189, 77, 157,
+    ///              128, 199, 2, 175, 133, 200, 34, 168]);
+    /// ```
     pub fn as_bytes(&self) -> &[u8; 16] {
         &self.bytes
     }
