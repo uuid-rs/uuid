@@ -29,5 +29,7 @@ impl Deserialize for Uuid {
         }
 
         deserializer.deserialize(UuidVisitor)
+                    .or_else(|_| deserializer.deserialize_string(UuidVisitor))
+                    .or_else(|_| deserializer.deserialize_bytes(UuidVisitor))
     }
 }
