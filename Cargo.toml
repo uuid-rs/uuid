@@ -22,3 +22,7 @@ sha1 = { version = "0.2", optional = true }
 use_std = []
 v4 = ["rand"]
 v5 = ["sha1"]
+
+[[bin]]
+name = "uuid"
+doc = false
