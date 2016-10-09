@@ -1,8 +1,8 @@
 extern crate serde;
-extern crate std;
+extern crate collections;
 
-use self::std::prelude::v1::*;
 use self::serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+use self::collections::string::ToString;
 
 use Uuid;
 
