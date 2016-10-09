@@ -116,8 +116,7 @@ use core::str::FromStr;
 // rustc-serialize and serde link to std, so go ahead an pull in our own std
 // support in those situations as well.
 #[cfg(any(feature = "use_std",
-          feature = "rustc-serialize",
-          feature = "serde"))]
+          feature = "rustc-serialize"))]
 mod std_support;
 #[cfg(feature = "rustc-serialize")]
 mod rustc_serialize;
