@@ -115,7 +115,7 @@ use core::hash;
 use core::str::FromStr;
 
 // rustc-serialize links to std, so go ahead an pull in our own std support in
-// those situations as well.
+// that situation as well.
 #[cfg(any(feature = "use_std",
           feature = "rustc-serialize"))]
 mod std_support;
