@@ -18,7 +18,8 @@ after_success:
   - travis-cargo --only nightly doc-upload
 env:
   global:
-    secure: NwoTYjI/NeMVJvNOxKRFbqaCOmFLyzgosK9ZmR+ydTc+3Ft1hU6ykHvRiop2gQdL0ZRtxLNvsjrYv8Y2J1SttxEkVQc6HsCl5ny6sHig4V5sS8ZTmLoCKSUJXsfN0lYD8wMKwNN9+G1ddnFbmIbRaZyXFdn7bCKjJoXfwszDz4M=
+    secure: "HzcZYuf80pByt4J3OM+sfXg5dGPQjFTPfLYR907wfi8FD6mJu5yYbgPF4agz9sdnnNrtnmlghZ5WFljrl49oNC6RhcSc6YVmiRKs4DabMKKr3v9zZy1i2KuQ323cGpwUIVpq7+u8/vQAYPwRUPzZrVw57y5KKqEHbn2T85yFdqo="
+
   matrix:
     - FEATURES=""
     - FEATURES="rustc-serialize"
