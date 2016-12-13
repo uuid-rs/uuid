@@ -26,7 +26,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-uuid = "0.2"
+uuid = "0.3"
 ```
 
 and this to your crate root:
