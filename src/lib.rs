@@ -554,7 +554,7 @@ impl Uuid {
     }
 
     /// Returns a wrapper which when formatted via `fmt::Display` will format a
-    /// string of hexadecimal digits separated into gropus with a hyphen.
+    /// string of hexadecimal digits separated into groups with a hyphen.
     ///
     /// # Examples
     ///
