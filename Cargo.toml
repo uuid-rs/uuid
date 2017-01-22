@@ -14,11 +14,11 @@ A library to generate and parse UUIDs.
 
 [dependencies]
 rustc-serialize = { version = "0.3", optional = true }
-serde = { version = "0.8", optional = true }
+serde = { version = "0.8", optional = true, default-features = false, features = ["collections"] }
 rand = { version = "0.3", optional = true }
 sha1 = { version = "0.2", optional = true }
 
 [features]
-use_std = []
+use_std = ["serde/std"] # pull in serde's std support with our own
 v4 = ["rand"]
 v5 = ["sha1"]

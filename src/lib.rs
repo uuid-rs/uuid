@@ -99,7 +99,8 @@
 #![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "https://www.rust-lang.org/favicon.ico",
        html_root_url = "https://doc.rust-lang.org/uuid/")]
-
+#![cfg_attr(feature = "serde", feature(collections))]
+#![feature(lang_items)]
 #![deny(warnings)]
 #![no_std]
 
@@ -113,11 +114,10 @@ use core::fmt;
 use core::hash;
 use core::str::FromStr;
 
-// rustc-serialize and serde link to std, so go ahead an pull in our own std
-// support in those situations as well.
+// rustc-serialize links to std, so go ahead an pull in our own std support in
+// that situation as well.
 #[cfg(any(feature = "use_std",
-          feature = "rustc-serialize",
-          feature = "serde"))]
+          feature = "rustc-serialize"))]
 mod std_support;
 #[cfg(feature = "rustc-serialize")]
 mod rustc_serialize;
