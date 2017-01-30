@@ -21,20 +21,14 @@ impl Deserialize for Uuid {
             type Value = Uuid;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                write!(formatter, "a UUID")
+                write!(formatter, "a UUID string")
             }
 
             fn visit_str<E: de::Error>(self, value: &str) -> Result<Uuid, E> {
                 value.parse::<Uuid>().map_err(|e| E::custom(e.to_string()))
             }
-
-            fn visit_bytes<E: de::Error>(self, value: &[u8]) -> Result<Uuid, E> {
-                Uuid::from_bytes(value).map_err(|e| E::custom(e.to_string()))
-            }
         }
 
-        deserializer.deserialize(UuidVisitor)
-                    //.or_else(|_| deserializer.deserialize_string(UuidVisitor))
-                    //.or_else(|_| deserializer.deserialize_bytes(UuidVisitor))
+        deserializer.deserialize_str(UuidVisitor)
     }
 }
