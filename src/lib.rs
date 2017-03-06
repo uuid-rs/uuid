@@ -605,8 +605,11 @@ impl Uuid {
         let mut buffer = [0u8; 16];
 
         for (i_char, chr) in input.chars().enumerate() {
-            if digit as usize >= SIMPLE_LENGTH && group == 0 {
-                return Err(ParseError::InvalidLength(len));
+            if digit as usize >= SIMPLE_LENGTH && group != 4 {
+                if group == 0 {
+                    return Err(ParseError::InvalidLength(len));
+                }
+                return Err(ParseError::InvalidGroups(group + 1));
             }
 
             if digit % 2 == 0 {
@@ -661,9 +664,7 @@ impl Uuid {
         }
 
         // Now check the last group.
-        if group != 0 && group != 4 {
-            return Err(ParseError::InvalidGroups(group + 1));
-        } else if ACC_GROUP_LENS[4] != digit {
+        if ACC_GROUP_LENS[4] != digit {
             return Err(ParseError::InvalidGroupLength(group,
                                                       (digit - ACC_GROUP_LENS[3]) as usize,
                                                       GROUP_LENS[4]));
@@ -925,6 +926,10 @@ mod tests {
                    Err(InvalidLength(35)));
         assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4"),
                    Err(InvalidCharacter('G', 20)));
+        assert_eq!(Uuid::parse_str("F9168C5E-CEB2F4faaFB6BFF329BF39FA1E4"),
+                   Err(InvalidGroups(2)));
+        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faaFB6BFF329BF39FA1E4"),
+                   Err(InvalidGroups(3)));
         assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4"),
                    Err(InvalidGroups(4)));
         assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa"),
