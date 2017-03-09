@@ -45,14 +45,14 @@
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = "0.2"
+//! uuid = "0.4"
 //! ```
 //!
 //! To activate various features, use syntax like:
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = { version = "0.2", features = ["serde", "v4"] }
+//! uuid = { version = "0.4", features = ["serde", "v4"] }
 //! ```
 //!
 //! # Examples
