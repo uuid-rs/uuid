@@ -13,11 +13,11 @@ impl Serialize for Uuid {
     }
 }
 
-impl Deserialize for Uuid {
-    fn deserialize<D: Deserializer>(deserializer: D) -> Result<Self, D::Error> {
+impl<'de> Deserialize<'de> for Uuid {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         struct UuidVisitor;
 
-        impl de::Visitor for UuidVisitor {
+        impl<'vi> de::Visitor<'vi> for UuidVisitor {
             type Value = Uuid;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
