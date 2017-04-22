@@ -40,6 +40,8 @@
 //!   using the `rustc-serialize` crate.
 //! * `serde` - adds the ability to serialize and deserialize a `Uuid` using the
 //!   `serde` crate.
+//! * `rocket` - adds the ability to use an `Uuid` as a `FromParam` using the
+//!   `rocket` crate.
 //!
 //! By default, `uuid` can be depended on with:
 //!
@@ -123,6 +125,8 @@ mod std_support;
 mod rustc_serialize;
 #[cfg(feature = "serde")]
 mod serde;
+#[cfg(feature = "rocket")]
+mod rocket;
 
 #[cfg(feature = "v4")]
 use rand::Rng;
