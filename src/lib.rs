@@ -32,6 +32,8 @@
 //!
 //! * `use_std` - adds in functionality available when linking to the standard
 //!   library, currently this is only the `impl Error for ParseError`.
+//! * `v3` - adds the `Uuid::new_v3` function and the ability to create a V3
+//!   UUID based on the MD5 hash of some data.
 //! * `v4` - adds the `Uuid::new_v4` function and the ability to randomly
 //!   generate a `Uuid`.
 //! * `v5` - adds the `Uuid::new_v5` function and the ability to create a V5
@@ -103,6 +105,8 @@
 #![deny(warnings)]
 #![no_std]
 
+#[cfg(feature = "v3")]
+extern crate md5;
 #[cfg(feature = "v4")]
 extern crate rand;
 #[cfg(feature = "v5")]
@@ -295,7 +299,30 @@ impl Uuid {
             _ => None,
         }
     }
-
+    /// Creates a UUID using a name from a namespace, based on the MD5 hash.
+    ///
+    /// A number of namespaces are available as constants in this crate:
+    ///
+    /// * `NAMESPACE_DNS`
+    /// * `NAMESPACE_URL`
+    /// * `NAMESPACE_OID`
+    /// * `NAMESPACE_X500`
+    ///
+    /// Note that usage of this method requires the `v3` feature of this crate
+    /// to be enabled.
+    #[cfg(feature = "v3")]
+    pub fn new_v3(namespace: &Uuid, name: &str) -> Uuid {
+        let mut ctx = md5::Context::new();
+        ctx.consume(namespace.as_bytes());
+        ctx.consume(name.as_bytes());
+        let digest = ctx.compute();
+        let mut uuid = Uuid { bytes: [0; 16] };
+        copy_memory(&mut uuid.bytes, &digest[..16]);
+        uuid.set_variant(UuidVariant::RFC4122);
+        uuid.set_version(UuidVersion::Md5);
+        uuid
+    }
+    
     /// Creates a random `Uuid`.
     ///
     /// This uses the `rand` crate's default task RNG as the source of random numbers.
@@ -799,6 +826,27 @@ mod tests {
         Uuid::parse_str("F9168C5E-CEB2-4FAB-B6BF-329BF39FA1E4").unwrap()
     }
 
+    #[cfg(feature = "v3")]
+    static FIXTURE_V3: &'static [(&'static Uuid, &'static str, &'static str)] = &[
+        (&NAMESPACE_DNS, "example.org",    "04738bdf-b25a-3829-a801-b21a1d25095b"),
+        (&NAMESPACE_DNS, "rust-lang.org",  "c6db027c-615c-3b4d-959e-1a917747ca5a"),
+        (&NAMESPACE_DNS, "42",             "5aab6e0c-b7d3-379c-92e3-2bfbb5572511"),
+        (&NAMESPACE_DNS, "lorem ipsum",    "4f8772e9-b59c-3cc9-91a9-5c823df27281"),
+        (&NAMESPACE_URL, "example.org",    "39682ca1-9168-3da2-a1bb-f4dbcde99bf9"),
+        (&NAMESPACE_URL, "rust-lang.org",  "7ed45aaf-e75b-3130-8e33-ee4d9253b19f"),
+        (&NAMESPACE_URL, "42",             "08998a0c-fcf4-34a9-b444-f2bfc15731dc"),
+        (&NAMESPACE_URL, "lorem ipsum",    "e55ad2e6-fb89-34e8-b012-c5dde3cd67f0"),
+        (&NAMESPACE_OID, "example.org",    "f14eec63-2812-3110-ad06-1625e5a4a5b2"),
+        (&NAMESPACE_OID, "rust-lang.org",  "6506a0ec-4d79-3e18-8c2b-f2b6b34f2b6d"),
+        (&NAMESPACE_OID, "42",             "ce6925a5-2cd7-327b-ab1c-4b375ac044e4"),
+        (&NAMESPACE_OID, "lorem ipsum",    "5dd8654f-76ba-3d47-bc2e-4d6d3a78cb09"),
+        (&NAMESPACE_X500, "example.org",   "64606f3f-bd63-363e-b946-fca13611b6f7"),
+        (&NAMESPACE_X500, "rust-lang.org", "bcee7a9c-52f1-30c6-a3cc-8c72ba634990"),
+        (&NAMESPACE_X500, "42",            "c1073fa2-d4a6-3104-b21d-7a6bdcf39a23"),
+        (&NAMESPACE_X500, "lorem ipsum",   "02f09a3f-1624-3b1d-8409-44eff7708208"),
+    ];
+
+
     #[cfg(feature = "v5")]
     static FIXTURE_V5: &'static [(&'static Uuid, &'static str, &'static str)] = &[
         (&NAMESPACE_DNS, "example.org",    "aad03681-8b63-5304-89e0-8ca8f49461b5"),
@@ -847,6 +895,16 @@ mod tests {
         assert!(Uuid::new(UuidVersion::Sha1) == None);
     }
 
+    #[cfg(feature = "v3")]
+    #[test]
+    fn test_new_v3() {
+        for &(ref ns, ref name, _) in FIXTURE_V3 {
+            let uuid = Uuid::new_v3(*ns, *name);
+            assert!(uuid.get_version().unwrap() == UuidVersion::Md5);
+            assert!(uuid.get_variant().unwrap() == UuidVariant::RFC4122);
+        }
+    }
+
     #[test]
     #[cfg(feature = "v4")]
     fn test_new_v4() {
@@ -876,6 +934,15 @@ mod tests {
                    "6ba7b812-9dad-11d1-80b4-00c04fd430c8");
         assert_eq!(NAMESPACE_X500.hyphenated().to_string(),
                    "6ba7b814-9dad-11d1-80b4-00c04fd430c8");
+    }
+
+    #[cfg(feature = "v3")]
+    #[test]
+    fn test_get_version_v3() {
+        let uuid = Uuid::new_v3(&NAMESPACE_DNS, "rust-lang.org");
+
+        assert!(uuid.get_version().unwrap() == UuidVersion::Md5);
+        assert_eq!(uuid.get_version_num(), 3);
     }
 
     #[test]
@@ -1016,6 +1083,15 @@ mod tests {
         assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
     }
 
+    #[cfg(feature = "v3")]
+    #[test]
+    fn test_v3_to_hypenated_string() {
+        for &(ref ns, ref name, ref expected) in FIXTURE_V3 {
+            let uuid = Uuid::new_v3(*ns, *name);
+            assert_eq!(uuid.hyphenated().to_string(), *expected);
+        }
+    }
+    
     #[cfg(feature = "v5")]
     #[test]
     fn test_v5_to_hypenated_string() {
