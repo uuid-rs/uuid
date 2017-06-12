@@ -106,11 +106,11 @@
 #![no_std]
 
 #[cfg(feature = "v3")]
-extern crate md5;
+extern crate md_5 as md5;
 #[cfg(feature = "v4")]
 extern crate rand;
 #[cfg(feature = "v5")]
-extern crate sha1;
+extern crate sha_1 as sha1;
 
 
 use core::fmt;
@@ -130,8 +130,6 @@ mod serde;
 
 #[cfg(feature = "v4")]
 use rand::Rng;
-#[cfg(feature = "v5")]
-use sha1::Sha1;
 
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type UuidBytes = [u8; 16];
@@ -312,17 +310,18 @@ impl Uuid {
     /// to be enabled.
     #[cfg(feature = "v3")]
     pub fn new_v3(namespace: &Uuid, name: &str) -> Uuid {
-        let mut ctx = md5::Context::new();
-        ctx.consume(namespace.as_bytes());
-        ctx.consume(name.as_bytes());
-        let digest = ctx.compute();
+        use md5::{Md5, Digest};
+        let mut hasher = Md5::new();
+        hasher.input(namespace.as_bytes());
+        hasher.input(name.as_bytes());
+        let hash = hasher.result();
         let mut uuid = Uuid { bytes: [0; 16] };
-        copy_memory(&mut uuid.bytes, &digest[..16]);
+        copy_memory(&mut uuid.bytes, &hash[..16]);
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Md5);
         uuid
     }
-    
+
     /// Creates a random `Uuid`.
     ///
     /// This uses the `rand` crate's default task RNG as the source of random numbers.
@@ -361,12 +360,13 @@ impl Uuid {
     /// to be enabled.
     #[cfg(feature = "v5")]
     pub fn new_v5(namespace: &Uuid, name: &str) -> Uuid {
-        let mut hash = Sha1::new();
-        hash.update(namespace.as_bytes());
-        hash.update(name.as_bytes());
-        let buffer = hash.digest().bytes();
+        use sha1::{Sha1, Digest};
+        let mut hasher = Sha1::new();
+        hasher.input(namespace.as_bytes());
+        hasher.input(name.as_bytes());
+        let hash = hasher.result();
         let mut uuid = Uuid { bytes: [0; 16] };
-        copy_memory(&mut uuid.bytes, &buffer[..16]);
+        copy_memory(&mut uuid.bytes, &hash[..16]);
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Sha1);
         uuid
@@ -1091,7 +1091,7 @@ mod tests {
             assert_eq!(uuid.hyphenated().to_string(), *expected);
         }
     }
-    
+
     #[cfg(feature = "v5")]
     #[test]
     fn test_v5_to_hypenated_string() {
