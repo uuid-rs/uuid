@@ -105,13 +105,8 @@
 #![deny(warnings)]
 #![no_std]
 
-#[cfg(feature = "v3")]
-extern crate md_5 as md5;
 #[cfg(feature = "v4")]
 extern crate rand;
-#[cfg(feature = "v5")]
-extern crate sha_1 as sha1;
-
 
 use core::fmt;
 use core::hash;
@@ -129,11 +124,11 @@ mod rustc_serialize;
 mod serde;
 
 #[cfg(feature = "v3")]
-use md5::Md5;
+mod md5;
 #[cfg(feature = "v4")]
 use rand::Rng;
 #[cfg(feature = "v5")]
-use sha1::Sha1;
+mod sha1;
 
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type UuidBytes = [u8; 16];
@@ -314,12 +309,7 @@ impl Uuid {
     /// to be enabled.
     #[cfg(feature = "v3")]
     pub fn new_v3(namespace: &Uuid, name: &str) -> Uuid {
-        let mut hasher = Md5::default();
-        hasher.consume(namespace.as_bytes());
-        hasher.consume(name.as_bytes());
-        let hash = hasher.hash();
-        let mut uuid = Uuid { bytes: [0; 16] };
-        copy_memory(&mut uuid.bytes, &hash[..16]);
+        let mut uuid = Uuid { bytes: md5::compute(&namespace.bytes, name) };
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Md5);
         uuid
@@ -363,12 +353,7 @@ impl Uuid {
     /// to be enabled.
     #[cfg(feature = "v5")]
     pub fn new_v5(namespace: &Uuid, name: &str) -> Uuid {
-        let mut hasher = Sha1::default();
-        hasher.consume(namespace.as_bytes());
-        hasher.consume(name.as_bytes());
-        let hash = hasher.hash();
-        let mut uuid = Uuid { bytes: [0; 16] };
-        copy_memory(&mut uuid.bytes, &hash[..16]);
+        let mut uuid = Uuid { bytes: sha1::compute(&namespace.bytes, name) };
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Sha1);
         uuid
