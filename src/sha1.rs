@@ -75,6 +75,7 @@ fn compress(state: &mut [u32; 5], block: &[u8]) {
 
 /// Compute SHA1 hash of concatenated namespace and name
 pub fn compute(namespace: &[u8; 16], name: &str) -> [u8; 16] {
+    let size = (((namespace.len() as u64) + (name.len() as u64)) << 3).to_be();
     let mut name = name.as_bytes();
     let mut state = H;
     let mut block = [0u8; BLOCK_SIZE];
@@ -103,13 +104,13 @@ pub fn compute(namespace: &[u8; 16], name: &str) -> [u8; 16] {
     }
 
     block[pos] = 0x80;
+    pos += 1;
 
-    if pos + 1 < 8 {
+    if BLOCK_SIZE - pos < 8 {
         compress(&mut state, &block);
         block = [0u8; BLOCK_SIZE];
     }
 
-    let size = (((namespace.len() as u64) + (name.len() as u64)) << 3).to_be();
     for i in 0..8 {
         block[56+i] = (size >> (8*i)) as u8;
     }
