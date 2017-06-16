@@ -214,7 +214,8 @@ pub const NAMESPACE_X500: Uuid = Uuid {
 
 /// The number of 100 ns ticks between 
 /// the UUID epoch 1582-10-15 00:00:00 and the Unix epoch 1970-01-01 00:00:00
-pub const UUID_TICKS_BETWEEN_EPOCHS : u64 = 0x01B21DD213814000;
+#[cfg(feature = "v1")]
+const UUID_TICKS_BETWEEN_EPOCHS : u64 = 0x01B21DD213814000;
 
 /// An adaptor for formatting a `Uuid` as a URN string.
 pub struct Urn<'a> {
@@ -222,8 +223,26 @@ pub struct Urn<'a> {
 }
 
 /// A stateful context for the v1 generator to help ensure process-wide uniqueness
+#[cfg(feature = "v1")]
 pub struct UuidV1Context {
     count: AtomicUsize,
+}
+
+#[cfg(feature = "v1")]
+impl UuidV1Context {
+
+    /// Creates a thread-safe, internally mutable context to help ensure uniqueness
+    ///
+    /// This is a context which can be shared across threads.  It maintains an internal
+    /// counter that is incremented at every request, the value ends up in the clock_seq
+    /// portion of the V1 uuid (the fourth group).  This will improve the probability
+    /// that the UUID is unique across the process.
+    pub fn new(seed : Option<u64>) -> UuidV1Context {
+        let initval = seed.unwrap_or(thread_rng().gen());
+        UuidV1Context {
+            count: AtomicUsize::new(initval as usize)
+        }
+    }
 }
 
 /// Error details for string parsing failures.
@@ -323,7 +342,10 @@ impl Uuid {
     /// conditions hold: 
     /// 1. The NodeID is unique for this process.
     /// 2. The Context is shared across all threads which are generating V1 UUIDs
-    /// 3. The supplied time value is monotonically increasing.
+    /// 3. The supplied seconds+nsecs values are monotonically increasing.
+    ///
+    /// The NodeID must be exactly 6 bytes long. If the NodeID is not a valid length
+    /// this will return a `ParseError::InvalidLength`
     ///
     /// The function is not guaranteed to produce monotonically increasing values
     /// however.  There is a slight possibility that two successive equal time values
@@ -332,13 +354,28 @@ impl Uuid {
     /// If uniqueness and monotonicity is required, the user is responsibile for ensuring
     /// that the time value always increases between calls. 
     /// (including between restarts of the process and device)
+    ///
+    /// Note that usage of this method requires the `v1` feature of this crate
+    /// to be enabled.
+    ///
+    /// # Examples
+    /// Basic usage:
+    /// #[cfg(feature = "v1")]
+    /// ```
+    /// use uuid::{Uuid, UuidV1Context};
+    ///
+    /// let ctx = UuidV1Context::new(Some(42));
+    /// let v1uuid = Uuid::new_v1(&ctx, 1497624119, 1234, &[1,2,3,4,5,6]).unwrap();
+    ///
+    /// assert_eq!(v1uuid.hyphenated().to_string(), "f3b4958c-52a1-11e7-802a-010203040506");
+    /// ```
     #[cfg(feature = "v1")]
-    pub fn new_v1(context: &UuidV1Context, time: u64, time_frac: u32, node: &[u8]) -> Result<Uuid, ParseError> {
+    pub fn new_v1(context: &UuidV1Context, seconds: u64, nsecs: u32, node: &[u8]) -> Result<Uuid, ParseError> {
         if node.len() != 6 {
             return Err(ParseError::InvalidLength(node.len()))
         }
         let count = (context.count.fetch_add(1, Ordering::SeqCst) & 0xffff) as u16;
-        let timestamp = time * 10_000_000 + (time_frac / 100) as u64;
+        let timestamp = seconds * 10_000_000 + (nsecs / 100) as u64;
         let uuidtime = timestamp + UUID_TICKS_BETWEEN_EPOCHS; 
         let time_low : u32 = (uuidtime & 0xFFFFFFFF) as u32;
         let time_mid : u16 = ((uuidtime >> 32) & 0xFFFF) as u16; 
@@ -350,19 +387,6 @@ impl Uuid {
         Uuid::from_fields(time_low, time_mid, time_hi_and_ver, &d4)
     }
 
-    /// Creates a thread-safe, internally mutable context to help ensure uniqueness
-    ///
-    /// This is a context which can be shared across threads.  It maintains an internal
-    /// counter that is incremented at every request, the value ends up in the clock_seq
-    /// portion of the V1 uuid (the fourth group).  This will improve the probability
-    /// that the UUID is unique across the process.
-    #[cfg(feature = "v1")]
-    pub fn new_v1_context(seed : Option<u64>) -> UuidV1Context {
-        let initval = seed.unwrap_or(thread_rng().gen());
-        UuidV1Context {
-            count: AtomicUsize::new(initval as usize)
-        }
-    }
 
     /// Creates a UUID using a name from a namespace, based on the MD5 hash.
     ///
@@ -963,10 +987,11 @@ mod tests {
     #[cfg(feature = "v1")]
     #[test]
     fn test_new_v1() {
+        use UuidV1Context;
         let time : u64 = 1_496_854_535;
         let timefrac : u32 = 812_946_000;
         let node = [1,2,3,4,5,6];
-        let ctx = Uuid::new_v1_context(Some(0));
+        let ctx = UuidV1Context::new(Some(0));
         let uuid = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
         assert!(uuid.get_version().unwrap() == UuidVersion::Mac);
         assert!(uuid.get_variant().unwrap() == UuidVariant::RFC4122);
