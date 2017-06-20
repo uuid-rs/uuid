@@ -130,12 +130,10 @@ mod serde;
 
 #[cfg(feature = "v1")]
 use core::sync::atomic::{AtomicUsize, Ordering};
-#[cfg(feature = "v1")]
-use rand::thread_rng;
 
 #[cfg(any(feature = "v4",
           feature = "v1"))]
-use rand::Rng;
+use rand::{Rand, Rng};
 
 #[cfg(feature = "v5")]
 use sha1::Sha1;
@@ -237,10 +235,25 @@ impl UuidV1Context {
     /// counter that is incremented at every request, the value ends up in the clock_seq
     /// portion of the V1 uuid (the fourth group).  This will improve the probability
     /// that the UUID is unique across the process.
-    pub fn new(seed : Option<u64>) -> UuidV1Context {
-        let initval = seed.unwrap_or(thread_rng().gen());
+    pub fn new(count : usize) -> UuidV1Context {
         UuidV1Context {
-            count: AtomicUsize::new(initval as usize)
+            count: AtomicUsize::new(count)
+        }
+    }
+}
+
+#[cfg(feature = "v1")]
+impl Rand for UuidV1Context {
+
+    /// Implementation for creating a context that has been initialized to a random value
+    ///
+    /// This is a context which can be shared across threads.  It maintains an internal
+    /// counter that is incremented at every request, the value ends up in the clock_seq
+    /// portion of the V1 uuid (the fourth group).  This will improve the probability
+    /// that the UUID is unique across the process.
+    fn rand<R: Rng>(rng: &mut R) -> Self {
+        UuidV1Context {
+            count: AtomicUsize::new(rng.gen())
         }
     }
 }
@@ -364,7 +377,7 @@ impl Uuid {
     /// ```
     /// use uuid::{Uuid, UuidV1Context};
     ///
-    /// let ctx = UuidV1Context::new(Some(42));
+    /// let ctx = UuidV1Context::new(42);
     /// let v1uuid = Uuid::new_v1(&ctx, 1497624119, 1234, &[1,2,3,4,5,6]).unwrap();
     ///
     /// assert_eq!(v1uuid.hyphenated().to_string(), "f3b4958c-52a1-11e7-802a-010203040506");
@@ -991,7 +1004,7 @@ mod tests {
         let time : u64 = 1_496_854_535;
         let timefrac : u32 = 812_946_000;
         let node = [1,2,3,4,5,6];
-        let ctx = UuidV1Context::new(Some(0));
+        let ctx = UuidV1Context::new(0);
         let uuid = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
         assert!(uuid.get_version().unwrap() == UuidVersion::Mac);
         assert!(uuid.get_variant().unwrap() == UuidVariant::RFC4122);
