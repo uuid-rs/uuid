@@ -9,7 +9,7 @@ use Uuid;
 
 impl Serialize for Uuid {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&self.hyphenated().to_string())
+        serializer.collect_str(&self.hyphenated())
     }
 }
 

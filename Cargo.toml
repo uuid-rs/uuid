@@ -12,6 +12,9 @@ description = """
 A library to generate and parse UUIDs.
 """
 
+[package.metadata.docs.rs]
+all-features = true
+
 [dependencies]
 rustc-serialize = { version = "0.3", optional = true }
 serde = { version = "1.0", optional = true }

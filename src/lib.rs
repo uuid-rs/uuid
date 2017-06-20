@@ -720,7 +720,7 @@ impl Uuid {
         let mut acc = 0;
         let mut buffer = [0u8; 16];
 
-        for (i_char, chr) in input.chars().enumerate() {
+        for (i_char, chr) in input.bytes().enumerate() {
             if digit as usize >= SIMPLE_LENGTH && group != 4 {
                 if group == 0 {
                     return Err(ParseError::InvalidLength(len));
@@ -732,11 +732,11 @@ impl Uuid {
                 // First digit of the byte.
                 match chr {
                     // Calulate upper half.
-                    '0'...'9' => acc = chr as u8 - '0' as u8,
-                    'a'...'f' => acc = chr as u8 - 'a' as u8 + 10,
-                    'A'...'F' => acc = chr as u8 - 'A' as u8 + 10,
+                    b'0'...b'9' => acc = chr - b'0',
+                    b'a'...b'f' => acc = chr - b'a' + 10,
+                    b'A'...b'F' => acc = chr - b'A' + 10,
                     // Found a group delimiter
-                    '-' => {
+                    b'-' => {
                         if ACC_GROUP_LENS[group] != digit {
                             // Calculate how many digits this group consists of in the input.
                             let found = if group > 0 {
@@ -752,16 +752,16 @@ impl Uuid {
                         group += 1;
                         digit -= 1;
                     }
-                    _ => return Err(ParseError::InvalidCharacter(chr, i_char)),
+                    _ => return Err(ParseError::InvalidCharacter(input[i_char..].chars().next().unwrap(), i_char)),
                 }
             } else {
                 // Second digit of the byte, shift the upper half.
                 acc *= 16;
                 match chr {
-                    '0'...'9' => acc += chr as u8 - '0' as u8,
-                    'a'...'f' => acc += chr as u8 - 'a' as u8 + 10,
-                    'A'...'F' => acc += chr as u8 - 'A' as u8 + 10,
-                    '-' => {
+                    b'0'...b'9' => acc += chr - b'0',
+                    b'a'...b'f' => acc += chr - b'a' + 10,
+                    b'A'...b'F' => acc += chr - b'A' + 10,
+                    b'-' => {
                         // The byte isn't complete yet.
                         let found = if group > 0 {
                             digit - ACC_GROUP_LENS[group - 1]
@@ -772,7 +772,7 @@ impl Uuid {
                                                                   found as usize,
                                                                   GROUP_LENS[group]));
                     }
-                    _ => return Err(ParseError::InvalidCharacter(chr, i_char)),
+                    _ => return Err(ParseError::InvalidCharacter(input[i_char..].chars().next().unwrap(), i_char)),
                 }
                 buffer[(digit / 2) as usize] = acc;
             }
