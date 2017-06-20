@@ -19,11 +19,9 @@ all-features = true
 rustc-serialize = { version = "0.3", optional = true }
 serde = { version = "1.0", optional = true }
 rand = { version = "0.3", optional = true }
-sha1 = { version = "0.2", optional = true }
-md5 = { version = "0.3", optional = true }
 
 [features]
 use_std = []
-v3 = ["md5"]
+v3 = []
 v4 = ["rand"]
-v5 = ["sha1"]
+v5 = []

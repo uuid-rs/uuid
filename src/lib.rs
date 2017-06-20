@@ -105,13 +105,8 @@
 #![deny(warnings)]
 #![no_std]
 
-#[cfg(feature = "v3")]
-extern crate md5;
 #[cfg(feature = "v4")]
 extern crate rand;
-#[cfg(feature = "v5")]
-extern crate sha1;
-
 
 use core::fmt;
 use core::hash;
@@ -128,10 +123,12 @@ mod rustc_serialize;
 #[cfg(feature = "serde")]
 mod serde;
 
+#[cfg(feature = "v3")]
+mod md5;
 #[cfg(feature = "v4")]
 use rand::Rng;
 #[cfg(feature = "v5")]
-use sha1::Sha1;
+mod sha1;
 
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type UuidBytes = [u8; 16];
@@ -312,17 +309,12 @@ impl Uuid {
     /// to be enabled.
     #[cfg(feature = "v3")]
     pub fn new_v3(namespace: &Uuid, name: &str) -> Uuid {
-        let mut ctx = md5::Context::new();
-        ctx.consume(namespace.as_bytes());
-        ctx.consume(name.as_bytes());
-        let digest = ctx.compute();
-        let mut uuid = Uuid { bytes: [0; 16] };
-        copy_memory(&mut uuid.bytes, &digest[..16]);
+        let mut uuid = Uuid { bytes: md5::compute(&namespace.bytes, name) };
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Md5);
         uuid
     }
-    
+
     /// Creates a random `Uuid`.
     ///
     /// This uses the `rand` crate's default task RNG as the source of random numbers.
@@ -361,12 +353,7 @@ impl Uuid {
     /// to be enabled.
     #[cfg(feature = "v5")]
     pub fn new_v5(namespace: &Uuid, name: &str) -> Uuid {
-        let mut hash = Sha1::new();
-        hash.update(namespace.as_bytes());
-        hash.update(name.as_bytes());
-        let buffer = hash.digest().bytes();
-        let mut uuid = Uuid { bytes: [0; 16] };
-        copy_memory(&mut uuid.bytes, &buffer[..16]);
+        let mut uuid = Uuid { bytes: sha1::compute(&namespace.bytes, name) };
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Sha1);
         uuid
@@ -1091,7 +1078,7 @@ mod tests {
             assert_eq!(uuid.hyphenated().to_string(), *expected);
         }
     }
-    
+
     #[cfg(feature = "v5")]
     #[test]
     fn test_v5_to_hypenated_string() {
