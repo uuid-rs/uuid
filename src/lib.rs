@@ -720,7 +720,6 @@ impl Uuid {
     /// Returns an Optional Tuple of (u64, u16) representing the timestamp and 
     /// counter portion of a V1 UUID.  If the supplied UUID is not V1, this 
     /// will return None
-    #[cfg(feature = "v1")]
     pub fn to_timestamp(&self) -> Option<(u64, u16)> {
 
         if self.get_version().map(|v| v != UuidVersion::Mac).unwrap_or(true) {
