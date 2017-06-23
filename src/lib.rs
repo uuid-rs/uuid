@@ -32,6 +32,8 @@
 //!
 //! * `use_std` - adds in functionality available when linking to the standard
 //!   library, currently this is only the `impl Error for ParseError`.
+//! * `v1` - adds the `Uuid::new_v1` function and the ability to create a V1
+//!   using a `UUIDV1Context` and a timestamp from `time::timespec`
 //! * `v3` - adds the `Uuid::new_v3` function and the ability to create a V3
 //!   UUID based on the MD5 hash of some data.
 //! * `v4` - adds the `Uuid::new_v4` function and the ability to randomly
@@ -107,11 +109,11 @@
 
 #[cfg(feature = "v3")]
 extern crate md5;
-#[cfg(feature = "v4")]
+#[cfg(any(feature = "v4",
+          feature = "v1"))]
 extern crate rand;
 #[cfg(feature = "v5")]
 extern crate sha1;
-
 
 use core::fmt;
 use core::hash;
@@ -128,8 +130,16 @@ mod rustc_serialize;
 #[cfg(feature = "serde")]
 mod serde;
 
-#[cfg(feature = "v4")]
-use rand::Rng;
+#[cfg(feature = "v1")]
+use core::sync::atomic::{AtomicUsize, Ordering};
+
+#[cfg(feature = "v1")]
+use rand::{Rand};
+
+#[cfg(any(feature = "v4",
+          feature = "v1"))]
+use rand::{Rng};
+
 #[cfg(feature = "v5")]
 use sha1::Sha1;
 
@@ -205,10 +215,49 @@ pub const NAMESPACE_X500: Uuid = Uuid {
             0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8]
 };
 
+/// The number of 100 ns ticks between 
+/// the UUID epoch 1582-10-15 00:00:00 and the Unix epoch 1970-01-01 00:00:00
+#[cfg(feature = "v1")]
+const UUID_TICKS_BETWEEN_EPOCHS : u64 = 0x01B21DD213814000;
 
 /// An adaptor for formatting a `Uuid` as a URN string.
 pub struct Urn<'a> {
     inner: &'a Uuid,
+}
+
+/// A stateful context for the v1 generator to help ensure process-wide uniqueness
+#[cfg(feature = "v1")]
+pub struct UuidV1Context {
+    count: AtomicUsize,
+}
+
+#[cfg(feature = "v1")]
+impl UuidV1Context {
+
+    /// Creates a thread-safe, internally mutable context to help ensure uniqueness
+    ///
+    /// This is a context which can be shared across threads.  It maintains an internal
+    /// counter that is incremented at every request, the value ends up in the clock_seq
+    /// portion of the V1 uuid (the fourth group).  This will improve the probability
+    /// that the UUID is unique across the process.
+    pub fn new(count : u16) -> UuidV1Context {
+        UuidV1Context {
+            count: AtomicUsize::new(count as usize)
+        }
+    }
+}
+
+#[cfg(feature = "v1")]
+impl Rand for UuidV1Context {
+
+    /// Creates a `UuidV1Context` that has been initialized to a random value
+    ///
+    /// For usage, see `UuidV1Context::new` and `Uuid::new_v1`
+    fn rand<R: Rng>(rng: &mut R) -> Self {
+        UuidV1Context {
+            count: AtomicUsize::new(rng.gen())
+        }
+    }
 }
 
 /// Error details for string parsing failures.
@@ -299,6 +348,61 @@ impl Uuid {
             _ => None,
         }
     }
+    
+    /// Creates a new `Uuid` (version 1 style) using a time value + seq + NodeID
+    ///
+    /// This expects two values representing a monotonically increasing value 
+    /// as well as a unique 6 byte NodeId, and a `UuidV1Context`
+    /// This function is only guaranteed to produce unique values if the following
+    /// conditions hold: 
+    /// 1. The NodeID is unique for this process.
+    /// 2. The Context is shared across all threads which are generating V1 UUIDs
+    /// 3. The supplied seconds+nsecs values are monotonically increasing.
+    ///
+    /// The NodeID must be exactly 6 bytes long. If the NodeID is not a valid length
+    /// this will return a `ParseError::InvalidLength`
+    ///
+    /// The function is not guaranteed to produce monotonically increasing values
+    /// however.  There is a slight possibility that two successive equal time values
+    /// could be supplied and the sequence counter wraps back over to 0. 
+    ///
+    /// If uniqueness and monotonicity is required, the user is responsibile for ensuring
+    /// that the time value always increases between calls. 
+    /// (including between restarts of the process and device)
+    ///
+    /// Note that usage of this method requires the `v1` feature of this crate
+    /// to be enabled.
+    ///
+    /// # Examples
+    /// Basic usage:
+    /// #[cfg(feature = "v1")]
+    /// ```
+    /// use uuid::{Uuid, UuidV1Context};
+    ///
+    /// let ctx = UuidV1Context::new(42);
+    /// let v1uuid = Uuid::new_v1(&ctx, 1497624119, 1234, &[1,2,3,4,5,6]).unwrap();
+    ///
+    /// assert_eq!(v1uuid.hyphenated().to_string(), "f3b4958c-52a1-11e7-802a-010203040506");
+    /// ```
+    #[cfg(feature = "v1")]
+    pub fn new_v1(context: &UuidV1Context, seconds: u64, nsecs: u32, node: &[u8]) -> Result<Uuid, ParseError> {
+        if node.len() != 6 {
+            return Err(ParseError::InvalidLength(node.len()))
+        }
+        let count = (context.count.fetch_add(1, Ordering::SeqCst) & 0xffff) as u16;
+        let timestamp = seconds * 10_000_000 + (nsecs / 100) as u64;
+        let uuidtime = timestamp + UUID_TICKS_BETWEEN_EPOCHS; 
+        let time_low : u32 = (uuidtime & 0xFFFFFFFF) as u32;
+        let time_mid : u16 = ((uuidtime >> 32) & 0xFFFF) as u16; 
+        let time_hi_and_ver : u16 = (((uuidtime >> 48) & 0x0FFF) as u16) | (1 << 12);
+        let mut d4 = [0_u8; 8];
+        d4[0] = (((count & 0x3F00) >> 8) as u8) | 0x80;
+        d4[1] = (count & 0xFF) as u8;
+        d4[2..].copy_from_slice(node);
+        Uuid::from_fields(time_low, time_mid, time_hi_and_ver, &d4)
+    }
+
+
     /// Creates a UUID using a name from a namespace, based on the MD5 hash.
     ///
     /// A number of namespaces are available as constants in this crate:
@@ -612,6 +716,31 @@ impl Uuid {
         Urn { inner: self }
     }
 
+
+    /// Returns an Optional Tuple of (u64, u16) representing the timestamp and 
+    /// counter portion of a V1 UUID.  If the supplied UUID is not V1, this 
+    /// will return None
+    pub fn to_timestamp(&self) -> Option<(u64, u16)> {
+
+        if self.get_version().map(|v| v != UuidVersion::Mac).unwrap_or(true) {
+            return None;
+        }
+
+        let ts : u64 = (((self.bytes[6] & 0x0F) as u64) << 56)
+                     |  ((self.bytes[7] as u64) << 48)
+                     |  ((self.bytes[4] as u64) << 40)
+                     |  ((self.bytes[5] as u64) << 32)
+                     |  ((self.bytes[0] as u64) << 24)
+                     |  ((self.bytes[1] as u64) << 16)
+                     |  ((self.bytes[2] as u64) << 8)
+                     |    self.bytes[3] as u64;
+
+        let count : u16 = (((self.bytes[8] & 0x3F) as u16) << 8) | self.bytes[9] as u16;
+
+        Some((ts, count))
+    }
+
+
     /// Parses a `Uuid` from a string of hexadecimal digits with optional hyphens.
     ///
     /// Any of the formats generated by this module (simple, hyphenated, urn) are
@@ -893,6 +1022,27 @@ mod tests {
         assert!(Uuid::new(UuidVersion::Dce) == None);
         assert!(Uuid::new(UuidVersion::Md5) == None);
         assert!(Uuid::new(UuidVersion::Sha1) == None);
+    }
+    
+    #[cfg(feature = "v1")]
+    #[test]
+    fn test_new_v1() {
+        use UuidV1Context;
+        let time : u64 = 1_496_854_535;
+        let timefrac : u32 = 812_946_000;
+        let node = [1,2,3,4,5,6];
+        let ctx = UuidV1Context::new(0);
+        let uuid = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
+        assert!(uuid.get_version().unwrap() == UuidVersion::Mac);
+        assert!(uuid.get_variant().unwrap() == UuidVariant::RFC4122);
+        assert_eq!(uuid.hyphenated().to_string(), "20616934-4ba2-11e7-8000-010203040506");
+        let uuid2 = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
+        assert_eq!(uuid2.hyphenated().to_string(), "20616934-4ba2-11e7-8001-010203040506");
+
+        let ts = uuid.to_timestamp().unwrap();
+        assert_eq!(ts.0 - 0x01B21DD213814000, 1_496_854_535_812_946_0);
+        assert_eq!(ts.1, 0);
+        assert_eq!(uuid2.to_timestamp().unwrap().1, 1);
     }
 
     #[cfg(feature = "v3")]

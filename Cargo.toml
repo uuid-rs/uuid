@@ -24,6 +24,7 @@ md5 = { version = "0.3", optional = true }
 
 [features]
 use_std = []
+v1 = ["rand"]
 v3 = ["md5"]
 v4 = ["rand"]
 v5 = ["sha1"]
