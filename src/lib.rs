@@ -147,7 +147,7 @@ use sha1::Sha1;
 pub type UuidBytes = [u8; 16];
 
 /// The version of the UUID, denoting the generating algorithm.
-#[derive(PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum UuidVersion {
     /// Version 1: MAC address
     Mac = 1,
@@ -162,7 +162,7 @@ pub enum UuidVersion {
 }
 
 /// The reserved variants of UUIDs.
-#[derive(PartialEq, Copy, Clone)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum UuidVariant {
     /// Reserved by the NCS for backward compatibility
     NCS,
