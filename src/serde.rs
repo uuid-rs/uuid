@@ -32,3 +32,17 @@ impl<'de> Deserialize<'de> for Uuid {
         deserializer.deserialize_str(UuidVisitor)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    extern crate serde_json;
+    use Uuid;
+
+    #[test]
+    fn test_serialize_round_trip() {
+        let u = Uuid::parse_str("F9168C5E-CEB2-4FAA-B6BF-329BF39FA1E4").unwrap();
+        let s = serde_json::to_string(&u).unwrap();
+        let u2 = serde_json::from_str(&s).unwrap();
+        assert_eq!(u, u2);
+    }
+}
