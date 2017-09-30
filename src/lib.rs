@@ -866,6 +866,18 @@ impl fmt::Debug for Uuid {
 
 impl fmt::Display for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::LowerHex::fmt(self, f)
+    }
+}
+
+impl fmt::UpperHex for Uuid {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::UpperHex::fmt(&self.hyphenated(), f)
+    }
+}
+
+impl fmt::LowerHex for Uuid {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.hyphenated().fmt(f)
     }
 }
@@ -878,6 +890,21 @@ impl hash::Hash for Uuid {
 
 impl<'a> fmt::Display for Simple<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        fmt::LowerHex::fmt(self, f)
+    }
+}
+
+impl<'a> fmt::UpperHex for Simple<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        for byte in self.inner.bytes.iter() {
+            try!(write!(f, "{:02X}", byte));
+        }
+        Ok(())
+    }
+}
+
+impl<'a> fmt::LowerHex for Simple<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for byte in self.inner.bytes.iter() {
             try!(write!(f, "{:02x}", byte));
         }
@@ -887,31 +914,62 @@ impl<'a> fmt::Display for Simple<'a> {
 
 impl<'a> fmt::Display for Hyphenated<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let data1 = ((self.inner.bytes[0] as u32) << 24) |
-                    ((self.inner.bytes[1] as u32) << 16) |
-                    ((self.inner.bytes[2] as u32) <<  8) |
-                    ((self.inner.bytes[3] as u32) <<  0);
-        let data2 = ((self.inner.bytes[4] as u16) <<  8) |
-                    ((self.inner.bytes[5] as u16) <<  0);
-        let data3 = ((self.inner.bytes[6] as u16) <<  8) |
-                    ((self.inner.bytes[7] as u16) <<  0);
+        fmt::LowerHex::fmt(self, f)
+    }
+}
 
-        write!(f, "{:08x}-\
-                   {:04x}-\
-                   {:04x}-\
-                   {:02x}{:02x}-\
-                   {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+macro_rules! hyphnated_write {
+    ($f:expr, $format:expr, $bytes:expr) => {{
+        let data1 = (($bytes[0] as u32) << 24) |
+                    (($bytes[1] as u32) << 16) |
+                    (($bytes[2] as u32) <<  8) |
+                    (($bytes[3] as u32) <<  0);
+        let data2 = (($bytes[4] as u16) <<  8) |
+                    (($bytes[5] as u16) <<  0);
+        let data3 = (($bytes[6] as u16) <<  8) |
+                    (($bytes[7] as u16) <<  0);
+
+        write!($f,
+               $format,
                data1,
                data2,
                data3,
-               self.inner.bytes[8],
-               self.inner.bytes[9],
-               self.inner.bytes[10],
-               self.inner.bytes[11],
-               self.inner.bytes[12],
-               self.inner.bytes[13],
-               self.inner.bytes[14],
-               self.inner.bytes[15])
+               $bytes[8],
+               $bytes[9],
+               $bytes[10],
+               $bytes[11],
+               $bytes[12],
+               $bytes[13],
+               $bytes[14],
+               $bytes[15])
+    }};
+}
+
+impl<'a> fmt::UpperHex for Hyphenated<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        hyphnated_write!(
+            f,
+            "{:08X}-\
+             {:04X}-\
+             {:04X}-\
+             {:02X}{:02X}-\
+             {:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
+            self.inner.bytes
+        )
+    }
+}
+
+impl<'a> fmt::LowerHex for Hyphenated<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        hyphnated_write!(
+            f,
+            "{:08x}-\
+             {:04x}-\
+             {:04x}-\
+             {:02x}{:02x}-\
+             {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
+            self.inner.bytes
+        )
     }
 }
 
@@ -1229,6 +1287,31 @@ mod tests {
 
         assert!(s.len() == 36);
         assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
+    }
+
+    #[test]
+    fn test_upper_lower_hex() {
+        use core::fmt::Write;
+
+        let mut buf = String::new();
+        let u = new();
+
+        macro_rules! check {
+            ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {
+                $buf.clear();
+                write!($buf, $format, $target).unwrap();
+                assert!(buf.len() == $len);
+                assert!($buf.chars().all($cond), "{}", $buf);
+            };
+        }
+
+        check!(buf, "{:X}", u, 36, |c| c.is_uppercase() || c.is_digit(10) || c == '-');
+        check!(buf, "{:X}", u.hyphenated(), 36, |c| c.is_uppercase() || c.is_digit(10) || c == '-');
+        check!(buf, "{:X}", u.simple(), 32, |c| c.is_uppercase() || c.is_digit(10));
+
+        check!(buf, "{:x}", u, 36, |c| c.is_lowercase() || c.is_digit(10) || c == '-');
+        check!(buf, "{:x}", u.hyphenated(), 36, |c| c.is_lowercase() || c.is_digit(10) || c == '-');
+        check!(buf, "{:x}", u.simple(), 32, |c| c.is_lowercase() || c.is_digit(10));
     }
 
     #[cfg(feature = "v3")]
