@@ -655,13 +655,13 @@ impl Uuid {
     /// use uuid::Uuid;
     ///
     /// let uuid = Uuid::nil();
-    /// assert_eq!(uuid.as_fields(), (0, 0, 0, [0; 8]));
+    /// assert_eq!(uuid.as_fields(), (0, 0, 0, &[0u8; 8] as &[u8]));
     ///
     /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
     /// assert_eq!(uuid.as_fields(),
-    ///            (0x936DA01F, 0x9ABD, 0x4D9D, *b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"));
+    ///            (0x936DA01F, 0x9ABD, 0x4D9D, b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8" as &[u8]));
     /// ```
-    pub fn as_fields(&self) -> (u32, u16, u16, [u8; 8]) {
+    pub fn as_fields(&self) -> (u32, u16, u16, &[u8]) {
         let d1 = ((self.bytes[0] as u32) << 24) |
                  ((self.bytes[1] as u32) << 16) |
                  ((self.bytes[2] as u32) << 8) |
@@ -670,17 +670,7 @@ impl Uuid {
                  (self.bytes[5] as u16);
         let d3 = ((self.bytes[6] as u16) << 8) |
                  (self.bytes[7] as u16);
-        let d4 = [
-            self.bytes[8],
-            self.bytes[9],
-            self.bytes[10],
-            self.bytes[11],
-            self.bytes[12],
-            self.bytes[13],
-            self.bytes[14],
-            self.bytes[15],
-        ];
-        (d1, d2, d3, d4)
+        (d1, d2, d3, &self.bytes[8..16])
     }
 
     /// Return an array of 16 octets containing the UUID data
@@ -1363,9 +1353,9 @@ mod tests {
         let d1_in: u32 = 0xa1a2a3a4;
         let d2_in: u16 = 0xb1b2;
         let d3_in: u16 = 0xc1c2;
-        let d4_in = [0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
+        let d4_in = &[0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
 
-        let u = Uuid::from_fields(d1_in, d2_in, d3_in, &d4_in).unwrap();
+        let u = Uuid::from_fields(d1_in, d2_in, d3_in, d4_in).unwrap();
         let (d1_out, d2_out, d3_out, d4_out) = u.as_fields();
         assert_eq!(d1_in, d1_out);
         assert_eq!(d2_in, d2_out);
