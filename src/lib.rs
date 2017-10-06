@@ -647,7 +647,55 @@ impl Uuid {
         }
     }
 
-    /// Return an array of 16 octets containing the UUID data
+    /// Returns the four field values of the UUID.
+    ///
+    /// These values can be passed to the `from_fields()` method to get the
+    /// original `Uuid` back.
+    ///
+    /// * The first field value represents the first group of (eight) hex
+    ///   digits, taken as a big-endian `u32` value.  For V1 UUIDs, this field
+    ///   represents the low 32 bits of the timestamp.
+    /// * The second field value represents the second group of (four) hex
+    ///   digits, taken as a big-endian `u16` value.  For V1 UUIDs, this field
+    ///   represents the middle 16 bits of the timestamp.
+    /// * The third field value represents the third group of (four) hex
+    ///   digits, taken as a big-endian `u16` value.  The 4 most significant
+    ///   bits give the UUID version, and for V1 UUIDs, the last 12 bits
+    ///   represent the high 12 bits of the timestamp.
+    /// * The last field value represents the last two groups of four and
+    ///   twelve hex digits, taken in order.  The first 1-3 bits of this
+    ///   indicate the UUID variant, and for V1 UUIDs, the next 13-15 bits
+    ///   indicate the clock sequence and the last 48 bits indicate the node
+    ///   ID.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    /// assert_eq!(uuid.as_fields(), (0, 0, 0, &[0u8; 8]));
+    ///
+    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
+    /// assert_eq!(uuid.as_fields(),
+    ///            (0x936DA01F, 0x9ABD, 0x4D9D, b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"));
+    /// ```
+    pub fn as_fields(&self) -> (u32, u16, u16, &[u8; 8]) {
+        let d1 = ((self.bytes[0] as u32) << 24) |
+                 ((self.bytes[1] as u32) << 16) |
+                 ((self.bytes[2] as u32) << 8) |
+                 (self.bytes[3] as u32);
+        let d2 = ((self.bytes[4] as u16) << 8) |
+                 (self.bytes[5] as u16);
+        let d3 = ((self.bytes[6] as u16) << 8) |
+                 (self.bytes[7] as u16);
+        let d4: &[u8; 8] = unsafe {
+            &*(self.bytes[8..16].as_ptr() as *const [u8; 8])
+        };
+        (d1, d2, d3, d4)
+    }
+
+    /// Returns an array of 16 octets containing the UUID data.
     ///
     /// # Examples
     ///
@@ -1308,6 +1356,33 @@ mod tests {
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
         let result = u.simple().to_string();
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_as_fields() {
+        let u = new();
+        let (d1, d2, d3, d4) = u.as_fields();
+
+        assert_ne!(d1, 0);
+        assert_ne!(d2, 0);
+        assert_ne!(d3, 0);
+        assert_eq!(d4.len(), 8);
+        assert!(!d4.iter().all(|&b| b == 0));
+    }
+
+    #[test]
+    fn test_fields_roundtrip() {
+        let d1_in: u32 = 0xa1a2a3a4;
+        let d2_in: u16 = 0xb1b2;
+        let d3_in: u16 = 0xc1c2;
+        let d4_in = &[0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
+
+        let u = Uuid::from_fields(d1_in, d2_in, d3_in, d4_in).unwrap();
+        let (d1_out, d2_out, d3_out, d4_out) = u.as_fields();
+        assert_eq!(d1_in, d1_out);
+        assert_eq!(d2_in, d2_out);
+        assert_eq!(d3_in, d3_out);
+        assert_eq!(d4_in, d4_out);
     }
 
     #[test]
