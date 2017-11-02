@@ -9,33 +9,61 @@ use Uuid;
 
 impl Serialize for Uuid {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.collect_str(&self.hyphenated())
+        if serializer.is_human_readable() {
+            serializer.collect_str(&self.hyphenated())
+        } else {
+            serializer.serialize_bytes(self.as_bytes())
+        }
     }
 }
 
 impl<'de> Deserialize<'de> for Uuid {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        struct UuidVisitor;
+        if deserializer.is_human_readable() {
+            struct UuidStringVisitor;
 
-        impl<'vi> de::Visitor<'vi> for UuidVisitor {
-            type Value = Uuid;
+            impl<'vi> de::Visitor<'vi> for UuidStringVisitor {
+                type Value = Uuid;
 
-            fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                write!(formatter, "a UUID string")
+                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    write!(formatter, "a UUID string")
+                }
+
+                fn visit_str<E: de::Error>(self, value: &str) -> Result<Uuid, E> {
+                    value.parse::<Uuid>().map_err(E::custom)
+                }
+
+                fn visit_bytes<E: de::Error>(self, value: &[u8]) -> Result<Uuid, E> {
+                    Uuid::from_bytes(value).map_err(E::custom)
+                }
             }
 
-            fn visit_str<E: de::Error>(self, value: &str) -> Result<Uuid, E> {
-                value.parse::<Uuid>().map_err(|e| E::custom(e.to_string()))
+            deserializer.deserialize_str(UuidStringVisitor)
+        } else {
+            struct UuidBytesVisitor;
+
+            impl<'vi> de::Visitor<'vi> for UuidBytesVisitor {
+                type Value = Uuid;
+
+                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                    write!(formatter, "bytes")
+                }
+
+                fn visit_bytes<E: de::Error>(self, value: &[u8]) -> Result<Uuid, E> {
+                    Uuid::from_bytes(value).map_err(E::custom)
+                }
             }
+
+            deserializer.deserialize_bytes(UuidBytesVisitor)
         }
-
-        deserializer.deserialize_str(UuidVisitor)
     }
 }
+
 
 #[cfg(test)]
 mod tests {
     extern crate serde_json;
+
     use Uuid;
 
     #[test]
