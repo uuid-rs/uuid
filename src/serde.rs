@@ -63,19 +63,8 @@ impl<'de> Deserialize<'de> for Uuid {
 #[cfg(test)]
 mod tests {
     extern crate serde_json;
-    extern crate serde_test;
-
-    use self::serde_test::Token;
 
     use Uuid;
-
-    #[test]
-    fn test_str() {
-        let str_uuid = "67e55044-10b1-426f-9247-bb680e5fe0c8";
-        let uuid = Uuid::parse_str(str_uuid).unwrap();
-
-        serde_test::assert_tokens(&uuid, &[Token::BorrowedStr(str_uuid)]);
-    }
 
     #[test]
     fn test_serialize_round_trip() {
