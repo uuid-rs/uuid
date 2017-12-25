@@ -30,7 +30,7 @@
 //! The following Cargo features, however, can be used to enable various pieces
 //! of functionality.
 //!
-//! * `use_std` - adds in functionality available when linking to the standard
+//! * `std` - adds in functionality available when linking to the standard
 //!   library, currently this is only the `impl Error for ParseError`.
 //! * `v1` - adds the `Uuid::new_v1` function and the ability to create a V1
 //!   using a `UUIDV1Context` and a timestamp from `time::timespec`
@@ -121,7 +121,7 @@ use core::str::FromStr;
 
 // rustc-serialize and serde link to std, so go ahead an pull in our own std
 // support in those situations as well.
-#[cfg(any(feature = "use_std",
+#[cfg(any(feature = "std",
           feature = "rustc-serialize",
           feature = "serde"))]
 mod std_support;
