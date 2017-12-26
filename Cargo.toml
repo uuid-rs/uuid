@@ -26,7 +26,8 @@ md5 = { version = "0.3", optional = true }
 serde_test = "1.0.19"
 
 [features]
-use_std = []
+std = []
+use_std = ["std"] # deprecated, equivalent to `std`
 v1 = ["rand"]
 v3 = ["md5"]
 v4 = ["rand"]
