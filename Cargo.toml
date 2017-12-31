@@ -18,7 +18,7 @@ all-features = true
 [dependencies]
 rustc-serialize = { version = "0.3", optional = true }
 serde = { version = "1.0.16", optional = true }
-rand = { version = "0.3", optional = true }
+rand = { version = "0.4", optional = true }
 sha1 = { version = "0.2", optional = true }
 md5 = { version = "0.3", optional = true }
 
