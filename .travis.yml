@@ -4,14 +4,13 @@ sudo: false
 matrix:
   include:
     - env: FEATURES=""
-    - env: FEATURES="rustc-serialize"
     - env: FEATURES="serde"
     - env: FEATURES="std"
     - env: FEATURES="v1"
     - env: FEATURES="v3"
     - env: FEATURES="v4"
     - env: FEATURES="v5"
-    - env: FEATURES="rustc-serialize serde v1 v3 v4 v5 std"
+    - env: FEATURES="serde v1 v3 v4 v5 std"
     - rust: beta
     - rust: nightly
 

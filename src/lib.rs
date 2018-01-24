@@ -40,8 +40,6 @@
 //!   generate a `Uuid`.
 //! * `v5` - adds the `Uuid::new_v5` function and the ability to create a V5
 //!   UUID based on the SHA1 hash of some data.
-//! * `rustc-serialize` - adds the ability to serialize and deserialize a `Uuid`
-//!   using the `rustc-serialize` crate.
 //! * `serde` - adds the ability to serialize and deserialize a `Uuid` using the
 //!   `serde` crate.
 //!
@@ -109,8 +107,7 @@
 
 #[cfg(feature = "v3")]
 extern crate md5;
-#[cfg(any(feature = "v4",
-          feature = "v1"))]
+#[cfg(any(feature = "v4"))]
 extern crate rand;
 #[cfg(feature = "v5")]
 extern crate sha1;
@@ -119,25 +116,18 @@ use core::fmt;
 use core::hash;
 use core::str::FromStr;
 
-// rustc-serialize and serde link to std, so go ahead an pull in our own std
+// serde links to std, so go ahead an pull in our own std
 // support in those situations as well.
 #[cfg(any(feature = "std",
-          feature = "rustc-serialize",
           feature = "serde"))]
 mod std_support;
-#[cfg(feature = "rustc-serialize")]
-mod rustc_serialize;
 #[cfg(feature = "serde")]
 mod serde;
 
 #[cfg(feature = "v1")]
 use core::sync::atomic::{AtomicUsize, Ordering};
 
-#[cfg(feature = "v1")]
-use rand::{Rand};
-
-#[cfg(any(feature = "v4",
-          feature = "v1"))]
+#[cfg(feature = "v4")]
 use rand::{Rng};
 
 #[cfg(feature = "v5")]
@@ -247,19 +237,6 @@ impl UuidV1Context {
     }
 }
 
-#[cfg(feature = "v1")]
-impl Rand for UuidV1Context {
-
-    /// Creates a `UuidV1Context` that has been initialized to a random value
-    ///
-    /// For usage, see `UuidV1Context::new` and `Uuid::new_v1`
-    fn rand<R: Rng>(rng: &mut R) -> Self {
-        UuidV1Context {
-            count: AtomicUsize::new(rng.gen())
-        }
-    }
-}
-
 /// Error details for string parsing failures.
 #[allow(missing_docs)]
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
@@ -349,33 +326,33 @@ impl Uuid {
         }
     }
     
-    /// Creates a new `Uuid` (version 1 style) using a time value + seq + NodeID
+    /// Creates a new `Uuid` (version 1 style) using a time value + seq + NodeID.
     ///
     /// This expects two values representing a monotonically increasing value 
-    /// as well as a unique 6 byte NodeId, and a `UuidV1Context`
-    /// This function is only guaranteed to produce unique values if the following
-    /// conditions hold: 
+    /// as well as a unique 6 byte NodeId, and a `UuidV1Context`. This function 
+    /// is only guaranteed to produce unique values if the following conditions hold: 
+    /// 
     /// 1. The NodeID is unique for this process.
     /// 2. The Context is shared across all threads which are generating V1 UUIDs
     /// 3. The supplied seconds+nsecs values are monotonically increasing.
-    ///
+    /// 
     /// The NodeID must be exactly 6 bytes long. If the NodeID is not a valid length
-    /// this will return a `ParseError::InvalidLength`
+    /// this will return a `ParseError::InvalidLength`.
     ///
     /// The function is not guaranteed to produce monotonically increasing values
     /// however.  There is a slight possibility that two successive equal time values
     /// could be supplied and the sequence counter wraps back over to 0. 
     ///
     /// If uniqueness and monotonicity is required, the user is responsibile for ensuring
-    /// that the time value always increases between calls. 
-    /// (including between restarts of the process and device)
+    /// that the time value always increases between calls
+    /// (including between restarts of the process and device).
     ///
     /// Note that usage of this method requires the `v1` feature of this crate
     /// to be enabled.
     ///
     /// # Examples
     /// Basic usage:
-    /// #[cfg(feature = "v1")]
+    /// 
     /// ```
     /// use uuid::{Uuid, UuidV1Context};
     ///
@@ -447,7 +424,13 @@ impl Uuid {
     /// ```
     #[cfg(feature = "v4")]
     pub fn new_v4() -> Uuid {
-        rand::thread_rng().gen()
+        let mut rng = rand::thread_rng();
+        
+        let mut uuid = Uuid { bytes: [0; 16] };
+        rng.fill_bytes(&mut uuid.bytes);
+        uuid.set_variant(UuidVariant::RFC4122);
+        uuid.set_version(UuidVersion::Random);
+        uuid
     }
 
     /// Creates a UUID using a name from a namespace, based on the SHA-1 hash.
@@ -1027,18 +1010,6 @@ impl<'a> fmt::Display for Urn<'a> {
     }
 }
 
-/// Generates a random `Uuid` (V4 conformant).
-#[cfg(feature = "v4")]
-impl rand::Rand for Uuid {
-    fn rand<R: rand::Rng>(rng: &mut R) -> Uuid {
-        let mut uuid = Uuid { bytes: [0; 16] };
-        rng.fill_bytes(&mut uuid.bytes);
-        uuid.set_variant(UuidVariant::RFC4122);
-        uuid.set_version(UuidVersion::Random);
-        uuid
-    }
-}
-
 #[cfg(test)]
 mod tests {
     extern crate std;
@@ -1047,9 +1018,6 @@ mod tests {
 
     use super::{NAMESPACE_DNS, NAMESPACE_URL, NAMESPACE_OID, NAMESPACE_X500};
     use super::{Uuid, UuidVariant, UuidVersion};
-
-    #[cfg(feature = "v4")]
-    use rand;
 
     fn new() -> Uuid {
         Uuid::parse_str("F9168C5E-CEB2-4FAA-B6BF-329BF39FA1E4").unwrap()
@@ -1514,17 +1482,6 @@ mod tests {
         assert!(u3 != u1);
         assert!(u2 != u3);
         assert!(u3 != u2);
-    }
-
-    #[test]
-    #[cfg(feature = "v4")]
-    fn test_rand_rand() {
-        let mut rng = rand::thread_rng();
-        let u: Uuid = rand::Rand::rand(&mut rng);
-        let ub = u.as_bytes();
-
-        assert!(ub.len() == 16);
-        assert!(!ub.iter().all(|&b| b == 0));
     }
 
     #[test]
