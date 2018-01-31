@@ -1,2 +1,14 @@
-/target
-/Cargo.lock
+### IntelliJ ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### CLion ###
+# CMake
+cmake-build-debug/
+
+### Rust ###
+/target/
+Cargo.lock
+
