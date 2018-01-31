@@ -35,3 +35,8 @@ env:
 notifications:
   email:
     on_success: never
+
+branches:
+    except:
+    - /.*(.tmp)$/
+
