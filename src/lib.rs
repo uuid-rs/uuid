@@ -928,7 +928,7 @@ impl<'a> fmt::Display for Simple<'a> {
 impl<'a> fmt::UpperHex for Simple<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for byte in self.inner.bytes.iter() {
-            try!(write!(f, "{:02X}", byte));
+            write!(f, "{:02X}", byte)?;
         }
         Ok(())
     }
@@ -937,7 +937,7 @@ impl<'a> fmt::UpperHex for Simple<'a> {
 impl<'a> fmt::LowerHex for Simple<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for byte in self.inner.bytes.iter() {
-            try!(write!(f, "{:02x}", byte));
+            write!(f, "{:02x}", byte)?;
         }
         Ok(())
     }
@@ -1083,17 +1083,17 @@ mod tests {
             let uuid1 = Uuid::new(UuidVersion::Random).unwrap();
             let s = uuid1.simple().to_string();
 
-            assert!(s.len() == 32);
-            assert!(uuid1.get_version().unwrap() == UuidVersion::Random);
+            assert_eq!(s.len(), 32);
+            assert_eq!(uuid1.get_version().unwrap(), UuidVersion::Random);
         } else {
             assert!(Uuid::new(UuidVersion::Random).is_none());
         }
 
         // Test unsupported versions
-        assert!(Uuid::new(UuidVersion::Mac) == None);
-        assert!(Uuid::new(UuidVersion::Dce) == None);
-        assert!(Uuid::new(UuidVersion::Md5) == None);
-        assert!(Uuid::new(UuidVersion::Sha1) == None);
+        assert_eq!(Uuid::new(UuidVersion::Mac), None);
+        assert_eq!(Uuid::new(UuidVersion::Dce), None);
+        assert_eq!(Uuid::new(UuidVersion::Md5), None);
+        assert_eq!(Uuid::new(UuidVersion::Sha1), None);
     }
     
     #[cfg(feature = "v1")]
@@ -1105,8 +1105,8 @@ mod tests {
         let node = [1,2,3,4,5,6];
         let ctx = UuidV1Context::new(0);
         let uuid = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
-        assert!(uuid.get_version().unwrap() == UuidVersion::Mac);
-        assert!(uuid.get_variant().unwrap() == UuidVariant::RFC4122);
+        assert_eq!(uuid.get_version().unwrap(), UuidVersion::Mac);
+        assert_eq!(uuid.get_variant().unwrap(), UuidVariant::RFC4122);
         assert_eq!(uuid.hyphenated().to_string(), "20616934-4ba2-11e7-8000-010203040506");
         let uuid2 = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
         assert_eq!(uuid2.hyphenated().to_string(), "20616934-4ba2-11e7-8001-010203040506");
@@ -1122,8 +1122,8 @@ mod tests {
     fn test_new_v3() {
         for &(ref ns, ref name, _) in FIXTURE_V3 {
             let uuid = Uuid::new_v3(*ns, *name);
-            assert!(uuid.get_version().unwrap() == UuidVersion::Md5);
-            assert!(uuid.get_variant().unwrap() == UuidVariant::RFC4122);
+            assert_eq!(uuid.get_version().unwrap(), UuidVersion::Md5);
+            assert_eq!(uuid.get_variant().unwrap(), UuidVariant::RFC4122);
         }
     }
 
@@ -1132,8 +1132,8 @@ mod tests {
     fn test_new_v4() {
         let uuid1 = Uuid::new_v4();
 
-        assert!(uuid1.get_version().unwrap() == UuidVersion::Random);
-        assert!(uuid1.get_variant().unwrap() == UuidVariant::RFC4122);
+        assert_eq!(uuid1.get_version().unwrap(), UuidVersion::Random);
+        assert_eq!(uuid1.get_variant().unwrap(), UuidVariant::RFC4122);
     }
 
     #[cfg(feature = "v5")]
@@ -1141,8 +1141,8 @@ mod tests {
     fn test_new_v5() {
         for &(ref ns, ref name, _) in FIXTURE_V5 {
             let uuid = Uuid::new_v5(*ns, *name);
-            assert!(uuid.get_version().unwrap() == UuidVersion::Sha1);
-            assert!(uuid.get_variant().unwrap() == UuidVariant::RFC4122);
+            assert_eq!(uuid.get_version().unwrap(), UuidVersion::Sha1);
+            assert_eq!(uuid.get_variant().unwrap(), UuidVariant::RFC4122);
         }
     }
 
@@ -1163,7 +1163,7 @@ mod tests {
     fn test_get_version_v3() {
         let uuid = Uuid::new_v3(&NAMESPACE_DNS, "rust-lang.org");
 
-        assert!(uuid.get_version().unwrap() == UuidVersion::Md5);
+        assert_eq!(uuid.get_version().unwrap(), UuidVersion::Md5);
         assert_eq!(uuid.get_version_num(), 3);
     }
 
@@ -1172,7 +1172,7 @@ mod tests {
     fn test_get_version_v4() {
         let uuid1 = Uuid::new_v4();
 
-        assert!(uuid1.get_version().unwrap() == UuidVersion::Random);
+        assert_eq!(uuid1.get_version().unwrap(), UuidVersion::Random);
         assert_eq!(uuid1.get_version_num(), 4);
     }
 
@@ -1181,7 +1181,7 @@ mod tests {
     fn test_get_version_v5() {
         let uuid2 = Uuid::new_v5(&NAMESPACE_DNS, "rust-lang.org");
 
-        assert!(uuid2.get_version().unwrap() == UuidVersion::Sha1);
+        assert_eq!(uuid2.get_version().unwrap(), UuidVersion::Sha1);
         assert_eq!(uuid2.get_version_num(), 5);
     }
 
@@ -1194,12 +1194,12 @@ mod tests {
         let uuid5 = Uuid::parse_str("F9168C5E-CEB2-4faa-D6BF-329BF39FA1E4").unwrap();
         let uuid6 = Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
 
-        assert!(uuid1.get_variant().unwrap() == UuidVariant::RFC4122);
-        assert!(uuid2.get_variant().unwrap() == UuidVariant::RFC4122);
-        assert!(uuid3.get_variant().unwrap() == UuidVariant::RFC4122);
-        assert!(uuid4.get_variant().unwrap() == UuidVariant::Microsoft);
-        assert!(uuid5.get_variant().unwrap() == UuidVariant::Microsoft);
-        assert!(uuid6.get_variant().unwrap() == UuidVariant::NCS);
+        assert_eq!(uuid1.get_variant().unwrap(), UuidVariant::RFC4122);
+        assert_eq!(uuid2.get_variant().unwrap(), UuidVariant::RFC4122);
+        assert_eq!(uuid3.get_variant().unwrap(), UuidVariant::RFC4122);
+        assert_eq!(uuid4.get_variant().unwrap(), UuidVariant::Microsoft);
+        assert_eq!(uuid5.get_variant().unwrap(), UuidVariant::Microsoft);
+        assert_eq!(uuid6.get_variant().unwrap(), UuidVariant::NCS);
     }
 
     #[test]
@@ -1250,14 +1250,14 @@ mod tests {
 
         // Nil
         let nil = Uuid::nil();
-        assert!(Uuid::parse_str("00000000000000000000000000000000").unwrap() == nil);
-        assert!(Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap() == nil);
+        assert_eq!(Uuid::parse_str("00000000000000000000000000000000").unwrap(), nil);
+        assert_eq!(Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap(), nil);
 
         // Round-trip
         let uuid_orig = new();
         let orig_str = uuid_orig.to_string();
         let uuid_out = Uuid::parse_str(&orig_str).unwrap();
-        assert!(uuid_orig == uuid_out);
+        assert_eq!(uuid_orig, uuid_out);
 
         // Test error reporting
         assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"),
@@ -1275,7 +1275,7 @@ mod tests {
         let uuid1 = new();
         let s = uuid1.simple().to_string();
 
-        assert!(s.len() == 32);
+        assert_eq!(s.len(), 32);
         assert!(s.chars().all(|c| c.is_digit(16)));
     }
 
@@ -1284,7 +1284,7 @@ mod tests {
         let uuid1 = new();
         let s = uuid1.to_string();
 
-        assert!(s.len() == 36);
+        assert_eq!(s.len(), 36);
         assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
     }
 
@@ -1355,7 +1355,7 @@ mod tests {
         let s = &ss[9..];
 
         assert!(ss.starts_with("urn:uuid:"));
-        assert!(s.len() == 36);
+        assert_eq!(s.len(), 36);
         assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
     }
 
@@ -1368,7 +1368,7 @@ mod tests {
 
         let hsn = hs.chars().filter(|&c| c != '-').collect::<String>();
 
-        assert!(hsn == ss);
+        assert_eq!(hsn, ss);
     }
 
     #[test]
@@ -1389,10 +1389,11 @@ mod tests {
         let uuid1 = new();
         let uuid2 = new2();
 
-        assert!(uuid1 == uuid1);
-        assert!(uuid2 == uuid2);
-        assert!(uuid1 != uuid2);
-        assert!(uuid2 != uuid1);
+        assert_eq!(uuid1, uuid1);
+        assert_eq!(uuid2, uuid2);
+
+        assert_ne!(uuid1, uuid2);
+        assert_ne!(uuid2, uuid1);
     }
 
     #[test]
@@ -1430,6 +1431,7 @@ mod tests {
 
         let u = Uuid::from_fields(d1_in, d2_in, d3_in, d4_in).unwrap();
         let (d1_out, d2_out, d3_out, d4_out) = u.as_fields();
+
         assert_eq!(d1_in, d1_out);
         assert_eq!(d2_in, d2_out);
         assert_eq!(d3_in, d3_out);
@@ -1474,14 +1476,14 @@ mod tests {
         let u2 = u1.clone();
         let u3 = new2();
 
-        assert!(u1 == u1);
-        assert!(u1 == u2);
-        assert!(u2 == u1);
+        assert_eq!(u1, u1);
+        assert_eq!(u1, u2);
+        assert_eq!(u2, u1);
 
-        assert!(u1 != u3);
-        assert!(u3 != u1);
-        assert!(u2 != u3);
-        assert!(u3 != u2);
+        assert_ne!(u1, u3);
+        assert_ne!(u3, u1);
+        assert_ne!(u2, u3);
+        assert_ne!(u3, u2);
     }
 
     #[test]
@@ -1490,6 +1492,7 @@ mod tests {
         let id1 = new();
         let id2 = new2();
         set.insert(id1.clone());
+
         assert!(set.contains(&id1));
         assert!(!set.contains(&id2));
     }
