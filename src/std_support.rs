@@ -1,3 +1,4 @@
+#[cfg(feature = "std")]
 extern crate std;
 
 use ParseError;

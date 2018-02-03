@@ -25,6 +25,7 @@ md5 = { version = "0.3", optional = true }
 serde_test = "1.0.19"
 
 [features]
+default = ["std"]
 std = []
 v1 = []
 v3 = ["md5"]
