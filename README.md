@@ -18,7 +18,7 @@ The uniqueness property is not strictly guaranteed, however for all practical
 purposes, it can be assumed that an unintentional collision would be extremely
 unlikely.
 
-[Documentation](https://doc.rust-lang.org/uuid)
+[Documentation](https://docs.rs/uuid)
 
 ## Usage
 
