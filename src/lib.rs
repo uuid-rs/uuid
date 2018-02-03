@@ -105,7 +105,6 @@
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-
 extern crate core;
 
 #[cfg(feature = "v3")]
@@ -115,19 +114,8 @@ extern crate rand;
 #[cfg(feature = "v5")]
 extern crate sha1;
 
-
-#[cfg(feature = "std")]
-use std::fmt;
-#[cfg(feature = "std")]
-use std::hash;
-#[cfg(feature = "std")]
-use std::str::FromStr;
-
-#[cfg(not(feature = "std"))]
 use core::fmt;
-#[cfg(not(feature = "std"))]
 use core::hash;
-#[cfg(not(feature = "std"))]
 use core::str::FromStr;
 
 // serde links to std, so go ahead an pull in our own std
