@@ -26,12 +26,13 @@
 //!
 //! # Dependencies
 //!
-//! This crate by default has no dependencies and is `#![no_std]` compatible.
-//! The following Cargo features, however, can be used to enable various pieces
-//! of functionality.
+//! By default, this crate depends on nothing but `libstd` and cannot generate
+//! any `Uuid`s. You need to enable the following Cargo features to enable
+//! various pieces of functionality:
 //!
 //! * `std` - adds in functionality available when linking to the standard
-//!   library, currently this is only the `impl Error for ParseError`.
+//!   library, currently this is only the `impl Error for ParseError`. This is
+//!   enabled by default.
 //! * `v1` - adds the `Uuid::new_v1` function and the ability to create a V1
 //!   using a `UUIDV1Context` and a timestamp from `time::timespec`
 //! * `v3` - adds the `Uuid::new_v3` function and the ability to create a V3
