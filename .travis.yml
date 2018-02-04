@@ -4,6 +4,7 @@ sudo: false
 matrix:
   include:
     - env: FEATURES=""
+           NDF="--no-default-features"
     - env: FEATURES="serde"
     - env: FEATURES="std"
     - env: FEATURES="v1"
@@ -26,7 +27,7 @@ matrix:
         - travis-cargo --only nightly doc-upload
 
 script:
-  - cargo test --features "$FEATURES"
+  - cargo test --features "$FEATURES" $NDF
 
 env:
   global:
