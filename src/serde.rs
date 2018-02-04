@@ -1,8 +1,6 @@
 extern crate serde;
-extern crate std;
 
-use self::std::fmt;
-use self::std::prelude::v1::*;
+use core::fmt;
 use self::serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 use Uuid;
