@@ -112,9 +112,8 @@
 
 // serde links to std, so go ahead an pull in our own std
 // support in those situations as well.
-#[cfg(any(feature = "std",
-          feature = "serde"))]
-extern crate core;
+#[cfg(feature = "std")]
+extern crate std as core;
 
 #[cfg(feature = "v3")]
 extern crate md5;
