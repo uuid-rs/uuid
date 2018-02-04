@@ -27,7 +27,7 @@
 //! # Dependencies
 //!
 //! By default, this crate depends on nothing but `libstd` and cannot generate
-//! any `Uuid`s. You need to enable the following Cargo features to enable
+//! [`Uuid`]s. You need to enable the following Cargo features to enable
 //! various pieces of functionality:
 //!
 //! * `std` - adds in functionality available when linking to the standard
@@ -48,14 +48,21 @@
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = "0.4"
+//! uuid = "0.5.1"
 //! ```
 //!
 //! To activate various features, use syntax like:
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = { version = "0.4", features = ["serde", "v4"] }
+//! uuid = { version = "0.5.1", features = ["serde", "v4"] }
+//! ```
+//!
+//! You can disable default features with:
+//!
+//! ```toml
+//! [dependencies]
+//! uuid = { version = "0.5.1", default-features = false }
 //! ```
 //!
 //! # Examples
@@ -106,6 +113,10 @@
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+// serde links to std, so go ahead an pull in our own std
+// support in those situations as well.
+#[cfg(any(feature = "std",
+          feature = "serde"))]
 extern crate core;
 
 #[cfg(feature = "v3")]
