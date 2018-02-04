@@ -126,10 +126,7 @@ use core::fmt;
 use core::hash;
 use core::str::FromStr;
 
-// serde links to std, so go ahead an pull in our own std
-// support in those situations as well.
-#[cfg(any(feature = "std",
-          feature = "serde"))]
+#[cfg(feature = "std")]
 mod std_support;
 #[cfg(feature = "serde")]
 mod serde;
