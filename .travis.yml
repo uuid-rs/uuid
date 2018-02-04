@@ -6,19 +6,12 @@ matrix:
     - env: FEATURES=""
            NDF="--no-default-features"
     - env: FEATURES="serde"
-           NDF=""
     - env: FEATURES="std"
-           NDF=""
     - env: FEATURES="v1"
-           NDF=""
     - env: FEATURES="v3"
-           NDF=""
     - env: FEATURES="v4"
-           NDF=""
     - env: FEATURES="v5"
-           NDF=""
     - env: FEATURES="serde v1 v3 v4 v5 std"
-           NDF=""
     - rust: beta
     - rust: nightly
 
