@@ -45,7 +45,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = "0.5.1"
+//! uuid = "0.6.0-beta"
 //! ```
 //!
 //! To activate various features, use syntax like:

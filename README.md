@@ -26,7 +26,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-uuid = "0.5.1"
+uuid = "0.6.0-beta"
 ```
 
 and this to your crate root:
