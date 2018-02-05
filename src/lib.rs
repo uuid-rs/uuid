@@ -238,9 +238,10 @@ pub struct DefaultUuidV1Context {
 #[cfg(all(feature = "v1", feature = "std"))]
 impl UuidV1Context for DefaultUuidV1Context {
     fn generate(&self, current_seconds: u64, current_nanoseconds: u32) -> u16 {
-        let last_fetch = self.last_fetch.lock()
+        let mut last_fetch = self.last_fetch.lock()
             .expect("Couldn't acquire lock on DefaultUuidV1Context::last_fetch");
-        if *last_fetch >= (current_seconds, current_nanoseconds) {
+        if *last_fetch < (current_seconds, current_nanoseconds) {
+            *last_fetch = (current_seconds, current_nanoseconds);
             (self.count.fetch_add(1, Ordering::SeqCst) & 0xffff) as u16
         } else {
             self.count.load(Ordering::SeqCst) as u16
@@ -257,6 +258,7 @@ impl DefaultUuidV1Context {
     /// counter that is incremented at every request, the value ends up in the clock_seq
     /// portion of the V1 uuid (the fourth group).  This will improve the probability
     /// that the UUID is unique across the process.
+    /// This structure uses a lock to keep track of the last generated time.
     pub fn new(count : u16) -> DefaultUuidV1Context {
         DefaultUuidV1Context {
             last_fetch: std::sync::Arc::new(std::sync::Mutex::new((0, 0))),
@@ -1148,6 +1150,10 @@ mod tests {
         // When the time increases, the sequence can stay the same.
         let uuid3 = Uuid::new_v1(&ctx, time, timefrac + 1, &node[..]).unwrap();
         assert_eq!(uuid3.hyphenated().to_string(), "20616934-4ba2-11e7-8001-010203040506");
+
+        // When the time goes *backwards*, the sequence also must be incremented
+        let uuid4 = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
+        assert_eq!(uuid4.hyphenated().to_string(), "20616934-4ba2-11e7-8002-010203040506");
 
         let ts = uuid.to_timestamp().unwrap();
         assert_eq!(ts.0 - 0x01B21DD213814000, 1_496_854_535_812_946_0);
