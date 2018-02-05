@@ -23,6 +23,7 @@ md5 = { version = "0.3", optional = true }
 
 [dev-dependencies]
 serde_test = "1.0.19"
+criterion = "0.1.0"
 
 [features]
 default = ["std"]
@@ -31,3 +32,7 @@ v1 = []
 v3 = ["md5"]
 v4 = ["rand"]
 v5 = ["sha1"]
+
+[[bench]]
+name = "v1_generation"
+harness = false
