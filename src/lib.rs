@@ -222,14 +222,28 @@ pub struct Urn<'a> {
     inner: &'a Uuid,
 }
 
+#[cfg(feature = "v1")]
+pub trait UuidV1Context {
+    fn generate(&self, current_seconds: u64, current_nanoseconds: u32) -> u16;
+}
+
 /// A stateful context for the v1 generator to help ensure process-wide uniqueness
 #[cfg(feature = "v1")]
-pub struct UuidV1Context {
+pub struct DefaultUuidV1Context {
+    #[allow(unused)]
+    last_fetch: (u64, u32),
     count: AtomicUsize,
 }
 
 #[cfg(feature = "v1")]
-impl UuidV1Context {
+impl UuidV1Context for DefaultUuidV1Context {
+    fn generate(&self, _current_seconds: u64, _current_nanoseconds: u32) -> u16 {
+        (self.count.fetch_add(1, Ordering::SeqCst) & 0xffff) as u16
+    }
+}
+
+#[cfg(feature = "v1")]
+impl DefaultUuidV1Context {
 
     /// Creates a thread-safe, internally mutable context to help ensure uniqueness
     ///
@@ -237,8 +251,9 @@ impl UuidV1Context {
     /// counter that is incremented at every request, the value ends up in the clock_seq
     /// portion of the V1 uuid (the fourth group).  This will improve the probability
     /// that the UUID is unique across the process.
-    pub fn new(count : u16) -> UuidV1Context {
-        UuidV1Context {
+    pub fn new(count : u16) -> DefaultUuidV1Context {
+        DefaultUuidV1Context {
+            last_fetch: (0, 0),
             count: AtomicUsize::new(count as usize)
         }
     }
@@ -361,19 +376,20 @@ impl Uuid {
     /// Basic usage:
     /// 
     /// ```
-    /// use uuid::{Uuid, UuidV1Context};
+    /// use uuid::{Uuid, DefaultUuidV1Context};
     ///
-    /// let ctx = UuidV1Context::new(42);
+    /// let ctx = DefaultUuidV1Context::new(42);
     /// let v1uuid = Uuid::new_v1(&ctx, 1497624119, 1234, &[1,2,3,4,5,6]).unwrap();
     ///
     /// assert_eq!(v1uuid.hyphenated().to_string(), "f3b4958c-52a1-11e7-802a-010203040506");
     /// ```
     #[cfg(feature = "v1")]
-    pub fn new_v1(context: &UuidV1Context, seconds: u64, nsecs: u32, node: &[u8]) -> Result<Uuid, ParseError> {
+    pub fn new_v1<T: UuidV1Context>(context: &T, seconds: u64, nsecs: u32, node: &[u8])
+        -> Result<Uuid, ParseError> {
         if node.len() != 6 {
             return Err(ParseError::InvalidLength(node.len()))
         }
-        let count = (context.count.fetch_add(1, Ordering::SeqCst) & 0xffff) as u16;
+        let count = context.generate(seconds, nsecs);
         let timestamp = seconds * 10_000_000 + (nsecs / 100) as u64;
         let uuidtime = timestamp + UUID_TICKS_BETWEEN_EPOCHS; 
         let time_low : u32 = (uuidtime & 0xFFFFFFFF) as u32;
@@ -1106,11 +1122,11 @@ mod tests {
     #[cfg(feature = "v1")]
     #[test]
     fn test_new_v1() {
-        use UuidV1Context;
+        use DefaultUuidV1Context;
         let time : u64 = 1_496_854_535;
         let timefrac : u32 = 812_946_000;
         let node = [1,2,3,4,5,6];
-        let ctx = UuidV1Context::new(0);
+        let ctx = DefaultUuidV1Context::new(0);
         let uuid = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
         assert_eq!(uuid.get_version().unwrap(), UuidVersion::Mac);
         assert_eq!(uuid.get_variant().unwrap(), UuidVariant::RFC4122);
