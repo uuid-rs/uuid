@@ -31,7 +31,8 @@
 //! various pieces of functionality:
 //!
 //! * `v1` - adds the `Uuid::new_v1` function and the ability to create a V1
-//!   using a `UUIDV1Context` and a timestamp from `time::timespec`
+//!   using an implementation of `UuidV1ClockSequence` (usually `UuidV1Context`)
+//!   and a timestamp from `time::timespec`.
 //! * `v3` - adds the `Uuid::new_v3` function and the ability to create a V3
 //!   UUID based on the MD5 hash of some data.
 //! * `v4` - adds the `Uuid::new_v4` function and the ability to randomly
@@ -229,7 +230,16 @@ pub struct Urn<'a> {
     inner: &'a Uuid,
 }
 
-/// A stateful context for the v1 generator to help ensure process-wide uniqueness
+/// A trait that abstracts over generation of UUID v1 "Clock Sequence" values.
+#[cfg(feature = "v1")]
+pub trait UuidV1ClockSequence {
+    /// Return a 16-bit number that will be used as the "clock sequence" in the UUID.
+    /// The number must be different if the time has changed since the last time a clock
+    /// sequence was requested.
+    fn generate_sequence(&self, seconds: u64, nanoseconds: u32) -> u16;
+}
+
+/// A thread-safe, stateful context for the v1 generator to help ensure process-wide uniqueness
 #[cfg(feature = "v1")]
 pub struct UuidV1Context {
     count: AtomicUsize,
@@ -247,6 +257,13 @@ impl UuidV1Context {
         UuidV1Context {
             count: AtomicUsize::new(count as usize),
         }
+    }
+}
+
+#[cfg(feature = "v1")]
+impl UuidV1ClockSequence for UuidV1Context {
+    fn generate_sequence(&self, _: u64, _: u32) -> u16 {
+        (self.count.fetch_add(1, Ordering::SeqCst) & 0xffff) as u16
     }
 }
 
@@ -337,14 +354,15 @@ impl Uuid {
 
     /// Creates a new `Uuid` (version 1 style) using a time value + seq + NodeID.
     ///
-    /// This expects two values representing a monotonically increasing value
-    /// as well as a unique 6 byte NodeId, and a `UuidV1Context`. This function
-    /// is only guaranteed to produce unique values if the following conditions hold:
-    ///
-    /// 1. The NodeID is unique for this process.
-    /// 2. The Context is shared across all threads which are generating V1 UUIDs
-    /// 3. The supplied seconds+nsecs values are monotonically increasing.
-    ///
+    /// This expects two values representing a monotonically increasing value 
+    /// as well as a unique 6 byte NodeId, and an implementation of `UuidV1ClockSequence`.
+    /// This function is only guaranteed to produce unique values if the following conditions hold: 
+    /// 
+    /// 1. The NodeID is unique for this process,
+    /// 2. The Context is shared across all threads which are generating V1 UUIDs,
+    /// 3. The `UuidV1ClockSequence` implementation reliably returns unique clock sequences
+    ///    (this crate provides `UuidV1Context` for this purpose).
+    /// 
     /// The NodeID must be exactly 6 bytes long. If the NodeID is not a valid length
     /// this will return a `ParseError::InvalidLength`.
     ///
@@ -371,8 +389,8 @@ impl Uuid {
     /// assert_eq!(v1uuid.hyphenated().to_string(), "f3b4958c-52a1-11e7-802a-010203040506");
     /// ```
     #[cfg(feature = "v1")]
-    pub fn new_v1(
-        context: &UuidV1Context,
+    pub fn new_v1<T: UuidV1ClockSequence>(
+        context: &T,
         seconds: u64,
         nsecs: u32,
         node: &[u8],
@@ -380,7 +398,7 @@ impl Uuid {
         if node.len() != 6 {
             return Err(ParseError::InvalidLength(node.len()));
         }
-        let count = (context.count.fetch_add(1, Ordering::SeqCst) & 0xffff) as u16;
+        let count = context.generate_sequence(seconds, nsecs);
         let timestamp = seconds * 10_000_000 + (nsecs / 100) as u64;
         let uuidtime = timestamp + UUID_TICKS_BETWEEN_EPOCHS;
         let time_low: u32 = (uuidtime & 0xFFFFFFFF) as u32;
