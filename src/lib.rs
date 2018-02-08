@@ -106,7 +106,6 @@
 #![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "https://www.rust-lang.org/favicon.ico",
        html_root_url = "https://docs.rs/uuid")]
-
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -135,7 +134,7 @@ mod serde;
 use core::sync::atomic::{AtomicUsize, Ordering};
 
 #[cfg(feature = "v4")]
-use rand::{Rng};
+use rand::Rng;
 
 #[cfg(feature = "v5")]
 use sha1::Sha1;
@@ -190,32 +189,40 @@ pub struct Hyphenated<'a> {
 
 /// A UUID of the namespace of fully-qualified domain names
 pub const NAMESPACE_DNS: Uuid = Uuid {
-    bytes: [0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1,
-            0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8]
+    bytes: [
+        0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30,
+        0xc8,
+    ],
 };
 
 /// A UUID of the namespace of URLs
 pub const NAMESPACE_URL: Uuid = Uuid {
-    bytes: [0x6b, 0xa7, 0xb8, 0x11, 0x9d, 0xad, 0x11, 0xd1,
-            0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8]
+    bytes: [
+        0x6b, 0xa7, 0xb8, 0x11, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30,
+        0xc8,
+    ],
 };
 
 /// A UUID of the namespace of ISO OIDs
 pub const NAMESPACE_OID: Uuid = Uuid {
-    bytes: [0x6b, 0xa7, 0xb8, 0x12, 0x9d, 0xad, 0x11, 0xd1,
-            0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8]
+    bytes: [
+        0x6b, 0xa7, 0xb8, 0x12, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30,
+        0xc8,
+    ],
 };
 
 /// A UUID of the namespace of X.500 DNs (in DER or a text output format)
 pub const NAMESPACE_X500: Uuid = Uuid {
-    bytes: [0x6b, 0xa7, 0xb8, 0x14, 0x9d, 0xad, 0x11, 0xd1,
-            0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8]
+    bytes: [
+        0x6b, 0xa7, 0xb8, 0x14, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30,
+        0xc8,
+    ],
 };
 
-/// The number of 100 ns ticks between 
+/// The number of 100 ns ticks between
 /// the UUID epoch 1582-10-15 00:00:00 and the Unix epoch 1970-01-01 00:00:00
 #[cfg(feature = "v1")]
-const UUID_TICKS_BETWEEN_EPOCHS : u64 = 0x01B21DD213814000;
+const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B21DD213814000;
 
 /// An adaptor for formatting a `Uuid` as a URN string.
 pub struct Urn<'a> {
@@ -230,16 +237,15 @@ pub struct UuidV1Context {
 
 #[cfg(feature = "v1")]
 impl UuidV1Context {
-
     /// Creates a thread-safe, internally mutable context to help ensure uniqueness
     ///
     /// This is a context which can be shared across threads.  It maintains an internal
     /// counter that is incremented at every request, the value ends up in the clock_seq
     /// portion of the V1 uuid (the fourth group).  This will improve the probability
     /// that the UUID is unique across the process.
-    pub fn new(count : u16) -> UuidV1Context {
+    pub fn new(count: u16) -> UuidV1Context {
         UuidV1Context {
-            count: AtomicUsize::new(count as usize)
+            count: AtomicUsize::new(count as usize),
         }
     }
 }
@@ -261,30 +267,26 @@ const HYPHENATED_LENGTH: usize = 36;
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            ParseError::InvalidLength(found) => {
-                write!(f,
-                       "Invalid length; expecting {} or {} chars, found {}",
-                       SIMPLE_LENGTH, HYPHENATED_LENGTH, found)
-            }
-            ParseError::InvalidCharacter(found, pos) => {
-                write!(f,
-                       "Invalid character; found `{}` (0x{:02x}) at offset {}",
-                       found,
-                       found as usize,
-                       pos)
-            }
-            ParseError::InvalidGroups(found) => {
-                write!(f,
-                       "Malformed; wrong number of groups: expected 1 or 5, found {}",
-                       found)
-            }
-            ParseError::InvalidGroupLength(group, found, expecting) => {
-                write!(f,
-                       "Malformed; length of group {} was {}, expecting {}",
-                       group,
-                       found,
-                       expecting)
-            }
+            ParseError::InvalidLength(found) => write!(
+                f,
+                "Invalid length; expecting {} or {} chars, found {}",
+                SIMPLE_LENGTH, HYPHENATED_LENGTH, found
+            ),
+            ParseError::InvalidCharacter(found, pos) => write!(
+                f,
+                "Invalid character; found `{}` (0x{:02x}) at offset {}",
+                found, found as usize, pos
+            ),
+            ParseError::InvalidGroups(found) => write!(
+                f,
+                "Malformed; wrong number of groups: expected 1 or 5, found {}",
+                found
+            ),
+            ParseError::InvalidGroupLength(group, found, expecting) => write!(
+                f,
+                "Malformed; length of group {} was {}, expecting {}",
+                group, found, expecting
+            ),
         }
     }
 }
@@ -332,23 +334,23 @@ impl Uuid {
             _ => None,
         }
     }
-    
+
     /// Creates a new `Uuid` (version 1 style) using a time value + seq + NodeID.
     ///
-    /// This expects two values representing a monotonically increasing value 
-    /// as well as a unique 6 byte NodeId, and a `UuidV1Context`. This function 
-    /// is only guaranteed to produce unique values if the following conditions hold: 
-    /// 
+    /// This expects two values representing a monotonically increasing value
+    /// as well as a unique 6 byte NodeId, and a `UuidV1Context`. This function
+    /// is only guaranteed to produce unique values if the following conditions hold:
+    ///
     /// 1. The NodeID is unique for this process.
     /// 2. The Context is shared across all threads which are generating V1 UUIDs
     /// 3. The supplied seconds+nsecs values are monotonically increasing.
-    /// 
+    ///
     /// The NodeID must be exactly 6 bytes long. If the NodeID is not a valid length
     /// this will return a `ParseError::InvalidLength`.
     ///
     /// The function is not guaranteed to produce monotonically increasing values
     /// however.  There is a slight possibility that two successive equal time values
-    /// could be supplied and the sequence counter wraps back over to 0. 
+    /// could be supplied and the sequence counter wraps back over to 0.
     ///
     /// If uniqueness and monotonicity is required, the user is responsibile for ensuring
     /// that the time value always increases between calls
@@ -359,7 +361,7 @@ impl Uuid {
     ///
     /// # Examples
     /// Basic usage:
-    /// 
+    ///
     /// ```
     /// use uuid::{Uuid, UuidV1Context};
     ///
@@ -369,23 +371,27 @@ impl Uuid {
     /// assert_eq!(v1uuid.hyphenated().to_string(), "f3b4958c-52a1-11e7-802a-010203040506");
     /// ```
     #[cfg(feature = "v1")]
-    pub fn new_v1(context: &UuidV1Context, seconds: u64, nsecs: u32, node: &[u8]) -> Result<Uuid, ParseError> {
+    pub fn new_v1(
+        context: &UuidV1Context,
+        seconds: u64,
+        nsecs: u32,
+        node: &[u8],
+    ) -> Result<Uuid, ParseError> {
         if node.len() != 6 {
-            return Err(ParseError::InvalidLength(node.len()))
+            return Err(ParseError::InvalidLength(node.len()));
         }
         let count = (context.count.fetch_add(1, Ordering::SeqCst) & 0xffff) as u16;
         let timestamp = seconds * 10_000_000 + (nsecs / 100) as u64;
-        let uuidtime = timestamp + UUID_TICKS_BETWEEN_EPOCHS; 
-        let time_low : u32 = (uuidtime & 0xFFFFFFFF) as u32;
-        let time_mid : u16 = ((uuidtime >> 32) & 0xFFFF) as u16; 
-        let time_hi_and_ver : u16 = (((uuidtime >> 48) & 0x0FFF) as u16) | (1 << 12);
+        let uuidtime = timestamp + UUID_TICKS_BETWEEN_EPOCHS;
+        let time_low: u32 = (uuidtime & 0xFFFFFFFF) as u32;
+        let time_mid: u16 = ((uuidtime >> 32) & 0xFFFF) as u16;
+        let time_hi_and_ver: u16 = (((uuidtime >> 48) & 0x0FFF) as u16) | (1 << 12);
         let mut d4 = [0_u8; 8];
         d4[0] = (((count & 0x3F00) >> 8) as u8) | 0x80;
         d4[1] = (count & 0xFF) as u8;
         d4[2..].copy_from_slice(node);
         Uuid::from_fields(time_low, time_mid, time_hi_and_ver, &d4)
     }
-
 
     /// Creates a UUID using a name from a namespace, based on the MD5 hash.
     ///
@@ -403,12 +409,14 @@ impl Uuid {
         let mut ctx = md5::Context::new();
         ctx.consume(namespace.as_bytes());
         ctx.consume(name.as_bytes());
-        let mut uuid = Uuid { bytes: ctx.compute().into() };
+        let mut uuid = Uuid {
+            bytes: ctx.compute().into(),
+        };
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Md5);
         uuid
     }
-    
+
     /// Creates a random `Uuid`.
     ///
     /// This uses the `rand` crate's default task RNG as the source of random numbers.
@@ -432,7 +440,7 @@ impl Uuid {
     #[cfg(feature = "v4")]
     pub fn new_v4() -> Uuid {
         let mut rng = rand::thread_rng();
-        
+
         let mut uuid = Uuid { bytes: [0; 16] };
         rng.fill_bytes(&mut uuid.bytes);
         uuid.set_variant(UuidVariant::RFC4122);
@@ -501,25 +509,29 @@ impl Uuid {
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
-    pub fn from_fields(d1: u32,
-                       d2: u16,
-                       d3: u16,
-                       d4: &[u8]) -> Result<Uuid, ParseError>  {
+    pub fn from_fields(d1: u32, d2: u16, d3: u16, d4: &[u8]) -> Result<Uuid, ParseError> {
         if d4.len() != 8 {
-            return Err(ParseError::InvalidLength(d4.len()))
+            return Err(ParseError::InvalidLength(d4.len()));
         }
 
         Ok(Uuid {
             bytes: [
                 (d1 >> 24) as u8,
                 (d1 >> 16) as u8,
-                (d1 >>  8) as u8,
-                (d1 >>  0) as u8,
-                (d2 >>  8) as u8,
-                (d2 >>  0) as u8,
-                (d3 >>  8) as u8,
-                (d3 >>  0) as u8,
-                d4[0], d4[1], d4[2], d4[3], d4[4], d4[5], d4[6], d4[7]
+                (d1 >> 8) as u8,
+                (d1 >> 0) as u8,
+                (d2 >> 8) as u8,
+                (d2 >> 0) as u8,
+                (d3 >> 8) as u8,
+                (d3 >> 0) as u8,
+                d4[0],
+                d4[1],
+                d4[2],
+                d4[3],
+                d4[4],
+                d4[5],
+                d4[6],
+                d4[7],
             ],
         })
     }
@@ -578,10 +590,10 @@ impl Uuid {
     fn set_variant(&mut self, v: UuidVariant) {
         // Octet 8 contains the variant in the most significant 3 bits
         self.bytes[8] = match v {
-            UuidVariant::NCS => self.bytes[8] & 0x7f,                // b0xx...
-            UuidVariant::RFC4122 => (self.bytes[8] & 0x3f) | 0x80,   // b10x...
+            UuidVariant::NCS => self.bytes[8] & 0x7f, // b0xx...
+            UuidVariant::RFC4122 => (self.bytes[8] & 0x3f) | 0x80, // b10x...
             UuidVariant::Microsoft => (self.bytes[8] & 0x1f) | 0xc0, // b110...
-            UuidVariant::Future => (self.bytes[8] & 0x1f) | 0xe0,    // b111...
+            UuidVariant::Future => (self.bytes[8] & 0x1f) | 0xe0, // b111...
         }
     }
 
@@ -671,17 +683,11 @@ impl Uuid {
     ///            (0x936DA01F, 0x9ABD, 0x4D9D, b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"));
     /// ```
     pub fn as_fields(&self) -> (u32, u16, u16, &[u8; 8]) {
-        let d1 = ((self.bytes[0] as u32) << 24) |
-                 ((self.bytes[1] as u32) << 16) |
-                 ((self.bytes[2] as u32) << 8) |
-                 (self.bytes[3] as u32);
-        let d2 = ((self.bytes[4] as u16) << 8) |
-                 (self.bytes[5] as u16);
-        let d3 = ((self.bytes[6] as u16) << 8) |
-                 (self.bytes[7] as u16);
-        let d4: &[u8; 8] = unsafe {
-            &*(self.bytes[8..16].as_ptr() as *const [u8; 8])
-        };
+        let d1 = ((self.bytes[0] as u32) << 24) | ((self.bytes[1] as u32) << 16)
+            | ((self.bytes[2] as u32) << 8) | (self.bytes[3] as u32);
+        let d2 = ((self.bytes[4] as u16) << 8) | (self.bytes[5] as u16);
+        let d3 = ((self.bytes[6] as u16) << 8) | (self.bytes[7] as u16);
+        let d4: &[u8; 8] = unsafe { &*(self.bytes[8..16].as_ptr() as *const [u8; 8]) };
         (d1, d2, d3, d4)
     }
 
@@ -752,30 +758,26 @@ impl Uuid {
         Urn { inner: self }
     }
 
-
-    /// Returns an Optional Tuple of (u64, u16) representing the timestamp and 
-    /// counter portion of a V1 UUID.  If the supplied UUID is not V1, this 
+    /// Returns an Optional Tuple of (u64, u16) representing the timestamp and
+    /// counter portion of a V1 UUID.  If the supplied UUID is not V1, this
     /// will return None
     pub fn to_timestamp(&self) -> Option<(u64, u16)> {
-
-        if self.get_version().map(|v| v != UuidVersion::Mac).unwrap_or(true) {
+        if self.get_version()
+            .map(|v| v != UuidVersion::Mac)
+            .unwrap_or(true)
+        {
             return None;
         }
 
-        let ts : u64 = (((self.bytes[6] & 0x0F) as u64) << 56)
-                     |  ((self.bytes[7] as u64) << 48)
-                     |  ((self.bytes[4] as u64) << 40)
-                     |  ((self.bytes[5] as u64) << 32)
-                     |  ((self.bytes[0] as u64) << 24)
-                     |  ((self.bytes[1] as u64) << 16)
-                     |  ((self.bytes[2] as u64) << 8)
-                     |    self.bytes[3] as u64;
+        let ts: u64 = (((self.bytes[6] & 0x0F) as u64) << 56) | ((self.bytes[7] as u64) << 48)
+            | ((self.bytes[4] as u64) << 40) | ((self.bytes[5] as u64) << 32)
+            | ((self.bytes[0] as u64) << 24) | ((self.bytes[1] as u64) << 16)
+            | ((self.bytes[2] as u64) << 8) | self.bytes[3] as u64;
 
-        let count : u16 = (((self.bytes[8] & 0x3F) as u16) << 8) | self.bytes[9] as u16;
+        let count: u16 = (((self.bytes[8] & 0x3F) as u16) << 8) | self.bytes[9] as u16;
 
         Some((ts, count))
     }
-
 
     /// Parses a `Uuid` from a string of hexadecimal digits with optional hyphens.
     ///
@@ -820,15 +822,22 @@ impl Uuid {
                             } else {
                                 digit
                             };
-                            return Err(ParseError::InvalidGroupLength(group,
-                                                                      found as usize,
-                                                                      GROUP_LENS[group]));
+                            return Err(ParseError::InvalidGroupLength(
+                                group,
+                                found as usize,
+                                GROUP_LENS[group],
+                            ));
                         }
                         // Next group, decrement digit, it is incremented again at the bottom.
                         group += 1;
                         digit -= 1;
                     }
-                    _ => return Err(ParseError::InvalidCharacter(input[i_char..].chars().next().unwrap(), i_char)),
+                    _ => {
+                        return Err(ParseError::InvalidCharacter(
+                            input[i_char..].chars().next().unwrap(),
+                            i_char,
+                        ))
+                    }
                 }
             } else {
                 // Second digit of the byte, shift the upper half.
@@ -844,11 +853,18 @@ impl Uuid {
                         } else {
                             digit
                         };
-                        return Err(ParseError::InvalidGroupLength(group,
-                                                                  found as usize,
-                                                                  GROUP_LENS[group]));
+                        return Err(ParseError::InvalidGroupLength(
+                            group,
+                            found as usize,
+                            GROUP_LENS[group],
+                        ));
                     }
-                    _ => return Err(ParseError::InvalidCharacter(input[i_char..].chars().next().unwrap(), i_char)),
+                    _ => {
+                        return Err(ParseError::InvalidCharacter(
+                            input[i_char..].chars().next().unwrap(),
+                            i_char,
+                        ))
+                    }
                 }
                 buffer[(digit / 2) as usize] = acc;
             }
@@ -857,9 +873,11 @@ impl Uuid {
 
         // Now check the last group.
         if ACC_GROUP_LENS[4] != digit {
-            return Err(ParseError::InvalidGroupLength(group,
-                                                      (digit - ACC_GROUP_LENS[3]) as usize,
-                                                      GROUP_LENS[4]));
+            return Err(ParseError::InvalidGroupLength(
+                group,
+                (digit - ACC_GROUP_LENS[3]) as usize,
+                GROUP_LENS[4],
+            ));
         }
 
         Ok(Uuid::from_bytes(&mut buffer).unwrap())
@@ -1023,7 +1041,7 @@ mod tests {
 
     use self::std::prelude::v1::*;
 
-    use super::{NAMESPACE_DNS, NAMESPACE_URL, NAMESPACE_OID, NAMESPACE_X500};
+    use super::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL};
     use super::{Uuid, UuidVariant, UuidVersion};
 
     fn new() -> Uuid {
@@ -1036,43 +1054,146 @@ mod tests {
 
     #[cfg(feature = "v3")]
     static FIXTURE_V3: &'static [(&'static Uuid, &'static str, &'static str)] = &[
-        (&NAMESPACE_DNS, "example.org",    "04738bdf-b25a-3829-a801-b21a1d25095b"),
-        (&NAMESPACE_DNS, "rust-lang.org",  "c6db027c-615c-3b4d-959e-1a917747ca5a"),
-        (&NAMESPACE_DNS, "42",             "5aab6e0c-b7d3-379c-92e3-2bfbb5572511"),
-        (&NAMESPACE_DNS, "lorem ipsum",    "4f8772e9-b59c-3cc9-91a9-5c823df27281"),
-        (&NAMESPACE_URL, "example.org",    "39682ca1-9168-3da2-a1bb-f4dbcde99bf9"),
-        (&NAMESPACE_URL, "rust-lang.org",  "7ed45aaf-e75b-3130-8e33-ee4d9253b19f"),
-        (&NAMESPACE_URL, "42",             "08998a0c-fcf4-34a9-b444-f2bfc15731dc"),
-        (&NAMESPACE_URL, "lorem ipsum",    "e55ad2e6-fb89-34e8-b012-c5dde3cd67f0"),
-        (&NAMESPACE_OID, "example.org",    "f14eec63-2812-3110-ad06-1625e5a4a5b2"),
-        (&NAMESPACE_OID, "rust-lang.org",  "6506a0ec-4d79-3e18-8c2b-f2b6b34f2b6d"),
-        (&NAMESPACE_OID, "42",             "ce6925a5-2cd7-327b-ab1c-4b375ac044e4"),
-        (&NAMESPACE_OID, "lorem ipsum",    "5dd8654f-76ba-3d47-bc2e-4d6d3a78cb09"),
-        (&NAMESPACE_X500, "example.org",   "64606f3f-bd63-363e-b946-fca13611b6f7"),
-        (&NAMESPACE_X500, "rust-lang.org", "bcee7a9c-52f1-30c6-a3cc-8c72ba634990"),
-        (&NAMESPACE_X500, "42",            "c1073fa2-d4a6-3104-b21d-7a6bdcf39a23"),
-        (&NAMESPACE_X500, "lorem ipsum",   "02f09a3f-1624-3b1d-8409-44eff7708208"),
+        (
+            &NAMESPACE_DNS,
+            "example.org",
+            "04738bdf-b25a-3829-a801-b21a1d25095b",
+        ),
+        (
+            &NAMESPACE_DNS,
+            "rust-lang.org",
+            "c6db027c-615c-3b4d-959e-1a917747ca5a",
+        ),
+        (&NAMESPACE_DNS, "42", "5aab6e0c-b7d3-379c-92e3-2bfbb5572511"),
+        (
+            &NAMESPACE_DNS,
+            "lorem ipsum",
+            "4f8772e9-b59c-3cc9-91a9-5c823df27281",
+        ),
+        (
+            &NAMESPACE_URL,
+            "example.org",
+            "39682ca1-9168-3da2-a1bb-f4dbcde99bf9",
+        ),
+        (
+            &NAMESPACE_URL,
+            "rust-lang.org",
+            "7ed45aaf-e75b-3130-8e33-ee4d9253b19f",
+        ),
+        (&NAMESPACE_URL, "42", "08998a0c-fcf4-34a9-b444-f2bfc15731dc"),
+        (
+            &NAMESPACE_URL,
+            "lorem ipsum",
+            "e55ad2e6-fb89-34e8-b012-c5dde3cd67f0",
+        ),
+        (
+            &NAMESPACE_OID,
+            "example.org",
+            "f14eec63-2812-3110-ad06-1625e5a4a5b2",
+        ),
+        (
+            &NAMESPACE_OID,
+            "rust-lang.org",
+            "6506a0ec-4d79-3e18-8c2b-f2b6b34f2b6d",
+        ),
+        (&NAMESPACE_OID, "42", "ce6925a5-2cd7-327b-ab1c-4b375ac044e4"),
+        (
+            &NAMESPACE_OID,
+            "lorem ipsum",
+            "5dd8654f-76ba-3d47-bc2e-4d6d3a78cb09",
+        ),
+        (
+            &NAMESPACE_X500,
+            "example.org",
+            "64606f3f-bd63-363e-b946-fca13611b6f7",
+        ),
+        (
+            &NAMESPACE_X500,
+            "rust-lang.org",
+            "bcee7a9c-52f1-30c6-a3cc-8c72ba634990",
+        ),
+        (
+            &NAMESPACE_X500,
+            "42",
+            "c1073fa2-d4a6-3104-b21d-7a6bdcf39a23",
+        ),
+        (
+            &NAMESPACE_X500,
+            "lorem ipsum",
+            "02f09a3f-1624-3b1d-8409-44eff7708208",
+        ),
     ];
-
 
     #[cfg(feature = "v5")]
     static FIXTURE_V5: &'static [(&'static Uuid, &'static str, &'static str)] = &[
-        (&NAMESPACE_DNS, "example.org",    "aad03681-8b63-5304-89e0-8ca8f49461b5"),
-        (&NAMESPACE_DNS, "rust-lang.org",  "c66bbb60-d62e-5f17-a399-3a0bd237c503"),
-        (&NAMESPACE_DNS, "42",             "7c411b5e-9d3f-50b5-9c28-62096e41c4ed"),
-        (&NAMESPACE_DNS, "lorem ipsum",    "97886a05-8a68-5743-ad55-56ab2d61cf7b"),
-        (&NAMESPACE_URL, "example.org",    "54a35416-963c-5dd6-a1e2-5ab7bb5bafc7"),
-        (&NAMESPACE_URL, "rust-lang.org",  "c48d927f-4122-5413-968c-598b1780e749"),
-        (&NAMESPACE_URL, "42",             "5c2b23de-4bad-58ee-a4b3-f22f3b9cfd7d"),
-        (&NAMESPACE_URL, "lorem ipsum",    "15c67689-4b85-5253-86b4-49fbb138569f"),
-        (&NAMESPACE_OID, "example.org",    "34784df9-b065-5094-92c7-00bb3da97a30"),
-        (&NAMESPACE_OID, "rust-lang.org",  "8ef61ecb-977a-5844-ab0f-c25ef9b8d5d6"),
-        (&NAMESPACE_OID, "42",             "ba293c61-ad33-57b9-9671-f3319f57d789"),
-        (&NAMESPACE_OID, "lorem ipsum",    "6485290d-f79e-5380-9e64-cb4312c7b4a6"),
-        (&NAMESPACE_X500, "example.org",   "e3635e86-f82b-5bbc-a54a-da97923e5c76"),
-        (&NAMESPACE_X500, "rust-lang.org", "26c9c3e9-49b7-56da-8b9f-a0fb916a71a3"),
-        (&NAMESPACE_X500, "42",            "e4b88014-47c6-5fe0-a195-13710e5f6e27"),
-        (&NAMESPACE_X500, "lorem ipsum",   "b11f79a5-1e6d-57ce-a4b5-ba8531ea03d0"),
+        (
+            &NAMESPACE_DNS,
+            "example.org",
+            "aad03681-8b63-5304-89e0-8ca8f49461b5",
+        ),
+        (
+            &NAMESPACE_DNS,
+            "rust-lang.org",
+            "c66bbb60-d62e-5f17-a399-3a0bd237c503",
+        ),
+        (&NAMESPACE_DNS, "42", "7c411b5e-9d3f-50b5-9c28-62096e41c4ed"),
+        (
+            &NAMESPACE_DNS,
+            "lorem ipsum",
+            "97886a05-8a68-5743-ad55-56ab2d61cf7b",
+        ),
+        (
+            &NAMESPACE_URL,
+            "example.org",
+            "54a35416-963c-5dd6-a1e2-5ab7bb5bafc7",
+        ),
+        (
+            &NAMESPACE_URL,
+            "rust-lang.org",
+            "c48d927f-4122-5413-968c-598b1780e749",
+        ),
+        (&NAMESPACE_URL, "42", "5c2b23de-4bad-58ee-a4b3-f22f3b9cfd7d"),
+        (
+            &NAMESPACE_URL,
+            "lorem ipsum",
+            "15c67689-4b85-5253-86b4-49fbb138569f",
+        ),
+        (
+            &NAMESPACE_OID,
+            "example.org",
+            "34784df9-b065-5094-92c7-00bb3da97a30",
+        ),
+        (
+            &NAMESPACE_OID,
+            "rust-lang.org",
+            "8ef61ecb-977a-5844-ab0f-c25ef9b8d5d6",
+        ),
+        (&NAMESPACE_OID, "42", "ba293c61-ad33-57b9-9671-f3319f57d789"),
+        (
+            &NAMESPACE_OID,
+            "lorem ipsum",
+            "6485290d-f79e-5380-9e64-cb4312c7b4a6",
+        ),
+        (
+            &NAMESPACE_X500,
+            "example.org",
+            "e3635e86-f82b-5bbc-a54a-da97923e5c76",
+        ),
+        (
+            &NAMESPACE_X500,
+            "rust-lang.org",
+            "26c9c3e9-49b7-56da-8b9f-a0fb916a71a3",
+        ),
+        (
+            &NAMESPACE_X500,
+            "42",
+            "e4b88014-47c6-5fe0-a195-13710e5f6e27",
+        ),
+        (
+            &NAMESPACE_X500,
+            "lorem ipsum",
+            "b11f79a5-1e6d-57ce-a4b5-ba8531ea03d0",
+        ),
     ];
 
     #[test]
@@ -1102,21 +1223,27 @@ mod tests {
         assert_eq!(Uuid::new(UuidVersion::Md5), None);
         assert_eq!(Uuid::new(UuidVersion::Sha1), None);
     }
-    
+
     #[cfg(feature = "v1")]
     #[test]
     fn test_new_v1() {
         use UuidV1Context;
-        let time : u64 = 1_496_854_535;
-        let timefrac : u32 = 812_946_000;
-        let node = [1,2,3,4,5,6];
+        let time: u64 = 1_496_854_535;
+        let timefrac: u32 = 812_946_000;
+        let node = [1, 2, 3, 4, 5, 6];
         let ctx = UuidV1Context::new(0);
         let uuid = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
         assert_eq!(uuid.get_version().unwrap(), UuidVersion::Mac);
         assert_eq!(uuid.get_variant().unwrap(), UuidVariant::RFC4122);
-        assert_eq!(uuid.hyphenated().to_string(), "20616934-4ba2-11e7-8000-010203040506");
+        assert_eq!(
+            uuid.hyphenated().to_string(),
+            "20616934-4ba2-11e7-8000-010203040506"
+        );
         let uuid2 = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
-        assert_eq!(uuid2.hyphenated().to_string(), "20616934-4ba2-11e7-8001-010203040506");
+        assert_eq!(
+            uuid2.hyphenated().to_string(),
+            "20616934-4ba2-11e7-8001-010203040506"
+        );
 
         let ts = uuid.to_timestamp().unwrap();
         assert_eq!(ts.0 - 0x01B21DD213814000, 1_496_854_535_812_946_0);
@@ -1155,14 +1282,22 @@ mod tests {
 
     #[test]
     fn test_predefined_namespaces() {
-        assert_eq!(NAMESPACE_DNS.hyphenated().to_string(),
-                   "6ba7b810-9dad-11d1-80b4-00c04fd430c8");
-        assert_eq!(NAMESPACE_URL.hyphenated().to_string(),
-                   "6ba7b811-9dad-11d1-80b4-00c04fd430c8");
-        assert_eq!(NAMESPACE_OID.hyphenated().to_string(),
-                   "6ba7b812-9dad-11d1-80b4-00c04fd430c8");
-        assert_eq!(NAMESPACE_X500.hyphenated().to_string(),
-                   "6ba7b814-9dad-11d1-80b4-00c04fd430c8");
+        assert_eq!(
+            NAMESPACE_DNS.hyphenated().to_string(),
+            "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+        );
+        assert_eq!(
+            NAMESPACE_URL.hyphenated().to_string(),
+            "6ba7b811-9dad-11d1-80b4-00c04fd430c8"
+        );
+        assert_eq!(
+            NAMESPACE_OID.hyphenated().to_string(),
+            "6ba7b812-9dad-11d1-80b4-00c04fd430c8"
+        );
+        assert_eq!(
+            NAMESPACE_X500.hyphenated().to_string(),
+            "6ba7b814-9dad-11d1-80b4-00c04fd430c8"
+        );
     }
 
     #[cfg(feature = "v3")]
@@ -1216,36 +1351,66 @@ mod tests {
         // Invalid
         assert_eq!(Uuid::parse_str(""), Err(InvalidLength(0)));
         assert_eq!(Uuid::parse_str("!"), Err(InvalidLength(1)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E45"),
-                   Err(InvalidLength(37)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-BBF-329BF39FA1E4"),
-                   Err(InvalidLength(35)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4"),
-                   Err(InvalidCharacter('G', 20)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB2F4faaFB6BFF329BF39FA1E4"),
-                   Err(InvalidGroups(2)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faaFB6BFF329BF39FA1E4"),
-                   Err(InvalidGroups(3)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4"),
-                   Err(InvalidGroups(4)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa"),
-                   Err(InvalidLength(18)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faaXB6BFF329BF39FA1E4"),
-                   Err(InvalidCharacter('X', 18)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB-24fa-eB6BFF32-BF39FA1E4"),
-                   Err(InvalidGroupLength(1, 3, 4)));
-        assert_eq!(Uuid::parse_str("01020304-1112-2122-3132-41424344"),
-                   Err(InvalidGroupLength(4, 8, 12)));
-        assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"),
-                   Err(InvalidLength(31)));
-        assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c88"),
-                   Err(InvalidLength(33)));
-        assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0cg8"),
-                   Err(InvalidLength(33)));
-        assert_eq!(Uuid::parse_str("67e5504410b1426%9247bb680e5fe0c8"),
-                   Err(InvalidCharacter('%', 15)));
-        assert_eq!(Uuid::parse_str("231231212212423424324323477343246663"),
-                   Err(InvalidLength(36)));
+        assert_eq!(
+            Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E45"),
+            Err(InvalidLength(37))
+        );
+        assert_eq!(
+            Uuid::parse_str("F9168C5E-CEB2-4faa-BBF-329BF39FA1E4"),
+            Err(InvalidLength(35))
+        );
+        assert_eq!(
+            Uuid::parse_str("F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4"),
+            Err(InvalidCharacter('G', 20))
+        );
+        assert_eq!(
+            Uuid::parse_str("F9168C5E-CEB2F4faaFB6BFF329BF39FA1E4"),
+            Err(InvalidGroups(2))
+        );
+        assert_eq!(
+            Uuid::parse_str("F9168C5E-CEB2-4faaFB6BFF329BF39FA1E4"),
+            Err(InvalidGroups(3))
+        );
+        assert_eq!(
+            Uuid::parse_str("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4"),
+            Err(InvalidGroups(4))
+        );
+        assert_eq!(
+            Uuid::parse_str("F9168C5E-CEB2-4faa"),
+            Err(InvalidLength(18))
+        );
+        assert_eq!(
+            Uuid::parse_str("F9168C5E-CEB2-4faaXB6BFF329BF39FA1E4"),
+            Err(InvalidCharacter('X', 18))
+        );
+        assert_eq!(
+            Uuid::parse_str("F9168C5E-CEB-24fa-eB6BFF32-BF39FA1E4"),
+            Err(InvalidGroupLength(1, 3, 4))
+        );
+        assert_eq!(
+            Uuid::parse_str("01020304-1112-2122-3132-41424344"),
+            Err(InvalidGroupLength(4, 8, 12))
+        );
+        assert_eq!(
+            Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"),
+            Err(InvalidLength(31))
+        );
+        assert_eq!(
+            Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c88"),
+            Err(InvalidLength(33))
+        );
+        assert_eq!(
+            Uuid::parse_str("67e5504410b1426f9247bb680e5fe0cg8"),
+            Err(InvalidLength(33))
+        );
+        assert_eq!(
+            Uuid::parse_str("67e5504410b1426%9247bb680e5fe0c8"),
+            Err(InvalidCharacter('%', 15))
+        );
+        assert_eq!(
+            Uuid::parse_str("231231212212423424324323477343246663"),
+            Err(InvalidLength(36))
+        );
 
         // Valid
         assert!(Uuid::parse_str("00000000000000000000000000000000").is_ok());
@@ -1257,8 +1422,14 @@ mod tests {
 
         // Nil
         let nil = Uuid::nil();
-        assert_eq!(Uuid::parse_str("00000000000000000000000000000000").unwrap(), nil);
-        assert_eq!(Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap(), nil);
+        assert_eq!(
+            Uuid::parse_str("00000000000000000000000000000000").unwrap(),
+            nil
+        );
+        assert_eq!(
+            Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap(),
+            nil
+        );
 
         // Round-trip
         let uuid_orig = new();
@@ -1267,14 +1438,22 @@ mod tests {
         assert_eq!(uuid_orig, uuid_out);
 
         // Test error reporting
-        assert_eq!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"),
-                   Err(InvalidLength(31)));
-        assert_eq!(Uuid::parse_str("67e550X410b1426f9247bb680e5fe0cd"),
-                   Err(InvalidCharacter('X', 6)));
-        assert_eq!(Uuid::parse_str("67e550-4105b1426f9247bb680e5fe0c"),
-                   Err(InvalidGroupLength(0, 6, 8)));
-        assert_eq!(Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF1-02BF39FA1E4"),
-                   Err(InvalidGroupLength(3, 5, 4)));
+        assert_eq!(
+            Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"),
+            Err(InvalidLength(31))
+        );
+        assert_eq!(
+            Uuid::parse_str("67e550X410b1426f9247bb680e5fe0cd"),
+            Err(InvalidCharacter('X', 6))
+        );
+        assert_eq!(
+            Uuid::parse_str("67e550-4105b1426f9247bb680e5fe0c"),
+            Err(InvalidGroupLength(0, 6, 8))
+        );
+        assert_eq!(
+            Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF1-02BF39FA1E4"),
+            Err(InvalidGroupLength(3, 5, 4))
+        );
     }
 
     #[test]
@@ -1328,13 +1507,29 @@ mod tests {
             };
         }
 
-        check!(buf, "{:X}", u, 36, |c| c.is_uppercase() || c.is_digit(10) || c == '-');
-        check!(buf, "{:X}", u.hyphenated(), 36, |c| c.is_uppercase() || c.is_digit(10) || c == '-');
-        check!(buf, "{:X}", u.simple(), 32, |c| c.is_uppercase() || c.is_digit(10));
+        check!(buf, "{:X}", u, 36, |c| c.is_uppercase() || c.is_digit(10)
+            || c == '-');
+        check!(
+            buf,
+            "{:X}",
+            u.hyphenated(),
+            36,
+            |c| c.is_uppercase() || c.is_digit(10) || c == '-'
+        );
+        check!(buf, "{:X}", u.simple(), 32, |c| c.is_uppercase()
+            || c.is_digit(10));
 
-        check!(buf, "{:x}", u, 36, |c| c.is_lowercase() || c.is_digit(10) || c == '-');
-        check!(buf, "{:x}", u.hyphenated(), 36, |c| c.is_lowercase() || c.is_digit(10) || c == '-');
-        check!(buf, "{:x}", u.simple(), 32, |c| c.is_lowercase() || c.is_digit(10));
+        check!(buf, "{:x}", u, 36, |c| c.is_lowercase() || c.is_digit(10)
+            || c == '-');
+        check!(
+            buf,
+            "{:x}",
+            u.hyphenated(),
+            36,
+            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
+        );
+        check!(buf, "{:x}", u.simple(), 32, |c| c.is_lowercase()
+            || c.is_digit(10));
     }
 
     #[cfg(feature = "v3")]
@@ -1345,7 +1540,7 @@ mod tests {
             assert_eq!(uuid.hyphenated().to_string(), *expected);
         }
     }
-    
+
     #[cfg(feature = "v5")]
     #[test]
     fn test_v5_to_hypenated_string() {
@@ -1447,8 +1642,10 @@ mod tests {
 
     #[test]
     fn test_from_bytes() {
-        let b = [0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2,
-                 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
+        let b = [
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
+            0xd7, 0xd8,
+        ];
 
         let u = Uuid::from_bytes(&b).unwrap();
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
@@ -1467,8 +1664,10 @@ mod tests {
 
     #[test]
     fn test_bytes_roundtrip() {
-        let b_in: [u8; 16] = [0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
-                              0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
+        let b_in: [u8; 16] = [
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
+            0xd7, 0xd8,
+        ];
 
         let u = Uuid::from_bytes(&b_in).unwrap();
 
