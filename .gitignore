@@ -12,3 +12,4 @@ cmake-build-debug/
 /target/
 Cargo.lock
 
+/.criterion
