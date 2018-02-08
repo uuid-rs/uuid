@@ -1,7 +1,7 @@
 [package]
 
 name = "uuid"
-version = "0.5.1"
+version = "0.6.0-beta"
 authors = ["The Rust Project Developers"]
 license = "MIT/Apache-2.0"
 readme = "README.md"
