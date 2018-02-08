@@ -57,12 +57,11 @@ impl<'de> Deserialize<'de> for Uuid {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     extern crate serde_test;
 
-    use self::serde_test::{Configure, Token, assert_tokens};
+    use self::serde_test::{assert_tokens, Configure, Token};
 
     use Uuid;
 
