@@ -12,6 +12,7 @@ matrix:
     - env: FEATURES="v4"
     - env: FEATURES="v5"
     - env: FEATURES="serde v1 v3 v4 v5 std"
+    - rust: 1.18.0
     - rust: beta
     - rust: nightly
 
