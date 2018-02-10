@@ -15,11 +15,22 @@ A library to generate and parse UUIDs.
 [package.metadata.docs.rs]
 all-features = true
 
-[dependencies]
-serde = { version = "1.0.16", optional = true, default-features = false }
-rand = { version = "0.4", optional = true }
-sha1 = { version = "0.5", optional = true }
-md5 = { version = "0.3", optional = true }
+[dependencies.md5]
+optional = true
+version = "0.3"
+
+[dependencies.rand]
+optional = true
+version = "0.4"
+
+[dependencies.serde]
+default-features = false
+optional = true
+version = "1.0.16"
+
+[dependencies.sha1]
+optional = true
+version = "0.5"
 
 [dev-dependencies]
 serde_test = "1.0.19"
@@ -31,3 +42,12 @@ v1 = []
 v3 = ["md5"]
 v4 = ["rand"]
 v5 = ["sha1"]
+
+[target."cfg(all(feature = \"rand\", feature = \"std\"))".features]
+std = ["rand/std"]
+
+[target."cfg(all(feature = \"serde\", feature = \"std\"))".features]
+std = ["serde/std"]
+
+[target."cfg(all(feature = \"v5\", feature = \"std\"))".features]
+std = ["sha1/std"]
