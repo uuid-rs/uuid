@@ -603,6 +603,41 @@ impl Uuid {
         Ok(uuid)
     }
 
+    /// Creates a `Uuid` using the supplied bytes.
+    ///
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    /// use uuid::UuidBytes;
+    ///
+    /// let bytes:UuidBytes = [70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63, 62];
+    ///
+    /// let uuid = Uuid::from_uuid_bytes(&bytes);
+    /// let uuid = uuid.hyphenated().to_string();
+    ///
+    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
+    ///
+    /// assert_eq!(expected_uuid, uuid);
+    /// ```
+    ///
+    /// An incorrect number of bytes:
+    ///
+    /// ```compile_fail
+    /// use uuid::Uuid;
+    /// use uuid::UuidBytes;
+    ///
+    /// let bytes:UuidBytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
+    ///
+    /// let uuid = Uuid::from_uuid_bytes(&bytes);
+    /// ```
+    pub fn from_uuid_bytes(b: &UuidBytes) -> Uuid {
+        Uuid { bytes: b.clone() }
+    }
+
     /// Specifies the variant of the UUID structure
     #[allow(dead_code)]
     fn set_variant(&mut self, v: UuidVariant) {
@@ -1666,6 +1701,18 @@ mod tests {
         ];
 
         let u = Uuid::from_bytes(&b).unwrap();
+        let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
+
+        assert_eq!(u.simple().to_string(), expected);
+    }
+
+    #[test]
+    fn test_from_uuid_bytes() {
+        let b = [
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
+        ];
+
+        let u = Uuid::from_uuid_bytes(&b);
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
 
         assert_eq!(u.simple().to_string(), expected);
