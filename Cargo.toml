@@ -49,5 +49,5 @@ std = ["rand/std"]
 [target."cfg(all(feature = \"serde\", feature = \"std\"))".features]
 std = ["serde/std"]
 
-[target."cfg(all(feature = \"v5\", feature = \"std\"))".features]
+[target."cfg(all(feature = \"sha1\", feature = \"std\"))".features]
 std = ["sha1/std"]
