@@ -354,15 +354,15 @@ impl Uuid {
 
     /// Creates a new `Uuid` (version 1 style) using a time value + seq + NodeID.
     ///
-    /// This expects two values representing a monotonically increasing value 
+    /// This expects two values representing a monotonically increasing value
     /// as well as a unique 6 byte NodeId, and an implementation of `UuidV1ClockSequence`.
-    /// This function is only guaranteed to produce unique values if the following conditions hold: 
-    /// 
+    /// This function is only guaranteed to produce unique values if the following conditions hold:
+    ///
     /// 1. The NodeID is unique for this process,
     /// 2. The Context is shared across all threads which are generating V1 UUIDs,
     /// 3. The `UuidV1ClockSequence` implementation reliably returns unique clock sequences
     ///    (this crate provides `UuidV1Context` for this purpose).
-    /// 
+    ///
     /// The NodeID must be exactly 6 bytes long. If the NodeID is not a valid length
     /// this will return a `ParseError::InvalidLength`.
     ///
@@ -604,7 +604,6 @@ impl Uuid {
     }
 
     /// Creates a `Uuid` using the supplied bytes.
-    ///
     ///
     /// # Examples
     ///
