@@ -10,3 +10,7 @@ Cargo.toml      @kinggoesgaming @KodrAus @Dylan-DPC @radix
 
 # CODEOWNERS
 CODEOWNERS      @kinggoesgaming @KodrAus @Dylan-DPC @radix
+
+#>> Critical
+# bors.toml file
+bors.toml
