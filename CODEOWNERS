@@ -13,4 +13,4 @@ CODEOWNERS      @kinggoesgaming @KodrAus @Dylan-DPC @radix
 
 #>> Critical
 # bors.toml file
-bors.toml
+bors.toml       @kinggoesgaming @KodrAus @Dylan-DPC @radix
