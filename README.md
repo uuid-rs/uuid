@@ -26,7 +26,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-uuid = "0.6.0-beta"
+uuid = "0.6"
 ```
 
 and this to your crate root:
@@ -85,7 +85,7 @@ you'll also need to change how you depend on `uuid`:
 
 ```toml
 [dependencies]
-uuid = { version = "0.6.0-beta", features = ["v5"] }
+uuid = { version = "0.6", features = ["v5"] }
 ```
 
 Next, you'll write:
