@@ -134,7 +134,7 @@ mod serde;
 #[cfg(feature = "v1")]
 use core::sync::atomic::{AtomicUsize, Ordering};
 
-#[cfg(feature = "v4")]
+#[cfg(all(feature = "v4", not(any(feature = "v3", feature = "v5"))))]
 use rand::Rng;
 #[cfg(any(feature = "v3", feature = "v5"))]
 use rand::{Rng, thread_rng};
