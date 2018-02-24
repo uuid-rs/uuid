@@ -33,6 +33,6 @@ serde_test = "1.0.19"
 default = ["std"]
 std = []
 v1 = []
-v3 = ["md5"]
+v3 = ["md5", "rand"]
 v4 = ["rand"]
 v5 = ["sha1", "rand"]

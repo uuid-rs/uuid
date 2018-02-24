@@ -117,7 +117,7 @@ extern crate std as core;
 
 #[cfg(feature = "v3")]
 extern crate md5;
-#[cfg(any(feature = "v4", feature = "v5"))]
+#[cfg(any(feature = "v3", feature = "v4", feature = "v5"))]
 extern crate rand;
 #[cfg(feature = "v5")]
 extern crate sha1;
@@ -136,7 +136,7 @@ use core::sync::atomic::{AtomicUsize, Ordering};
 
 #[cfg(feature = "v4")]
 use rand::Rng;
-#[cfg(any(feature = "v5"))]
+#[cfg(any(feature = "v3", feature = "v5"))]
 use rand::{Rng, thread_rng};
 
 #[cfg(feature = "v5")]
@@ -347,9 +347,11 @@ impl Uuid {
     /// To generate a random UUID (`UuidVersion::Random`), then the `v4`
     /// feature must be enabled for this crate.
     pub fn new(v: UuidVersion) -> Option<Uuid> {
-        #[cfg(any(feature = "v5"))]
+        #[cfg(any(feature = "v3", feature = "v5"))]
         let iv: String = thread_rng().gen_ascii_chars().take(10).collect();
         match v {
+            #[cfg(feature = "v3")]
+            UuidVersion::Md5 => Some(Uuid::new_v3(&NAMESPACE_DNS, &*iv)),
             #[cfg(feature = "v4")]
             UuidVersion::Random => Some(Uuid::new_v4()),
             #[cfg(feature = "v5")]
