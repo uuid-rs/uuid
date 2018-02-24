@@ -344,7 +344,13 @@ impl Uuid {
     /// Note that not all versions can be generated currently and `None` will be
     /// returned if the specified version cannot be generated.
     ///
+    /// To generate a random UUID (`UuidVersion::Md5`), then the `v3`
+    /// feature must be enabled for this crate.
+    ///
     /// To generate a random UUID (`UuidVersion::Random`), then the `v4`
+    /// feature must be enabled for this crate.
+    ///
+    /// To generate a random UUID (`UuidVersion::Sha1`), then the `v5`
     /// feature must be enabled for this crate.
     pub fn new(v: UuidVersion) -> Option<Uuid> {
         #[cfg(any(feature = "v3", feature = "v5"))]
