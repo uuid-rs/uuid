@@ -353,8 +353,11 @@ impl Uuid {
     /// To generate a random UUID (`UuidVersion::Sha1`), then the `v5`
     /// feature must be enabled for this crate.
     pub fn new(v: UuidVersion) -> Option<Uuid> {
+        // Why 23? Ascii has roughly 6bit randomnes per 8bit.
+        // So to reach 128bit atleast 21.333 (128/6) Bytes are required.
         #[cfg(any(feature = "v3", feature = "v5"))]
-        let iv: String = thread_rng().gen_ascii_chars().take(10).collect();
+        let iv: String = thread_rng().gen_ascii_chars().take(23).collect();
+
         match v {
             #[cfg(feature = "v3")]
             UuidVersion::Md5 => Some(Uuid::new_v3(&NAMESPACE_DNS, &*iv)),
