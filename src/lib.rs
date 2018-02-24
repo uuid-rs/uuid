@@ -137,7 +137,7 @@ use core::sync::atomic::{AtomicUsize, Ordering};
 #[cfg(all(feature = "v4", not(any(feature = "v3", feature = "v5"))))]
 use rand::Rng;
 #[cfg(any(feature = "v3", feature = "v5"))]
-use rand::{Rng, thread_rng};
+use rand::{thread_rng, Rng};
 
 #[cfg(feature = "v5")]
 use sha1::Sha1;
