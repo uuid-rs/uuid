@@ -1276,6 +1276,13 @@ mod tests {
 
     #[test]
     fn test_new() {
+        if cfg!(feature = "v3") {
+            let u = Uuid::new(UuidVersion::Md5);
+            assert!(u.is_some(), "{:?}", u);
+            assert_eq!(u.unwrap().get_version().unwrap(), UuidVersion::Md5);
+        } else {
+            assert_eq!(Uuid::new(UuidVersion::Md5), None);
+        }
         if cfg!(feature = "v4") {
             let uuid1 = Uuid::new(UuidVersion::Random).unwrap();
             let s = uuid1.simple().to_string();
@@ -1285,12 +1292,17 @@ mod tests {
         } else {
             assert!(Uuid::new(UuidVersion::Random).is_none());
         }
+        if cfg!(feature = "v5") {
+            let u = Uuid::new(UuidVersion::Sha1);
+            assert!(u.is_some(), "{:?}", u);
+            assert_eq!(u.unwrap().get_version().unwrap(), UuidVersion::Sha1);
+        } else {
+            assert_eq!(Uuid::new(UuidVersion::Sha1), None);
+        }
 
         // Test unsupported versions
         assert_eq!(Uuid::new(UuidVersion::Mac), None);
         assert_eq!(Uuid::new(UuidVersion::Dce), None);
-        assert_eq!(Uuid::new(UuidVersion::Md5), None);
-        assert_eq!(Uuid::new(UuidVersion::Sha1), None);
     }
 
     #[cfg(feature = "v1")]
