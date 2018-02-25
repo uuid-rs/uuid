@@ -36,3 +36,8 @@ v1 = []
 v3 = ["md5", "rand"]
 v4 = ["rand"]
 v5 = ["sha1", "rand"]
+
+# Get features picked up by the Integer 32 playground. Not public API.
+#
+#    https://play.rust-lang.org
+playground = ["serde", "v1", "v3", "v4", "v5"]
