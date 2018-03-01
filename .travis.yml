@@ -30,6 +30,7 @@ matrix:
     - rust: nightly
       before_script:
         - rustup component add rustfmt-preview
+        - ( cargo install cargo-clippy || true )
       script:
         - cargo fmt --all -- --write-mode=diff
         - cargo test  
