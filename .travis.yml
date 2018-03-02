@@ -33,7 +33,8 @@ matrix:
         - ( cargo install cargo-clippy || true )
       script:
         - cargo fmt --all -- --write-mode=diff
-        - cargo test  
+        - cargo test
+        - cargo clippy
 
 script:
   - cargo test --features "$FEATURES" $NDF
