@@ -1,11 +1,9 @@
 #![feature(test)]
-
 extern crate test;
 extern crate uuid;
 #[cfg(feature = "slog")]
 #[macro_use]
 extern crate slog;
-
 use test::Bencher;
 use uuid::Uuid;
 #[cfg(feature = "slog")]
