@@ -25,6 +25,7 @@ serde = { version = "1.0.16", optional = true, default-features = false }
 rand = { version = "0.4", optional = true }
 sha1 = { version = "0.6", optional = true }
 md5 = { version = "0.3", optional = true }
+slog = { version = "2", optional = true }
 
 [dev-dependencies]
 serde_test = "1.0.19"
