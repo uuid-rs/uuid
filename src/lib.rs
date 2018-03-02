@@ -734,16 +734,12 @@ impl Uuid {
     ///            (0x936DA01F, 0x9ABD, 0x4D9D, b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"));
     /// ```
     pub fn as_fields(&self) -> (u32, u16, u16, &[u8; 8]) {
-        let d1 = u32::from(self.bytes[0]) << 24
-            | u32::from(self.bytes[1]) << 16
-            | u32::from(self.bytes[2]) << 8
-            | u32::from(self.bytes[3]);
+        let d1 = u32::from(self.bytes[0]) << 24 | u32::from(self.bytes[1]) << 16
+            | u32::from(self.bytes[2]) << 8 | u32::from(self.bytes[3]);
 
-        let d2 = u16::from(self.bytes[4]) << 8
-            | u16::from(self.bytes[5]);
+        let d2 = u16::from(self.bytes[4]) << 8 | u16::from(self.bytes[5]);
 
-        let d3 = u16::from(self.bytes[6]) << 8
-            | u16::from(self.bytes[7]);
+        let d3 = u16::from(self.bytes[6]) << 8 | u16::from(self.bytes[7]);
 
         let d4: &[u8; 8] = unsafe { &*(self.bytes[8..16].as_ptr() as *const [u8; 8]) };
         (d1, d2, d3, d4)
@@ -827,14 +823,10 @@ impl Uuid {
             return None;
         }
 
-        let ts: u64 = u64::from(self.bytes[6] & 0x0F) << 56
-            | u64::from(self.bytes[7]) << 48
-            | u64::from(self.bytes[4]) << 40
-            | u64::from(self.bytes[5]) << 32
-            | u64::from(self.bytes[0]) << 24
-            | u64::from(self.bytes[1]) << 16
-            | u64::from(self.bytes[2]) << 8
-            | u64::from(self.bytes[3]);
+        let ts: u64 = u64::from(self.bytes[6] & 0x0F) << 56 | u64::from(self.bytes[7]) << 48
+            | u64::from(self.bytes[4]) << 40 | u64::from(self.bytes[5]) << 32
+            | u64::from(self.bytes[0]) << 24 | u64::from(self.bytes[1]) << 16
+            | u64::from(self.bytes[2]) << 8 | u64::from(self.bytes[3]);
 
         let count: u16 = u16::from(self.bytes[8] & 0x3F) << 8 | u16::from(self.bytes[9]);
 
