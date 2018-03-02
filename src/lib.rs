@@ -121,6 +121,11 @@ extern crate md5;
 extern crate rand;
 #[cfg(feature = "v5")]
 extern crate sha1;
+#[cfg(all(feature = "slog", not(test)))]
+extern crate slog;
+#[cfg(all(feature = "slog", test))]
+#[macro_use]
+extern crate slog;
 
 use core::fmt;
 use core::hash;
@@ -996,6 +1001,18 @@ impl hash::Hash for Uuid {
     }
 }
 
+#[cfg(feature = "slog")]
+impl slog::Value for Uuid {
+    fn serialize(
+        &self,
+        _record: &slog::Record,
+        key: slog::Key,
+        serializer: &mut slog::Serializer,
+    ) -> Result<(), slog::Error> {
+        serializer.emit_arguments(key, &format_args!("{}", self))
+    }
+}
+
 impl<'a> fmt::Display for Simple<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
@@ -1095,6 +1112,9 @@ mod tests {
 
     use super::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL};
     use super::{Uuid, UuidVariant, UuidVersion};
+
+    #[cfg(feature = "slog")]
+    use slog::{self, Drain};
 
     fn new() -> Uuid {
         Uuid::parse_str("F9168C5E-CEB2-4FAA-B6BF-329BF39FA1E4").unwrap()
@@ -1766,5 +1786,13 @@ mod tests {
 
         assert!(set.contains(&id1));
         assert!(!set.contains(&id2));
+    }
+
+    #[cfg(feature = "slog")]
+    #[test]
+    fn test_slog_kv() {
+        let root = slog::Logger::root(slog::Discard.fuse(), o!());
+        let u1 = new();
+        crit!(root, "test"; "u1" => u1);
     }
 }
