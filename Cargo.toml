@@ -1,7 +1,7 @@
 [package]
 
 name = "uuid"
-version = "0.6.0"
+version = "0.6.1"
 authors = [
         "Ashley Mannix<ashleymannix@live.com.au>",
         "Christopher Armstrong",
@@ -25,6 +25,7 @@ serde = { version = "1.0.16", optional = true, default-features = false }
 rand = { version = "0.4", optional = true }
 sha1 = { version = "0.6", optional = true }
 md5 = { version = "0.3", optional = true }
+slog = { version = "2", optional = true }
 
 [dev-dependencies]
 serde_test = "1.0.19"
@@ -32,6 +33,7 @@ serde_test = "1.0.19"
 [features]
 default = ["std"]
 std = []
+use_std = ["std"] # Compatibility shim for 0.5 and earlier
 v1 = []
 v3 = ["md5"]
 v4 = ["rand"]
