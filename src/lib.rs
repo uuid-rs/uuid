@@ -997,12 +997,6 @@ impl fmt::LowerHex for Uuid {
     }
 }
 
-//impl hash::Hash for Uuid {
-//    fn hash<S: hash::Hasher>(&self, state: &mut S) {
-//        self.bytes.hash(state)
-//    }
-//}
-
 #[cfg(feature = "slog")]
 impl slog::Value for Uuid {
     fn serialize(
