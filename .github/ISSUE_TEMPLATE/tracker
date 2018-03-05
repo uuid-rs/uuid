@@ -1,0 +1,16 @@
+<!--
+    Title should be in the format:
+
+        `Tracker: version release`
+
+    Replace version with the target release.
+-->
+
+<!-- Replace version with the version for this tracker is being opened -->
+Items left to do for __*version*__ release:
+
+* [ ] Update version numbers
+* [ ] Push to crates.io
+* [ ] Write release notes on:
+    * [ ] Github Releases
+    * [ ] users.rust-lang.org
