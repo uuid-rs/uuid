@@ -5,9 +5,9 @@
 -->
 
 **I'm submitting a ...**
-  - [ ] bug fixes
-  - [ ] feature enhancements
-  - [ ] deprecations or removals
+  - [ ] bug fix
+  - [ ] feature enhancement
+  - [ ] deprecation or removal
   - [ ] refactor
 
 # Description
