@@ -1602,7 +1602,7 @@ mod tests {
 
     #[test]
     fn test_upper_lower_hex() {
-        use core::fmt::Write;
+        use super::fmt::Write;
 
         let mut buf = String::new();
         let u = new();
