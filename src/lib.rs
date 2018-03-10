@@ -110,39 +110,71 @@
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// serde links to std, so go ahead an pull in our own std
-// support in those situations as well.
-#[cfg(feature = "std")]
-extern crate std as core;
-
-#[cfg(feature = "v3")]
-extern crate md5;
-#[cfg(any(feature = "v4"))]
-extern crate rand;
-#[cfg(feature = "v5")]
-extern crate sha1;
-#[cfg(all(feature = "slog", not(test)))]
-extern crate slog;
-#[cfg(all(feature = "slog", test))]
 #[macro_use]
-extern crate slog;
+extern crate cfg_if;
 
-use core::fmt;
-use core::str::FromStr;
+cfg_if! {
+    if #[cfg(feature = "md5")] {
+        extern crate md5;
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "rand")] {
+        extern crate rand;
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "serde")] {
+        extern crate serde;
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "sha1")] {
+        extern crate sha1;
+    }
+}
+
+cfg_if! {
+    if #[cfg(all(feature = "slog", not(test)))] {
+        extern crate slog;
+    } else if #[cfg(all(feature = "slog", test))] {
+        #[macro_use]
+        extern crate slog;
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "std")] {
+        use std::fmt;
+        use std::str;
+
+        cfg_if! {
+            if #[cfg(feature = "v1")] {
+                use std::sync::atomic;
+            }
+        }
+    } else if #[cfg(not(feature = "std"))] {
+        use core::fmt;
+        use core::str;
+
+        cfg_if! {
+            if #[cfg(feature = "v1")] {
+                use core::sync::atomic;
+            }
+        }
+    }
+}
 
 #[cfg(feature = "std")]
 mod std_support;
 #[cfg(feature = "serde")]
-mod serde;
+mod serde_support;
 
-#[cfg(feature = "v1")]
-use core::sync::atomic::{AtomicUsize, Ordering};
-
-#[cfg(feature = "v4")]
-use rand::Rng;
-
-#[cfg(feature = "v5")]
-use sha1::Sha1;
+//#[cfg(feature = "v5")]
+//use sha1::Sha1;
 
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type UuidBytes = [u8; 16];
@@ -246,7 +278,7 @@ pub trait UuidV1ClockSequence {
 /// A thread-safe, stateful context for the v1 generator to help ensure process-wide uniqueness
 #[cfg(feature = "v1")]
 pub struct UuidV1Context {
-    count: AtomicUsize,
+    count: atomic::AtomicUsize,
 }
 
 #[cfg(feature = "v1")]
@@ -258,6 +290,8 @@ impl UuidV1Context {
     /// portion of the V1 uuid (the fourth group).  This will improve the probability
     /// that the UUID is unique across the process.
     pub fn new(count: u16) -> UuidV1Context {
+        use atomic::AtomicUsize;
+
         UuidV1Context {
             count: AtomicUsize::new(count as usize),
         }
@@ -267,6 +301,8 @@ impl UuidV1Context {
 #[cfg(feature = "v1")]
 impl UuidV1ClockSequence for UuidV1Context {
     fn generate_sequence(&self, _: u64, _: u32) -> u16 {
+        use atomic::Ordering;
+
         (self.count.fetch_add(1, Ordering::SeqCst) & 0xffff) as u16
     }
 }
@@ -461,6 +497,8 @@ impl Uuid {
     /// ```
     #[cfg(feature = "v4")]
     pub fn new_v4() -> Uuid {
+        use rand::Rng;
+
         let mut rng = rand::thread_rng();
 
         let mut uuid = Uuid { bytes: [0; 16] };
@@ -483,7 +521,7 @@ impl Uuid {
     /// to be enabled.
     #[cfg(feature = "v5")]
     pub fn new_v5(namespace: &Uuid, name: &str) -> Uuid {
-        let mut hash = Sha1::new();
+        let mut hash = sha1::Sha1::new();
         hash.update(namespace.as_bytes());
         hash.update(name.as_bytes());
         let buffer = hash.digest().bytes();
@@ -961,7 +999,7 @@ impl Default for Uuid {
     }
 }
 
-impl FromStr for Uuid {
+impl str::FromStr for Uuid {
     type Err = ParseError;
 
     /// Parse a hex string and interpret as a `Uuid`.
