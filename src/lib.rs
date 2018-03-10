@@ -173,9 +173,6 @@ mod std_support;
 #[cfg(feature = "serde")]
 mod serde_support;
 
-//#[cfg(feature = "v5")]
-//use sha1::Sha1;
-
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type UuidBytes = [u8; 16];
 
