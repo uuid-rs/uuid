@@ -305,7 +305,7 @@ cfg_if! {
             }
         }
 
-        impl UuidV1ClockSequence {
+        impl UuidV1ClockSequence for UuidV1Context {
             fn generate_sequence(&self, _: u64, _: u32) -> u16 {
                 (self.count.fetch_add(1, atomic::Ordering::SeqCst) & 0xffff) as u16
             }
