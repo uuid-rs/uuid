@@ -270,44 +270,46 @@ pub struct Urn<'a> {
     inner: &'a Uuid,
 }
 
-/// A trait that abstracts over generation of UUID v1 "Clock Sequence" values.
-#[cfg(feature = "v1")]
-pub trait UuidV1ClockSequence {
-    /// Return a 16-bit number that will be used as the "clock sequence" in the UUID.
-    /// The number must be different if the time has changed since the last time a clock
-    /// sequence was requested.
-    fn generate_sequence(&self, seconds: u64, nanoseconds: u32) -> u16;
-}
+cfg_if! {
+    if #[cfg(feature = "v1")] {
 
-/// A thread-safe, stateful context for the v1 generator to help ensure process-wide uniqueness
-#[cfg(feature = "v1")]
-pub struct UuidV1Context {
-    count: atomic::AtomicUsize,
-}
-
-#[cfg(feature = "v1")]
-impl UuidV1Context {
-    /// Creates a thread-safe, internally mutable context to help ensure uniqueness
-    ///
-    /// This is a context which can be shared across threads.  It maintains an internal
-    /// counter that is incremented at every request, the value ends up in the clock_seq
-    /// portion of the V1 uuid (the fourth group).  This will improve the probability
-    /// that the UUID is unique across the process.
-    pub fn new(count: u16) -> UuidV1Context {
-        use atomic::AtomicUsize;
-
-        UuidV1Context {
-            count: AtomicUsize::new(count as usize),
+        /// A trait that abstracts over generation of Uuid v1 "Clock Sequence"
+        /// values.
+        pub trait UuidV1ClockSequence {
+            /// Return a 16-bit number that will be used as the "clock
+            /// sequence" in the Uuid. The number must be different if the
+            /// time has changed since the last time a clock sequence was
+            /// requested.
+            fn generate_sequence(&self, seconds: u64, nano_seconds: u32) -> u16;
         }
-    }
-}
 
-#[cfg(feature = "v1")]
-impl UuidV1ClockSequence for UuidV1Context {
-    fn generate_sequence(&self, _: u64, _: u32) -> u16 {
-        use atomic::Ordering;
+        /// A thread-safe, stateful context for the v1 generator to help
+        /// ensure process-wide uniqueness.
+        pub struct UuidV1Context {
+            count: atomic::AtomicUsize,
+        }
 
-        (self.count.fetch_add(1, Ordering::SeqCst) & 0xffff) as u16
+        impl UuidV1Context {
+            /// Creates a thread-safe, internally mutable context to help
+            /// ensure uniqueness.
+            ///
+            /// This is a context which can be shared across threads. It
+            /// maintains an internal counter that is incremented at every
+            /// request, the value ends up in the clock_seq portion of the
+            /// Uuid (the fourth group). This will improve the probability
+            /// that the Uuid is unique across the process.
+            pub fn new(count: u16) -> UuidV1Context {
+                UuidV1Context {
+                    count: atomic::AtomicUsize::new(count as usize),
+                }
+            }
+        }
+
+        impl UuidV1ClockSequence {
+            fn generate_sequence(&self, _: u64, _: u32) -> u16 {
+                (self.count.fetch_add(1, atomic::Ordering::SeqCst) & 0xffff) as u16
+            }
+        }
     }
 }
 
@@ -1081,7 +1083,7 @@ impl<'a> fmt::Display for Hyphenated<'a> {
     }
 }
 
-macro_rules! hyphnated_write {
+macro_rules! hyphenated_write {
     ($f:expr, $format:expr, $bytes:expr) => {{
 
         let data1 = u32::from($bytes[0]) << 24 |
@@ -1113,7 +1115,7 @@ macro_rules! hyphnated_write {
 
 impl<'a> fmt::UpperHex for Hyphenated<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphnated_write!(
+        hyphenated_write!(
             f,
             "{:08X}-\
              {:04X}-\
@@ -1127,7 +1129,7 @@ impl<'a> fmt::UpperHex for Hyphenated<'a> {
 
 impl<'a> fmt::LowerHex for Hyphenated<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphnated_write!(
+        hyphenated_write!(
             f,
             "{:08x}-\
              {:04x}-\
