@@ -117,7 +117,7 @@ extern crate std as core;
 
 #[cfg(feature = "v3")]
 extern crate md5;
-#[cfg(any(feature = "v4"))]
+#[cfg(any(feature = "v3", feature = "v4", feature = "v5"))]
 extern crate rand;
 #[cfg(feature = "v5")]
 extern crate sha1;
@@ -138,8 +138,10 @@ mod serde;
 #[cfg(feature = "v1")]
 use core::sync::atomic::{AtomicUsize, Ordering};
 
-#[cfg(feature = "v4")]
+#[cfg(all(feature = "v4", not(any(feature = "v3", feature = "v5"))))]
 use rand::Rng;
+#[cfg(any(feature = "v3", feature = "v5"))]
+use rand::{thread_rng, Rng};
 
 #[cfg(feature = "v5")]
 use sha1::Sha1;
@@ -346,12 +348,27 @@ impl Uuid {
     /// Note that not all versions can be generated currently and `None` will be
     /// returned if the specified version cannot be generated.
     ///
+    /// To generate a random UUID (`UuidVersion::Md5`), then the `v3`
+    /// feature must be enabled for this crate.
+    ///
     /// To generate a random UUID (`UuidVersion::Random`), then the `v4`
     /// feature must be enabled for this crate.
+    ///
+    /// To generate a random UUID (`UuidVersion::Sha1`), then the `v5`
+    /// feature must be enabled for this crate.
     pub fn new(v: UuidVersion) -> Option<Uuid> {
+        // Why 23? Ascii has roughly 6bit randomnes per 8bit.
+        // So to reach 128bit atleast 21.333 (128/6) Bytes are required.
+        #[cfg(any(feature = "v3", feature = "v5"))]
+        let iv: String = thread_rng().gen_ascii_chars().take(23).collect();
+
         match v {
+            #[cfg(feature = "v3")]
+            UuidVersion::Md5 => Some(Uuid::new_v3(&NAMESPACE_DNS, &*iv)),
             #[cfg(feature = "v4")]
             UuidVersion::Random => Some(Uuid::new_v4()),
+            #[cfg(feature = "v5")]
+            UuidVersion::Sha1 => Some(Uuid::new_v5(&NAMESPACE_DNS, &*iv)),
             _ => None,
         }
     }
@@ -1278,6 +1295,13 @@ mod tests {
 
     #[test]
     fn test_new() {
+        if cfg!(feature = "v3") {
+            let u = Uuid::new(UuidVersion::Md5);
+            assert!(u.is_some(), "{:?}", u);
+            assert_eq!(u.unwrap().get_version().unwrap(), UuidVersion::Md5);
+        } else {
+            assert_eq!(Uuid::new(UuidVersion::Md5), None);
+        }
         if cfg!(feature = "v4") {
             let uuid1 = Uuid::new(UuidVersion::Random).unwrap();
             let s = uuid1.simple().to_string();
@@ -1287,12 +1311,17 @@ mod tests {
         } else {
             assert!(Uuid::new(UuidVersion::Random).is_none());
         }
+        if cfg!(feature = "v5") {
+            let u = Uuid::new(UuidVersion::Sha1);
+            assert!(u.is_some(), "{:?}", u);
+            assert_eq!(u.unwrap().get_version().unwrap(), UuidVersion::Sha1);
+        } else {
+            assert_eq!(Uuid::new(UuidVersion::Sha1), None);
+        }
 
         // Test unsupported versions
         assert_eq!(Uuid::new(UuidVersion::Mac), None);
         assert_eq!(Uuid::new(UuidVersion::Dce), None);
-        assert_eq!(Uuid::new(UuidVersion::Md5), None);
-        assert_eq!(Uuid::new(UuidVersion::Sha1), None);
     }
 
     #[cfg(feature = "v1")]
