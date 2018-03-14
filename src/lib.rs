@@ -110,39 +110,75 @@
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
-// serde links to std, so go ahead an pull in our own std
-// support in those situations as well.
-#[cfg(feature = "std")]
-extern crate std as core;
-
-#[cfg(feature = "v3")]
-extern crate md5;
-#[cfg(any(feature = "v4"))]
-extern crate rand;
-#[cfg(feature = "v5")]
-extern crate sha1;
-#[cfg(all(feature = "slog", not(test)))]
-extern crate slog;
-#[cfg(all(feature = "slog", test))]
 #[macro_use]
-extern crate slog;
+extern crate cfg_if;
 
-use core::fmt;
-use core::str::FromStr;
+cfg_if! {
+    if #[cfg(feature = "md5")] {
+        extern crate md5;
+    }
+}
 
-#[cfg(feature = "std")]
-mod std_support;
-#[cfg(feature = "serde")]
-mod serde;
+cfg_if! {
+    if #[cfg(feature = "rand")] {
+        extern crate rand;
+    }
+}
 
-#[cfg(feature = "v1")]
-use core::sync::atomic::{AtomicUsize, Ordering};
+cfg_if! {
+    if #[cfg(feature = "serde")] {
+        extern crate serde;
+    }
+}
 
-#[cfg(feature = "v4")]
-use rand::Rng;
+cfg_if! {
+    if #[cfg(feature = "sha1")] {
+        extern crate sha1;
+    }
+}
 
-#[cfg(feature = "v5")]
-use sha1::Sha1;
+cfg_if! {
+    if #[cfg(all(feature = "slog", not(test)))] {
+        extern crate slog;
+    } else if #[cfg(all(feature = "slog", test))] {
+        #[macro_use]
+        extern crate slog;
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "std")] {
+        use std::fmt;
+        use std::str;
+
+        cfg_if! {
+            if #[cfg(feature = "v1")] {
+                use std::sync::atomic;
+            }
+        }
+    } else if #[cfg(not(feature = "std"))] {
+        use core::fmt;
+        use core::str;
+
+        cfg_if! {
+            if #[cfg(feature = "v1")] {
+                use core::sync::atomic;
+            }
+        }
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "serde")] {
+        mod serde_support;
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "std")] {
+        mod std_support;
+    }
+}
 
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type UuidBytes = [u8; 16];
@@ -234,40 +270,46 @@ pub struct Urn<'a> {
     inner: &'a Uuid,
 }
 
-/// A trait that abstracts over generation of UUID v1 "Clock Sequence" values.
-#[cfg(feature = "v1")]
-pub trait UuidV1ClockSequence {
-    /// Return a 16-bit number that will be used as the "clock sequence" in the UUID.
-    /// The number must be different if the time has changed since the last time a clock
-    /// sequence was requested.
-    fn generate_sequence(&self, seconds: u64, nanoseconds: u32) -> u16;
-}
+cfg_if! {
+    if #[cfg(feature = "v1")] {
 
-/// A thread-safe, stateful context for the v1 generator to help ensure process-wide uniqueness
-#[cfg(feature = "v1")]
-pub struct UuidV1Context {
-    count: AtomicUsize,
-}
-
-#[cfg(feature = "v1")]
-impl UuidV1Context {
-    /// Creates a thread-safe, internally mutable context to help ensure uniqueness
-    ///
-    /// This is a context which can be shared across threads.  It maintains an internal
-    /// counter that is incremented at every request, the value ends up in the clock_seq
-    /// portion of the V1 uuid (the fourth group).  This will improve the probability
-    /// that the UUID is unique across the process.
-    pub fn new(count: u16) -> UuidV1Context {
-        UuidV1Context {
-            count: AtomicUsize::new(count as usize),
+        /// A trait that abstracts over generation of Uuid v1 "Clock Sequence"
+        /// values.
+        pub trait UuidV1ClockSequence {
+            /// Return a 16-bit number that will be used as the "clock
+            /// sequence" in the Uuid. The number must be different if the
+            /// time has changed since the last time a clock sequence was
+            /// requested.
+            fn generate_sequence(&self, seconds: u64, nano_seconds: u32) -> u16;
         }
-    }
-}
 
-#[cfg(feature = "v1")]
-impl UuidV1ClockSequence for UuidV1Context {
-    fn generate_sequence(&self, _: u64, _: u32) -> u16 {
-        (self.count.fetch_add(1, Ordering::SeqCst) & 0xffff) as u16
+        /// A thread-safe, stateful context for the v1 generator to help
+        /// ensure process-wide uniqueness.
+        pub struct UuidV1Context {
+            count: atomic::AtomicUsize,
+        }
+
+        impl UuidV1Context {
+            /// Creates a thread-safe, internally mutable context to help
+            /// ensure uniqueness.
+            ///
+            /// This is a context which can be shared across threads. It
+            /// maintains an internal counter that is incremented at every
+            /// request, the value ends up in the clock_seq portion of the
+            /// Uuid (the fourth group). This will improve the probability
+            /// that the Uuid is unique across the process.
+            pub fn new(count: u16) -> UuidV1Context {
+                UuidV1Context {
+                    count: atomic::AtomicUsize::new(count as usize),
+                }
+            }
+        }
+
+        impl UuidV1ClockSequence for UuidV1Context {
+            fn generate_sequence(&self, _: u64, _: u32) -> u16 {
+                (self.count.fetch_add(1, atomic::Ordering::SeqCst) & 0xffff) as u16
+            }
+        }
     }
 }
 
@@ -461,6 +503,8 @@ impl Uuid {
     /// ```
     #[cfg(feature = "v4")]
     pub fn new_v4() -> Uuid {
+        use rand::Rng;
+
         let mut rng = rand::thread_rng();
 
         let mut uuid = Uuid { bytes: [0; 16] };
@@ -483,7 +527,7 @@ impl Uuid {
     /// to be enabled.
     #[cfg(feature = "v5")]
     pub fn new_v5(namespace: &Uuid, name: &str) -> Uuid {
-        let mut hash = Sha1::new();
+        let mut hash = sha1::Sha1::new();
         hash.update(namespace.as_bytes());
         hash.update(name.as_bytes());
         let buffer = hash.digest().bytes();
@@ -961,7 +1005,7 @@ impl Default for Uuid {
     }
 }
 
-impl FromStr for Uuid {
+impl str::FromStr for Uuid {
     type Err = ParseError;
 
     /// Parse a hex string and interpret as a `Uuid`.
@@ -1039,7 +1083,7 @@ impl<'a> fmt::Display for Hyphenated<'a> {
     }
 }
 
-macro_rules! hyphnated_write {
+macro_rules! hyphenated_write {
     ($f:expr, $format:expr, $bytes:expr) => {{
 
         let data1 = u32::from($bytes[0]) << 24 |
@@ -1071,7 +1115,7 @@ macro_rules! hyphnated_write {
 
 impl<'a> fmt::UpperHex for Hyphenated<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphnated_write!(
+        hyphenated_write!(
             f,
             "{:08X}-\
              {:04X}-\
@@ -1085,7 +1129,7 @@ impl<'a> fmt::UpperHex for Hyphenated<'a> {
 
 impl<'a> fmt::LowerHex for Hyphenated<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphnated_write!(
+        hyphenated_write!(
             f,
             "{:08x}-\
              {:04x}-\
@@ -1564,7 +1608,7 @@ mod tests {
 
     #[test]
     fn test_upper_lower_hex() {
-        use core::fmt::Write;
+        use super::fmt::Write;
 
         let mut buf = String::new();
         let u = new();
