@@ -121,7 +121,7 @@ cfg_if! {
 
 cfg_if! {
     if #[cfg(feature = "rand")] {
-        extern crate rand;
+        pub extern crate rand;
     }
 }
 
