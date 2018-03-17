@@ -707,7 +707,7 @@ impl Uuid {
     ///
     #[cfg(feature = "v4")]
     #[allow(dead_code)]
-    fn from_rng_bytes(b: [u8; 16]) -> Uuid {
+    pub fn from_rng_bytes(b: [u8; 16]) -> Uuid {
         let mut uuid = Uuid { bytes: [0; 16] };
         copy_memory(&mut uuid.bytes, &b);
         uuid
