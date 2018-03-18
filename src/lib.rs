@@ -1839,7 +1839,7 @@ mod tests {
         ];
 
         let u = Uuid::from_random_bytes(b);
-        let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
+        let expected = "a1a2a3a4b1b241c291d2d3d4d5d6d7d8";
 
         assert_eq!(u.simple().to_string(), expected);
     }
