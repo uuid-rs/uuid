@@ -31,11 +31,11 @@ matrix:
       cache: cargo
       before_script:
         - rustup component add rustfmt-preview
-        - ( cargo install clippy || true )
+#        - ( cargo install clippy || true )
       script:
         - cargo fmt --all -- --write-mode=diff
         - cargo test
-        - cargo clippy
+#        - cargo clippy
 
 script:
   - cargo test --features "$FEATURES" $NDF
