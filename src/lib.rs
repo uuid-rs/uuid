@@ -705,7 +705,6 @@ impl Uuid {
     /// assert_eq!(expected_uuid, uuid);
     /// ```
     ///
-    #[cfg(feature = "v4")]
     pub fn from_random_bytes(b: [u8; 16]) -> Uuid {
         let mut uuid = Uuid { bytes: [0; 16] };
         copy_memory(&mut uuid.bytes, &b);
