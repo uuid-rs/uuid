@@ -507,11 +507,10 @@ impl Uuid {
 
         let mut rng = rand::thread_rng();
 
-        let mut uuid = Uuid { bytes: [0; 16] };
-        rng.fill_bytes(&mut uuid.bytes);
-        uuid.set_variant(UuidVariant::RFC4122);
-        uuid.set_version(UuidVersion::Random);
-        uuid
+        let mut bytes = [0; 16];
+        rng.fill_bytes(&mut bytes);
+
+        Uuid::from_random_bytes(bytes)
     }
 
     /// Creates a UUID using a name from a namespace, based on the SHA-1 hash.
