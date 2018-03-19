@@ -684,24 +684,20 @@ impl Uuid {
         Uuid { bytes: b }
     }
 
-    /// Creates a v4 Uuid from rng bytes
+    /// Creates a v4 Uuid from random bytes (e.g. bytes supplied from `Rand` crate)
     ///
     /// # Examples
     ///
     /// Basic usage:
-    ///
-    /// `get_random_bytes()` returns 16-byte array filled with random values.
-    /// It Should be implemented by the user and is not part of the crate.
-    ///  e.g. it could come from the `rand` crate
-    ///
     ///
     /// ```
     /// use uuid::Uuid;
     /// use uuid::UuidBytes;
     ///
     ///
-    /// let bytes: [u8; 16] = get_random_bytes();
+    /// let bytes:UuidBytes = [70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63, 62];
     /// let uuid = Uuid::from_random_bytes(bytes);
+    /// let uuid = uuid.hyphenated().to_string();
     ///
     /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
     ///
