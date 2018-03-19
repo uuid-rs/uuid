@@ -701,6 +701,7 @@ impl Uuid {
     pub fn get_version(&self) -> Option<UuidVersion> {
         let v = self.bytes[6] >> 4;
         match v {
+            0 => Some(UuidVersion::Nil),
             1 => Some(UuidVersion::Mac),
             2 => Some(UuidVersion::Dce),
             3 => Some(UuidVersion::Md5),
@@ -1279,6 +1280,8 @@ mod tests {
 
         assert!(nil.is_nil());
         assert!(!not_nil.is_nil());
+        assert_eq!(nil.get_version(), Some(UuidVersion::Nil));
+        assert_eq!(not_nil.get_version(), Some(UuidVersion::Random))
     }
 
     #[test]
