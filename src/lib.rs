@@ -532,7 +532,7 @@ impl Uuid {
         hash.update(name.as_bytes());
         let buffer = hash.digest().bytes();
         let mut uuid = Uuid { bytes: [0; 16] };
-        copy_memory(&mut uuid.bytes, &buffer[..16]);
+        uuid.bytes.copy_from_slice(&buffer[..16]);
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Sha1);
         uuid
@@ -647,7 +647,7 @@ impl Uuid {
         }
 
         let mut uuid = Uuid { bytes: [0; 16] };
-        copy_memory(&mut uuid.bytes, b);
+        uuid.bytes.copy_from_slice(b);
         Ok(uuid)
     }
 
@@ -989,12 +989,6 @@ impl Uuid {
     /// Tests if the UUID is nil
     pub fn is_nil(&self) -> bool {
         self.bytes.iter().all(|&b| b == 0)
-    }
-}
-
-fn copy_memory(dst: &mut [u8], src: &[u8]) {
-    for (slot, val) in dst.iter_mut().zip(src.iter()) {
-        *slot = *val;
     }
 }
 
