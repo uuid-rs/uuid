@@ -28,11 +28,14 @@ matrix:
         - travis-cargo --only nightly doc-upload
     
     - rust: nightly
+      cache: cargo
       before_script:
         - rustup component add rustfmt-preview
+#        - ( cargo install clippy || true )
       script:
         - cargo fmt --all -- --write-mode=diff
-        - cargo test  
+        - cargo test
+#        - cargo clippy
 
 script:
   - cargo test --features "$FEATURES" $NDF
