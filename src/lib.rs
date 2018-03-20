@@ -507,11 +507,10 @@ impl Uuid {
 
         let mut rng = rand::thread_rng();
 
-        let mut uuid = Uuid { bytes: [0; 16] };
-        rng.fill_bytes(&mut uuid.bytes);
-        uuid.set_variant(UuidVariant::RFC4122);
-        uuid.set_version(UuidVersion::Random);
-        uuid
+        let mut bytes = [0; 16];
+        rng.fill_bytes(&mut bytes);
+
+        Uuid::from_random_bytes(bytes)
     }
 
     /// Creates a UUID using a name from a namespace, based on the SHA-1 hash.
@@ -683,6 +682,33 @@ impl Uuid {
     /// ```
     pub fn from_uuid_bytes(b: UuidBytes) -> Uuid {
         Uuid { bytes: b }
+    }
+
+    /// Creates a v4 Uuid from random bytes (e.g. bytes supplied from `Rand` crate)
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    /// use uuid::UuidBytes;
+    ///
+    ///
+    /// let bytes:UuidBytes = [70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63, 62];
+    /// let uuid = Uuid::from_random_bytes(bytes);
+    /// let uuid = uuid.hyphenated().to_string();
+    ///
+    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
+    ///
+    /// assert_eq!(expected_uuid, uuid);
+    /// ```
+    ///
+    pub fn from_random_bytes(b: [u8; 16]) -> Uuid {
+        let mut uuid = Uuid { bytes: b };
+        uuid.set_variant(UuidVariant::RFC4122);
+        uuid.set_version(UuidVersion::Random);
+        uuid
     }
 
     /// Specifies the variant of the UUID structure
@@ -1796,6 +1822,19 @@ mod tests {
         let b_out = u.as_bytes();
 
         assert_eq!(&b_in, b_out);
+    }
+
+    #[test]
+    fn test_from_random_bytes() {
+        let b = [
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
+            0xd7, 0xd8,
+        ];
+
+        let u = Uuid::from_random_bytes(b);
+        let expected = "a1a2a3a4b1b241c291d2d3d4d5d6d7d8";
+
+        assert_eq!(u.simple().to_string(), expected);
     }
 
     #[test]
