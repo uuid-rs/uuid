@@ -705,8 +705,7 @@ impl Uuid {
     /// ```
     ///
     pub fn from_random_bytes(b: [u8; 16]) -> Uuid {
-        let mut uuid = Uuid { bytes: [0; 16] };
-        uuid.bytes.copy_from_slice(&b);
+        let mut uuid = Uuid { bytes: b };
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Random);
         uuid
