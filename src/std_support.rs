@@ -1,5 +1,4 @@
-extern crate std;
-
+use std;
 use ParseError;
 
 impl std::error::Error for ParseError {
