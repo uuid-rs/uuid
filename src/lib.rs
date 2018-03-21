@@ -1047,29 +1047,27 @@ impl<'a> fmt::Display for Hyphenated<'a> {
 }
 
 macro_rules! hyphnated_write {
-    ($f:expr, $format:expr, $bytes:expr) => {{
-        let data1 = (($bytes[0] as u32) << 24) |
-                    (($bytes[1] as u32) << 16) |
-                    (($bytes[2] as u32) <<  8) |
-                    (($bytes[3] as u32) <<  0);
-        let data2 = (($bytes[4] as u16) <<  8) |
-                    (($bytes[5] as u16) <<  0);
-        let data3 = (($bytes[6] as u16) <<  8) |
-                    (($bytes[7] as u16) <<  0);
+    ($f: expr, $format: expr, $bytes: expr) => {{
+        let data1 = (($bytes[0] as u32) << 24) | (($bytes[1] as u32) << 16)
+            | (($bytes[2] as u32) << 8) | (($bytes[3] as u32) << 0);
+        let data2 = (($bytes[4] as u16) << 8) | (($bytes[5] as u16) << 0);
+        let data3 = (($bytes[6] as u16) << 8) | (($bytes[7] as u16) << 0);
 
-        write!($f,
-               $format,
-               data1,
-               data2,
-               data3,
-               $bytes[8],
-               $bytes[9],
-               $bytes[10],
-               $bytes[11],
-               $bytes[12],
-               $bytes[13],
-               $bytes[14],
-               $bytes[15])
+        write!(
+            $f,
+            $format,
+            data1,
+            data2,
+            data3,
+            $bytes[8],
+            $bytes[9],
+            $bytes[10],
+            $bytes[11],
+            $bytes[12],
+            $bytes[13],
+            $bytes[14],
+            $bytes[15]
+        )
     }};
 }
 
@@ -1581,7 +1579,7 @@ mod tests {
         let u = new();
 
         macro_rules! check {
-            ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {
+            ($buf: ident, $format: expr, $target: expr, $len: expr, $cond: expr) => {
                 $buf.clear();
                 write!($buf, $format, $target).unwrap();
                 assert!(buf.len() == $len);
