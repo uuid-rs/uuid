@@ -151,6 +151,8 @@ pub type UuidBytes = [u8; 16];
 /// The version of the UUID, denoting the generating algorithm.
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum UuidVersion {
+    /// Special case for `nil` [`struct.Uuid.html`].
+    Nil,
     /// Version 1: MAC address
     Mac = 1,
     /// Version 2: DCE Security
@@ -697,6 +699,7 @@ impl Uuid {
     pub fn get_version(&self) -> Option<UuidVersion> {
         let v = self.bytes[6] >> 4;
         match v {
+            0 if self.is_nil() => Some(UuidVersion::Nil),
             1 => Some(UuidVersion::Mac),
             2 => Some(UuidVersion::Dce),
             3 => Some(UuidVersion::Md5),
@@ -1272,9 +1275,15 @@ mod tests {
     fn test_nil() {
         let nil = Uuid::nil();
         let not_nil = new();
+        let from_bytes = Uuid::from_uuid_bytes([4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87]);
+
+        assert_eq!(from_bytes.get_version(), None);
 
         assert!(nil.is_nil());
         assert!(!not_nil.is_nil());
+
+        assert_eq!(nil.get_version(), Some(UuidVersion::Nil));
+        assert_eq!(not_nil.get_version(), Some(UuidVersion::Random))
     }
 
     #[test]
