@@ -1,7 +1,7 @@
 [package]
 
 name = "uuid"
-version = "0.6.1"
+version = "0.6.2"
 authors = [
         "Ashley Mannix<ashleymannix@live.com.au>",
         "Christopher Armstrong",
@@ -26,6 +26,7 @@ rand = { version = "0.4", optional = true }
 sha1 = { version = "0.6", optional = true }
 md5 = { version = "0.3", optional = true }
 slog = { version = "2", optional = true }
+cfg-if = "0.1"
 
 [dev-dependencies]
 serde_test = "1.0.19"
