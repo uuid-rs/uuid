@@ -1275,7 +1275,8 @@ mod tests {
     fn test_nil() {
         let nil = Uuid::nil();
         let not_nil = new();
-        let from_bytes = Uuid::from_uuid_bytes([4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87]);
+        let from_bytes =
+            Uuid::from_uuid_bytes([4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87]);
 
         assert_eq!(from_bytes.get_version(), None);
 
