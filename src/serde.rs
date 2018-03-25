@@ -1,7 +1,7 @@
 extern crate serde;
 
-use core::fmt;
 use self::serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+use core::fmt;
 
 use Uuid;
 
