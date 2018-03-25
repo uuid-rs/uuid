@@ -151,7 +151,9 @@ pub type UuidBytes = [u8; 16];
 /// The version of the UUID, denoting the generating algorithm.
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum UuidVersion {
-    /// Special case for `nil` [`struct.Uuid.html`].
+    /// Special case for `nil` [`Uuid`].
+    ///
+    /// [`Uuid`]: struct.Uuid.html
     Nil,
     /// Version 1: MAC address
     Mac = 1,
