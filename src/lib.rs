@@ -131,10 +131,10 @@ use core::fmt;
 use core::hash;
 use core::str::FromStr;
 
-#[cfg(feature = "std")]
-mod std_support;
 #[cfg(feature = "serde")]
 mod serde;
+#[cfg(feature = "std")]
+mod std_support;
 
 #[cfg(feature = "v1")]
 use core::sync::atomic::{AtomicUsize, Ordering};
@@ -151,6 +151,10 @@ pub type UuidBytes = [u8; 16];
 /// The version of the UUID, denoting the generating algorithm.
 #[derive(Debug, PartialEq, Copy, Clone)]
 pub enum UuidVersion {
+    /// Special case for `nil` [`Uuid`].
+    ///
+    /// [`Uuid`]: struct.Uuid.html
+    Nil,
     /// Version 1: MAC address
     Mac = 1,
     /// Version 2: DCE Security
@@ -697,6 +701,7 @@ impl Uuid {
     pub fn get_version(&self) -> Option<UuidVersion> {
         let v = self.bytes[6] >> 4;
         match v {
+            0 if self.is_nil() => Some(UuidVersion::Nil),
             1 => Some(UuidVersion::Mac),
             2 => Some(UuidVersion::Dce),
             3 => Some(UuidVersion::Md5),
@@ -1044,29 +1049,27 @@ impl<'a> fmt::Display for Hyphenated<'a> {
 }
 
 macro_rules! hyphnated_write {
-    ($f:expr, $format:expr, $bytes:expr) => {{
-        let data1 = (($bytes[0] as u32) << 24) |
-                    (($bytes[1] as u32) << 16) |
-                    (($bytes[2] as u32) <<  8) |
-                    (($bytes[3] as u32) <<  0);
-        let data2 = (($bytes[4] as u16) <<  8) |
-                    (($bytes[5] as u16) <<  0);
-        let data3 = (($bytes[6] as u16) <<  8) |
-                    (($bytes[7] as u16) <<  0);
+    ($f: expr, $format: expr, $bytes: expr) => {{
+        let data1 = (($bytes[0] as u32) << 24) | (($bytes[1] as u32) << 16)
+            | (($bytes[2] as u32) << 8) | (($bytes[3] as u32) << 0);
+        let data2 = (($bytes[4] as u16) << 8) | (($bytes[5] as u16) << 0);
+        let data3 = (($bytes[6] as u16) << 8) | (($bytes[7] as u16) << 0);
 
-        write!($f,
-               $format,
-               data1,
-               data2,
-               data3,
-               $bytes[8],
-               $bytes[9],
-               $bytes[10],
-               $bytes[11],
-               $bytes[12],
-               $bytes[13],
-               $bytes[14],
-               $bytes[15])
+        write!(
+            $f,
+            $format,
+            data1,
+            data2,
+            data3,
+            $bytes[8],
+            $bytes[9],
+            $bytes[10],
+            $bytes[11],
+            $bytes[12],
+            $bytes[13],
+            $bytes[14],
+            $bytes[15]
+        )
     }};
 }
 
@@ -1272,9 +1275,16 @@ mod tests {
     fn test_nil() {
         let nil = Uuid::nil();
         let not_nil = new();
+        let from_bytes =
+            Uuid::from_uuid_bytes([4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87]);
+
+        assert_eq!(from_bytes.get_version(), None);
 
         assert!(nil.is_nil());
         assert!(!not_nil.is_nil());
+
+        assert_eq!(nil.get_version(), Some(UuidVersion::Nil));
+        assert_eq!(not_nil.get_version(), Some(UuidVersion::Random))
     }
 
     #[test]
@@ -1571,7 +1581,7 @@ mod tests {
         let u = new();
 
         macro_rules! check {
-            ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {
+            ($buf: ident, $format: expr, $target: expr, $len: expr, $cond: expr) => {
                 $buf.clear();
                 write!($buf, $format, $target).unwrap();
                 assert!(buf.len() == $len);
