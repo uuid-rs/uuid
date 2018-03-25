@@ -131,10 +131,10 @@ use core::fmt;
 use core::hash;
 use core::str::FromStr;
 
-#[cfg(feature = "std")]
-mod std_support;
 #[cfg(feature = "serde")]
 mod serde;
+#[cfg(feature = "std")]
+mod std_support;
 
 #[cfg(feature = "v1")]
 use core::sync::atomic::{AtomicUsize, Ordering};
