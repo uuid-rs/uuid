@@ -8,7 +8,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! Generate and parse UUIDs
+//! Generate and parse UUIDs.
 //!
 //! Provides support for Universally Unique Identifiers (UUIDs). A UUID is a
 //! unique 128-bit number, stored as 16 octets.  UUIDs are used to  assign
@@ -167,6 +167,8 @@ cfg_if! {
         }
     }
 }
+
+pub mod prelude;
 
 cfg_if! {
     if #[cfg(feature = "serde")] {
