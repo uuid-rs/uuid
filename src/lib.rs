@@ -182,6 +182,12 @@ cfg_if! {
     }
 }
 
+cfg_if! {
+    if #[cfg(test)] {
+        mod test_util;
+    }
+}
+
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type UuidBytes = [u8; 16];
 
@@ -1172,19 +1178,13 @@ mod tests {
 
     use self::std::prelude::v1::*;
 
+    use super::test_util;
+
     use super::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL};
     use super::{Uuid, UuidVariant, UuidVersion};
 
     #[cfg(feature = "slog")]
     use slog::{self, Drain};
-
-    fn new() -> Uuid {
-        Uuid::parse_str("F9168C5E-CEB2-4FAA-B6BF-329BF39FA1E4").unwrap()
-    }
-
-    fn new2() -> Uuid {
-        Uuid::parse_str("F9168C5E-CEB2-4FAB-B6BF-329BF39FA1E4").unwrap()
-    }
 
     #[cfg(feature = "v3")]
     static FIXTURE_V3: &'static [(&'static Uuid, &'static str, &'static str)] = &[
@@ -1333,7 +1333,7 @@ mod tests {
     #[test]
     fn test_nil() {
         let nil = Uuid::nil();
-        let not_nil = new();
+        let not_nil = test_util::new();
 
         assert!(nil.is_nil());
         assert!(!not_nil.is_nil());
@@ -1463,7 +1463,7 @@ mod tests {
 
     #[test]
     fn test_get_variant() {
-        let uuid1 = new();
+        let uuid1 = test_util::new();
         let uuid2 = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
         let uuid3 = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").unwrap();
         let uuid4 = Uuid::parse_str("936DA01F9ABD4d9dC0C702AF85C822A8").unwrap();
@@ -1566,7 +1566,7 @@ mod tests {
         );
 
         // Round-trip
-        let uuid_orig = new();
+        let uuid_orig = test_util::new();
         let orig_str = uuid_orig.to_string();
         let uuid_out = Uuid::parse_str(&orig_str).unwrap();
         assert_eq!(uuid_orig, uuid_out);
@@ -1592,7 +1592,7 @@ mod tests {
 
     #[test]
     fn test_to_simple_string() {
-        let uuid1 = new();
+        let uuid1 = test_util::new();
         let s = uuid1.simple().to_string();
 
         assert_eq!(s.len(), 32);
@@ -1601,7 +1601,7 @@ mod tests {
 
     #[test]
     fn test_to_string() {
-        let uuid1 = new();
+        let uuid1 = test_util::new();
         let s = uuid1.to_string();
 
         assert_eq!(s.len(), 36);
@@ -1610,7 +1610,7 @@ mod tests {
 
     #[test]
     fn test_display() {
-        let uuid1 = new();
+        let uuid1 = test_util::new();
         let s = uuid1.to_string();
 
         assert_eq!(s, uuid1.hyphenated().to_string());
@@ -1618,7 +1618,7 @@ mod tests {
 
     #[test]
     fn test_to_hyphenated_string() {
-        let uuid1 = new();
+        let uuid1 = test_util::new();
         let s = uuid1.hyphenated().to_string();
 
         assert!(s.len() == 36);
@@ -1630,7 +1630,7 @@ mod tests {
         use super::fmt::Write;
 
         let mut buf = String::new();
-        let u = new();
+        let u = test_util::new();
 
         macro_rules! check {
             ($buf: ident, $format: expr, $target: expr, $len: expr, $cond: expr) => {
@@ -1686,7 +1686,7 @@ mod tests {
 
     #[test]
     fn test_to_urn_string() {
-        let uuid1 = new();
+        let uuid1 = test_util::new();
         let ss = uuid1.urn().to_string();
         let s = &ss[9..];
 
@@ -1697,7 +1697,7 @@ mod tests {
 
     #[test]
     fn test_to_simple_string_matching() {
-        let uuid1 = new();
+        let uuid1 = test_util::new();
 
         let hs = uuid1.hyphenated().to_string();
         let ss = uuid1.simple().to_string();
@@ -1709,7 +1709,7 @@ mod tests {
 
     #[test]
     fn test_string_roundtrip() {
-        let uuid = new();
+        let uuid = test_util::new();
 
         let hs = uuid.hyphenated().to_string();
         let uuid_hs = Uuid::parse_str(&hs).unwrap();
@@ -1722,8 +1722,8 @@ mod tests {
 
     #[test]
     fn test_compare() {
-        let uuid1 = new();
-        let uuid2 = new2();
+        let uuid1 = test_util::new();
+        let uuid2 = test_util::new2();
 
         assert_eq!(uuid1, uuid1);
         assert_eq!(uuid2, uuid2);
@@ -1748,7 +1748,7 @@ mod tests {
 
     #[test]
     fn test_as_fields() {
-        let u = new();
+        let u = test_util::new();
         let (d1, d2, d3, d4) = u.as_fields();
 
         assert_ne!(d1, 0);
@@ -1802,7 +1802,7 @@ mod tests {
 
     #[test]
     fn test_as_bytes() {
-        let u = new();
+        let u = test_util::new();
         let ub = u.as_bytes();
 
         assert_eq!(ub.len(), 16);
@@ -1838,9 +1838,9 @@ mod tests {
 
     #[test]
     fn test_operator_eq() {
-        let u1 = new();
+        let u1 = test_util::new();
         let u2 = u1.clone();
-        let u3 = new2();
+        let u3 = test_util::new2();
 
         assert_eq!(u1, u1);
         assert_eq!(u1, u2);
@@ -1855,8 +1855,8 @@ mod tests {
     #[test]
     fn test_iterbytes_impl_for_uuid() {
         let mut set = std::collections::HashSet::new();
-        let id1 = new();
-        let id2 = new2();
+        let id1 = test_util::new();
+        let id2 = test_util::new2();
         set.insert(id1.clone());
 
         assert!(set.contains(&id1));
@@ -1867,7 +1867,7 @@ mod tests {
     #[test]
     fn test_slog_kv() {
         let root = slog::Logger::root(slog::Discard.fuse(), o!());
-        let u1 = new();
+        let u1 = test_util::new();
         crit!(root, "test"; "u1" => u1);
     }
 }
