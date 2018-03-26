@@ -175,6 +175,12 @@ cfg_if! {
 }
 
 cfg_if! {
+    if #[cfg(feature = "slog")] {
+        mod slog_support;
+    }
+}
+
+cfg_if! {
     if #[cfg(feature = "std")] {
         mod std_support;
     }
@@ -1072,18 +1078,6 @@ impl fmt::LowerHex for Uuid {
     }
 }
 
-#[cfg(feature = "slog")]
-impl slog::Value for Uuid {
-    fn serialize(
-        &self,
-        _record: &slog::Record,
-        key: slog::Key,
-        serializer: &mut slog::Serializer,
-    ) -> Result<(), slog::Error> {
-        serializer.emit_arguments(key, &format_args!("{}", self))
-    }
-}
-
 impl<'a> fmt::Display for Simple<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
@@ -1185,9 +1179,6 @@ mod tests {
 
     use super::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL};
     use super::{Uuid, UuidVariant, UuidVersion};
-
-    #[cfg(feature = "slog")]
-    use slog::{self, Drain};
 
     #[cfg(feature = "v3")]
     static FIXTURE_V3: &'static [(&'static Uuid, &'static str, &'static str)] = &[
@@ -1871,13 +1862,5 @@ mod tests {
 
         assert!(set.contains(&id1));
         assert!(!set.contains(&id2));
-    }
-
-    #[cfg(feature = "slog")]
-    #[test]
-    fn test_slog_kv() {
-        let root = slog::Logger::root(slog::Discard.fuse(), o!());
-        let u1 = test_util::new();
-        crit!(root, "test"; "u1" => u1);
     }
 }
