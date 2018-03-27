@@ -168,6 +168,7 @@ cfg_if! {
     }
 }
 
+pub mod ns;
 pub mod prelude;
 
 cfg_if! {
@@ -245,38 +246,6 @@ pub struct Simple<'a> {
 pub struct Hyphenated<'a> {
     inner: &'a Uuid,
 }
-
-/// A UUID of the namespace of fully-qualified domain names
-pub const NAMESPACE_DNS: Uuid = Uuid {
-    bytes: [
-        0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30,
-        0xc8,
-    ],
-};
-
-/// A UUID of the namespace of URLs
-pub const NAMESPACE_URL: Uuid = Uuid {
-    bytes: [
-        0x6b, 0xa7, 0xb8, 0x11, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30,
-        0xc8,
-    ],
-};
-
-/// A UUID of the namespace of ISO OIDs
-pub const NAMESPACE_OID: Uuid = Uuid {
-    bytes: [
-        0x6b, 0xa7, 0xb8, 0x12, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30,
-        0xc8,
-    ],
-};
-
-/// A UUID of the namespace of X.500 DNs (in DER or a text output format)
-pub const NAMESPACE_X500: Uuid = Uuid {
-    bytes: [
-        0x6b, 0xa7, 0xb8, 0x14, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30,
-        0xc8,
-    ],
-};
 
 /// The number of 100 ns ticks between
 /// the UUID epoch 1582-10-15 00:00:00 and the Unix epoch 1970-01-01 00:00:00
@@ -1179,7 +1148,7 @@ mod tests {
 
     use super::test_util;
 
-    use super::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL};
+    use super::ns::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL};
     use super::{Uuid, UuidVariant, UuidVersion};
 
     #[cfg(feature = "v3")]
