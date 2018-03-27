@@ -20,13 +20,14 @@
 //!
 //! ## The core types
 //!
-//! [`uuid`]`::{`[`ParseError`], [`Uuid`], [`UuidVariant`]`}`: The fundamental
+//! [`uuid`]`::{`[`ParseError`], [`Uuid`], [`UuidVariant`], [`UuidVersion`]`}`: The fundamental
 //! types used in [`uuid`] crate.
 //!
 //! [`uuid`]: ../index.html
 //! [`ParseError`]: ../enum.ParseError.html
 //! [`Uuid`]: ../struct.Uuid.html
-//! [`UuidVariant`]: enum.UuidVariant.html
+//! [`UuidVariant`]: ../enum.UuidVariant.html
+//! [`UuidVersion`]: ../enum.UuidVersion.html
 
 #[doc(inline)]
-pub use super::{ParseError, Uuid, UuidVariant};
+pub use super::{ParseError, Uuid, UuidVariant, UuidVersion};
