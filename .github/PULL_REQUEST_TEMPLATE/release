@@ -1,0 +1,16 @@
+<!--
+    Title should be in the format:
+
+        `version release update`
+
+    Replace version with the target release.
+-->
+
+<!-- Replace version with the version for this tracker is being opened -->
+Items left to do for __*version*__ release:
+
+* [ ] Update version numbers
+    * [ ] lib.rs
+    * [ ] Cargo.toml
+
+Reference: #<!-- Tracker issue -->
