@@ -28,11 +28,12 @@
 //!
 #![cfg_attr(feature = "v1",
 doc = "
-[`uuid::v1`]`::{`[`UuidClockSequence`]`}`: The types useful for handling uuid
-version 1. Requires feature `v1`.
+[`uuid::v1`]`::{`[`UuidClockSequence`],[`UuidContext`]`}`: The types useful for
+handling uuid version 1. Requires feature `v1`.
 
 [`uuid::v1`]: ../v1/index.html
-[`ClockSequence`]: ../v1/trait.UuidClockSequence.html")]
+[`UuidContext`]: ../v1/struct.UuidContext.html
+[`UuidClockSequence`]: ../v1/trait.UuidClockSequence.html")]
 
 #[doc(inline)]
 pub use super::{ParseError, Uuid, UuidVariant};
@@ -40,6 +41,6 @@ pub use super::{ParseError, Uuid, UuidVariant};
 cfg_if! {
     if #[cfg(feature = "v1")] {
         #[doc(inline)]
-        pub use super::v1::UuidClockSequence;
+        pub use super::v1::{UuidClockSequence, UuidContext};
     }
 }

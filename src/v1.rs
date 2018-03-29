@@ -8,6 +8,12 @@ cfg_if! {
     }
 }
 
+/// A thread-safe, stateful context for the v1 generator to help ensure
+/// process-wide uniqueness.
+pub struct UuidContext {
+    count: atomic::AtomicUsize,
+}
+
 /// A trait that abstracts over generation of Uuid v1 "Clock Sequence" values.
 pub trait UuidClockSequence {
     /// Return a 16-bit number that will be used as the "clock sequence" in
@@ -16,30 +22,9 @@ pub trait UuidClockSequence {
     fn generate_sequence(&self, seconds: u64, nano_seconds: u32) -> u16;
 }
 
-/// A thread-safe, stateful context for the v1 generator to help ensure
-/// process-wide uniqueness. Uses `AtomicUsize` as the counter.
-pub struct AtomicUsizeUuidV1Context {
-    count: atomic::AtomicUsize,
-}
-
 /// The number of 100 ns ticks between the UUID epoch `1582-10-15 00:00:00` and
 /// the Unix epoch `1970-01-01 00:00:00`.
 const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
-
-impl AtomicUsizeUuidV1Context {
-    /// Creates a thread-safe, internally mutable context to help ensure
-    /// uniqueness.
-    ///
-    /// This is a context which can be shared across threads. It maintains an
-    /// internal counter that is incremented at every request, the value ends
-    /// up in the clock_seq portion of the Uuid (the fourth group). This will
-    /// improve the probability that the Uuid is unique across the process.
-    pub fn new(count: u16) -> Self {
-        AtomicUsizeUuidV1Context {
-            count: atomic::AtomicUsize::new(count as usize),
-        }
-    }
-}
 
 impl Uuid {
     /// Creates a new `Uuid` (version 1 style) using a time value + seq + NodeID.
@@ -102,7 +87,25 @@ impl Uuid {
     }
 }
 
-impl UuidClockSequence for AtomicUsizeUuidV1Context {
+impl UuidContext {
+    /// Creates a thread-safe, internally mutable context to help ensure
+    /// uniqueness.
+    ///
+    /// This is a context which can be shared across threads. It maintains an
+    /// internal counter that is incremented at every request, the value ends
+    /// up in the clock_seq portion of the [`Uuid`] (the fourth group). This
+    /// will improve the probability that the [`Uuid`] is unique across the
+    /// process.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    pub fn new(count: u16) -> Self {
+        Self {
+            count: atomic::AtomicUsize::new(count as usize),
+        }
+    }
+}
+
+impl UuidClockSequence for UuidContext {
     fn generate_sequence(&self, _: u64, _: u32) -> u16 {
         (self.count.fetch_add(1, atomic::Ordering::SeqCst) & 0xffff) as u16
     }
