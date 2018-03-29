@@ -9,7 +9,7 @@ cfg_if! {
 }
 
 /// A trait that abstracts over generation of Uuid v1 "Clock Sequence" values.
-pub trait ClockSequence {
+pub trait UuidClockSequence {
     /// Return a 16-bit number that will be used as the "clock sequence" in
     /// the Uuid. The number must be different if the time has changed since
     /// the last time a clock sequence was requested.
@@ -78,7 +78,7 @@ impl Uuid {
     ///
     /// assert_eq!(v1uuid.hyphenated().to_string(), "f3b4958c-52a1-11e7-802a-010203040506");
     /// ```
-    pub fn new_v1<C: ClockSequence>(
+    pub fn new_v1<C: UuidClockSequence>(
         context: &C,
         seconds: u64,
         nano_seconds: u32,
@@ -102,7 +102,7 @@ impl Uuid {
     }
 }
 
-impl ClockSequence for AtomicUsizeUuidV1Context {
+impl UuidClockSequence for AtomicUsizeUuidV1Context {
     fn generate_sequence(&self, _: u64, _: u32) -> u16 {
         (self.count.fetch_add(1, atomic::Ordering::SeqCst) & 0xffff) as u16
     }
