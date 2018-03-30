@@ -402,12 +402,30 @@ impl Uuid {
     /// Note that not all versions can be generated currently and `None` will be
     /// returned if the specified version cannot be generated.
     ///
+    /// To generate a random UUID (`UuidVersion::Md5`), then the `v3`
+    /// feature must be enabled for this crate.
+    ///
     /// To generate a random UUID (`UuidVersion::Random`), then the `v4`
     /// feature must be enabled for this crate.
+    ///
+    /// To generate a random UUID (`UuidVersion::Sha1`), then the `v5`
+    /// feature must be enabled for this crate.
     pub fn new(v: UuidVersion) -> Option<Uuid> {
+        // Why 23? Ascii has roughly 6bit randomness per 8bit.
+        // So to reach 128bit at-least 21.333 (128/6) Bytes are required.
+        #[cfg(any(feature = "v3", feature = "v5"))]
+        let iv: String = {
+            use rand::Rng;
+            rand::thread_rng().gen_ascii_chars().take(23).collect()
+        };
+
         match v {
+            #[cfg(feature = "v3")]
+            UuidVersion::Md5 => Some(Uuid::new_v3(&NAMESPACE_DNS, &*iv)),
             #[cfg(feature = "v4")]
             UuidVersion::Random => Some(Uuid::new_v4()),
+            #[cfg(feature = "v5")]
+            UuidVersion::Sha1 => Some(Uuid::new_v5(&NAMESPACE_DNS, &*iv)),
             _ => None,
         }
     }
@@ -1106,7 +1124,7 @@ impl<'a> fmt::Display for Hyphenated<'a> {
 }
 
 macro_rules! hyphenated_write {
-    ($f: expr, $format: expr, $bytes: expr) => {{
+    ($f:expr, $format:expr, $bytes:expr) => {{
         let data1 = u32::from($bytes[0]) << 24 | u32::from($bytes[1]) << 16
             | u32::from($bytes[2]) << 8 | u32::from($bytes[3]);
 
@@ -1332,6 +1350,13 @@ mod tests {
 
     #[test]
     fn test_new() {
+        if cfg!(feature = "v3") {
+            let u = Uuid::new(UuidVersion::Md5);
+            assert!(u.is_some(), "{:?}", u);
+            assert_eq!(u.unwrap().get_version().unwrap(), UuidVersion::Md5);
+        } else {
+            assert_eq!(Uuid::new(UuidVersion::Md5), None);
+        }
         if cfg!(feature = "v4") {
             let uuid1 = Uuid::new(UuidVersion::Random).unwrap();
             let s = uuid1.simple().to_string();
@@ -1341,12 +1366,17 @@ mod tests {
         } else {
             assert!(Uuid::new(UuidVersion::Random).is_none());
         }
+        if cfg!(feature = "v5") {
+            let u = Uuid::new(UuidVersion::Sha1);
+            assert!(u.is_some(), "{:?}", u);
+            assert_eq!(u.unwrap().get_version().unwrap(), UuidVersion::Sha1);
+        } else {
+            assert_eq!(Uuid::new(UuidVersion::Sha1), None);
+        }
 
         // Test unsupported versions
         assert_eq!(Uuid::new(UuidVersion::Mac), None);
         assert_eq!(Uuid::new(UuidVersion::Dce), None);
-        assert_eq!(Uuid::new(UuidVersion::Md5), None);
-        assert_eq!(Uuid::new(UuidVersion::Sha1), None);
     }
 
     #[cfg(feature = "v1")]
@@ -1624,7 +1654,7 @@ mod tests {
         let u = test_util::new();
 
         macro_rules! check {
-            ($buf: ident, $format: expr, $target: expr, $len: expr, $cond: expr) => {
+            ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {
                 $buf.clear();
                 write!($buf, $format, $target).unwrap();
                 assert!(buf.len() == $len);
