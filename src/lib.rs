@@ -1124,7 +1124,7 @@ impl<'a> fmt::Display for Hyphenated<'a> {
 }
 
 macro_rules! hyphenated_write {
-    ($f: expr, $format: expr, $bytes: expr) => {{
+    ($f:expr, $format:expr, $bytes:expr) => {{
         let data1 = u32::from($bytes[0]) << 24 | u32::from($bytes[1]) << 16
             | u32::from($bytes[2]) << 8 | u32::from($bytes[3]);
 
@@ -1654,7 +1654,7 @@ mod tests {
         let u = test_util::new();
 
         macro_rules! check {
-            ($buf: ident, $format: expr, $target: expr, $len: expr, $cond: expr) => {
+            ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {
                 $buf.clear();
                 write!($buf, $format, $target).unwrap();
                 assert!(buf.len() == $len);
