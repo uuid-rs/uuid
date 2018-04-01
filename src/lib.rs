@@ -198,7 +198,7 @@ pub enum UuidVersion {
     /// Special case for `nil` [`Uuid`].
     ///
     /// [`Uuid`]: struct.Uuid.html
-    Nil,
+    Nil = 0,
     /// Version 1: MAC address
     Mac = 1,
     /// Version 2: DCE Security
