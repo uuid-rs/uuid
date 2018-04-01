@@ -1,3 +1,9 @@
+//! The implementation for Version 1 [`Uuid`]s.
+//!
+//! Note that you need feature `v1` in order to use these features.
+//!
+//! [`Uuid`]: ../struct.Uuid.html
+
 use prelude::*;
 
 cfg_if! {
