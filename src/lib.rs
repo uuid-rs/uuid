@@ -150,21 +150,9 @@ cfg_if! {
     if #[cfg(feature = "std")] {
         use std::fmt;
         use std::str;
-
-        cfg_if! {
-            if #[cfg(feature = "v1")] {
-                use std::sync::atomic;
-            }
-        }
     } else if #[cfg(not(feature = "std"))] {
         use core::fmt;
         use core::str;
-
-        cfg_if! {
-            if #[cfg(feature = "v1")] {
-                use core::sync::atomic;
-            }
-        }
     }
 }
 
@@ -192,6 +180,12 @@ cfg_if! {
 cfg_if! {
     if #[cfg(test)] {
         mod test_util;
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "v1")] {
+        pub mod v1;
     }
 }
 
@@ -247,57 +241,9 @@ pub struct Hyphenated<'a> {
     inner: &'a Uuid,
 }
 
-/// The number of 100 ns ticks between
-/// the UUID epoch 1582-10-15 00:00:00 and the Unix epoch 1970-01-01 00:00:00
-#[cfg(feature = "v1")]
-const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
-
 /// An adaptor for formatting a `Uuid` as a URN string.
 pub struct Urn<'a> {
     inner: &'a Uuid,
-}
-
-cfg_if! {
-    if #[cfg(feature = "v1")] {
-
-        /// A trait that abstracts over generation of Uuid v1 "Clock Sequence"
-        /// values.
-        pub trait UuidV1ClockSequence {
-            /// Return a 16-bit number that will be used as the "clock
-            /// sequence" in the Uuid. The number must be different if the
-            /// time has changed since the last time a clock sequence was
-            /// requested.
-            fn generate_sequence(&self, seconds: u64, nano_seconds: u32) -> u16;
-        }
-
-        /// A thread-safe, stateful context for the v1 generator to help
-        /// ensure process-wide uniqueness.
-        pub struct UuidV1Context {
-            count: atomic::AtomicUsize,
-        }
-
-        impl UuidV1Context {
-            /// Creates a thread-safe, internally mutable context to help
-            /// ensure uniqueness.
-            ///
-            /// This is a context which can be shared across threads. It
-            /// maintains an internal counter that is incremented at every
-            /// request, the value ends up in the clock_seq portion of the
-            /// Uuid (the fourth group). This will improve the probability
-            /// that the Uuid is unique across the process.
-            pub fn new(count: u16) -> UuidV1Context {
-                UuidV1Context {
-                    count: atomic::AtomicUsize::new(count as usize),
-                }
-            }
-        }
-
-        impl UuidV1ClockSequence for UuidV1Context {
-            fn generate_sequence(&self, _: u64, _: u32) -> u16 {
-                (self.count.fetch_add(1, atomic::Ordering::SeqCst) & 0xffff) as u16
-            }
-        }
-    }
 }
 
 /// Error details for string parsing failures.
@@ -383,65 +329,6 @@ impl Uuid {
             UuidVersion::Random => Some(Uuid::new_v4()),
             _ => None,
         }
-    }
-
-    /// Creates a new `Uuid` (version 1 style) using a time value + seq + NodeID.
-    ///
-    /// This expects two values representing a monotonically increasing value
-    /// as well as a unique 6 byte NodeId, and an implementation of `UuidV1ClockSequence`.
-    /// This function is only guaranteed to produce unique values if the following conditions hold:
-    ///
-    /// 1. The NodeID is unique for this process,
-    /// 2. The Context is shared across all threads which are generating V1 UUIDs,
-    /// 3. The `UuidV1ClockSequence` implementation reliably returns unique clock sequences
-    ///    (this crate provides `UuidV1Context` for this purpose).
-    ///
-    /// The NodeID must be exactly 6 bytes long. If the NodeID is not a valid length
-    /// this will return a `ParseError::InvalidLength`.
-    ///
-    /// The function is not guaranteed to produce monotonically increasing values
-    /// however.  There is a slight possibility that two successive equal time values
-    /// could be supplied and the sequence counter wraps back over to 0.
-    ///
-    /// If uniqueness and monotonicity is required, the user is responsibile for ensuring
-    /// that the time value always increases between calls
-    /// (including between restarts of the process and device).
-    ///
-    /// Note that usage of this method requires the `v1` feature of this crate
-    /// to be enabled.
-    ///
-    /// # Examples
-    /// Basic usage:
-    ///
-    /// ```
-    /// use uuid::{Uuid, UuidV1Context};
-    ///
-    /// let ctx = UuidV1Context::new(42);
-    /// let v1uuid = Uuid::new_v1(&ctx, 1497624119, 1234, &[1,2,3,4,5,6]).unwrap();
-    ///
-    /// assert_eq!(v1uuid.hyphenated().to_string(), "f3b4958c-52a1-11e7-802a-010203040506");
-    /// ```
-    #[cfg(feature = "v1")]
-    pub fn new_v1<T: UuidV1ClockSequence>(
-        context: &T,
-        seconds: u64,
-        nsecs: u32,
-        node: &[u8],
-    ) -> Result<Uuid, ParseError> {
-        if node.len() != 6 {
-            return Err(ParseError::InvalidLength(node.len()));
-        }
-        let count = context.generate_sequence(seconds, nsecs);
-        let timestamp = seconds * 10_000_000 + u64::from(nsecs / 100);
-        let uuidtime = timestamp + UUID_TICKS_BETWEEN_EPOCHS;
-        let time_low: u32 = (uuidtime & 0xFFFF_FFFF) as u32;
-        let time_mid: u16 = ((uuidtime >> 32) & 0xFFFF) as u16;
-        let time_hi_and_ver: u16 = (((uuidtime >> 48) & 0x0FFF) as u16) | (1 << 12);
-        let mut d4 = [0_u8; 8];
-        d4[0] = (((count & 0x3F00) >> 8) as u8) | 0x80;
-        d4[1] = (count & 0xFF) as u8;
-        d4[2..].copy_from_slice(node);
-        Uuid::from_fields(time_low, time_mid, time_hi_and_ver, &d4)
     }
 
     /// Creates a UUID using a name from a namespace, based on the MD5 hash.
@@ -1080,7 +967,7 @@ impl<'a> fmt::Display for Hyphenated<'a> {
 }
 
 macro_rules! hyphenated_write {
-    ($f: expr, $format: expr, $bytes: expr) => {{
+    ($f:expr, $format:expr, $bytes:expr) => {{
         let data1 = u32::from($bytes[0]) << 24 | u32::from($bytes[1]) << 16
             | u32::from($bytes[2]) << 8 | u32::from($bytes[3]);
 
@@ -1328,33 +1215,6 @@ mod tests {
         assert_eq!(Uuid::new(UuidVersion::Dce), None);
         assert_eq!(Uuid::new(UuidVersion::Md5), None);
         assert_eq!(Uuid::new(UuidVersion::Sha1), None);
-    }
-
-    #[cfg(feature = "v1")]
-    #[test]
-    fn test_new_v1() {
-        use UuidV1Context;
-        let time: u64 = 1_496_854_535;
-        let timefrac: u32 = 812_946_000;
-        let node = [1, 2, 3, 4, 5, 6];
-        let ctx = UuidV1Context::new(0);
-        let uuid = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
-        assert_eq!(uuid.get_version().unwrap(), UuidVersion::Mac);
-        assert_eq!(uuid.get_variant().unwrap(), UuidVariant::RFC4122);
-        assert_eq!(
-            uuid.hyphenated().to_string(),
-            "20616934-4ba2-11e7-8000-010203040506"
-        );
-        let uuid2 = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
-        assert_eq!(
-            uuid2.hyphenated().to_string(),
-            "20616934-4ba2-11e7-8001-010203040506"
-        );
-
-        let ts = uuid.to_timestamp().unwrap();
-        assert_eq!(ts.0 - 0x01B21DD213814000, 1_496_854_535_812_946_0);
-        assert_eq!(ts.1, 0);
-        assert_eq!(uuid2.to_timestamp().unwrap().1, 1);
     }
 
     #[cfg(feature = "v3")]
@@ -1605,7 +1465,7 @@ mod tests {
         let u = test_util::new();
 
         macro_rules! check {
-            ($buf: ident, $format: expr, $target: expr, $len: expr, $cond: expr) => {
+            ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {
                 $buf.clear();
                 write!($buf, $format, $target).unwrap();
                 assert!(buf.len() == $len);
