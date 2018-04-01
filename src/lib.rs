@@ -1217,34 +1217,6 @@ mod tests {
         assert_eq!(Uuid::new(UuidVersion::Sha1), None);
     }
 
-    #[cfg(feature = "v1")]
-    #[test]
-    fn test_new_v1() {
-        use super::v1::AtomicUsizeUuidV1Context;
-
-        let time: u64 = 1_496_854_535;
-        let timefrac: u32 = 812_946_000;
-        let node = [1, 2, 3, 4, 5, 6];
-        let ctx = AtomicUsizeUuidV1Context::new(0);
-        let uuid = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
-        assert_eq!(uuid.get_version().unwrap(), UuidVersion::Mac);
-        assert_eq!(uuid.get_variant().unwrap(), UuidVariant::RFC4122);
-        assert_eq!(
-            uuid.hyphenated().to_string(),
-            "20616934-4ba2-11e7-8000-010203040506"
-        );
-        let uuid2 = Uuid::new_v1(&ctx, time, timefrac, &node[..]).unwrap();
-        assert_eq!(
-            uuid2.hyphenated().to_string(),
-            "20616934-4ba2-11e7-8001-010203040506"
-        );
-
-        let ts = uuid.to_timestamp().unwrap();
-        assert_eq!(ts.0 - 0x01B21DD213814000, 1_496_854_535_812_946_0);
-        assert_eq!(ts.1, 0);
-        assert_eq!(uuid2.to_timestamp().unwrap().1, 1);
-    }
-
     #[cfg(feature = "v3")]
     #[test]
     fn test_new_v3() {

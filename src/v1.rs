@@ -141,3 +141,44 @@ impl UuidClockSequence for UuidContext {
         (self.count.fetch_add(1, atomic::Ordering::SeqCst) & 0xffff) as u16
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_new_v1() {
+        use super::UuidContext;
+        use UuidVersion;
+        use prelude::*;
+
+        let time: u64 = 1_496_854_535;
+        let time_fraction: u32 = 812_946_000;
+        let node = [1, 2, 3, 4, 5, 6];
+        let context = UuidContext::new(0);
+
+        {
+            let uuid = Uuid::new_v1(&context, time, time_fraction, &node).unwrap();
+
+            assert_eq!(uuid.get_version(), Some(UuidVersion::Mac));
+            assert_eq!(uuid.get_variant(), Some(UuidVariant::RFC4122));
+            assert_eq!(
+                uuid.hyphenated().to_string(),
+                "20616934-4ba2-11e7-8000-010203040506"
+            );
+
+            let ts = uuid.to_timestamp().unwrap();
+
+            assert_eq!(ts.0 - 0x01B2_1DD2_1381_4000, 14_968_545_358_129_460);
+            assert_eq!(ts.1, 0);
+        };
+
+        {
+            let uuid2 = Uuid::new_v1(&context, time, time_fraction, &node).unwrap();
+
+            assert_eq!(
+                uuid2.hyphenated().to_string(),
+                "20616934-4ba2-11e7-8001-010203040506"
+            );
+            assert_eq!(uuid2.to_timestamp().unwrap().1, 1)
+        };
+    }
+}
