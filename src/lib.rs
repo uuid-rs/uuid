@@ -1052,12 +1052,6 @@ impl Uuid {
     }
 }
 
-impl fmt::UpperHex for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::UpperHex::fmt(&self.hyphenated(), f)
-    }
-}
-
 impl<'a> fmt::Display for Simple<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)

@@ -22,6 +22,13 @@ impl fmt::LowerHex for Uuid {
     }
 }
 
+
+impl fmt::UpperHex for Uuid {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        <super::Hyphenated as fmt::LowerHex>::fmt(&self.hyphenated(), f)
+    }
+}
+
 impl str::FromStr for Uuid {
     type Err = super::ParseError;
 
