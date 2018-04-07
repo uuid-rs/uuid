@@ -1059,18 +1059,6 @@ impl Default for Uuid {
     }
 }
 
-impl str::FromStr for Uuid {
-    type Err = ParseError;
-
-    /// Parse a hex string and interpret as a `Uuid`.
-    ///
-    /// Accepted formats are a sequence of 32 hexadecimal characters,
-    /// with or without hyphens (grouped as 8, 4, 4, 4, 12).
-    fn from_str(us: &str) -> Result<Uuid, ParseError> {
-        Uuid::parse_str(us)
-    }
-}
-
 impl fmt::Display for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
