@@ -16,6 +16,17 @@ impl fmt::Display for Uuid {
     }
 }
 
+impl fmt::Display for UuidVariant {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            UuidVariant::NCS => write!(f, "NCS"),
+            UuidVariant::RFC4122 => write!(f, "RFC4122"),
+            UuidVariant::Microsoft => write!(f, "Microsoft"),
+            UuidVariant::Future => write!(f, "Future"),
+        }
+    }
+}
+
 impl fmt::LowerHex for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         <super::Hyphenated as fmt::LowerHex>::fmt(&self.hyphenated(), f)
