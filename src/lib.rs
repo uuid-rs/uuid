@@ -170,6 +170,8 @@ cfg_if! {
 
 pub mod prelude;
 
+mod core_support;
+
 cfg_if! {
     if #[cfg(feature = "serde")] {
         mod serde_support;
