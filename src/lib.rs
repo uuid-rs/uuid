@@ -226,7 +226,7 @@ pub enum UuidVariant {
 }
 
 /// A Universally Unique Identifier (UUID).
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Uuid {
     /// The 128-bit number stored in 16 bytes
     bytes: UuidBytes,
@@ -1066,12 +1066,6 @@ impl str::FromStr for Uuid {
     /// with or without hyphens (grouped as 8, 4, 4, 4, 12).
     fn from_str(us: &str) -> Result<Uuid, ParseError> {
         Uuid::parse_str(us)
-    }
-}
-
-impl fmt::Debug for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Uuid(\"{}\")", self.hyphenated())
     }
 }
 
