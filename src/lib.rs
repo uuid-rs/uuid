@@ -1052,13 +1052,6 @@ impl Uuid {
     }
 }
 
-impl Default for Uuid {
-    /// Returns the nil UUID, which is all zeroes
-    fn default() -> Uuid {
-        Uuid::nil()
-    }
-}
-
 impl fmt::Display for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)

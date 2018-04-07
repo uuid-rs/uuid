@@ -16,3 +16,8 @@ impl str::FromStr for Uuid {
     }
 }
 
+impl Default for Uuid {
+    fn default() -> Self {
+        Uuid::nil()
+    }
+}
