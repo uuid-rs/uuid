@@ -215,7 +215,7 @@ pub enum UuidVersion {
 }
 
 /// The reserved variants of UUIDs.
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum UuidVariant {
     /// Reserved by the NCS for backward compatibility
     NCS,
