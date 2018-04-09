@@ -33,7 +33,6 @@ impl fmt::LowerHex for Uuid {
     }
 }
 
-
 impl fmt::UpperHex for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         <super::Hyphenated as fmt::LowerHex>::fmt(&self.hyphenated(), f)
@@ -51,5 +50,36 @@ impl str::FromStr for Uuid {
 impl Default for Uuid {
     fn default() -> Self {
         Uuid::nil()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use prelude::*;
+    use test_util;
+
+    #[test]
+    fn test_uuid_default() {
+        let default_uuid = Uuid::default();
+        let nil_uuid = Uuid::nil();
+
+        assert_eq!(default_uuid, nil_uuid);
+    }
+
+    #[test]
+    fn test_uuid_display() {
+        let uuid = test_util::new();
+        let s = uuid.to_string();
+
+        assert_eq!(s, uuid.hyphenated().to_string())
+    }
+
+    #[test]
+    fn test_uuid_to_string() {
+        let uuid = test_util::new();
+        let s = uuid.to_string();
+
+        assert_eq!(s.len(), 36);
+        assert!(s.chars().all(|c| c.is_digit(16) || c == '-'))
     }
 }

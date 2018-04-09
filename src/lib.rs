@@ -1580,23 +1580,6 @@ mod tests {
     }
 
     #[test]
-    fn test_to_string() {
-        let uuid1 = test_util::new();
-        let s = uuid1.to_string();
-
-        assert_eq!(s.len(), 36);
-        assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
-    }
-
-    #[test]
-    fn test_display() {
-        let uuid1 = test_util::new();
-        let s = uuid1.to_string();
-
-        assert_eq!(s, uuid1.hyphenated().to_string());
-    }
-
-    #[test]
     fn test_to_hyphenated_string() {
         let uuid1 = test_util::new();
         let s = uuid1.hyphenated().to_string();
