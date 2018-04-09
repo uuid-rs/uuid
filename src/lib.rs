@@ -1684,18 +1684,6 @@ mod tests {
     }
 
     #[test]
-    fn test_compare() {
-        let uuid1 = test_util::new();
-        let uuid2 = test_util::new2();
-
-        assert_eq!(uuid1, uuid1);
-        assert_eq!(uuid2, uuid2);
-
-        assert_ne!(uuid1, uuid2);
-        assert_ne!(uuid2, uuid1);
-    }
-
-    #[test]
     fn test_from_fields() {
         let d1: u32 = 0xa1a2a3a4;
         let d2: u16 = 0xb1b2;
@@ -1797,22 +1785,6 @@ mod tests {
         let expected = "a1a2a3a4b1b241c291d2d3d4d5d6d7d8";
 
         assert_eq!(u.simple().to_string(), expected);
-    }
-
-    #[test]
-    fn test_operator_eq() {
-        let u1 = test_util::new();
-        let u2 = u1.clone();
-        let u3 = test_util::new2();
-
-        assert_eq!(u1, u1);
-        assert_eq!(u1, u2);
-        assert_eq!(u2, u1);
-
-        assert_ne!(u1, u3);
-        assert_ne!(u3, u1);
-        assert_ne!(u2, u3);
-        assert_ne!(u3, u2);
     }
 
     #[test]
