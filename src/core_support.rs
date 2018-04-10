@@ -99,7 +99,7 @@ mod tests {
     fn test_uuid_operator_eq() {
         let uuid1 = test_util::new();
         let uuid1_dup = uuid1.clone();
-        let uuid2 = test_util::new();
+        let uuid2 = test_util::new2();
 
         assert!(uuid1 == uuid1);
         assert!(uuid1 == uuid1_dup);
