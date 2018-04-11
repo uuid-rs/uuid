@@ -89,7 +89,7 @@ mod tests {
 
     #[test]
     fn test_uuid_display() {
-        use std::fmt::Write;
+        use super::fmt::Write;
 
         let uuid = test_util::new();
         let s = uuid.to_string();
@@ -97,19 +97,29 @@ mod tests {
 
         assert_eq!(s, uuid.hyphenated().to_string());
 
-        check!(buffer, "{}", uuid, 36, |c| c.is_lowercase() || c.is_digit(10)
-            || c == '-');
+        check!(
+            buffer,
+            "{}",
+            uuid,
+            36,
+            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
+        );
     }
 
     #[test]
     fn test_uuid_lowerhex() {
-        use std::fmt::Write;
+        use super::fmt::Write;
 
         let mut buffer = String::new();
         let uuid = test_util::new();
 
-        check!(buffer, "{:x}", uuid, 36, |c| c.is_lowercase() || c.is_digit(10)
-            || c == '-');
+        check!(
+            buffer,
+            "{:x}",
+            uuid,
+            36,
+            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
+        );
     }
 
     #[test]
@@ -130,25 +140,31 @@ mod tests {
 
     #[test]
     fn test_uuid_to_string() {
-        use std::fmt::Write;
+        use super::fmt::Write;
 
         let uuid = test_util::new();
         let s = uuid.to_string();
         let mut buffer = String::new();
 
         assert_eq!(s.len(), 36);
+
         check!(buffer, "{}", s, 36, |c| c.is_lowercase() || c.is_digit(10)
             || c == '-');
     }
 
     #[test]
     fn test_uuid_upperhex() {
-        use std::fmt::Write;
+        use super::fmt::Write;
 
         let mut buffer = String::new();
         let uuid = test_util::new();
 
-        check!(buffer, "{:X}", uuid, 36, |c| c.is_uppercase() || c.is_digit(10)
-            || c == '-');
+        check!(
+            buffer,
+            "{:X}",
+            uuid,
+            36,
+            |c| c.is_uppercase() || c.is_digit(10) || c == '-'
+        );
     }
 }
