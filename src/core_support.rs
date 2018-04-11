@@ -35,7 +35,7 @@ impl fmt::LowerHex for Uuid {
 
 impl fmt::UpperHex for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        <super::Hyphenated as fmt::LowerHex>::fmt(&self.hyphenated(), f)
+        <super::Hyphenated as fmt::UpperHex>::fmt(&self.hyphenated(), f)
     }
 }
 
@@ -57,6 +57,15 @@ impl Default for Uuid {
 mod tests {
     use prelude::*;
     use test_util;
+
+    macro_rules! check {
+        ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {
+            $buf.clear();
+            write!($buf, $format, $target).unwrap();
+            assert!($buf.len() == $len);
+            assert!($buf.chars().all($cond), "{}", $buf);
+        };
+    }
 
     #[test]
     fn test_uuid_compare() {
@@ -80,19 +89,27 @@ mod tests {
 
     #[test]
     fn test_uuid_display() {
+        use std::fmt::Write;
+
         let uuid = test_util::new();
         let s = uuid.to_string();
+        let mut buffer = String::new();
 
-        assert_eq!(s, uuid.hyphenated().to_string())
+        assert_eq!(s, uuid.hyphenated().to_string());
+
+        check!(buffer, "{}", uuid, 36, |c| c.is_lowercase() || c.is_digit(10)
+            || c == '-');
     }
 
     #[test]
-    fn test_uuid_to_string() {
-        let uuid = test_util::new();
-        let s = uuid.to_string();
+    fn test_uuid_lowerhex() {
+        use std::fmt::Write;
 
-        assert_eq!(s.len(), 36);
-        assert!(s.chars().all(|c| c.is_digit(16) || c == '-'))
+        let mut buffer = String::new();
+        let uuid = test_util::new();
+
+        check!(buffer, "{:x}", uuid, 36, |c| c.is_lowercase() || c.is_digit(10)
+            || c == '-');
     }
 
     #[test]
@@ -109,5 +126,29 @@ mod tests {
         assert!(uuid2 != uuid1);
         assert!(uuid1_dup != uuid2);
         assert!(uuid2 != uuid1_dup);
+    }
+
+    #[test]
+    fn test_uuid_to_string() {
+        use std::fmt::Write;
+
+        let uuid = test_util::new();
+        let s = uuid.to_string();
+        let mut buffer = String::new();
+
+        assert_eq!(s.len(), 36);
+        check!(buffer, "{}", s, 36, |c| c.is_lowercase() || c.is_digit(10)
+            || c == '-');
+    }
+
+    #[test]
+    fn test_uuid_upperhex() {
+        use std::fmt::Write;
+
+        let mut buffer = String::new();
+        let uuid = test_util::new();
+
+        check!(buffer, "{:X}", uuid, 36, |c| c.is_uppercase() || c.is_digit(10)
+            || c == '-');
     }
 }
