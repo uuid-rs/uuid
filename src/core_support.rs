@@ -57,7 +57,7 @@ impl Default for Uuid {
 mod tests {
     extern crate std;
 
-    use std::prelude::*;
+    use self::std::prelude::*;
     use prelude::*;
     use test_util;
 
