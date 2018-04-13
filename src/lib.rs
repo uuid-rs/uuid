@@ -104,9 +104,11 @@
 //! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](
 //!     http://tools.ietf.org/html/rfc4122)
 
-#![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
-       html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-       html_root_url = "https://docs.rs/uuid")]
+#![doc(
+    html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
+    html_favicon_url = "https://www.rust-lang.org/favicon.ico",
+    html_root_url = "https://docs.rs/uuid"
+)]
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -170,6 +172,8 @@ cfg_if! {
 
 pub mod prelude;
 
+mod core_support;
+
 cfg_if! {
     if #[cfg(feature = "serde")] {
         mod serde_support;
@@ -213,7 +217,7 @@ pub enum UuidVersion {
 }
 
 /// The reserved variants of UUIDs.
-#[derive(Debug, PartialEq, Copy, Clone)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum UuidVariant {
     /// Reserved by the NCS for backward compatibility
     NCS,
@@ -226,7 +230,7 @@ pub enum UuidVariant {
 }
 
 /// A Universally Unique Identifier (UUID).
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Uuid {
     /// The 128-bit number stored in 16 bytes
     bytes: UuidBytes,
@@ -1050,49 +1054,6 @@ impl Uuid {
     }
 }
 
-impl Default for Uuid {
-    /// Returns the nil UUID, which is all zeroes
-    fn default() -> Uuid {
-        Uuid::nil()
-    }
-}
-
-impl str::FromStr for Uuid {
-    type Err = ParseError;
-
-    /// Parse a hex string and interpret as a `Uuid`.
-    ///
-    /// Accepted formats are a sequence of 32 hexadecimal characters,
-    /// with or without hyphens (grouped as 8, 4, 4, 4, 12).
-    fn from_str(us: &str) -> Result<Uuid, ParseError> {
-        Uuid::parse_str(us)
-    }
-}
-
-impl fmt::Debug for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "Uuid(\"{}\")", self.hyphenated())
-    }
-}
-
-impl fmt::Display for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::LowerHex::fmt(self, f)
-    }
-}
-
-impl fmt::UpperHex for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::UpperHex::fmt(&self.hyphenated(), f)
-    }
-}
-
-impl fmt::LowerHex for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.hyphenated().fmt(f)
-    }
-}
-
 impl<'a> fmt::Display for Simple<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
@@ -1621,23 +1582,6 @@ mod tests {
     }
 
     #[test]
-    fn test_to_string() {
-        let uuid1 = test_util::new();
-        let s = uuid1.to_string();
-
-        assert_eq!(s.len(), 36);
-        assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
-    }
-
-    #[test]
-    fn test_display() {
-        let uuid1 = test_util::new();
-        let s = uuid1.to_string();
-
-        assert_eq!(s, uuid1.hyphenated().to_string());
-    }
-
-    #[test]
     fn test_to_hyphenated_string() {
         let uuid1 = test_util::new();
         let s = uuid1.hyphenated().to_string();
@@ -1674,8 +1618,6 @@ mod tests {
         check!(buf, "{:X}", u.simple(), 32, |c| c.is_uppercase()
             || c.is_digit(10));
 
-        check!(buf, "{:x}", u, 36, |c| c.is_lowercase() || c.is_digit(10)
-            || c == '-');
         check!(
             buf,
             "{:x}",
@@ -1739,18 +1681,6 @@ mod tests {
         let ss = uuid.to_string();
         let uuid_ss = Uuid::parse_str(&ss).unwrap();
         assert_eq!(uuid_ss, uuid);
-    }
-
-    #[test]
-    fn test_compare() {
-        let uuid1 = test_util::new();
-        let uuid2 = test_util::new2();
-
-        assert_eq!(uuid1, uuid1);
-        assert_eq!(uuid2, uuid2);
-
-        assert_ne!(uuid1, uuid2);
-        assert_ne!(uuid2, uuid1);
     }
 
     #[test]
@@ -1855,22 +1785,6 @@ mod tests {
         let expected = "a1a2a3a4b1b241c291d2d3d4d5d6d7d8";
 
         assert_eq!(u.simple().to_string(), expected);
-    }
-
-    #[test]
-    fn test_operator_eq() {
-        let u1 = test_util::new();
-        let u2 = u1.clone();
-        let u3 = test_util::new2();
-
-        assert_eq!(u1, u1);
-        assert_eq!(u1, u2);
-        assert_eq!(u2, u1);
-
-        assert_ne!(u1, u3);
-        assert_ne!(u3, u1);
-        assert_ne!(u2, u3);
-        assert_ne!(u3, u2);
     }
 
     #[test]
