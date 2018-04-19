@@ -170,12 +170,6 @@ cfg_if! {
 }
 
 cfg_if! {
-    if #[cfg(feature = "v4")] {
-        pub mod v4;
-    }
-}
-
-cfg_if! {
     if #[cfg(feature = "serde")] {
         mod serde_support;
     }
@@ -196,6 +190,12 @@ cfg_if! {
 cfg_if! {
     if #[cfg(test)] {
         mod test_util;
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "v4")] {
+        mod v4;
     }
 }
 
