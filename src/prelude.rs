@@ -18,11 +18,10 @@
 //!
 //! Currently the prelude reexports the following:
 //!
-//! [`uuid`]`::{`[`ParseError`], [`Uuid`], [`UuidVariant`]`}`: The fundamental
-//! types used in [`uuid`] crate.
+//! [`uuid`]`::{`[`Uuid`], [`UuidVariant`]`}`: The fundamental types used in
+//! [`uuid`] crate.
 //!
 //! [`uuid`]: ../index.html
-//! [`ParseError`]: ../enum.ParseError.html
 //! [`Uuid`]: ../struct.Uuid.html
 //! [`UuidVariant`]: enum.UuidVariant.html
 //!
@@ -36,7 +35,7 @@ handling uuid version 1. Requires feature `v1`.
 [`UuidClockSequence`]: ../v1/trait.UuidClockSequence.html")]
 
 #[doc(inline)]
-pub use super::{ParseError, Uuid, UuidVariant};
+pub use super::{Uuid, UuidVariant};
 
 cfg_if! {
     if #[cfg(feature = "v1")] {
