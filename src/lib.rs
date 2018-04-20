@@ -164,6 +164,12 @@ pub mod prelude;
 mod core_support;
 
 cfg_if! {
+    if #[cfg(feature = "v1")] {
+        pub mod v1;
+    }
+}
+
+cfg_if! {
     if #[cfg(feature = "serde")] {
         mod serde_support;
     }
@@ -188,8 +194,8 @@ cfg_if! {
 }
 
 cfg_if! {
-    if #[cfg(feature = "v1")] {
-        pub mod v1;
+    if #[cfg(feature = "v4")] {
+        mod v4;
     }
 }
 
@@ -375,38 +381,6 @@ impl Uuid {
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Md5);
         uuid
-    }
-
-    /// Creates a random `Uuid`.
-    ///
-    /// This uses the `rand` crate's default task RNG as the source of random numbers.
-    /// If you'd like to use a custom generator, don't use this method: use the
-    /// [`rand::Rand trait`]'s `rand()` method instead.
-    ///
-    /// [`rand::Rand trait`]: ../../rand/rand/trait.Rand.html#tymethod.rand
-    ///
-    /// Note that usage of this method requires the `v4` feature of this crate
-    /// to be enabled.
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::new_v4();
-    /// ```
-    #[cfg(feature = "v4")]
-    pub fn new_v4() -> Uuid {
-        use rand::Rng;
-
-        let mut rng = rand::thread_rng();
-
-        let mut bytes = [0; 16];
-        rng.fill_bytes(&mut bytes);
-
-        Uuid::from_random_bytes(bytes)
     }
 
     /// Creates a UUID using a name from a namespace, based on the SHA-1 hash.
@@ -1218,15 +1192,6 @@ mod tests {
         }
     }
 
-    #[test]
-    #[cfg(feature = "v4")]
-    fn test_new_v4() {
-        let uuid1 = Uuid::new_v4();
-
-        assert_eq!(uuid1.get_version().unwrap(), UuidVersion::Random);
-        assert_eq!(uuid1.get_variant().unwrap(), UuidVariant::RFC4122);
-    }
-
     #[cfg(feature = "v5")]
     #[test]
     fn test_new_v5() {
@@ -1264,15 +1229,6 @@ mod tests {
 
         assert_eq!(uuid.get_version().unwrap(), UuidVersion::Md5);
         assert_eq!(uuid.get_version_num(), 3);
-    }
-
-    #[test]
-    #[cfg(feature = "v4")]
-    fn test_get_version_v4() {
-        let uuid1 = Uuid::new_v4();
-
-        assert_eq!(uuid1.get_version().unwrap(), UuidVersion::Random);
-        assert_eq!(uuid1.get_version_num(), 4);
     }
 
     #[cfg(feature = "v5")]
