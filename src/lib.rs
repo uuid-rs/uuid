@@ -104,16 +104,21 @@
 //! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](
 //!     http://tools.ietf.org/html/rfc4122)
 
-#![doc(
-    html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
-    html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-    html_root_url = "https://docs.rs/uuid"
-)]
+#![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
+       html_favicon_url = "https://www.rust-lang.org/favicon.ico",
+       html_root_url = "https://docs.rs/uuid")]
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(all(nightly, u128), feature(i128_type))]
 
 #[macro_use]
 extern crate cfg_if;
+
+cfg_if! {
+    if #[cfg(feature = "byteorder")] {
+        extern crate byteorder;
+    }
+}
 
 cfg_if! {
     if #[cfg(feature = "md5")] {
@@ -190,6 +195,12 @@ cfg_if! {
 cfg_if! {
     if #[cfg(test)] {
         mod test_util;
+    }
+}
+
+cfg_if! {
+    if #[cfg(feature = "u128")] {
+        mod u128_support;
     }
 }
 
