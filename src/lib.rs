@@ -109,7 +109,7 @@
        html_root_url = "https://docs.rs/uuid")]
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(all(feature = "u128"), feature(i128_type))]
+#![cfg_attr(all(feature = "u128", nightly), feature(i128_type))]
 
 #[macro_use]
 extern crate cfg_if;
@@ -199,7 +199,7 @@ cfg_if! {
 }
 
 cfg_if! {
-    if #[cfg(feature = "u128")] {
+    if #[cfg(all(feature = "u128"), nightly)] {
         mod u128_support;
     }
 }
