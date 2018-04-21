@@ -1,6 +1,18 @@
 use byteorder;
 use prelude::*;
 
+impl Uuid {
+    /// Creates a new [`Uuid`] from a `u128` value.
+    ///
+    /// To create a [`Uuid`] from `u128`s, you need `u128` feature enabled for this crate.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    #[inline(always)]
+    pub fn from_u128(quad: u128) -> Self {
+        Uuid::from(quad)
+    }
+}
+
 impl From<u128> for Uuid {
     fn from(f: u128) -> Self {
         let mut uuid = Uuid::default();
