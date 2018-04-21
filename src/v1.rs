@@ -9,7 +9,7 @@ use prelude::*;
 cfg_if! {
     if #[cfg(feature = "std")] {
         use std::sync::atomic;
-    } else if #[cfg(not(feature = "v1"))] {
+    } else {
         use core::sync::atomic;
     }
 }
