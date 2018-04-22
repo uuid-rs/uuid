@@ -17,6 +17,9 @@ matrix:
     - rust: nightly
 
     - rust: nightly
+      env: FEATURES="u128"
+
+    - rust: nightly
       script: cargo bench --all-features
 
     - rust: nightly
