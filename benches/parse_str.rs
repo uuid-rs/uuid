@@ -4,10 +4,11 @@
 extern crate slog;
 extern crate test;
 extern crate uuid;
+
 #[cfg(feature = "slog")]
-use uuid::prelude::*;
 use slog::Drain;
 use test::Bencher;
+use uuid::prelude::*;
 
 #[bench]
 fn bench_parse(b: &mut Bencher) {
