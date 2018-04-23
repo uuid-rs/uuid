@@ -111,9 +111,16 @@
 )]
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(all(feature = "u128", nightly), feature(i128_type))]
 
 #[macro_use]
 extern crate cfg_if;
+
+cfg_if! {
+    if #[cfg(feature = "byteorder")] {
+        extern crate byteorder;
+    }
+}
 
 cfg_if! {
     if #[cfg(feature = "md5")] {
@@ -190,6 +197,12 @@ cfg_if! {
 cfg_if! {
     if #[cfg(test)] {
         mod test_util;
+    }
+}
+
+cfg_if! {
+    if #[cfg(all(feature = "u128"), nightly)] {
+        mod u128_support;
     }
 }
 
