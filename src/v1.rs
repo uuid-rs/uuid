@@ -110,7 +110,7 @@ impl Uuid {
             time_high_and_version = (((uuid_time >> 48) & 0x0FFF) as u16) | (1 << 12);
         }
 
-        let mut d4 = [0_u8; 8];
+        let mut d4 = [0; 8];
 
         {
             let count = context.generate_sequence(seconds, nano_seconds);
@@ -153,7 +153,6 @@ mod tests {
     #[test]
     fn test_new_v1() {
         use super::UuidContext;
-        use UuidVersion;
         use prelude::*;
 
         let time: u64 = 1_496_854_535;
