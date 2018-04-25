@@ -1,7 +1,6 @@
 use fmt;
+use prelude::*;
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
-
-use Uuid;
 
 impl Serialize for Uuid {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
