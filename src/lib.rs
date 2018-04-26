@@ -1152,6 +1152,7 @@ mod tests {
     use self::std::prelude::v1::*;
 
     use super::test_util;
+    use super::test_util::FMT_LENGTH;
 
     use super::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL};
     use super::{Uuid, UuidVariant, UuidVersion};
@@ -1606,7 +1607,7 @@ mod tests {
             };
         }
 
-        check!(buf, "{:X}", u, 36, |c| c.is_uppercase() || c.is_digit(10)
+        check!(buf, "{:X}", u, FMT_LENGTH, |c| c.is_uppercase() || c.is_digit(10)
             || c == '-');
         check!(
             buf,
