@@ -1607,8 +1607,13 @@ mod tests {
             };
         }
 
-        check!(buf, "{:X}", u, FMT_LENGTH, |c| c.is_uppercase() || c.is_digit(10)
-            || c == '-');
+        check!(
+            buf,
+            "{:X}",
+            u,
+            FMT_LENGTH,
+            |c| c.is_uppercase() || c.is_digit(10) || c == '-'
+        );
         check!(
             buf,
             "{:X}",

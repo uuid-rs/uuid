@@ -174,8 +174,13 @@ mod tests {
 
         assert_eq!(s.len(), FMT_LENGTH);
 
-        check!(buffer, "{}", s, FMT_LENGTH, |c| c.is_lowercase() || c.is_digit(10)
-            || c == '-');
+        check!(
+            buffer,
+            "{}",
+            s,
+            FMT_LENGTH,
+            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
+        );
     }
 
     #[test]
