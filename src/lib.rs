@@ -223,28 +223,30 @@ pub type UuidBytes = [u8; 16];
 
 /// The version of the UUID, denoting the generating algorithm.
 #[derive(Debug, PartialEq, Copy, Clone)]
+#[repr(C)]
 pub enum UuidVersion {
     /// Special case for `nil` [`Uuid`].
     ///
     /// [`Uuid`]: struct.Uuid.html
     Nil = 0,
     /// Version 1: MAC address
-    Mac = 1,
+    Mac,
     /// Version 2: DCE Security
-    Dce = 2,
+    Dce,
     /// Version 3: MD5 hash
-    Md5 = 3,
+    Md5,
     /// Version 4: Random
-    Random = 4,
+    Random,
     /// Version 5: SHA-1 hash
-    Sha1 = 5,
+    Sha1,
 }
 
 /// The reserved variants of UUIDs.
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[repr(C)]
 pub enum UuidVariant {
     /// Reserved by the NCS for backward compatibility
-    NCS,
+    NCS = 0,
     /// As described in the RFC4122 Specification (default)
     RFC4122,
     /// Reserved by Microsoft for backward compatibility
