@@ -125,7 +125,7 @@ mod tests {
         );
     }
 
-    //noinspection RsAssertEqual
+    // noinspection RsAssertEqual
     #[test]
     fn test_uuid_operator_eq() {
         let uuid1 = test_util::new();
@@ -152,8 +152,13 @@ mod tests {
 
         assert_eq!(s.len(), 36);
 
-        check!(buffer, "{}", s, 36, |c| c.is_lowercase() || c.is_digit(10)
-            || c == '-');
+        check!(
+            buffer,
+            "{}",
+            s,
+            36,
+            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
+        );
     }
 
     #[test]
