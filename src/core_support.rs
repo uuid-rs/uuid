@@ -125,7 +125,7 @@ mod tests {
         );
     }
 
-    //noinspection RsAssertEqual
+    // noinspection RsAssertEqual
     #[test]
     fn test_uuid_operator_eq() {
         let uuid1 = test_util::new();

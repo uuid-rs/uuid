@@ -338,8 +338,10 @@ impl Uuid {
     ///
     /// let uuid = Uuid::nil();
     ///
-    /// assert_eq!(uuid.hyphenated().to_string(),
-    ///            "00000000-0000-0000-0000-000000000000");
+    /// assert_eq!(
+    ///     uuid.hyphenated().to_string(),
+    ///     "00000000-0000-0000-0000-000000000000"
+    /// );
     /// ```
     pub fn nil() -> Uuid {
         Uuid { bytes: [0; 16] }
@@ -420,7 +422,8 @@ impl Uuid {
     /// let uuid = Uuid::from_fields(42, 12, 5, &d4);
     /// let uuid = uuid.map(|uuid| uuid.hyphenated().to_string());
     ///
-    /// let expected_uuid = Ok(String::from("0000002a-000c-0005-0c03-0938362b0809"));
+    /// let expected_uuid =
+    ///     Ok(String::from("0000002a-000c-0005-0c03-0938362b0809"));
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -439,7 +442,12 @@ impl Uuid {
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
-    pub fn from_fields(d1: u32, d2: u16, d3: u16, d4: &[u8]) -> Result<Uuid, ParseError> {
+    pub fn from_fields(
+        d1: u32,
+        d2: u16,
+        d3: u16,
+        d4: &[u8],
+    ) -> Result<Uuid, ParseError> {
         if d4.len() != 8 {
             return Err(ParseError::InvalidLength(d4.len()));
         }
@@ -479,13 +487,13 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
-    /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76,
-    ///              32, 50, 87, 5, 1, 33, 43, 87];
+    /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76, 32, 50, 87, 5, 1, 33, 43, 87];
     ///
     /// let uuid = Uuid::from_bytes(&bytes);
     /// let uuid = uuid.map(|uuid| uuid.hyphenated().to_string());
     ///
-    /// let expected_uuid = Ok(String::from("0436430c-2b02-624c-2032-570501212b57"));
+    /// let expected_uuid =
+    ///     Ok(String::from("0436430c-2b02-624c-2032-570501212b57"));
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -525,7 +533,9 @@ impl Uuid {
     /// use uuid::Uuid;
     /// use uuid::UuidBytes;
     ///
-    /// let bytes:UuidBytes = [70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63, 62];
+    /// let bytes: UuidBytes = [
+    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63, 62
+    /// ];
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// let uuid = uuid.hyphenated().to_string();
@@ -541,7 +551,7 @@ impl Uuid {
     /// use uuid::Uuid;
     /// use uuid::UuidBytes;
     ///
-    /// let bytes:UuidBytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
+    /// let bytes: UuidBytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// ```
@@ -549,7 +559,8 @@ impl Uuid {
         Uuid { bytes: b }
     }
 
-    /// Creates a v4 Uuid from random bytes (e.g. bytes supplied from `Rand` crate)
+    /// Creates a v4 Uuid from random bytes (e.g. bytes supplied from `Rand`
+    /// crate)
     ///
     /// # Examples
     ///
@@ -559,8 +570,9 @@ impl Uuid {
     /// use uuid::Uuid;
     /// use uuid::UuidBytes;
     ///
-    ///
-    /// let bytes:UuidBytes = [70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63, 62];
+    /// let bytes: UuidBytes = [
+    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63, 62
+    /// ];
     /// let uuid = Uuid::from_random_bytes(bytes);
     /// let uuid = uuid.hyphenated().to_string();
     ///
@@ -568,7 +580,7 @@ impl Uuid {
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
-    ///
+    /// 
     pub fn from_random_bytes(b: [u8; 16]) -> Uuid {
         let mut uuid = Uuid { bytes: b };
         uuid.set_variant(UuidVariant::RFC4122);
@@ -671,18 +683,27 @@ impl Uuid {
     /// assert_eq!(uuid.as_fields(), (0, 0, 0, &[0u8; 8]));
     ///
     /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
-    /// assert_eq!(uuid.as_fields(),
-    ///            (0x936DA01F, 0x9ABD, 0x4D9D, b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"));
+    /// assert_eq!(
+    ///     uuid.as_fields(),
+    ///     (
+    ///         0x936DA01F,
+    ///         0x9ABD,
+    ///         0x4D9D,
+    ///         b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"
+    ///     )
+    /// );
     /// ```
     pub fn as_fields(&self) -> (u32, u16, u16, &[u8; 8]) {
         let d1 = u32::from(self.bytes[0]) << 24 | u32::from(self.bytes[1]) << 16
-            | u32::from(self.bytes[2]) << 8 | u32::from(self.bytes[3]);
+            | u32::from(self.bytes[2]) << 8
+            | u32::from(self.bytes[3]);
 
         let d2 = u16::from(self.bytes[4]) << 8 | u16::from(self.bytes[5]);
 
         let d3 = u16::from(self.bytes[6]) << 8 | u16::from(self.bytes[7]);
 
-        let d4: &[u8; 8] = unsafe { &*(self.bytes[8..16].as_ptr() as *const [u8; 8]) };
+        let d4: &[u8; 8] =
+            unsafe { &*(self.bytes[8..16].as_ptr() as *const [u8; 8]) };
         (d1, d2, d3, d4)
     }
 
@@ -697,9 +718,13 @@ impl Uuid {
     /// assert_eq!(uuid.as_bytes(), &[0; 16]);
     ///
     /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
-    /// assert_eq!(uuid.as_bytes(),
-    ///            &[147, 109, 160, 31, 154, 189, 77, 157,
-    ///              128, 199, 2, 175, 133, 200, 34, 168]);
+    /// assert_eq!(
+    ///     uuid.as_bytes(),
+    ///     &[
+    ///         147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133, 200,
+    ///         34, 168,
+    ///     ]
+    /// );
     /// ```
     pub fn as_bytes(&self) -> &[u8; 16] {
         &self.bytes
@@ -714,8 +739,10 @@ impl Uuid {
     /// use uuid::Uuid;
     ///
     /// let uuid = Uuid::nil();
-    /// assert_eq!(uuid.simple().to_string(),
-    ///            "00000000000000000000000000000000");
+    /// assert_eq!(
+    ///     uuid.simple().to_string(),
+    ///     "00000000000000000000000000000000"
+    /// );
     /// ```
     pub fn simple(&self) -> Simple {
         Simple { inner: self }
@@ -730,8 +757,10 @@ impl Uuid {
     /// use uuid::Uuid;
     ///
     /// let uuid = Uuid::nil();
-    /// assert_eq!(uuid.hyphenated().to_string(),
-    ///            "00000000-0000-0000-0000-000000000000");
+    /// assert_eq!(
+    ///     uuid.hyphenated().to_string(),
+    ///     "00000000-0000-0000-0000-000000000000"
+    /// );
     /// ```
     pub fn hyphenated(&self) -> Hyphenated {
         Hyphenated { inner: self }
@@ -746,8 +775,10 @@ impl Uuid {
     /// use uuid::Uuid;
     ///
     /// let uuid = Uuid::nil();
-    /// assert_eq!(uuid.urn().to_string(),
-    ///            "urn:uuid:00000000-0000-0000-0000-000000000000");
+    /// assert_eq!(
+    ///     uuid.urn().to_string(),
+    ///     "urn:uuid:00000000-0000-0000-0000-000000000000"
+    /// );
     /// ```
     pub fn urn(&self) -> Urn {
         Urn { inner: self }
@@ -764,20 +795,26 @@ impl Uuid {
             return None;
         }
 
-        let ts: u64 = u64::from(self.bytes[6] & 0x0F) << 56 | u64::from(self.bytes[7]) << 48
-            | u64::from(self.bytes[4]) << 40 | u64::from(self.bytes[5]) << 32
-            | u64::from(self.bytes[0]) << 24 | u64::from(self.bytes[1]) << 16
-            | u64::from(self.bytes[2]) << 8 | u64::from(self.bytes[3]);
+        let ts: u64 = u64::from(self.bytes[6] & 0x0F) << 56
+            | u64::from(self.bytes[7]) << 48
+            | u64::from(self.bytes[4]) << 40
+            | u64::from(self.bytes[5]) << 32
+            | u64::from(self.bytes[0]) << 24
+            | u64::from(self.bytes[1]) << 16
+            | u64::from(self.bytes[2]) << 8
+            | u64::from(self.bytes[3]);
 
-        let count: u16 = u16::from(self.bytes[8] & 0x3F) << 8 | u16::from(self.bytes[9]);
+        let count: u16 =
+            u16::from(self.bytes[8] & 0x3F) << 8 | u16::from(self.bytes[9]);
 
         Some((ts, count))
     }
 
-    /// Parses a `Uuid` from a string of hexadecimal digits with optional hyphens.
+    /// Parses a `Uuid` from a string of hexadecimal digits with optional
+    /// hyphens.
     ///
-    /// Any of the formats generated by this module (simple, hyphenated, urn) are
-    /// supported by this parsing function.
+    /// Any of the formats generated by this module (simple, hyphenated, urn)
+    /// are supported by this parsing function.
     pub fn parse_str(mut input: &str) -> Result<Uuid, ParseError> {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
@@ -811,7 +848,8 @@ impl Uuid {
                     // Found a group delimiter
                     b'-' => {
                         if ACC_GROUP_LENS[group] != digit {
-                            // Calculate how many digits this group consists of in the input.
+                            // Calculate how many digits this group consists of
+                            // in the input.
                             let found = if group > 0 {
                                 digit - ACC_GROUP_LENS[group - 1]
                             } else {
@@ -823,7 +861,8 @@ impl Uuid {
                                 GROUP_LENS[group],
                             ));
                         }
-                        // Next group, decrement digit, it is incremented again at the bottom.
+                        // Next group, decrement digit, it is incremented again
+                        // at the bottom.
                         group += 1;
                         digit -= 1;
                     }
@@ -983,88 +1022,91 @@ mod tests {
 
     use super::test_util;
 
-    use super::ns::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL};
+    use super::ns::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID,
+                    NAMESPACE_URL};
 
     use prelude::*;
 
     #[cfg(feature = "v3")]
-    static FIXTURE_V3: &'static [(&'static Uuid, &'static str, &'static str)] = &[
-        (
-            &NAMESPACE_DNS,
-            "example.org",
-            "04738bdf-b25a-3829-a801-b21a1d25095b",
-        ),
-        (
-            &NAMESPACE_DNS,
-            "rust-lang.org",
-            "c6db027c-615c-3b4d-959e-1a917747ca5a",
-        ),
-        (&NAMESPACE_DNS, "42", "5aab6e0c-b7d3-379c-92e3-2bfbb5572511"),
-        (
-            &NAMESPACE_DNS,
-            "lorem ipsum",
-            "4f8772e9-b59c-3cc9-91a9-5c823df27281",
-        ),
-        (
-            &NAMESPACE_URL,
-            "example.org",
-            "39682ca1-9168-3da2-a1bb-f4dbcde99bf9",
-        ),
-        (
-            &NAMESPACE_URL,
-            "rust-lang.org",
-            "7ed45aaf-e75b-3130-8e33-ee4d9253b19f",
-        ),
-        (&NAMESPACE_URL, "42", "08998a0c-fcf4-34a9-b444-f2bfc15731dc"),
-        (
-            &NAMESPACE_URL,
-            "lorem ipsum",
-            "e55ad2e6-fb89-34e8-b012-c5dde3cd67f0",
-        ),
-        (
-            &NAMESPACE_OID,
-            "example.org",
-            "f14eec63-2812-3110-ad06-1625e5a4a5b2",
-        ),
-        (
-            &NAMESPACE_OID,
-            "rust-lang.org",
-            "6506a0ec-4d79-3e18-8c2b-f2b6b34f2b6d",
-        ),
-        (&NAMESPACE_OID, "42", "ce6925a5-2cd7-327b-ab1c-4b375ac044e4"),
-        (
-            &NAMESPACE_OID,
-            "lorem ipsum",
-            "5dd8654f-76ba-3d47-bc2e-4d6d3a78cb09",
-        ),
-        (
-            &NAMESPACE_X500,
-            "example.org",
-            "64606f3f-bd63-363e-b946-fca13611b6f7",
-        ),
-        (
-            &NAMESPACE_X500,
-            "rust-lang.org",
-            "bcee7a9c-52f1-30c6-a3cc-8c72ba634990",
-        ),
-        (
-            &NAMESPACE_X500,
-            "42",
-            "c1073fa2-d4a6-3104-b21d-7a6bdcf39a23",
-        ),
-        (
-            &NAMESPACE_X500,
-            "lorem ipsum",
-            "02f09a3f-1624-3b1d-8409-44eff7708208",
-        ),
-    ];
+    static FIXTURE_V3: &'static [(&'static Uuid, &'static str, &'static str)] =
+        &[
+            (
+                &NAMESPACE_DNS,
+                "example.org",
+                "04738bdf-b25a-3829-a801-b21a1d25095b",
+            ),
+            (
+                &NAMESPACE_DNS,
+                "rust-lang.org",
+                "c6db027c-615c-3b4d-959e-1a917747ca5a",
+            ),
+            (&NAMESPACE_DNS, "42", "5aab6e0c-b7d3-379c-92e3-2bfbb5572511"),
+            (
+                &NAMESPACE_DNS,
+                "lorem ipsum",
+                "4f8772e9-b59c-3cc9-91a9-5c823df27281",
+            ),
+            (
+                &NAMESPACE_URL,
+                "example.org",
+                "39682ca1-9168-3da2-a1bb-f4dbcde99bf9",
+            ),
+            (
+                &NAMESPACE_URL,
+                "rust-lang.org",
+                "7ed45aaf-e75b-3130-8e33-ee4d9253b19f",
+            ),
+            (&NAMESPACE_URL, "42", "08998a0c-fcf4-34a9-b444-f2bfc15731dc"),
+            (
+                &NAMESPACE_URL,
+                "lorem ipsum",
+                "e55ad2e6-fb89-34e8-b012-c5dde3cd67f0",
+            ),
+            (
+                &NAMESPACE_OID,
+                "example.org",
+                "f14eec63-2812-3110-ad06-1625e5a4a5b2",
+            ),
+            (
+                &NAMESPACE_OID,
+                "rust-lang.org",
+                "6506a0ec-4d79-3e18-8c2b-f2b6b34f2b6d",
+            ),
+            (&NAMESPACE_OID, "42", "ce6925a5-2cd7-327b-ab1c-4b375ac044e4"),
+            (
+                &NAMESPACE_OID,
+                "lorem ipsum",
+                "5dd8654f-76ba-3d47-bc2e-4d6d3a78cb09",
+            ),
+            (
+                &NAMESPACE_X500,
+                "example.org",
+                "64606f3f-bd63-363e-b946-fca13611b6f7",
+            ),
+            (
+                &NAMESPACE_X500,
+                "rust-lang.org",
+                "bcee7a9c-52f1-30c6-a3cc-8c72ba634990",
+            ),
+            (
+                &NAMESPACE_X500,
+                "42",
+                "c1073fa2-d4a6-3104-b21d-7a6bdcf39a23",
+            ),
+            (
+                &NAMESPACE_X500,
+                "lorem ipsum",
+                "02f09a3f-1624-3b1d-8409-44eff7708208",
+            ),
+        ];
 
     #[test]
     fn test_nil() {
         let nil = Uuid::nil();
         let not_nil = test_util::new();
-        let from_bytes =
-            Uuid::from_uuid_bytes([4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87]);
+        let from_bytes = Uuid::from_uuid_bytes([
+            4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87
+        ]);
 
         assert_eq!(from_bytes.get_version(), None);
 
@@ -1148,11 +1190,16 @@ mod tests {
     #[test]
     fn test_get_variant() {
         let uuid1 = test_util::new();
-        let uuid2 = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
-        let uuid3 = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").unwrap();
-        let uuid4 = Uuid::parse_str("936DA01F9ABD4d9dC0C702AF85C822A8").unwrap();
-        let uuid5 = Uuid::parse_str("F9168C5E-CEB2-4faa-D6BF-329BF39FA1E4").unwrap();
-        let uuid6 = Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
+        let uuid2 =
+            Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
+        let uuid3 =
+            Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").unwrap();
+        let uuid4 =
+            Uuid::parse_str("936DA01F9ABD4d9dC0C702AF85C822A8").unwrap();
+        let uuid5 =
+            Uuid::parse_str("F9168C5E-CEB2-4faa-D6BF-329BF39FA1E4").unwrap();
+        let uuid6 =
+            Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
 
         assert_eq!(uuid1.get_variant().unwrap(), UuidVariant::RFC4122);
         assert_eq!(uuid2.get_variant().unwrap(), UuidVariant::RFC4122);
@@ -1232,11 +1279,20 @@ mod tests {
 
         // Valid
         assert!(Uuid::parse_str("00000000000000000000000000000000").is_ok());
-        assert!(Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").is_ok());
-        assert!(Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4").is_ok());
+        assert!(
+            Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").is_ok()
+        );
+        assert!(
+            Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4").is_ok()
+        );
         assert!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c8").is_ok());
-        assert!(Uuid::parse_str("01020304-1112-2122-3132-414243444546").is_ok());
-        assert!(Uuid::parse_str("urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8").is_ok());
+        assert!(
+            Uuid::parse_str("01020304-1112-2122-3132-414243444546").is_ok()
+        );
+        assert!(
+            Uuid::parse_str("urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8")
+                .is_ok()
+        );
 
         // Nil
         let nil = Uuid::nil();
@@ -1310,23 +1366,15 @@ mod tests {
 
         check!(buf, "{:X}", u, 36, |c| c.is_uppercase() || c.is_digit(10)
             || c == '-');
-        check!(
-            buf,
-            "{:X}",
-            u.hyphenated(),
-            36,
-            |c| c.is_uppercase() || c.is_digit(10) || c == '-'
-        );
+        check!(buf, "{:X}", u.hyphenated(), 36, |c| c.is_uppercase()
+            || c.is_digit(10)
+            || c == '-');
         check!(buf, "{:X}", u.simple(), 32, |c| c.is_uppercase()
             || c.is_digit(10));
 
-        check!(
-            buf,
-            "{:x}",
-            u.hyphenated(),
-            36,
-            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
-        );
+        check!(buf, "{:x}", u.hyphenated(), 36, |c| c.is_lowercase()
+            || c.is_digit(10)
+            || c == '-');
         check!(buf, "{:x}", u.simple(), 32, |c| c.is_lowercase()
             || c.is_digit(10));
     }
@@ -1421,8 +1469,8 @@ mod tests {
     #[test]
     fn test_from_bytes() {
         let b = [
-            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
-            0xd7, 0xd8,
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
+            0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
         ];
 
         let u = Uuid::from_bytes(&b).unwrap();
@@ -1434,8 +1482,8 @@ mod tests {
     #[test]
     fn test_from_uuid_bytes() {
         let b = [
-            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
-            0xd7, 0xd8,
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
+            0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
         ];
 
         let u = Uuid::from_uuid_bytes(b);
@@ -1456,8 +1504,8 @@ mod tests {
     #[test]
     fn test_bytes_roundtrip() {
         let b_in: [u8; 16] = [
-            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
-            0xd7, 0xd8,
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
+            0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
         ];
 
         let u = Uuid::from_bytes(&b_in).unwrap();
@@ -1470,8 +1518,8 @@ mod tests {
     #[test]
     fn test_from_random_bytes() {
         let b = [
-            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
-            0xd7, 0xd8,
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
+            0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
         ];
 
         let u = Uuid::from_random_bytes(b);
