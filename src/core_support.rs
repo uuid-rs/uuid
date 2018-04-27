@@ -152,8 +152,13 @@ mod tests {
 
         assert_eq!(s.len(), 36);
 
-        check!(buffer, "{}", s, 36, |c| c.is_lowercase() || c.is_digit(10)
-            || c == '-');
+        check!(
+            buffer,
+            "{}",
+            s,
+            36,
+            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
+        );
     }
 
     #[test]

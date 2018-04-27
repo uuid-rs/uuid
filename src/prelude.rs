@@ -25,7 +25,7 @@
 //! [`Uuid`]: ../struct.Uuid.html
 //! [`UuidVariant`]: ../enum.UuidVariant.html
 //! [`UuidVersion`]: ../enum.UuidVersion.html
-//! 
+//!
 #![cfg_attr(feature = "v1",
 doc = "
 [`uuid::v1`]`::{`[`UuidClockSequence`],[`UuidContext`]`}`: The types useful for
