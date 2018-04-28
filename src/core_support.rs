@@ -27,15 +27,31 @@ impl fmt::Display for UuidVariant {
     }
 }
 
-impl fmt::LowerHex for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        <super::Hyphenated as fmt::LowerHex>::fmt(&self.hyphenated(), f)
-    }
-}
+cfg_if! {
+    if #[cfg(feature = "fmt_default_simple")] {
+        impl fmt::LowerHex for Uuid {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                <super::Simple as fmt::LowerHex>::fmt(&self.simple(), f)
+            }
+        }
 
-impl fmt::UpperHex for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        <super::Hyphenated as fmt::UpperHex>::fmt(&self.hyphenated(), f)
+        impl fmt::UpperHex for Uuid {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                <super::Simple as fmt::UpperHex>::fmt(&self.simple(), f)
+            }
+        }
+    } else {
+        impl fmt::LowerHex for Uuid {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                <super::Hyphenated as fmt::LowerHex>::fmt(&self.hyphenated(), f)
+            }
+        }
+
+        impl fmt::UpperHex for Uuid {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                <super::Hyphenated as fmt::UpperHex>::fmt(&self.hyphenated(), f)
+            }
+        }
     }
 }
 
@@ -60,6 +76,7 @@ mod tests {
     use self::std::prelude::v1::*;
     use prelude::*;
     use test_util;
+    use test_util::FMT_LENGTH;
 
     macro_rules! check {
         ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {
@@ -98,13 +115,19 @@ mod tests {
         let s = uuid.to_string();
         let mut buffer = String::new();
 
-        assert_eq!(s, uuid.hyphenated().to_string());
+        let expected = if cfg!(feature = "fmt_default_simple") {
+            uuid.simple().to_string()
+        } else {
+            uuid.hyphenated().to_string()
+        };
+
+        assert_eq!(s, expected);
 
         check!(
             buffer,
             "{}",
             uuid,
-            36,
+            FMT_LENGTH,
             |c| c.is_lowercase() || c.is_digit(10) || c == '-'
         );
     }
@@ -120,7 +143,7 @@ mod tests {
             buffer,
             "{:x}",
             uuid,
-            36,
+            FMT_LENGTH,
             |c| c.is_lowercase() || c.is_digit(10) || c == '-'
         );
     }
@@ -149,10 +172,15 @@ mod tests {
         let s = uuid.to_string();
         let mut buffer = String::new();
 
-        assert_eq!(s.len(), 36);
+        assert_eq!(s.len(), FMT_LENGTH);
 
-        check!(buffer, "{}", s, 36, |c| c.is_lowercase() || c.is_digit(10)
-            || c == '-');
+        check!(
+            buffer,
+            "{}",
+            s,
+            FMT_LENGTH,
+            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
+        );
     }
 
     #[test]
@@ -166,7 +194,7 @@ mod tests {
             buffer,
             "{:X}",
             uuid,
-            36,
+            FMT_LENGTH,
             |c| c.is_uppercase() || c.is_digit(10) || c == '-'
         );
     }

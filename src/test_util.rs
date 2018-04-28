@@ -1,5 +1,13 @@
 use Uuid;
 
+cfg_if! {
+    if #[cfg(feature = "fmt_default_simple")] {
+        pub const FMT_LENGTH: usize = 32;
+    } else {
+        pub const FMT_LENGTH: usize = 36;
+    }
+}
+
 pub fn new() -> Uuid {
     Uuid {
         bytes: [
