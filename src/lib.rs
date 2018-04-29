@@ -170,6 +170,7 @@ cfg_if! {
     }
 }
 
+pub mod adapter;
 pub mod prelude;
 
 mod core_support;
@@ -341,9 +342,6 @@ pub enum ParseError {
     InvalidGroupLength(usize, usize, u8),
 }
 
-const SIMPLE_LENGTH: usize = 32;
-const HYPHENATED_LENGTH: usize = 36;
-
 /// Converts a `ParseError` to a string.
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -351,7 +349,7 @@ impl fmt::Display for ParseError {
             ParseError::InvalidLength(found) => write!(
                 f,
                 "Invalid length; expecting {} or {} chars, found {}",
-                SIMPLE_LENGTH, HYPHENATED_LENGTH, found
+                adapter::UUID_SIMPLE_LENGTH, adapter::UUID_HYPHENATED_LENGTH, found
             ),
             ParseError::InvalidCharacter(found, pos) => write!(
                 f,
@@ -951,9 +949,9 @@ impl Uuid {
     pub fn parse_str(mut input: &str) -> Result<Uuid, ParseError> {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
-        if len == (HYPHENATED_LENGTH + 9) && input.starts_with("urn:uuid:") {
+        if len == (adapter::UUID_HYPHENATED_LENGTH + 9) && input.starts_with("urn:uuid:") {
             input = &input[9..];
-        } else if len != SIMPLE_LENGTH && len != HYPHENATED_LENGTH {
+        } else if len != adapter::UUID_SIMPLE_LENGTH && len != adapter::UUID_HYPHENATED_LENGTH {
             return Err(ParseError::InvalidLength(len));
         }
 
@@ -964,7 +962,7 @@ impl Uuid {
         let mut buffer = [0u8; 16];
 
         for (i_char, chr) in input.bytes().enumerate() {
-            if digit as usize >= SIMPLE_LENGTH && group != 4 {
+            if digit as usize >= adapter::UUID_SIMPLE_LENGTH && group != 4 {
                 if group == 0 {
                     return Err(ParseError::InvalidLength(len));
                 }
