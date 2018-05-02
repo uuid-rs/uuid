@@ -38,6 +38,7 @@ impl Uuid {
 
 #[cfg(test)]
 mod tests {
+    use prelude::*;
 
     static FIXTURE: &'static [(&'static Uuid, &'static str, &'static str)] = {
         use ns::*;
@@ -128,7 +129,7 @@ mod tests {
 
     #[test]
     fn test_new() {
-        for &(ref ns, ref name, _) in FIXTURE_V3 {
+        for &(ref ns, ref name, _) in FIXTURE {
             let uuid = Uuid::new_v3(*ns, *name);
             assert_eq!(uuid.get_version().unwrap(), UuidVersion::Md5);
             assert_eq!(
@@ -140,7 +141,7 @@ mod tests {
 
     #[test]
     fn test_to_hyphenated_string() {
-        for &(ref ns, ref name, ref expected) in FIXTURE_V3 {
+        for &(ref ns, ref name, ref expected) in FIXTURE {
             let uuid = Uuid::new_v3(*ns, *name);
             assert_eq!(uuid.hyphenated().to_string(), *expected);
         }
