@@ -9,10 +9,9 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+1. ...
+2. ...
+3. ...
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
@@ -21,9 +20,12 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Specifications (please complete the following information):**
- - Target
- - Version [e.g. 22]
+- Target
+- Version [e.g. 1.0]
 - Features Enabled
 
 **Additional context**
 Add any other context about the problem here.
+
+**Other**
+Other information like relevant issues, external links, etc
