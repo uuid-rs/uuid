@@ -33,6 +33,7 @@ serde_test = "1.0.19"
 
 [features]
 default = ["std"]
+nightly = []
 std = []
 use_std = ["std"] # Compatibility shim for 0.5 and earlier
 v1 = []

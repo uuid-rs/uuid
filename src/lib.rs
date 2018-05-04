@@ -111,6 +111,7 @@
 )]
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
+#![feature(const_fn)]
 
 #[macro_use]
 extern crate cfg_if;
@@ -714,7 +715,13 @@ impl Uuid {
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// ```
+    #[cfg(not(feature = "nightly"))]
     pub fn from_uuid_bytes(b: UuidBytes) -> Uuid {
+        Uuid { bytes: b }
+    }
+
+    #[cfg(feature = "nightly")]
+    pub const fn from_uuid_bytes(b: UuidBytes) -> Uuid {
         Uuid { bytes: b }
     }
 
