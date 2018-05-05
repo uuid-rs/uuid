@@ -8,7 +8,7 @@ authors = [
         "Dylan DPC<dylan.dpc@gmail.com>",
         "Hunar Roop Kahlon<hunar.roop@gmail.com>"
         ]
-license = "MIT/Apache-2.0"
+license = "Apache-2.0 OR MIT"
 readme = "README.md"
 repository = "https://github.com/uuid-rs/uuid"
 homepage = "https://github.com/uuid-rs/uuid"
