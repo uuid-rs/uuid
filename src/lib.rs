@@ -111,7 +111,8 @@
 )]
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
-#![feature(const_fn)]
+#![cfg_attr(feature = "nightly", feature(const_fn))]
+
 
 #[macro_use]
 extern crate cfg_if;
