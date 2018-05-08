@@ -18,14 +18,6 @@ matrix:
 
     - rust: nightly
       script: cargo bench --all-features
-
-    - rust: nightly
-      before_script:
-        - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
-      script:
-        - cargo doc --no-deps --all-features
-      after_success:
-        - travis-cargo --only nightly doc-upload
     
     - rust: nightly
       cache: cargo
@@ -39,10 +31,6 @@ matrix:
 
 script:
   - cargo test --features "$FEATURES" $NDF
-
-env:
-  global:
-    secure: "HzcZYuf80pByt4J3OM+sfXg5dGPQjFTPfLYR907wfi8FD6mJu5yYbgPF4agz9sdnnNrtnmlghZ5WFljrl49oNC6RhcSc6YVmiRKs4DabMKKr3v9zZy1i2KuQ323cGpwUIVpq7+u8/vQAYPwRUPzZrVw57y5KKqEHbn2T85yFdqo="
 
 notifications:
   email:
