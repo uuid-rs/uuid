@@ -29,13 +29,13 @@ rust:
 - nightly
 
 script:
-- cargo build --no-default-features
-- cargo build
-- cargo build --features "serde"
-- cargo build --features "v1"
-- cargo build --features "v3"
-- cargo build --features "v4"
-- cargo build --features "v5"
-- cargo build --features "serde std v1 v3 v4 v5"
+- cargo test --no-default-features
+- cargo test
+- cargo test --features "serde"
+- cargo test --features "v1"
+- cargo test --features "v3"
+- cargo test --features "v4"
+- cargo test --features "v5"
+- cargo test --features "serde std v1 v3 v4 v5"
 
 sudo: false
