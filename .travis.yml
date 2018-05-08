@@ -2,8 +2,6 @@ branches:
   except:
   - /.*(.tmp)$/
 
-cache: cargo
-
 language: rust
 
 matrix:
