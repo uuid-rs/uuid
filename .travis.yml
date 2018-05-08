@@ -1,42 +1,39 @@
+branches:
+  except:
+  - /.*(.tmp)$/
+
 language: rust
-sudo: false
 
 matrix:
   include:
-    - env: FEATURES=""
-           NDF="--no-default-features"
-    - env: FEATURES="serde"
-    - env: FEATURES="std"
-    - env: FEATURES="v1"
-    - env: FEATURES="v3"
-    - env: FEATURES="v4"
-    - env: FEATURES="v5"
-    - env: FEATURES="serde v1 v3 v4 v5 std"
-    - rust: 1.18.0
-    - rust: beta
-    - rust: nightly
-
-    - rust: nightly
-      script: cargo bench --all-features
-    
-    - rust: nightly
-      cache: cargo
-      before_script:
-        - rustup component add rustfmt-preview
-#        - ( cargo install clippy || true )
-      script:
-        - cargo fmt --all -- --write-mode=diff
-        - cargo test
-#        - cargo clippy
-
-script:
-  - cargo test --features "$FEATURES" $NDF
+  - os: linux
+  - os: osx
+  - rust: nightly
+    before_script:
+    - rustup component add rustfmt-preview
+    script:
+    - cargo fmt --all -- --write-mode=diff
+    - cargo test --features "serde std v1 v3 v4 v5"
+    - cargo bench --features "serde std v1 v3 v4 v5"
 
 notifications:
   email:
     on_success: never
 
-branches:
-    except:
-    - /.*(.tmp)$/
+rust:
+- 1.18
+- stable
+- beta
+- nightly
 
+script:
+- cargo build --no-default-features
+- cargo build
+- cargo build --features "serde"
+- cargo build --features "v1"
+- cargo build --features "v3"
+- cargo build --features "v4"
+- cargo build --features "v5"
+- cargo build --features "serde std v1 v3 v4 v5"
+
+sudo: false
