@@ -10,7 +10,7 @@ matrix:
     before_script:
     - rustup component add rustfmt-preview
     script:
-    - cargo fmt --all -- --write-mode=diff
+    - cargo fmt --all -- --write-mode=check
     - cargo test --features "serde std v1 v3 v4 v5"
     - cargo bench --features "serde std v1 v3 v4 v5"
 

@@ -349,7 +349,9 @@ impl fmt::Display for ParseError {
             ParseError::InvalidLength(found) => write!(
                 f,
                 "Invalid length; expecting {} or {} chars, found {}",
-                adapter::UUID_SIMPLE_LENGTH, adapter::UUID_HYPHENATED_LENGTH, found
+                adapter::UUID_SIMPLE_LENGTH,
+                adapter::UUID_HYPHENATED_LENGTH,
+                found
             ),
             ParseError::InvalidCharacter(found, pos) => write!(
                 f,
