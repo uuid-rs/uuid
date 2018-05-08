@@ -21,7 +21,7 @@ notifications:
     on_success: never
 
 rust:
-- 1.18
+- 1.18.0
 - stable
 - beta
 - nightly
