@@ -6,6 +6,10 @@ language: rust
 
 matrix:
   include:
+  - os: osx
+    rust:
+    - 1.18.0
+    - nightly
   - rust: nightly
     before_script:
     - rustup component add rustfmt-preview
@@ -18,9 +22,7 @@ notifications:
   email:
     on_success: never
 
-os:
-- linux
-- osx
+os: linux
 
 rust:
 - 1.18.0
