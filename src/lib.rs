@@ -104,15 +104,12 @@
 //! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](
 //!     http://tools.ietf.org/html/rfc4122)
 
-#![doc(
-    html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
-    html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-    html_root_url = "https://docs.rs/uuid"
-)]
+#![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
+       html_favicon_url = "https://www.rust-lang.org/favicon.ico",
+       html_root_url = "https://docs.rs/uuid")]
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "nightly", feature(const_fn))]
-
 
 #[macro_use]
 extern crate cfg_if;
@@ -351,7 +348,9 @@ impl fmt::Display for ParseError {
             ParseError::InvalidLength(found) => write!(
                 f,
                 "Invalid length; expecting {} or {} chars, found {}",
-                adapter::UUID_SIMPLE_LENGTH, adapter::UUID_HYPHENATED_LENGTH, found
+                adapter::UUID_SIMPLE_LENGTH,
+                adapter::UUID_HYPHENATED_LENGTH,
+                found
             ),
             ParseError::InvalidCharacter(found, pos) => write!(
                 f,
@@ -1091,7 +1090,7 @@ impl<'a> fmt::Display for Hyphenated<'a> {
 }
 
 macro_rules! hyphenated_write {
-    ($f:expr, $format:expr, $bytes:expr) => {{
+    ($f: expr, $format: expr, $bytes: expr) => {{
         let data1 = u32::from($bytes[0]) << 24 | u32::from($bytes[1]) << 16
             | u32::from($bytes[2]) << 8 | u32::from($bytes[3]);
 
@@ -1604,7 +1603,7 @@ mod tests {
         let u = test_util::new();
 
         macro_rules! check {
-            ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {
+            ($buf: ident, $format: expr, $target: expr, $len: expr, $cond: expr) => {
                 $buf.clear();
                 write!($buf, $format, $target).unwrap();
                 assert!(buf.len() == $len);

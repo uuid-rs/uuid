@@ -62,7 +62,7 @@ mod tests {
     use test_util;
 
     macro_rules! check {
-        ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {
+        ($buf: ident, $format: expr, $target: expr, $len: expr, $cond: expr) => {
             $buf.clear();
             write!($buf, $format, $target).unwrap();
             assert!($buf.len() == $len);
