@@ -20,6 +20,9 @@ matrix:
       script: cargo bench --all-features
 
     - rust: nightly
+      env: FEATURES="const_fn"
+
+    - rust: nightly
       before_script:
         - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
       script:

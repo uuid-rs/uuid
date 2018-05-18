@@ -723,7 +723,7 @@ impl Uuid {
         Uuid { bytes: b }
     }
 
-    #[cfg(feature = "nightly")]
+    #[cfg(feature = "const_fn")]
     pub const fn from_uuid_bytes(b: UuidBytes) -> Uuid {
         Uuid { bytes: b }
     }
