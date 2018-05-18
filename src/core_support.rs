@@ -111,13 +111,9 @@ mod tests {
 
         assert_eq!(s, uuid.hyphenated().to_string());
 
-        check!(
-            buffer,
-            "{}",
-            uuid,
-            36,
-            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
-        );
+        check!(buffer, "{}", uuid, 36, |c| c.is_lowercase()
+            || c.is_digit(10)
+            || c == '-');
     }
 
     #[test]
@@ -127,13 +123,9 @@ mod tests {
         let mut buffer = String::new();
         let uuid = test_util::new();
 
-        check!(
-            buffer,
-            "{:x}",
-            uuid,
-            36,
-            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
-        );
+        check!(buffer, "{:x}", uuid, 36, |c| c.is_lowercase()
+            || c.is_digit(10)
+            || c == '-');
     }
 
     #[test]
@@ -162,7 +154,8 @@ mod tests {
 
         assert_eq!(s.len(), 36);
 
-        check!(buffer, "{}", s, 36, |c| c.is_lowercase() || c.is_digit(10)
+        check!(buffer, "{}", s, 36, |c| c.is_lowercase()
+            || c.is_digit(10)
             || c == '-');
     }
 
@@ -173,12 +166,8 @@ mod tests {
         let mut buffer = String::new();
         let uuid = test_util::new();
 
-        check!(
-            buffer,
-            "{:X}",
-            uuid,
-            36,
-            |c| c.is_uppercase() || c.is_digit(10) || c == '-'
-        );
+        check!(buffer, "{:X}", uuid, 36, |c| c.is_uppercase()
+            || c.is_digit(10)
+            || c == '-');
     }
 }

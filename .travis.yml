@@ -33,7 +33,7 @@ matrix:
         - rustup component add rustfmt-preview
 #        - ( cargo install clippy || true )
       script:
-        - cargo fmt --all -- --write-mode=diff
+        - cargo fmt --all -- --check
         - cargo test
 #        - cargo clippy
 

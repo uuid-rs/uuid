@@ -114,7 +114,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "nightly", feature(const_fn))]
 
-
 #[macro_use]
 extern crate cfg_if;
 
@@ -352,7 +351,9 @@ impl fmt::Display for ParseError {
             ParseError::InvalidLength(found) => write!(
                 f,
                 "Invalid length; expecting {} or {} chars, found {}",
-                adapter::UUID_SIMPLE_LENGTH, adapter::UUID_HYPHENATED_LENGTH, found
+                adapter::UUID_SIMPLE_LENGTH,
+                adapter::UUID_HYPHENATED_LENGTH,
+                found
             ),
             ParseError::InvalidCharacter(found, pos) => write!(
                 f,
@@ -852,8 +853,10 @@ impl Uuid {
     ///            (0x936DA01F, 0x9ABD, 0x4D9D, b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"));
     /// ```
     pub fn as_fields(&self) -> (u32, u16, u16, &[u8; 8]) {
-        let d1 = u32::from(self.bytes[0]) << 24 | u32::from(self.bytes[1]) << 16
-            | u32::from(self.bytes[2]) << 8 | u32::from(self.bytes[3]);
+        let d1 = u32::from(self.bytes[0]) << 24
+            | u32::from(self.bytes[1]) << 16
+            | u32::from(self.bytes[2]) << 8
+            | u32::from(self.bytes[3]);
 
         let d2 = u16::from(self.bytes[4]) << 8 | u16::from(self.bytes[5]);
 
@@ -934,17 +937,22 @@ impl Uuid {
     /// counter portion of a V1 UUID.  If the supplied UUID is not V1, this
     /// will return None
     pub fn to_timestamp(&self) -> Option<(u64, u16)> {
-        if self.get_version()
+        if self
+            .get_version()
             .map(|v| v != UuidVersion::Mac)
             .unwrap_or(true)
         {
             return None;
         }
 
-        let ts: u64 = u64::from(self.bytes[6] & 0x0F) << 56 | u64::from(self.bytes[7]) << 48
-            | u64::from(self.bytes[4]) << 40 | u64::from(self.bytes[5]) << 32
-            | u64::from(self.bytes[0]) << 24 | u64::from(self.bytes[1]) << 16
-            | u64::from(self.bytes[2]) << 8 | u64::from(self.bytes[3]);
+        let ts: u64 = u64::from(self.bytes[6] & 0x0F) << 56
+            | u64::from(self.bytes[7]) << 48
+            | u64::from(self.bytes[4]) << 40
+            | u64::from(self.bytes[5]) << 32
+            | u64::from(self.bytes[0]) << 24
+            | u64::from(self.bytes[1]) << 16
+            | u64::from(self.bytes[2]) << 8
+            | u64::from(self.bytes[3]);
 
         let count: u16 = u16::from(self.bytes[8] & 0x3F) << 8 | u16::from(self.bytes[9]);
 
@@ -1093,8 +1101,10 @@ impl<'a> fmt::Display for Hyphenated<'a> {
 
 macro_rules! hyphenated_write {
     ($f:expr, $format:expr, $bytes:expr) => {{
-        let data1 = u32::from($bytes[0]) << 24 | u32::from($bytes[1]) << 16
-            | u32::from($bytes[2]) << 8 | u32::from($bytes[3]);
+        let data1 = u32::from($bytes[0]) << 24
+            | u32::from($bytes[1]) << 16
+            | u32::from($bytes[2]) << 8
+            | u32::from($bytes[3]);
 
         let data2 = u16::from($bytes[4]) << 8 | u16::from($bytes[5]);
 
@@ -1613,25 +1623,18 @@ mod tests {
             };
         }
 
-        check!(buf, "{:X}", u, 36, |c| c.is_uppercase() || c.is_digit(10)
+        check!(buf, "{:X}", u, 36, |c| c.is_uppercase()
+            || c.is_digit(10)
             || c == '-');
-        check!(
-            buf,
-            "{:X}",
-            u.hyphenated(),
-            36,
-            |c| c.is_uppercase() || c.is_digit(10) || c == '-'
-        );
+        check!(buf, "{:X}", u.hyphenated(), 36, |c| c.is_uppercase()
+            || c.is_digit(10)
+            || c == '-');
         check!(buf, "{:X}", u.simple(), 32, |c| c.is_uppercase()
             || c.is_digit(10));
 
-        check!(
-            buf,
-            "{:x}",
-            u.hyphenated(),
-            36,
-            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
-        );
+        check!(buf, "{:x}", u.hyphenated(), 36, |c| c.is_lowercase()
+            || c.is_digit(10)
+            || c == '-');
         check!(buf, "{:x}", u.simple(), 32, |c| c.is_lowercase()
             || c.is_digit(10));
     }
