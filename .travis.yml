@@ -20,7 +20,7 @@ matrix:
       script: cargo bench --all-features
 
     - rust: nightly
-      env: FEATURES="const"
+      env: FEATURES="const_fn"
 
     - rust: nightly
       before_script:
