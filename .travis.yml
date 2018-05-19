@@ -17,6 +17,10 @@ matrix:
     - cargo fmt --all -- --check
     - cargo test --features "serde std v1 v3 v4 v5"
     - cargo bench --features "serde std v1 v3 v4 v5"
+  - os: linux
+    rust: nightly
+    script:
+    - cargo test --features "const-fn"
 
 notifications:
   email:
