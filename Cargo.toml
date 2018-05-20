@@ -8,7 +8,7 @@ authors = [
 description = "A library to generate and parse UUIDs."
 documentation = "https://docs.rs/uuid"
 exclude = [
-    ".github",
+    ".github/**",
     ".travis.yml",
     "appveyor.yml",
     "bors.toml"
