@@ -1,54 +1,47 @@
+branches:
+  except:
+  - /.*(.tmp)$/
+
 language: rust
-sudo: false
 
 matrix:
   include:
-    - env: FEATURES=""
-           NDF="--no-default-features"
-    - env: FEATURES="serde"
-    - env: FEATURES="std"
-    - env: FEATURES="v1"
-    - env: FEATURES="v3"
-    - env: FEATURES="v4"
-    - env: FEATURES="v5"
-    - env: FEATURES="serde v1 v3 v4 v5 std"
-    - rust: 1.18.0
-    - rust: beta
-    - rust: nightly
-
-    - rust: nightly
-      script: cargo bench --all-features
-
-    - rust: nightly
-      before_script:
-        - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
-      script:
-        - cargo doc --no-deps --all-features
-      after_success:
-        - travis-cargo --only nightly doc-upload
-    
-    - rust: nightly
-      cache: cargo
-      before_script:
-        - rustup component add rustfmt-preview
-#        - ( cargo install clippy || true )
-      script:
-        - cargo fmt --all -- --write-mode=diff
-        - cargo test
-#        - cargo clippy
-
-script:
-  - cargo test --features "$FEATURES" $NDF
-
-env:
-  global:
-    secure: "HzcZYuf80pByt4J3OM+sfXg5dGPQjFTPfLYR907wfi8FD6mJu5yYbgPF4agz9sdnnNrtnmlghZ5WFljrl49oNC6RhcSc6YVmiRKs4DabMKKr3v9zZy1i2KuQ323cGpwUIVpq7+u8/vQAYPwRUPzZrVw57y5KKqEHbn2T85yFdqo="
+  - os: osx
+    rust: 1.18.0
+  - os: osx
+    rust: nightly
+  - rust: nightly
+    before_script:
+    - rustup component add rustfmt-preview
+    script:
+    - cargo fmt --all -- --check
+    - cargo test --features "serde std v1 v3 v4 v5"
+    - cargo bench --features "serde std v1 v3 v4 v5"
+  - os: linux
+    rust: nightly
+    script:
+    - cargo test --features "const-fn"
 
 notifications:
   email:
     on_success: never
 
-branches:
-    except:
-    - /.*(.tmp)$/
+os: linux
 
+rust:
+- 1.18.0
+- stable
+- beta
+- nightly
+
+script:
+- cargo test --no-default-features
+- cargo test
+- cargo test --features "serde"
+- cargo test --features "v1"
+- cargo test --features "v3"
+- cargo test --features "v4"
+- cargo test --features "v5"
+- cargo test --features "serde std v1 v3 v4 v5"
+
+sudo: false

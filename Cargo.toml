@@ -20,6 +20,9 @@ A library to generate and parse UUIDs.
 [package.metadata.docs.rs]
 all-features = true
 
+[package.metadata.playground]
+features = ["serde", "v1", "v3", "v4", "v5"]
+
 [dependencies]
 serde = { version = "1.0.16", optional = true, default-features = false }
 rand = { version = "0.4", optional = true }
@@ -40,8 +43,4 @@ v1 = []
 v3 = ["md5", "rand"]
 v4 = ["rand"]
 v5 = ["sha1", "rand"]
-
-# Get features picked up by the Integer 32 playground. Not public API.
-#
-#    https://play.rust-lang.org
-playground = ["serde", "v1", "v3", "v4", "v5"]
+const-fn = ["nightly"]
