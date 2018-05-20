@@ -2,7 +2,7 @@ Contributing to Uuid
 ---
 [Contributing to Uuid]: #contributing-to-uuid
 
-Thank you for your interest in contributing to Uuid!
+Thank you for your interest in contributing to the Uuid Project!
 
 * [Feature Requests](#feature-requests)
 * [Bug Reports](#bug-reports)
@@ -15,15 +15,17 @@ Thank you for your interest in contributing to Uuid!
 For any questions, please make a post on [users.rust-lang.org][u-r-l-o], post
 on [uuid-rs mailing list] or join our [gitter] channel.
 
-*Reminder*: All contributors need to follow our [Code of Conduct].
+> All contributors need to follow our [Code of Conduct].
 
 [Code of Conduct]: CODE_OF_CONDUCT.md
 
 # Feature Requests
 [Feature Requests]: #feature-requests
 
-`uuid` crate is still in flux. All features desired may not be present. As such
-you are welcome to request for new features.
+The `uuid` crate is still in flux. All features desired may not be present. As
+such you are welcome to request for new features. Keep in mind that `uuid` is
+a general purpose library. We want to provide features that most users would
+find useful. As such not every feature may be accepted.
 
 If you have the chance, please [search existing issues], as there is a chance
 that someone has already requested your feature.
@@ -32,29 +34,10 @@ File your feature request with a descriptive title, as this helps others find
 your request.
 
 You can request your feature by following [this link][Feature Request Link] and
-filling it in. The template used is shown below:
+filling it in. 
 
-**Aside** We welcome pull requests for your own feature requests.
-
-```markdown
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
-
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
-
-**Is it blocking?**
-Is this issue blocking any of your work? If it is blocking any open source project, you can share the link of the issue
-
-**Describe alternatives you've considered**
-A clear and concise description of any alternative solutions or features you've considered.
-
-**Additional context**
-Add any other context or screenshots about the feature request here.
-
-**Other**
-Other information like relevant issues, external links, etc
-```
+> We welcome pull requests for your own feature requests, provided they have
+been discussed.
 
 [Feature Request Link]: https://github.com/uuid-rs/uuid/issues/new?template=Feature_request.md
 
@@ -71,35 +54,7 @@ sometimes you might not what exactly you are looking for.
 File your issue with a descriptive title, as this helps others find your issue.
 
 Reporting a bug is as easy as following [this link][Bug Report Link] and
-filling it in. The template used is shown below:
-
-```markdown
-**Describe the bug**
-A clear and concise description of what the bug is.
-
-**To Reproduce**
-Steps to reproduce the behavior:
-1. ...
-2. ...
-3. ...
-
-**Expected behavior**
-A clear and concise description of what you expected to happen.
-
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Specifications (please complete the following information):**
-- Target
-- Version [e.g. 1.0]
-- Features Enabled
-
-**Additional context**
-Add any other context about the problem here.
-
-**Other**
-Other information like relevant issues, external links, etc
-```
+filling it in.
 
 Sometimes a backtrace may be needed. In that case, set `RUST_BACKTRACE`
 environment variable to `1`. For example:
@@ -108,34 +63,34 @@ environment variable to `1`. For example:
 $ RUST_BACKTRACE=1 cargo build
 ```
 
-**Aside** We welcome pull requests for your own bug reports.
+> We welcome pull requests for your own bug reports, provided they have been
+discussed.
 
 [Bug Report Link]: https://github.com/uuid-rs/uuid/issues/new?template=Bug_report.md
 
 # Pull Requests
 [Pull Requests]: #pull-requests
 
-Pull requests are the primary mechanism we use to change Uuid. GitHub itself
+Pull requests(PRs) are the primary mechanism we use to change Uuid. GitHub itself
 has some [great documentation] on using the Pull Request feature. We use the
 "fork and pull" model described [here][fnp], where contributors push changes to
 their personal fork and create pull requests to bring those changes into the
 source repository.
 
 Unless the changes are fairly minor (like documentation changes or tiny
-patches), we require pull requests to relevant issues.
+patches), we require PRs to relevant issues.
 
-Please make pull requests against:
+Please open PRs against branch:
 * `master` when making non-breaking changes 
-* `breaking` if your changes alter the public API in a breaking manner
+* `breaking` when your changes alter the public API in a breaking manner
 
-*Note* Our minimum rust version supported currently is `1.18.0`. Make sure you
-don't use any Rust features introduced after this version. Our CI does test has
-test builds for enforcing this restriction.
+If the pull request is still a work in progress, prepend`[WIP] ` in your 
+title. `WIP bot` will make sure that the PR doesn't accidentally get merged.
 
-If the pull request is in work in progress stage, prepend`[WIP] ` in your PR
-title. `WIP bot` will make sure that the PR doesn't accident get merged.
+> Uuid Project has a minimum rust version policy. Currently `uuid` should 
+compile with atleast `1.18.0`, and is enforced on our CI builds.
 
-When you feel that the PR is ready, please ping one of the [maintainers] so 
+When you feel that the PR is ready, please ping one of the maintainers so
 they can review your changes.
 
 [great documentation]: https://help.github.com/articles/about-pull-requests/
@@ -145,8 +100,8 @@ they can review your changes.
 [Writing Documentation]: #writing-documentation
 
 Documentation is an important part of Uuid. Lackluster or incorrect
-documentation can cause headaches for the users of Uuid. Therefore,
-documentation improvements are always welcome.
+documentation can cause headaches for the users of `uuid`. Therefore,
+improvements to documentation are always welcome.
 
 We follow the documentation style guidelines as given by [RFC 1574].
 
