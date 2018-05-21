@@ -31,6 +31,12 @@ md5 = { version = "0.3", optional = true }
 slog = { version = "2", optional = true }
 cfg-if = "0.1.2"
 
+[dependencies.byteorder]
+default-features = false
+features = ["i128"]
+optional = true
+version = "1"
+
 [dev-dependencies]
 serde_test = "1.0.19"
 
@@ -43,4 +49,9 @@ v1 = []
 v3 = ["md5", "rand"]
 v4 = ["rand"]
 v5 = ["sha1", "rand"]
+
+# since rust 1.26.0
+u128 = ["byteorder"]
+
+# only rust nightly
 const-fn = ["nightly"]
