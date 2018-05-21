@@ -176,9 +176,9 @@ cfg_if! {
     }
 }
 
-pub mod adapter;
 pub mod prelude;
 
+mod adapter;
 mod core_support;
 #[cfg(feature = "u128")]
 mod u128_support;
