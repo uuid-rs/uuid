@@ -27,7 +27,7 @@ all-features = true
 features = ["serde", "u128", "v1", "v3", "v4", "v5"]
 
 [dependencies]
-serde = { version = "1", optional = true, default-features = false }
+serde = { version = "1.0.56", optional = true, default-features = false }
 rand = { version = "0.4", optional = true }
 sha1 = { version = "0.6", optional = true }
 md5 = { version = "0.3", optional = true }
@@ -41,7 +41,7 @@ optional = true
 version = "1"
 
 [dev-dependencies]
-serde_test = "1"
+serde_test = "1.0.56"
 
 [features]
 default = ["std"]
