@@ -114,8 +114,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "const-fn", feature(const_fn))]
 
+#[cfg(feature = "byteorder")]
+extern crate byteorder;
 #[macro_use]
 extern crate cfg_if;
+#[cfg(feature = "std")]
+extern crate core;
 
 cfg_if! {
     if #[cfg(feature = "md5")] {
@@ -176,6 +180,8 @@ pub mod adapter;
 pub mod prelude;
 
 mod core_support;
+#[cfg(feature = "u128")]
+mod u128_support;
 
 cfg_if! {
     if #[cfg(feature = "serde")] {
