@@ -34,8 +34,6 @@ impl From<u128> for Uuid {
             byteorder::NativeEndian::write_u128(&mut bytes[..], f);
         }
 
-        Uuid {
-            bytes
-        }
+        Uuid { bytes }
     }
 }
