@@ -20,7 +20,7 @@ matrix:
   - os: linux
     rust: nightly
     script:
-    - cargo test --features "const-fn"
+    - cargo test --features "const_fn"
 
 notifications:
   email:
