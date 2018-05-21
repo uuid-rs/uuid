@@ -1,27 +1,36 @@
 [package]
-
-name = "uuid"
-version = "0.6.3"
 authors = [
-        "Ashley Mannix<ashleymannix@live.com.au>",
-        "Christopher Armstrong",
-        "Dylan DPC<dylan.dpc@gmail.com>",
-        "Hunar Roop Kahlon<hunar.roop@gmail.com>"
-        ]
+    "Ashley Mannix<ashleymannix@live.com.au>",
+    "Christopher Armstrong",
+    "Dylan DPC<dylan.dpc@gmail.com>",
+    "Hunar Roop Kahlon<hunar.roop@gmail.com>"
+]
+description = "A library to generate and parse UUIDs."
+documentation = "https://docs.rs/uuid"
+exclude = [
+    ".github/**",
+    ".travis.yml",
+    "appveyor.yml",
+    "bors.toml"
+]
 license = "Apache-2.0 OR MIT"
+homepage = "https://github.com/uuid-rs/uuid"
+name = "uuid"
 readme = "README.md"
 repository = "https://github.com/uuid-rs/uuid"
-homepage = "https://github.com/uuid-rs/uuid"
-documentation = "https://docs.rs/uuid"
-description = """
-A library to generate and parse UUIDs.
-"""
+version = "0.6.3"
 
 [package.metadata.docs.rs]
 all-features = true
 
 [package.metadata.playground]
-features = ["serde", "v1", "v3", "v4", "v5"]
+features = ["serde", "u128", "v1", "v3", "v4", "v5"]
+
+[dependencies.byteorder]
+default-features = false
+features = ["i128"]
+optional = true
+version = "1"
 
 [dependencies.cfg-if]
 version = "0.1.2"
@@ -62,6 +71,9 @@ v5 = ["sha1", "rand"]
 #------------------------
 # Use `"std"` instead
 use_std = ["std"]
+
+# since rust 1.26.0
+u128 = ["byteorder"]
 
 # nightly rust
 #------------------------
