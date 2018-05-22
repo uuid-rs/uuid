@@ -407,9 +407,7 @@ impl Uuid {
     /// ```
     #[cfg(feature = "const-fn")]
     pub const fn nil() -> Self {
-        Uuid {
-            bytes: [0; 16],
-        }
+        Uuid { bytes: [0; 16] }
     }
 
     /// The 'nil UUID'.
@@ -433,7 +431,7 @@ impl Uuid {
     /// ```
     #[cfg(not(feature = "const-fn"))]
     pub fn nil() -> Uuid {
-        Uuid { bytes: [0; 16], }
+        Uuid { bytes: [0; 16] }
     }
 
     /// Creates a new `Uuid`.
