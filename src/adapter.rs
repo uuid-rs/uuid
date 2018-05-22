@@ -26,4 +26,7 @@ pub const UUID_SIMPLE_LENGTH: usize = 32;
 /// The length of a Urn [`Uuid`] string.
 ///
 /// [`Uuid`]: ../struct.Uuid.html
--pub const UUID_URN_LENGTH: usize = 45;
+// TODO: remove #[allow(dead_code)] lint
+// BODY: This only exists to allow compiling the code currently,
+#[allow(dead_code)]
+pub const UUID_URN_LENGTH: usize = 45;
