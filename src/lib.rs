@@ -405,8 +405,35 @@ impl Uuid {
     /// assert_eq!(uuid.hyphenated().to_string(),
     ///            "00000000-0000-0000-0000-000000000000");
     /// ```
+    #[cfg(feature = "const-fn")]
+    pub const fn nil() -> Self {
+        Uuid {
+            bytes: [0; 16],
+        }
+    }
+
+    /// The 'nil UUID'.
+    ///
+    /// The nil UUID is special form of UUID that is specified to have all
+    /// 128 bits set to zero, as defined in [IETF RFC 4122 Section 4.1.7][RFC].
+    ///
+    /// [RFC]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    ///
+    /// assert_eq!(uuid.hyphenated().to_string(),
+    ///            "00000000-0000-0000-0000-000000000000");
+    /// ```
+    #[cfg(not(feature = "const-fn"))]
     pub fn nil() -> Uuid {
-        Uuid { bytes: [0; 16] }
+        Uuid { bytes: [0; 16], }
     }
 
     /// Creates a new `Uuid`.
@@ -725,13 +752,13 @@ impl Uuid {
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// ```
     #[cfg(not(feature = "const-fn"))]
-    pub fn from_uuid_bytes(b: UuidBytes) -> Uuid {
-        Uuid { bytes: b }
+    pub fn from_uuid_bytes(bytes: UuidBytes) -> Uuid {
+        Uuid { bytes }
     }
 
     #[cfg(feature = "const-fn")]
-    pub const fn from_uuid_bytes(b: UuidBytes) -> Uuid {
-        Uuid { bytes: b }
+    pub const fn from_uuid_bytes(bytes: UuidBytes) -> Uuid {
+        Uuid { bytes }
     }
 
     /// Creates a v4 Uuid from random bytes (e.g. bytes supplied from `Rand` crate)
@@ -887,6 +914,27 @@ impl Uuid {
     ///            &[147, 109, 160, 31, 154, 189, 77, 157,
     ///              128, 199, 2, 175, 133, 200, 34, 168]);
     /// ```
+    #[cfg(feature = "const-fn")]
+    pub const fn as_bytes(&self) -> &[u8; 16] {
+        &self.bytes
+    }
+
+    /// Returns an array of 16 octets containing the UUID data.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    /// assert_eq!(uuid.as_bytes(), &[0; 16]);
+    ///
+    /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
+    /// assert_eq!(uuid.as_bytes(),
+    ///            &[147, 109, 160, 31, 154, 189, 77, 157,
+    ///              128, 199, 2, 175, 133, 200, 34, 168]);
+    /// ```
+    #[cfg(not(feature = "const-fn"))]
     pub fn as_bytes(&self) -> &[u8; 16] {
         &self.bytes
     }
