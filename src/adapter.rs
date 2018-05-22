@@ -22,3 +22,8 @@ pub const UUID_HYPHENATED_LENGTH: usize = 36;
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 pub const UUID_SIMPLE_LENGTH: usize = 32;
+
+/// The length of a Urn [`Uuid`] string.
+///
+/// [`Uuid`]: ../struct.Uuid.html
+-pub const UUID_URN_LENGTH: usize = 45;
