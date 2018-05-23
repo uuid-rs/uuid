@@ -26,35 +26,58 @@ all-features = true
 [package.metadata.playground]
 features = ["serde", "u128", "v1", "v3", "v4", "v5"]
 
-[dependencies]
-serde = { version = "1.0.56", optional = true, default-features = false }
-rand = { version = "0.4", optional = true }
-sha1 = { version = "0.6", optional = true }
-md5 = { version = "0.3", optional = true }
-slog = { version = "2", optional = true }
-cfg-if = "0.1.2"
-
 [dependencies.byteorder]
 default-features = false
 features = ["i128"]
 optional = true
 version = "1"
 
-[dev-dependencies]
-serde_test = "1.0.56"
+[dependencies.cfg-if]
+version = "0.1.2"
+
+[dependencies.md5]
+optional = true
+version = "0.3"
+
+[dependencies.rand]
+optional = true
+version = "0.4"
+
+[dependencies.serde]
+default-features = false
+optional = true
+version = "1.0.56"
+
+[dependencies.sha1]
+optional = true
+version = "0.6"
+
+[dependencies.slog]
+optional = true
+version = "2"
+
+[dev-dependencies.serde_test]
+version = "1.0.56"
 
 [features]
 default = ["std"]
-nightly = []
 std = []
-use_std = ["std"] # Compatibility shim for 0.5 and earlier
 v1 = []
 v3 = ["md5", "rand"]
 v4 = ["rand"]
 v5 = ["sha1", "rand"]
 
+# deprecated
+#------------------------
+# Use `"std"` instead
+use_std = ["std"]
+
 # since rust 1.26.0
 u128 = ["byteorder"]
 
-# only rust nightly
-const-fn = ["nightly"]
+# nightly rust
+#------------------------
+# Allow using `const fn`s
+const_fn = ["nightly"]
+# Nightly marker feature gate
+nightly = []
