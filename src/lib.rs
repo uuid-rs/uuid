@@ -830,9 +830,13 @@ impl Uuid {
     pub fn parse_str(mut input: &str) -> Result<Uuid, ParseError> {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
-        if len == (adapter::UUID_HYPHENATED_LENGTH + 9) && input.starts_with("urn:uuid:") {
+        if len == (adapter::UUID_HYPHENATED_LENGTH + 9)
+            && input.starts_with("urn:uuid:")
+        {
             input = &input[9..];
-        } else if len != adapter::UUID_SIMPLE_LENGTH && len != adapter::UUID_HYPHENATED_LENGTH {
+        } else if len != adapter::UUID_SIMPLE_LENGTH
+            && len != adapter::UUID_HYPHENATED_LENGTH
+        {
             return Err(ParseError::InvalidLength(len));
         }
 
@@ -1036,8 +1040,9 @@ mod tests {
 
     use super::test_util;
 
-    use super::ns::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID,
-                    NAMESPACE_URL};
+    use super::ns::{
+        NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL,
+    };
 
     use prelude::*;
 
@@ -1101,26 +1106,11 @@ mod tests {
         let uuid6 =
             Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
 
-        assert_eq!(
-            uuid1.get_variant().unwrap(),
-            UuidVariant::RFC4122
-        );
-        assert_eq!(
-            uuid2.get_variant().unwrap(),
-            UuidVariant::RFC4122
-        );
-        assert_eq!(
-            uuid3.get_variant().unwrap(),
-            UuidVariant::RFC4122
-        );
-        assert_eq!(
-            uuid4.get_variant().unwrap(),
-            UuidVariant::Microsoft
-        );
-        assert_eq!(
-            uuid5.get_variant().unwrap(),
-            UuidVariant::Microsoft
-        );
+        assert_eq!(uuid1.get_variant().unwrap(), UuidVariant::RFC4122);
+        assert_eq!(uuid2.get_variant().unwrap(), UuidVariant::RFC4122);
+        assert_eq!(uuid3.get_variant().unwrap(), UuidVariant::RFC4122);
+        assert_eq!(uuid4.get_variant().unwrap(), UuidVariant::Microsoft);
+        assert_eq!(uuid5.get_variant().unwrap(), UuidVariant::Microsoft);
         assert_eq!(uuid6.get_variant().unwrap(), UuidVariant::NCS);
     }
 
@@ -1313,9 +1303,7 @@ mod tests {
         let hs = uuid1.hyphenated().to_string();
         let ss = uuid1.simple().to_string();
 
-        let hsn = hs.chars()
-            .filter(|&c| c != '-')
-            .collect::<String>();
+        let hsn = hs.chars().filter(|&c| c != '-').collect::<String>();
 
         assert_eq!(hsn, ss);
     }
