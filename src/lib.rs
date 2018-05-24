@@ -112,7 +112,7 @@
 )]
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(feature = "const-fn", feature(const_fn))]
+#![cfg_attr(feature = "const_fn", feature(const_fn))]
 
 #[cfg(feature = "byteorder")]
 extern crate byteorder;
@@ -405,7 +405,7 @@ impl Uuid {
     /// assert_eq!(uuid.hyphenated().to_string(),
     ///            "00000000-0000-0000-0000-000000000000");
     /// ```
-    #[cfg(feature = "const-fn")]
+    #[cfg(feature = "const_fn")]
     pub const fn nil() -> Self {
         Uuid { bytes: [0; 16] }
     }
@@ -429,7 +429,7 @@ impl Uuid {
     /// assert_eq!(uuid.hyphenated().to_string(),
     ///            "00000000-0000-0000-0000-000000000000");
     /// ```
-    #[cfg(not(feature = "const-fn"))]
+    #[cfg(not(feature = "const_fn"))]
     pub fn nil() -> Uuid {
         Uuid { bytes: [0; 16] }
     }
@@ -749,12 +749,12 @@ impl Uuid {
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// ```
-    #[cfg(not(feature = "const-fn"))]
+    #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid_bytes(bytes: UuidBytes) -> Uuid {
         Uuid { bytes }
     }
 
-    #[cfg(feature = "const-fn")]
+    #[cfg(feature = "const_fn")]
     pub const fn from_uuid_bytes(bytes: UuidBytes) -> Uuid {
         Uuid { bytes }
     }
@@ -912,7 +912,7 @@ impl Uuid {
     ///            &[147, 109, 160, 31, 154, 189, 77, 157,
     ///              128, 199, 2, 175, 133, 200, 34, 168]);
     /// ```
-    #[cfg(feature = "const-fn")]
+    #[cfg(feature = "const_fn")]
     pub const fn as_bytes(&self) -> &[u8; 16] {
         &self.bytes
     }
@@ -932,7 +932,7 @@ impl Uuid {
     ///            &[147, 109, 160, 31, 154, 189, 77, 157,
     ///              128, 199, 2, 175, 133, 200, 34, 168]);
     /// ```
-    #[cfg(not(feature = "const-fn"))]
+    #[cfg(not(feature = "const_fn"))]
     pub fn as_bytes(&self) -> &[u8; 16] {
         &self.bytes
     }
