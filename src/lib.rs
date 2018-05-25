@@ -1,6 +1,7 @@
-// Copyright 2013-2014 The Rust Project Developers. See the COPYRIGHT
-// file at the top-level directory of this distribution and at
-// http://rust-lang.org/COPYRIGHT.
+// Copyright 2013-2014 The Rust Project Developers.
+// Copyright 2018 The Uuid Project Developers.
+//
+// See the COPYRIGHT file at the top-level directory of this distribution.
 //
 // Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
 // http://www.apache.org/licenses/LICENSE-2.0> or the MIT license
@@ -112,16 +113,14 @@
 )]
 #![deny(warnings)]
 #![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(all(feature = "u128", nightly), feature(i128_type))]
+#![cfg_attr(feature = "const_fn", feature(const_fn))]
 
+#[cfg(feature = "byteorder")]
+extern crate byteorder;
 #[macro_use]
 extern crate cfg_if;
-
-cfg_if! {
-    if #[cfg(feature = "byteorder")] {
-        extern crate byteorder;
-    }
-}
+#[cfg(feature = "std")]
+extern crate core;
 
 cfg_if! {
     if #[cfg(feature = "md5")] {
@@ -169,7 +168,10 @@ cfg_if! {
 pub mod ns;
 pub mod prelude;
 
+mod adapter;
 mod core_support;
+#[cfg(feature = "u128")]
+mod u128_support;
 
 cfg_if! {
     if #[cfg(feature = "v1")] {
@@ -294,9 +296,6 @@ pub enum ParseError {
     InvalidGroupLength(usize, usize, u8),
 }
 
-const SIMPLE_LENGTH: usize = 32;
-const HYPHENATED_LENGTH: usize = 36;
-
 /// Converts a `ParseError` to a string.
 impl fmt::Display for ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -304,7 +303,9 @@ impl fmt::Display for ParseError {
             ParseError::InvalidLength(found) => write!(
                 f,
                 "Invalid length; expecting {} or {} chars, found {}",
-                SIMPLE_LENGTH, HYPHENATED_LENGTH, found
+                adapter::UUID_SIMPLE_LENGTH,
+                adapter::UUID_HYPHENATED_LENGTH,
+                found
             ),
             ParseError::InvalidCharacter(found, pos) => write!(
                 f,
@@ -352,6 +353,31 @@ impl Uuid {
     ///     "00000000-0000-0000-0000-000000000000"
     /// );
     /// ```
+    #[cfg(feature = "const_fn")]
+    pub const fn nil() -> Self {
+        Uuid { bytes: [0; 16] }
+    }
+
+    /// The 'nil UUID'.
+    ///
+    /// The nil UUID is special form of UUID that is specified to have all
+    /// 128 bits set to zero, as defined in [IETF RFC 4122 Section 4.1.7][RFC].
+    ///
+    /// [RFC]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    ///
+    /// assert_eq!(uuid.hyphenated().to_string(),
+    ///            "00000000-0000-0000-0000-000000000000");
+    /// ```
+    #[cfg(not(feature = "const_fn"))]
     pub fn nil() -> Uuid {
         Uuid { bytes: [0; 16] }
     }
@@ -510,8 +536,14 @@ impl Uuid {
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// ```
-    pub fn from_uuid_bytes(b: UuidBytes) -> Uuid {
-        Uuid { bytes: b }
+    #[cfg(not(feature = "const_fn"))]
+    pub fn from_uuid_bytes(bytes: UuidBytes) -> Uuid {
+        Uuid { bytes }
+    }
+
+    #[cfg(feature = "const_fn")]
+    pub const fn from_uuid_bytes(bytes: UuidBytes) -> Uuid {
+        Uuid { bytes }
     }
 
     /// Creates a v4 Uuid from random bytes (e.g. bytes supplied from `Rand`
@@ -651,7 +683,8 @@ impl Uuid {
     /// );
     /// ```
     pub fn as_fields(&self) -> (u32, u16, u16, &[u8; 8]) {
-        let d1 = u32::from(self.bytes[0]) << 24 | u32::from(self.bytes[1]) << 16
+        let d1 = u32::from(self.bytes[0]) << 24
+            | u32::from(self.bytes[1]) << 16
             | u32::from(self.bytes[2]) << 8
             | u32::from(self.bytes[3]);
 
@@ -683,6 +716,27 @@ impl Uuid {
     ///     ]
     /// );
     /// ```
+    #[cfg(feature = "const_fn")]
+    pub const fn as_bytes(&self) -> &[u8; 16] {
+        &self.bytes
+    }
+
+    /// Returns an array of 16 octets containing the UUID data.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    /// assert_eq!(uuid.as_bytes(), &[0; 16]);
+    ///
+    /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
+    /// assert_eq!(uuid.as_bytes(),
+    ///            &[147, 109, 160, 31, 154, 189, 77, 157,
+    ///              128, 199, 2, 175, 133, 200, 34, 168]);
+    /// ```
+    #[cfg(not(feature = "const_fn"))]
     pub fn as_bytes(&self) -> &[u8; 16] {
         &self.bytes
     }
@@ -745,7 +799,8 @@ impl Uuid {
     /// counter portion of a V1 UUID.  If the supplied UUID is not V1, this
     /// will return None
     pub fn to_timestamp(&self) -> Option<(u64, u16)> {
-        if self.get_version()
+        if self
+            .get_version()
             .map(|v| v != UuidVersion::Mac)
             .unwrap_or(true)
         {
@@ -775,9 +830,13 @@ impl Uuid {
     pub fn parse_str(mut input: &str) -> Result<Uuid, ParseError> {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
-        if len == (HYPHENATED_LENGTH + 9) && input.starts_with("urn:uuid:") {
+        if len == (adapter::UUID_HYPHENATED_LENGTH + 9)
+            && input.starts_with("urn:uuid:")
+        {
             input = &input[9..];
-        } else if len != SIMPLE_LENGTH && len != HYPHENATED_LENGTH {
+        } else if len != adapter::UUID_SIMPLE_LENGTH
+            && len != adapter::UUID_HYPHENATED_LENGTH
+        {
             return Err(ParseError::InvalidLength(len));
         }
 
@@ -788,7 +847,7 @@ impl Uuid {
         let mut buffer = [0u8; 16];
 
         for (i_char, chr) in input.bytes().enumerate() {
-            if digit as usize >= SIMPLE_LENGTH && group != 4 {
+            if digit as usize >= adapter::UUID_SIMPLE_LENGTH && group != 4 {
                 if group == 0 {
                     return Err(ParseError::InvalidLength(len));
                 }
@@ -912,7 +971,8 @@ impl<'a> fmt::Display for Hyphenated<'a> {
 
 macro_rules! hyphenated_write {
     ($f:expr, $format:expr, $bytes:expr) => {{
-        let data1 = u32::from($bytes[0]) << 24 | u32::from($bytes[1]) << 16
+        let data1 = u32::from($bytes[0]) << 24
+            | u32::from($bytes[1]) << 16
             | u32::from($bytes[2]) << 8
             | u32::from($bytes[3]);
 
@@ -980,8 +1040,9 @@ mod tests {
 
     use super::test_util;
 
-    use super::ns::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID,
-                    NAMESPACE_URL};
+    use super::ns::{
+        NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL,
+    };
 
     use prelude::*;
 
@@ -1045,26 +1106,11 @@ mod tests {
         let uuid6 =
             Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
 
-        assert_eq!(
-            uuid1.get_variant().unwrap(),
-            UuidVariant::RFC4122
-        );
-        assert_eq!(
-            uuid2.get_variant().unwrap(),
-            UuidVariant::RFC4122
-        );
-        assert_eq!(
-            uuid3.get_variant().unwrap(),
-            UuidVariant::RFC4122
-        );
-        assert_eq!(
-            uuid4.get_variant().unwrap(),
-            UuidVariant::Microsoft
-        );
-        assert_eq!(
-            uuid5.get_variant().unwrap(),
-            UuidVariant::Microsoft
-        );
+        assert_eq!(uuid1.get_variant().unwrap(), UuidVariant::RFC4122);
+        assert_eq!(uuid2.get_variant().unwrap(), UuidVariant::RFC4122);
+        assert_eq!(uuid3.get_variant().unwrap(), UuidVariant::RFC4122);
+        assert_eq!(uuid4.get_variant().unwrap(), UuidVariant::Microsoft);
+        assert_eq!(uuid5.get_variant().unwrap(), UuidVariant::Microsoft);
         assert_eq!(uuid6.get_variant().unwrap(), UuidVariant::NCS);
     }
 
@@ -1223,42 +1269,20 @@ mod tests {
             };
         }
 
-        check!(
-            buf,
-            "{:X}",
-            u,
-            36,
-            |c| c.is_uppercase() || c.is_digit(10) || c == '-'
-        );
-        check!(
-            buf,
-            "{:X}",
-            u.hyphenated(),
-            36,
-            |c| c.is_uppercase() || c.is_digit(10) || c == '-'
-        );
-        check!(
-            buf,
-            "{:X}",
-            u.simple(),
-            32,
-            |c| c.is_uppercase() || c.is_digit(10)
-        );
+        check!(buf, "{:X}", u, 36, |c| c.is_uppercase()
+            || c.is_digit(10)
+            || c == '-');
+        check!(buf, "{:X}", u.hyphenated(), 36, |c| c.is_uppercase()
+            || c.is_digit(10)
+            || c == '-');
+        check!(buf, "{:X}", u.simple(), 32, |c| c.is_uppercase()
+            || c.is_digit(10));
 
-        check!(
-            buf,
-            "{:x}",
-            u.hyphenated(),
-            36,
-            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
-        );
-        check!(
-            buf,
-            "{:x}",
-            u.simple(),
-            32,
-            |c| c.is_lowercase() || c.is_digit(10)
-        );
+        check!(buf, "{:x}", u.hyphenated(), 36, |c| c.is_lowercase()
+            || c.is_digit(10)
+            || c == '-');
+        check!(buf, "{:x}", u.simple(), 32, |c| c.is_lowercase()
+            || c.is_digit(10));
     }
 
     #[test]
@@ -1279,9 +1303,7 @@ mod tests {
         let hs = uuid1.hyphenated().to_string();
         let ss = uuid1.simple().to_string();
 
-        let hsn = hs.chars()
-            .filter(|&c| c != '-')
-            .collect::<String>();
+        let hsn = hs.chars().filter(|&c| c != '-').collect::<String>();
 
         assert_eq!(hsn, ss);
     }
