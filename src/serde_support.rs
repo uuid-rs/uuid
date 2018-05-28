@@ -87,23 +87,31 @@ impl<'de> Deserialize<'de> for Uuid {
 
 #[cfg(test)]
 mod tests {
-    extern crate serde_test;
+    use serde_test;
 
-    use self::serde_test::{assert_tokens, Configure, Token};
-
-    use Uuid;
+    use prelude::*;
 
     #[test]
     fn test_serialize_readable() {
+        use serde_test::Configure;
+
         let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
         let u = Uuid::parse_str(uuid_str).unwrap();
-        assert_tokens(&u.readable(), &[Token::Str(uuid_str)]);
+        serde_test::assert_tokens(
+            &u.readable(),
+            &[serde_test::Token::Str(uuid_str)],
+        );
     }
 
     #[test]
     fn test_serialize_compact() {
+        use serde_test::Configure;
+
         let uuid_bytes = b"F9168C5E-CEB2-4F";
         let u = Uuid::from_bytes(uuid_bytes).unwrap();
-        assert_tokens(&u.compact(), &[Token::Bytes(uuid_bytes)]);
+        serde_test::assert_tokens(
+            &u.compact(),
+            &[serde_test::Token::Bytes(uuid_bytes)],
+        );
     }
 }

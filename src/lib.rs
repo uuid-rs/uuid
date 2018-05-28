@@ -125,6 +125,8 @@ extern crate md5;
 extern crate rand;
 #[cfg(feature = "serde")]
 extern crate serde;
+#[cfg(all(feature = "serde", test))]
+extern crate serde_test;
 #[cfg(feature = "sha1")]
 extern crate sha1;
 #[cfg(feature = "slog")]
@@ -965,9 +967,6 @@ impl<'a> fmt::Display for Urn<'a> {
 #[cfg(test)]
 mod tests {
     extern crate std;
-
-    use self::std::prelude::v1::*;
-
     use super::test_util;
 
     use super::ns::{
