@@ -14,7 +14,10 @@ use prelude::*;
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 impl Serialize for Uuid {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+    fn serialize<S: Serializer>(
+        &self,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
         if serializer.is_human_readable() {
             serializer.collect_str(&self.hyphenated())
         } else {
@@ -24,22 +27,33 @@ impl Serialize for Uuid {
 }
 
 impl<'de> Deserialize<'de> for Uuid {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+    fn deserialize<D: Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<Self, D::Error> {
         if deserializer.is_human_readable() {
             struct UuidStringVisitor;
 
             impl<'vi> de::Visitor<'vi> for UuidStringVisitor {
                 type Value = Uuid;
 
-                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                fn expecting(
+                    &self,
+                    formatter: &mut fmt::Formatter,
+                ) -> fmt::Result {
                     write!(formatter, "a UUID string")
                 }
 
-                fn visit_str<E: de::Error>(self, value: &str) -> Result<Uuid, E> {
+                fn visit_str<E: de::Error>(
+                    self,
+                    value: &str,
+                ) -> Result<Uuid, E> {
                     value.parse::<Uuid>().map_err(E::custom)
                 }
 
-                fn visit_bytes<E: de::Error>(self, value: &[u8]) -> Result<Uuid, E> {
+                fn visit_bytes<E: de::Error>(
+                    self,
+                    value: &[u8],
+                ) -> Result<Uuid, E> {
                     Uuid::from_bytes(value).map_err(E::custom)
                 }
             }
@@ -51,11 +65,17 @@ impl<'de> Deserialize<'de> for Uuid {
             impl<'vi> de::Visitor<'vi> for UuidBytesVisitor {
                 type Value = Uuid;
 
-                fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+                fn expecting(
+                    &self,
+                    formatter: &mut fmt::Formatter,
+                ) -> fmt::Result {
                     write!(formatter, "bytes")
                 }
 
-                fn visit_bytes<E: de::Error>(self, value: &[u8]) -> Result<Uuid, E> {
+                fn visit_bytes<E: de::Error>(
+                    self,
+                    value: &[u8],
+                ) -> Result<Uuid, E> {
                     Uuid::from_bytes(value).map_err(E::custom)
                 }
             }

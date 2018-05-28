@@ -4,8 +4,8 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
-use prelude::*;
 use core::sync::atomic;
+use prelude::*;
 
 /// A thread-safe, stateful context for the v1 generator to help ensure
 /// process-wide uniqueness.
@@ -58,12 +58,17 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```rust
-    /// use uuid::Uuid;
     /// use uuid::v1::UuidContext;
+    /// use uuid::Uuid;
     ///
     /// let context = UuidContext::new(42);
-    /// if let Ok(uuid) = Uuid::new_v1(&context, 1497624119, 1234, &[1,2,3,4,5,6]) {
-    ///     assert_eq!(uuid.hyphenated().to_string(), "f3b4958c-52a1-11e7-802a-010203040506")
+    /// if let Ok(uuid) =
+    ///     Uuid::new_v1(&context, 1497624119, 1234, &[1, 2, 3, 4, 5, 6])
+    /// {
+    ///     assert_eq!(
+    ///         uuid.hyphenated().to_string(),
+    ///         "f3b4958c-52a1-11e7-802a-010203040506"
+    ///     )
     /// } else {
     ///     panic!()
     /// }
@@ -95,12 +100,14 @@ impl Uuid {
             /// `1582-10-15 00:00:00` and the Unix epoch `1970-01-01 00:00:00`.
             const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 
-            let timestamp = seconds * 10_000_000 + u64::from(nano_seconds / 100);
+            let timestamp =
+                seconds * 10_000_000 + u64::from(nano_seconds / 100);
             let uuid_time = timestamp + UUID_TICKS_BETWEEN_EPOCHS;
 
             time_low = (uuid_time & 0xFFFF_FFFF) as u32;
             time_mid = ((uuid_time >> 32) & 0xFFFF) as u16;
-            time_high_and_version = (((uuid_time >> 48) & 0x0FFF) as u16) | (1 << 12);
+            time_high_and_version =
+                (((uuid_time >> 48) & 0x0FFF) as u16) | (1 << 12);
         }
 
         let mut d4 = [0; 8];
@@ -154,7 +161,8 @@ mod tests {
         let context = UuidContext::new(0);
 
         {
-            let uuid = Uuid::new_v1(&context, time, time_fraction, &node).unwrap();
+            let uuid =
+                Uuid::new_v1(&context, time, time_fraction, &node).unwrap();
 
             assert_eq!(uuid.get_version(), Some(UuidVersion::Mac));
             assert_eq!(uuid.get_variant(), Some(UuidVariant::RFC4122));
@@ -170,7 +178,8 @@ mod tests {
         };
 
         {
-            let uuid2 = Uuid::new_v1(&context, time, time_fraction, &node).unwrap();
+            let uuid2 =
+                Uuid::new_v1(&context, time, time_fraction, &node).unwrap();
 
             assert_eq!(
                 uuid2.hyphenated().to_string(),
