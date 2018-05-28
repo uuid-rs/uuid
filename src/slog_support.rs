@@ -10,7 +10,7 @@
 // except according to those terms.
 
 use slog;
-use Uuid;
+use prelude::*;
 
 impl slog::Value for Uuid {
     fn serialize(

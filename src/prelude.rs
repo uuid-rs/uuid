@@ -48,10 +48,6 @@ handling uuid version 1. Requires feature `v1`.
 
 #[doc(inline)]
 pub use super::{Uuid, UuidVariant, UuidVersion};
-
-cfg_if! {
-    if #[cfg(feature = "v1")] {
-        #[doc(inline)]
-        pub use super::v1::{UuidClockSequence, UuidContext};
-    }
-}
+#[cfg(feature = "v1")]
+#[doc(inline)]
+pub use v1::{UuidClockSequence, UuidContext};

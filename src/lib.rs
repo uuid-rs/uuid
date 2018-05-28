@@ -117,115 +117,45 @@
 
 #[cfg(feature = "byteorder")]
 extern crate byteorder;
-#[macro_use]
-extern crate cfg_if;
 #[cfg(feature = "std")]
 extern crate core;
+#[cfg(feature = "md5")]
+extern crate md5;
+#[cfg(feature = "rand")]
+extern crate rand;
+#[cfg(feature = "serde")]
+extern crate serde;
+#[cfg(feature = "sha1")]
+extern crate sha1;
+#[cfg(feature = "slog")]
+#[cfg_attr(test, macro_use)]
+extern crate slog;
 
-cfg_if! {
-    if #[cfg(feature = "md5")] {
-        extern crate md5;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "rand")] {
-        extern crate rand;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "serde")] {
-        extern crate serde;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "sha1")] {
-        extern crate sha1;
-    }
-}
-
-cfg_if! {
-    if #[cfg(all(feature = "slog", not(test)))] {
-        extern crate slog;
-    } else if #[cfg(all(feature = "slog", test))] {
-        #[macro_use]
-        extern crate slog;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "std")] {
-        use std::fmt;
-        use std::str;
-    } else if #[cfg(not(feature = "std"))] {
-        use core::fmt;
-        use core::str;
-    }
-}
+use core::{fmt, str};
 
 pub mod ns;
 pub mod prelude;
+#[cfg(feature = "v1")]
+pub mod v1;
 
 mod adapter;
 mod core_support;
+#[cfg(feature = "serde")]
+mod serde_support;
+#[cfg(feature = "slog")]
+mod slog_support;
+#[cfg(feature = "std")]
+mod std_support;
+#[cfg(test)]
+mod test_util;
 #[cfg(feature = "u128")]
 mod u128_support;
-
-cfg_if! {
-    if #[cfg(feature = "v1")] {
-        pub mod v1;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "serde")] {
-        mod serde_support;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "slog")] {
-        mod slog_support;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "std")] {
-        mod std_support;
-    }
-}
-
-cfg_if! {
-    if #[cfg(test)] {
-        mod test_util;
-    }
-}
-
-cfg_if! {
-    if #[cfg(all(feature = "u128"), nightly)] {
-        mod u128_support;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "v3")] {
-        mod v3;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "v4")] {
-        mod v4;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "v5")] {
-        mod v5;
-    }
-}
+#[cfg(feature = "v3")]
+mod v3;
+#[cfg(feature = "v4")]
+mod v4;
+#[cfg(feature = "v5")]
+mod v5;
 
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type UuidBytes = [u8; 16];

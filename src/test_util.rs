@@ -9,7 +9,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use Uuid;
+use prelude::*;
 
 pub fn new() -> Uuid {
     Uuid {

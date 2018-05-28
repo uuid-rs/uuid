@@ -32,9 +32,6 @@ features = ["i128"]
 optional = true
 version = "1"
 
-[dependencies.cfg-if]
-version = "0.1.2"
-
 [dependencies.md5]
 optional = true
 version = "0.3"

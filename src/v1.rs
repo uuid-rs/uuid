@@ -5,14 +5,7 @@
 //! [`Uuid`]: ../struct.Uuid.html
 
 use prelude::*;
-
-cfg_if! {
-    if #[cfg(feature = "std")] {
-        use std::sync::atomic;
-    } else {
-        use core::sync::atomic;
-    }
-}
+use core::sync::atomic;
 
 /// A thread-safe, stateful context for the v1 generator to help ensure
 /// process-wide uniqueness.
