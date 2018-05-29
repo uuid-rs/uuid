@@ -306,8 +306,10 @@ impl Uuid {
     ///
     /// let uuid = Uuid::nil();
     ///
-    /// assert_eq!(uuid.hyphenated().to_string(),
-    ///            "00000000-0000-0000-0000-000000000000");
+    /// assert_eq!(
+    ///     uuid.hyphenated().to_string(),
+    ///     "00000000-0000-0000-0000-000000000000"
+    /// );
     /// ```
     #[cfg(not(feature = "const_fn"))]
     pub fn nil() -> Uuid {
@@ -341,8 +343,8 @@ impl Uuid {
     /// An invalid length:
     ///
     /// ```
-    /// use uuid::Uuid;
     /// use uuid::ParseError;
+    /// use uuid::Uuid;
     ///
     /// let d4 = [12];
     ///
@@ -397,8 +399,7 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
-    /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76, 32, 50, 87, 5, 1, 33, 43,
-    /// 87];
+    /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76, 32, 50, 87, 5, 1, 33, 43, 87];
     ///
     /// let uuid = Uuid::from_bytes(&bytes);
     /// let uuid = uuid.map(|uuid| uuid.hyphenated().to_string());
@@ -412,8 +413,8 @@ impl Uuid {
     /// An incorrect number of bytes:
     ///
     /// ```
-    /// use uuid::Uuid;
     /// use uuid::ParseError;
+    /// use uuid::Uuid;
     ///
     /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76];
     ///
@@ -445,14 +446,14 @@ impl Uuid {
     /// use uuid::UuidBytes;
     ///
     /// let bytes: UuidBytes = [
-    /// 70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145,
-    /// 63, 62 ];
+    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
+    ///     62,
+    /// ];
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// let uuid = uuid.hyphenated().to_string();
     ///
-    /// let expected_uuid =
-    /// String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
+    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -490,13 +491,13 @@ impl Uuid {
     /// use uuid::UuidBytes;
     ///
     /// let bytes: UuidBytes = [
-    /// 70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145,
-    /// 63, 62 ];
+    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
+    ///     62,
+    /// ];
     /// let uuid = Uuid::from_random_bytes(bytes);
     /// let uuid = uuid.hyphenated().to_string();
     ///
-    /// let expected_uuid =
-    /// String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
+    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -602,8 +603,7 @@ impl Uuid {
     /// let uuid = Uuid::nil();
     /// assert_eq!(uuid.as_fields(), (0, 0, 0, &[0u8; 8]));
     ///
-    /// let uuid =
-    /// Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
     /// assert_eq!(
     ///     uuid.as_fields(),
     ///     (
@@ -643,8 +643,8 @@ impl Uuid {
     /// assert_eq!(
     ///     uuid.as_bytes(),
     ///     &[
-    /// 147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133,
-    /// 200,         34, 168,
+    ///         147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133, 200,
+    ///         34, 168,
     ///     ]
     /// );
     /// ```
@@ -664,9 +664,13 @@ impl Uuid {
     /// assert_eq!(uuid.as_bytes(), &[0; 16]);
     ///
     /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
-    /// assert_eq!(uuid.as_bytes(),
-    ///            &[147, 109, 160, 31, 154, 189, 77, 157,
-    ///              128, 199, 2, 175, 133, 200, 34, 168]);
+    /// assert_eq!(
+    ///     uuid.as_bytes(),
+    ///     &[
+    ///         147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133, 200,
+    ///         34, 168
+    ///     ]
+    /// );
     /// ```
     #[cfg(not(feature = "const_fn"))]
     pub fn as_bytes(&self) -> &[u8; 16] {
