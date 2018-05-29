@@ -9,17 +9,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use core::{fmt, str};
 use prelude::*;
-
-cfg_if! {
-    if #[cfg(feature = "std")] {
-        use std::fmt;
-        use std::str;
-    } else {
-        use core::fmt;
-        use core::str;
-    }
-}
 
 impl fmt::Display for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
