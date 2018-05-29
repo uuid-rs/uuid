@@ -967,6 +967,8 @@ impl<'a> fmt::Display for Urn<'a> {
 #[cfg(test)]
 mod tests {
     extern crate std;
+
+    use self::std::prelude::v1::*;
     use super::test_util;
 
     use super::ns::{
