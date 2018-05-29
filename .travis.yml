@@ -29,7 +29,7 @@ notifications:
 os: linux
 
 rust:
-- 1.18.0
+- 1.22.0
 - stable
 - beta
 - nightly
