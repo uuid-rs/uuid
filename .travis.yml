@@ -21,6 +21,7 @@ matrix:
     rust: nightly
     script:
     - cargo test --features "const_fn"
+    - cargo test --features "slog"
 
 notifications:
   email:
