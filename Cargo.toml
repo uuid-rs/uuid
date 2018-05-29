@@ -72,9 +72,6 @@ use_std = ["std"]
 # since rust 1.26.0
 u128 = ["byteorder"]
 
-# for logging
-slog = []
-
 # nightly rust
 #------------------------
 # Allow using `const fn`s
