@@ -117,115 +117,47 @@
 
 #[cfg(feature = "byteorder")]
 extern crate byteorder;
-#[macro_use]
-extern crate cfg_if;
 #[cfg(feature = "std")]
 extern crate core;
+#[cfg(feature = "md5")]
+extern crate md5;
+#[cfg(feature = "rand")]
+extern crate rand;
+#[cfg(feature = "serde")]
+extern crate serde;
+#[cfg(all(feature = "serde", test))]
+extern crate serde_test;
+#[cfg(feature = "sha1")]
+extern crate sha1;
+#[cfg(feature = "slog")]
+#[cfg_attr(test, macro_use)]
+extern crate slog;
 
-cfg_if! {
-    if #[cfg(feature = "md5")] {
-        extern crate md5;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "rand")] {
-        extern crate rand;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "serde")] {
-        extern crate serde;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "sha1")] {
-        extern crate sha1;
-    }
-}
-
-cfg_if! {
-    if #[cfg(all(feature = "slog", not(test)))] {
-        extern crate slog;
-    } else if #[cfg(all(feature = "slog", test))] {
-        #[macro_use]
-        extern crate slog;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "std")] {
-        use std::fmt;
-        use std::str;
-    } else if #[cfg(not(feature = "std"))] {
-        use core::fmt;
-        use core::str;
-    }
-}
+use core::{fmt, str};
 
 pub mod ns;
 pub mod prelude;
+#[cfg(feature = "v1")]
+pub mod v1;
 
 mod adapter;
 mod core_support;
+#[cfg(feature = "serde")]
+mod serde_support;
+#[cfg(feature = "slog")]
+mod slog_support;
+#[cfg(feature = "std")]
+mod std_support;
+#[cfg(test)]
+mod test_util;
 #[cfg(feature = "u128")]
 mod u128_support;
-
-cfg_if! {
-    if #[cfg(feature = "v1")] {
-        pub mod v1;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "serde")] {
-        mod serde_support;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "slog")] {
-        mod slog_support;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "std")] {
-        mod std_support;
-    }
-}
-
-cfg_if! {
-    if #[cfg(test)] {
-        mod test_util;
-    }
-}
-
-cfg_if! {
-    if #[cfg(all(feature = "u128"), nightly)] {
-        mod u128_support;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "v3")] {
-        mod v3;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "v4")] {
-        mod v4;
-    }
-}
-
-cfg_if! {
-    if #[cfg(feature = "v5")] {
-        mod v5;
-    }
-}
+#[cfg(feature = "v3")]
+mod v3;
+#[cfg(feature = "v4")]
+mod v4;
+#[cfg(feature = "v5")]
+mod v5;
 
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type UuidBytes = [u8; 16];
@@ -374,8 +306,10 @@ impl Uuid {
     ///
     /// let uuid = Uuid::nil();
     ///
-    /// assert_eq!(uuid.hyphenated().to_string(),
-    ///            "00000000-0000-0000-0000-000000000000");
+    /// assert_eq!(
+    ///     uuid.hyphenated().to_string(),
+    ///     "00000000-0000-0000-0000-000000000000"
+    /// );
     /// ```
     #[cfg(not(feature = "const_fn"))]
     pub fn nil() -> Uuid {
@@ -409,8 +343,8 @@ impl Uuid {
     /// An invalid length:
     ///
     /// ```
-    /// use uuid::Uuid;
     /// use uuid::ParseError;
+    /// use uuid::Uuid;
     ///
     /// let d4 = [12];
     ///
@@ -465,8 +399,7 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
-    /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76, 32, 50, 87, 5, 1, 33, 43,
-    /// 87];
+    /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76, 32, 50, 87, 5, 1, 33, 43, 87];
     ///
     /// let uuid = Uuid::from_bytes(&bytes);
     /// let uuid = uuid.map(|uuid| uuid.hyphenated().to_string());
@@ -480,8 +413,8 @@ impl Uuid {
     /// An incorrect number of bytes:
     ///
     /// ```
-    /// use uuid::Uuid;
     /// use uuid::ParseError;
+    /// use uuid::Uuid;
     ///
     /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76];
     ///
@@ -513,14 +446,14 @@ impl Uuid {
     /// use uuid::UuidBytes;
     ///
     /// let bytes: UuidBytes = [
-    /// 70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145,
-    /// 63, 62 ];
+    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
+    ///     62,
+    /// ];
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// let uuid = uuid.hyphenated().to_string();
     ///
-    /// let expected_uuid =
-    /// String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
+    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -558,13 +491,13 @@ impl Uuid {
     /// use uuid::UuidBytes;
     ///
     /// let bytes: UuidBytes = [
-    /// 70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145,
-    /// 63, 62 ];
+    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
+    ///     62,
+    /// ];
     /// let uuid = Uuid::from_random_bytes(bytes);
     /// let uuid = uuid.hyphenated().to_string();
     ///
-    /// let expected_uuid =
-    /// String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
+    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -670,8 +603,7 @@ impl Uuid {
     /// let uuid = Uuid::nil();
     /// assert_eq!(uuid.as_fields(), (0, 0, 0, &[0u8; 8]));
     ///
-    /// let uuid =
-    /// Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
     /// assert_eq!(
     ///     uuid.as_fields(),
     ///     (
@@ -711,8 +643,8 @@ impl Uuid {
     /// assert_eq!(
     ///     uuid.as_bytes(),
     ///     &[
-    /// 147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133,
-    /// 200,         34, 168,
+    ///         147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133, 200,
+    ///         34, 168,
     ///     ]
     /// );
     /// ```
@@ -732,9 +664,13 @@ impl Uuid {
     /// assert_eq!(uuid.as_bytes(), &[0; 16]);
     ///
     /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
-    /// assert_eq!(uuid.as_bytes(),
-    ///            &[147, 109, 160, 31, 154, 189, 77, 157,
-    ///              128, 199, 2, 175, 133, 200, 34, 168]);
+    /// assert_eq!(
+    ///     uuid.as_bytes(),
+    ///     &[
+    ///         147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133, 200,
+    ///         34, 168
+    ///     ]
+    /// );
     /// ```
     #[cfg(not(feature = "const_fn"))]
     pub fn as_bytes(&self) -> &[u8; 16] {
@@ -1037,7 +973,6 @@ mod tests {
     extern crate std;
 
     use self::std::prelude::v1::*;
-
     use super::test_util;
 
     use super::ns::{

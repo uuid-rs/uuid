@@ -54,11 +54,7 @@ mod tests {
                 "rust-lang.org",
                 "c6db027c-615c-3b4d-959e-1a917747ca5a",
             ),
-            (
-                &NAMESPACE_DNS,
-                "42",
-                "5aab6e0c-b7d3-379c-92e3-2bfbb5572511",
-            ),
+            (&NAMESPACE_DNS, "42", "5aab6e0c-b7d3-379c-92e3-2bfbb5572511"),
             (
                 &NAMESPACE_DNS,
                 "lorem ipsum",
@@ -74,11 +70,7 @@ mod tests {
                 "rust-lang.org",
                 "7ed45aaf-e75b-3130-8e33-ee4d9253b19f",
             ),
-            (
-                &NAMESPACE_URL,
-                "42",
-                "08998a0c-fcf4-34a9-b444-f2bfc15731dc",
-            ),
+            (&NAMESPACE_URL, "42", "08998a0c-fcf4-34a9-b444-f2bfc15731dc"),
             (
                 &NAMESPACE_URL,
                 "lorem ipsum",
@@ -94,11 +86,7 @@ mod tests {
                 "rust-lang.org",
                 "6506a0ec-4d79-3e18-8c2b-f2b6b34f2b6d",
             ),
-            (
-                &NAMESPACE_OID,
-                "42",
-                "ce6925a5-2cd7-327b-ab1c-4b375ac044e4",
-            ),
+            (&NAMESPACE_OID, "42", "ce6925a5-2cd7-327b-ab1c-4b375ac044e4"),
             (
                 &NAMESPACE_OID,
                 "lorem ipsum",
@@ -132,10 +120,7 @@ mod tests {
         for &(ref ns, ref name, _) in FIXTURE {
             let uuid = Uuid::new_v3(*ns, *name);
             assert_eq!(uuid.get_version().unwrap(), UuidVersion::Md5);
-            assert_eq!(
-                uuid.get_variant().unwrap(),
-                UuidVariant::RFC4122
-            );
+            assert_eq!(uuid.get_variant().unwrap(), UuidVariant::RFC4122);
         }
     }
 
