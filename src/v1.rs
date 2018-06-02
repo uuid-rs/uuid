@@ -66,7 +66,7 @@ impl Uuid {
     ///     Uuid::new_v1(&context, 1497624119, 1234, &[1, 2, 3, 4, 5, 6])
     /// {
     ///     assert_eq!(
-    ///         uuid.hyphenated().to_string(),
+    ///         uuid.to_hyphenated().to_string(),
     ///         "f3b4958c-52a1-11e7-802a-010203040506"
     ///     )
     /// } else {
@@ -167,7 +167,7 @@ mod tests {
             assert_eq!(uuid.get_version(), Some(UuidVersion::Mac));
             assert_eq!(uuid.get_variant(), Some(UuidVariant::RFC4122));
             assert_eq!(
-                uuid.hyphenated().to_string(),
+                uuid.to_hyphenated().to_string(),
                 "20616934-4ba2-11e7-8000-010203040506"
             );
 
@@ -182,7 +182,7 @@ mod tests {
                 Uuid::new_v1(&context, time, time_fraction, &node).unwrap();
 
             assert_eq!(
-                uuid2.hyphenated().to_string(),
+                uuid2.to_hyphenated().to_string(),
                 "20616934-4ba2-11e7-8001-010203040506"
             );
             assert_eq!(uuid2.to_timestamp().unwrap().1, 1)
