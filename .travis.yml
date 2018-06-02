@@ -42,6 +42,7 @@ script:
 - cargo test --features "v3"
 - cargo test --features "v4"
 - cargo test --features "v5"
+- cargo test --features "slog"
 - cargo test --features "serde std v1 v3 v4 v5"
 
 sudo: false
