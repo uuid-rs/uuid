@@ -164,6 +164,11 @@ cfg_if! {
                 use std::sync::atomic;
             }
         }
+        cfg_if! {
+            if #[cfg(feature = "rand")] {
+                use rand::RngCore;
+            }
+        }
     } else if #[cfg(not(feature = "std"))] {
         use core::fmt;
         use core::str;
@@ -171,6 +176,11 @@ cfg_if! {
         cfg_if! {
             if #[cfg(feature = "v1")] {
                 use core::sync::atomic;
+            }
+        }
+        cfg_if! {
+            if #[cfg(feature = "rand")] {
+                use rand::RngCore;
             }
         }
     }
