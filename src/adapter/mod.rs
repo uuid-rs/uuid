@@ -17,21 +17,6 @@ use prelude::*;
 
 mod core_support;
 
-/// The length of a Hyphenated [`Uuid`] string.
-///
-/// [`Uuid`]: ../struct.Uuid.html
-pub const UUID_HYPHENATED_LENGTH: usize = 36;
-
-/// The length of a Simple [`Uuid`] string.
-///
-/// [`Uuid`]: ../struct.Uuid.html
-pub const UUID_SIMPLE_LENGTH: usize = 32;
-
-/// The length of a Urn [`Uuid`] string.
-///
-/// [`Uuid`]: ../struct.Uuid.html
-pub const UUID_URN_LENGTH: usize = 45;
-
 /// An adaptor for formatting an [`Uuid`] as a hyphenated string.
 ///
 /// Takes an owned instance of the [`Uuid`].
@@ -215,6 +200,11 @@ impl Uuid {
 }
 
 impl UuidHyphenated {
+    /// The length of a hyphenated [`Uuid`] string.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    pub const LENGTH: usize = 36;
+
     /// Creates a [`UuidHyphenated`] from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
@@ -235,6 +225,11 @@ impl UuidHyphenated {
 }
 
 impl<'a> UuidHyphenatedRef<'a> {
+    /// The length of a hyphenated [`Uuid`] string.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    pub const LENGTH: usize = 36;
+
     /// Creates a [`UuidHyphenatedRef`] from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
@@ -255,6 +250,11 @@ impl<'a> UuidHyphenatedRef<'a> {
 }
 
 impl UuidSimple {
+    /// The length of a simple [`Uuid`] string.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    pub const LENGTH: usize = 32;
+
     /// Creates a [`UuidSimple`] from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
@@ -275,6 +275,11 @@ impl UuidSimple {
 }
 
 impl<'a> UuidSimpleRef<'a> {
+    /// The length of a simple [`Uuid`] string.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    pub const LENGTH: usize = 32;
+
     /// Creates a [`UuidSimpleRef`] from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
@@ -295,6 +300,11 @@ impl<'a> UuidSimpleRef<'a> {
 }
 
 impl UuidUrn {
+    /// The length of a URN [`Uuid`] string.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    pub const LENGTH: usize = 45;
+
     /// Creates a [`UuidUrn`] from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
@@ -315,6 +325,11 @@ impl UuidUrn {
 }
 
 impl<'a> UuidUrnRef<'a> {
+    /// The length of a URN [`Uuid`] string.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    pub const LENGTH: usize = 45;
+
     /// Creates a [`UuidUrnRef`] from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
