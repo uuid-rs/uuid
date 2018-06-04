@@ -220,8 +220,8 @@ impl fmt::Display for ParseError {
             ParseError::InvalidLength(found) => write!(
                 f,
                 "Invalid length; expecting {} or {} chars, found {}",
-                adapter::UUID_SIMPLE_LENGTH,
-                adapter::UUID_HYPHENATED_LENGTH,
+                adapter::UuidSimple::LENGTH,
+                adapter::UuidHyphenated::LENGTH,
                 found
             ),
             ParseError::InvalidCharacter(found, pos) => write!(
@@ -697,12 +697,12 @@ impl Uuid {
     pub fn parse_str(mut input: &str) -> Result<Uuid, ParseError> {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
-        if len == (adapter::UUID_HYPHENATED_LENGTH + 9)
+        if len == adapter::UuidUrn::LENGTH
             && input.starts_with("urn:uuid:")
         {
             input = &input[9..];
-        } else if len != adapter::UUID_SIMPLE_LENGTH
-            && len != adapter::UUID_HYPHENATED_LENGTH
+        } else if len != adapter::UuidSimple::LENGTH
+            && len != adapter::UuidHyphenated::LENGTH
         {
             return Err(ParseError::InvalidLength(len));
         }
@@ -714,7 +714,7 @@ impl Uuid {
         let mut buffer = [0u8; 16];
 
         for (i_char, chr) in input.bytes().enumerate() {
-            if digit as usize >= adapter::UUID_SIMPLE_LENGTH && group != 4 {
+            if digit as usize >= adapter::UuidSimple::LENGTH && group != 4 {
                 if group == 0 {
                     return Err(ParseError::InvalidLength(len));
                 }
