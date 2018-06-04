@@ -32,27 +32,59 @@ pub const UUID_SIMPLE_LENGTH: usize = 32;
 /// [`Uuid`]: ../struct.Uuid.html
 pub const UUID_URN_LENGTH: usize = 45;
 
-// TODO: documentation
+/// An adaptor for formatting an [`Uuid`] as a hyphenated string.
+///
+/// Takes an owned instance of the [`Uuid`].
+///
+/// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct UuidHyphenated(Uuid);
-// TODO: documentation
+
+/// An adaptor for formatting an [`Uuid`] as a hyphenated string.
+///
+/// Takes a reference of the [`Uuid`].
+///
+/// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct UuidHyphenatedRef<'a>(&'a Uuid);
-// TODO(kinggoesgaming): documentation
+
+/// An adaptor for formatting an [`Uuid`] as a simple string.
+///
+/// Takes an owned instance of the [`Uuid`].
+///
+/// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct UuidSimple(Uuid);
-// TODO(kinggoesgaming): documentation
+
+/// An adaptor for formatting an [`Uuid`] as a simple string.
+///
+/// Takes a reference of the [`Uuid`].
+///
+/// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct UuidSimpleRef<'a>(&'a Uuid);
-// TODO(kinggoesgaming): documentation
+
+/// An adaptor for formatting an [`Uuid`] as a URN string.
+///
+/// Takes an owned instance of the [`Uuid`].
+///
+/// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct UuidUrn(Uuid);
-// TODO(kinggoesgaming): documentation
+
+/// An adaptor for formatting an [`Uuid`] as a URN string.
+///
+/// Takes a reference of the [`Uuid`].
+///
+/// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct UuidUrnRef<'a>(&'a Uuid);
 
 impl Uuid {
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidHyphenated`] instance from a [`Uuid`].
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidHyphenated`]: struct.UuidHyphenated.html
     // TODO(kinggoesgaming): discuss to_ vs as_ vs into_
     #[cfg(not(feature = "const_fn"))]
     #[inline]
@@ -60,7 +92,10 @@ impl Uuid {
         UuidHyphenated::from_uuid(self)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidHyphenated`] instance from a [`Uuid`].
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidHyphenated`]: struct.UuidHyphenated.html
     // TODO(kinggoesgaming): discuss to_ vs as_ vs into_
     #[cfg(feature = "const_fn")]
     #[inline]
@@ -68,7 +103,10 @@ impl Uuid {
         UuidHyphenated::from_uuid(self)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidHyphenatedRef`] instance from a [`Uuid`] reference.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidHyphenatedRef`]: struct.UuidHyphenatedRef.html
     // TODO(kinggoesgaming): discuss to_ vs as_ vs into_
     #[cfg(not(feature = "const_fn"))]
     #[inline]
@@ -76,7 +114,10 @@ impl Uuid {
         UuidHyphenatedRef::from_uuid_ref(self)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidHyphenatedRef`] instance from a [`Uuid`] reference.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidHyphenatedRef`]: struct.UuidHyphenatedRef.html
     // TODO(kinggoesgaming): discuss to_ vs as_ vs into_
     #[cfg(feature = "const_fn")]
     #[inline]
@@ -84,7 +125,10 @@ impl Uuid {
         UuidHyphenatedRef::from_uuid_ref(self)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidSimple`] instance from a [`Uuid`].
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidSimple`]: struct.UuidSimple.html
     // TODO(kinggoesgaming): discuss to_ vs as_ vs into_
     #[cfg(not(feature = "const_fn"))]
     #[inline]
@@ -92,7 +136,10 @@ impl Uuid {
         UuidSimple::from_uuid(self)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidSimple`] instance from a [`Uuid`].
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidSimple`]: struct.UuidSimple.html
     // TODO(kinggoesgaming): discuss to_ vs as_ vs into_
     #[cfg(feature = "const_fn")]
     #[inline]
@@ -100,7 +147,10 @@ impl Uuid {
         UuidSimple::from_uuid(self)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidSimpleRef`] instance from a [`Uuid`] reference.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidSimpleRef`]: struct.UuidSimpleRef.html
     // TODO(kinggoesgaming): discuss to_ vs as_ vs into_
     #[cfg(not(feature = "const_fn"))]
     #[inline]
@@ -108,7 +158,10 @@ impl Uuid {
         UuidSimpleRef::from_uuid_ref(self)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidSimpleRef`] instance from a [`Uuid`] reference.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidSimpleRef`]: struct.UuidSimpleRef.html
     // TODO(kinggoesgaming): discuss to_ vs as_ vs into_
     #[cfg(feature = "const_fn")]
     #[inline]
@@ -116,7 +169,10 @@ impl Uuid {
         UuidSimpleRef::from_uuid_ref(self)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidUrn`] instance from a [`Uuid`].
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidUrn`]: struct.UuidUrn.html
     // TODO(kinggoesgaming): discuss to_ vs as_ vs into_
     #[cfg(not(feature = "const_fn"))]
     #[inline]
@@ -124,7 +180,10 @@ impl Uuid {
         UuidUrn::from_uuid(self)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidUrn`] instance from a [`Uuid`].
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidUrn`]: struct.UuidUrn.html
     // TODO(kinggoesgaming): discuss to_ vs as_ vs into_
     #[cfg(feature = "const_fn")]
     #[inline]
@@ -132,7 +191,10 @@ impl Uuid {
         UuidUrn::from_uuid(self)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidUrnRef`] instance from a [`Uuid`] reference.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidUrnRef`]: struct.UuidUrnRef.html
     // TODO(kinggoesgaming): discuss to_ vs as_ vs into_
     #[cfg(not(feature = "const_fn"))]
     #[inline]
@@ -140,7 +202,10 @@ impl Uuid {
         UuidUrnRef::from_uuid_ref(self)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidUrnRef`] instance from a [`Uuid`] reference.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidUrnRef`]: struct.UuidUrnRef.html
     // TODO(kinggoesgaming): discuss to_ vs as_ vs into_
     #[cfg(feature = "const_fn")]
     #[inline]
@@ -150,13 +215,19 @@ impl Uuid {
 }
 
 impl UuidHyphenated {
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidHyphenated`] from a [`Uuid`].
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidHyphenated`]: struct.UuidHyphenated.html
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid(uuid: Uuid) -> Self {
         UuidHyphenated(uuid)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidHyphenated`] from a [`Uuid`].
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidHyphenated`]: struct.UuidHyphenated.html
     #[cfg(feature = "const_fn")]
     pub fn from_uuid(uuid: Uuid) -> Self {
         UuidHyphenated(uuid)
@@ -164,13 +235,19 @@ impl UuidHyphenated {
 }
 
 impl<'a> UuidHyphenatedRef<'a> {
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidHyphenatedRef`] from a [`Uuid`] reference.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidHyphenatedRef`]: struct.UuidHyphenatedRef.html
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         UuidHyphenatedRef(uuid)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidHyphenatedRef`] from a [`Uuid`] reference.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidHyphenatedRef`]: struct.UuidHyphenatedRef.html
     #[cfg(feature = "const_fn")]
     pub fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         UuidHyphenatedRef(uuid)
@@ -178,13 +255,19 @@ impl<'a> UuidHyphenatedRef<'a> {
 }
 
 impl UuidSimple {
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidSimple`] from a [`Uuid`].
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidSimple`]: struct.UuidSimple.html
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid(uuid: Uuid) -> Self {
         UuidSimple(uuid)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidSimple`] from a [`Uuid`].
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidSimple`]: struct.UuidSimple.html
     #[cfg(feature = "const_fn")]
     pub fn from_uuid(uuid: Uuid) -> Self {
         UuidSimple(uuid)
@@ -192,13 +275,19 @@ impl UuidSimple {
 }
 
 impl<'a> UuidSimpleRef<'a> {
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidSimpleRef`] from a [`Uuid`] reference.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidSimpleRef`]: struct.UuidSimpleRef.html
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         UuidSimpleRef(uuid)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidSimpleRef`] from a [`Uuid`] reference.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidSimpleRef`]: struct.UuidSimpleRef.html
     #[cfg(feature = "const_fn")]
     pub fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         UuidSimpleRef(uuid)
@@ -206,13 +295,19 @@ impl<'a> UuidSimpleRef<'a> {
 }
 
 impl UuidUrn {
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidUrn`] from a [`Uuid`].
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidUrn`]: struct.UuidUrn.html
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid(uuid: Uuid) -> Self {
         UuidUrn(uuid)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidUrn`] from a [`Uuid`].
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidUrn`]: struct.UuidUrn.html
     #[cfg(feature = "const_fn")]
     pub fn from_uuid(uuid: Uuid) -> Self {
         UuidUrn(uuid)
@@ -220,15 +315,21 @@ impl UuidUrn {
 }
 
 impl<'a> UuidUrnRef<'a> {
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidUrnRef`] from a [`Uuid`] reference.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidUrnRef`]: struct.UuidUrnRef.html
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         UuidUrnRef(uuid)
     }
 
-    // TODO(kinggoesgaming): documentation
+    /// Creates a [`UuidUrnRef`] from a [`Uuid`] reference.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`UuidUrnRef`]: struct.UuidUrnRef.html
     #[cfg(feature = "const_fn")]
     pub fn from_uuid_ref(uuid: &'a Uuid) -> Self {
-        UuidUrnRef(uuid)
+        UuidUrnRef(&uuid)
     }
 }
