@@ -29,12 +29,11 @@
 //!
 //! Currently the prelude reexports the following:
 //!
-//! [`uuid`]`::{`[`Uuid`], [`UuidBytes`], [`UuidVariant`], [`UuidVersion`]`}`:
-//! The fundamental types used in [`uuid`] crate.
+//! [`uuid`]`::{`[`Uuid`], [`UuidVariant`], [`UuidVersion`]`}`: The fundamental
+//! types used in [`uuid`] crate.
 //!
 //! [`uuid`]: ../index.html
 //! [`Uuid`]: ../struct.Uuid.html
-//! [`UuidBytes`]: ../type.UuidBytes.html
 //! [`UuidVariant`]: ../enum.UuidVariant.html
 //! [`UuidVersion`]: ../enum.UuidVersion.html
 //!
