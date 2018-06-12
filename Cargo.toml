@@ -38,7 +38,7 @@ version = "0.3"
 
 [dependencies.rand]
 optional = true
-version = "0.4"
+version = "0.5"
 
 [dependencies.serde]
 default-features = false
