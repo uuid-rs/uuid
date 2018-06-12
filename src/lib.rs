@@ -502,7 +502,7 @@ impl Uuid {
     /// assert_eq!(expected_uuid, uuid);
     /// ```
     ///
-    pub fn from_random_bytes(b: [u8; 16]) -> Uuid {
+    pub fn from_random_bytes(b: UuidBytes) -> Uuid {
         let mut uuid = Uuid { bytes: b };
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Random);
@@ -649,7 +649,7 @@ impl Uuid {
     /// );
     /// ```
     #[cfg(feature = "const_fn")]
-    pub const fn as_bytes(&self) -> &[u8; 16] {
+    pub const fn as_bytes(&self) -> &UuidBytes {
         &self.bytes
     }
 
@@ -673,7 +673,7 @@ impl Uuid {
     /// );
     /// ```
     #[cfg(not(feature = "const_fn"))]
-    pub fn as_bytes(&self) -> &[u8; 16] {
+    pub fn as_bytes(&self) -> &UuidBytes {
         &self.bytes
     }
 
@@ -1335,7 +1335,7 @@ mod tests {
 
     #[test]
     fn test_bytes_roundtrip() {
-        let b_in: [u8; 16] = [
+        let b_in: ::UuidBytes = [
             0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
             0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
         ];

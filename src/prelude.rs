@@ -29,11 +29,12 @@
 //!
 //! Currently the prelude reexports the following:
 //!
-//! [`uuid`]`::{`[`Uuid`], [`UuidVariant`], [`UuidVersion`]`}`: The fundamental
-//! types used in [`uuid`] crate.
+//! [`uuid`]`::{`[`Uuid`], [`UuidBytes`], [`UuidVariant`], [`UuidVersion`]`}`:
+//! The fundamental types used in [`uuid`] crate.
 //!
 //! [`uuid`]: ../index.html
 //! [`Uuid`]: ../struct.Uuid.html
+//! [`UuidBytes`]: ../type.UuidBytes.html
 //! [`UuidVariant`]: ../enum.UuidVariant.html
 //! [`UuidVersion`]: ../enum.UuidVersion.html
 //!
@@ -47,7 +48,7 @@ handling uuid version 1. Requires feature `v1`.
 [`UuidClockSequence`]: ../v1/trait.UuidClockSequence.html")]
 
 #[doc(inline)]
-pub use super::{Uuid, UuidVariant, UuidVersion};
+pub use super::{Uuid, UuidBytes, UuidVariant, UuidVersion};
 #[cfg(feature = "v1")]
 #[doc(inline)]
 pub use v1::{UuidClockSequence, UuidContext};
