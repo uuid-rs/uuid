@@ -24,7 +24,7 @@ impl Uuid {
     /// [`rand`]: https://crates.io/crates/rand
     /// [`Uuid`]: ../struct.Uuid.html
     pub fn new_v4() -> Self {
-        use rand::Rng;
+        use rand::RngCore;
 
         let mut rng = rand::thread_rng();
         let mut bytes = [0; 16];
