@@ -9,6 +9,7 @@ use prelude::*;
 
 /// A thread-safe, stateful context for the v1 generator to help ensure
 /// process-wide uniqueness.
+#[derive(Debug)]
 pub struct UuidContext {
     count: atomic::AtomicUsize,
 }
