@@ -38,12 +38,12 @@ version = "0.3"
 
 [dependencies.rand]
 optional = true
-version = "0.5"
+version = "0.4"
 
 [dependencies.serde]
 default-features = false
 optional = true
-version = "1.0.56"
+version = "1.0.46"
 
 [dependencies.sha1]
 optional = true
@@ -54,7 +54,7 @@ optional = true
 version = "2"
 
 [dev-dependencies.serde_test]
-version = "1.0.56"
+version = "1.0.46"
 
 [features]
 default = ["std"]
