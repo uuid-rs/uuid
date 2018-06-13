@@ -106,14 +106,18 @@
 //! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](
 //!     http://tools.ietf.org/html/rfc4122)
 
+#![cfg_attr(not(feature = "std"), no_std)]
+#![cfg_attr(feature = "const_fn", feature(const_fn))]
+#![deny(
+    missing_copy_implementations,
+    missing_debug_implementations,
+    missing_docs
+)]
 #![doc(
     html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
     html_favicon_url = "https://www.rust-lang.org/favicon.ico",
     html_root_url = "https://docs.rs/uuid"
 )]
-#![deny(warnings)]
-#![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(feature = "const_fn", feature(const_fn))]
 
 #[cfg(feature = "byteorder")]
 extern crate byteorder;
@@ -204,21 +208,26 @@ pub struct Uuid {
 }
 
 /// An adaptor for formatting a `Uuid` as a simple string.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Simple<'a> {
     inner: &'a Uuid,
 }
 
 /// An adaptor for formatting a `Uuid` as a hyphenated string.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Hyphenated<'a> {
     inner: &'a Uuid,
 }
 
 /// An adaptor for formatting a `Uuid` as a URN string.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Urn<'a> {
     inner: &'a Uuid,
 }
 
 /// Error details for string parsing failures.
+// TODO(kinggoesgaming): refactor this into its own module
+// BODY: The parsing error context needs to be improved
 #[allow(missing_docs)]
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum ParseError {
@@ -474,6 +483,40 @@ impl Uuid {
         Uuid { bytes }
     }
 
+    /// Creates a `Uuid` using the supplied bytes.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    /// use uuid::UuidBytes;
+    ///
+    /// let bytes: UuidBytes = [
+    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
+    ///     62,
+    /// ];
+    ///
+    /// let uuid = Uuid::from_uuid_bytes(bytes);
+    /// let uuid = uuid.hyphenated().to_string();
+    ///
+    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
+    ///
+    /// assert_eq!(expected_uuid, uuid);
+    /// ```
+    ///
+    /// An incorrect number of bytes:
+    ///
+    /// ```compile_fail
+    /// use uuid::Uuid;
+    /// use uuid::UuidBytes;
+    ///
+    /// let bytes: UuidBytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't
+    /// compile
+    ///
+    /// let uuid = Uuid::from_uuid_bytes(bytes);
+    /// ```
     #[cfg(feature = "const_fn")]
     pub const fn from_uuid_bytes(bytes: UuidBytes) -> Uuid {
         Uuid { bytes }
@@ -510,7 +553,6 @@ impl Uuid {
     }
 
     /// Specifies the variant of the UUID structure
-    #[allow(dead_code)]
     fn set_variant(&mut self, v: UuidVariant) {
         // Octet 8 contains the variant in the most significant 3 bits
         self.bytes[8] = match v {
@@ -538,7 +580,6 @@ impl Uuid {
     }
 
     /// Specifies the version number of the `Uuid`.
-    #[allow(dead_code)]
     fn set_version(&mut self, v: UuidVersion) {
         self.bytes[6] = (self.bytes[6] & 0xF) | ((v as u8) << 4);
     }
