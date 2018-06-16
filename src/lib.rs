@@ -200,10 +200,7 @@ pub enum UuidVariant {
 
 /// A Universally Unique Identifier (UUID).
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Uuid {
-    /// The 128-bit number stored in 16 bytes
-    bytes: UuidBytes,
-}
+pub struct Uuid(UuidBytes);
 
 /// An adaptor for formatting a `Uuid` as a simple string.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -294,7 +291,7 @@ impl Uuid {
     /// ```
     #[cfg(feature = "const_fn")]
     pub const fn nil() -> Self {
-        Uuid { bytes: [0; 16] }
+        Uuid::from_uuid_bytes([0; 16])
     }
 
     /// The 'nil UUID'.
@@ -320,7 +317,7 @@ impl Uuid {
     /// ```
     #[cfg(not(feature = "const_fn"))]
     pub fn nil() -> Uuid {
-        Uuid { bytes: [0; 16] }
+        Uuid::from_uuid_bytes([0; 16])
     }
 
     /// Creates a `Uuid` from four field values.
@@ -371,26 +368,24 @@ impl Uuid {
             return Err(ParseError::InvalidLength(d4.len()));
         }
 
-        Ok(Uuid {
-            bytes: [
-                (d1 >> 24) as u8,
-                (d1 >> 16) as u8,
-                (d1 >> 8) as u8,
-                d1 as u8,
-                (d2 >> 8) as u8,
-                d2 as u8,
-                (d3 >> 8) as u8,
-                d3 as u8,
-                d4[0],
-                d4[1],
-                d4[2],
-                d4[3],
-                d4[4],
-                d4[5],
-                d4[6],
-                d4[7],
-            ],
-        })
+        Ok(Uuid::from_uuid_bytes([
+            (d1 >> 24) as u8,
+            (d1 >> 16) as u8,
+            (d1 >> 8) as u8,
+            d1 as u8,
+            (d2 >> 8) as u8,
+            d2 as u8,
+            (d3 >> 8) as u8,
+            d3 as u8,
+            d4[0],
+            d4[1],
+            d4[2],
+            d4[3],
+            d4[4],
+            d4[5],
+            d4[6],
+            d4[7],
+        ]))
     }
 
     /// Creates a `Uuid` using the supplied bytes.
@@ -437,9 +432,9 @@ impl Uuid {
             return Err(ParseError::InvalidLength(len));
         }
 
-        let mut uuid = Uuid { bytes: [0; 16] };
-        uuid.bytes.copy_from_slice(b);
-        Ok(uuid)
+        let mut bytes: UuidBytes = [0; 16];
+        bytes.copy_from_slice(b);
+        Ok(Uuid::from_uuid_bytes(bytes))
     }
 
     /// Creates a `Uuid` using the supplied bytes.
@@ -478,7 +473,7 @@ impl Uuid {
     /// ```
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid_bytes(bytes: UuidBytes) -> Uuid {
-        Uuid { bytes }
+        Uuid(bytes)
     }
 
     /// Creates a `Uuid` using the supplied bytes.
@@ -517,7 +512,7 @@ impl Uuid {
     /// ```
     #[cfg(feature = "const_fn")]
     pub const fn from_uuid_bytes(bytes: UuidBytes) -> Uuid {
-        Uuid { bytes }
+        Uuid(bytes)
     }
 
     /// Creates a v4 Uuid from random bytes (e.g. bytes supplied from `Rand`
@@ -543,8 +538,8 @@ impl Uuid {
     /// assert_eq!(expected_uuid, uuid);
     /// ```
     ///
-    pub fn from_random_bytes(b: UuidBytes) -> Uuid {
-        let mut uuid = Uuid { bytes: b };
+    pub fn from_random_bytes(bytes: UuidBytes) -> Uuid {
+        let mut uuid = Uuid::from_uuid_bytes(bytes);
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Random);
         uuid
@@ -553,11 +548,11 @@ impl Uuid {
     /// Specifies the variant of the UUID structure
     fn set_variant(&mut self, v: UuidVariant) {
         // Octet 8 contains the variant in the most significant 3 bits
-        self.bytes[8] = match v {
-            UuidVariant::NCS => self.bytes[8] & 0x7f, // b0xx...
-            UuidVariant::RFC4122 => (self.bytes[8] & 0x3f) | 0x80, // b10x...
-            UuidVariant::Microsoft => (self.bytes[8] & 0x1f) | 0xc0, // b110...
-            UuidVariant::Future => (self.bytes[8] & 0x1f) | 0xe0, // b111...
+        self.0[8] = match v {
+            UuidVariant::NCS => self.as_bytes()[8] & 0x7f, // b0xx...
+            UuidVariant::RFC4122 => (self.as_bytes()[8] & 0x3f) | 0x80, /* b10x... */
+            UuidVariant::Microsoft => (self.as_bytes()[8] & 0x1f) | 0xc0, /* b110... */
+            UuidVariant::Future => (self.as_bytes()[8] & 0x1f) | 0xe0, /* b111... */
         }
     }
 
@@ -568,7 +563,7 @@ impl Uuid {
     ///
     /// * [Variant Reference](http://tools.ietf.org/html/rfc4122#section-4.1.1)
     pub fn get_variant(&self) -> Option<UuidVariant> {
-        match self.bytes[8] {
+        match self.as_bytes()[8] {
             x if x & 0x80 == 0x00 => Some(UuidVariant::NCS),
             x if x & 0xc0 == 0x80 => Some(UuidVariant::RFC4122),
             x if x & 0xe0 == 0xc0 => Some(UuidVariant::Microsoft),
@@ -579,7 +574,7 @@ impl Uuid {
 
     /// Specifies the version number of the `Uuid`.
     fn set_version(&mut self, v: UuidVersion) {
-        self.bytes[6] = (self.bytes[6] & 0xF) | ((v as u8) << 4);
+        self.0[6] = (self.as_bytes()[6] & 0xF) | ((v as u8) << 4);
     }
 
     /// Returns the version number of the `Uuid`.
@@ -594,14 +589,14 @@ impl Uuid {
     ///
     /// * [Version Reference](http://tools.ietf.org/html/rfc4122#section-4.1.3)
     pub fn get_version_num(&self) -> usize {
-        (self.bytes[6] >> 4) as usize
+        (self.as_bytes()[6] >> 4) as usize
     }
 
     /// Returns the version of the `Uuid`.
     ///
     /// This represents the algorithm used to generate the contents
     pub fn get_version(&self) -> Option<UuidVersion> {
-        let v = self.bytes[6] >> 4;
+        let v = self.as_bytes()[6] >> 4;
         match v {
             0 if self.is_nil() => Some(UuidVersion::Nil),
             1 => Some(UuidVersion::Mac),
@@ -654,17 +649,19 @@ impl Uuid {
     /// );
     /// ```
     pub fn as_fields(&self) -> (u32, u16, u16, &[u8; 8]) {
-        let d1 = u32::from(self.bytes[0]) << 24
-            | u32::from(self.bytes[1]) << 16
-            | u32::from(self.bytes[2]) << 8
-            | u32::from(self.bytes[3]);
+        let d1 = u32::from(self.as_bytes()[0]) << 24
+            | u32::from(self.as_bytes()[1]) << 16
+            | u32::from(self.as_bytes()[2]) << 8
+            | u32::from(self.as_bytes()[3]);
 
-        let d2 = u16::from(self.bytes[4]) << 8 | u16::from(self.bytes[5]);
+        let d2 =
+            u16::from(self.as_bytes()[4]) << 8 | u16::from(self.as_bytes()[5]);
 
-        let d3 = u16::from(self.bytes[6]) << 8 | u16::from(self.bytes[7]);
+        let d3 =
+            u16::from(self.as_bytes()[6]) << 8 | u16::from(self.as_bytes()[7]);
 
         let d4: &[u8; 8] =
-            unsafe { &*(self.bytes[8..16].as_ptr() as *const [u8; 8]) };
+            unsafe { &*(self.as_bytes()[8..16].as_ptr() as *const [u8; 8]) };
         (d1, d2, d3, d4)
     }
 
@@ -689,7 +686,7 @@ impl Uuid {
     /// ```
     #[cfg(feature = "const_fn")]
     pub const fn as_bytes(&self) -> &UuidBytes {
-        &self.bytes
+        &self.0
     }
 
     /// Returns an array of 16 octets containing the UUID data.
@@ -713,7 +710,7 @@ impl Uuid {
     /// ```
     #[cfg(not(feature = "const_fn"))]
     pub fn as_bytes(&self) -> &UuidBytes {
-        &self.bytes
+        &self.0
     }
 
     /// Returns a wrapper which when formatted via `fmt::Display` will format a
@@ -782,17 +779,17 @@ impl Uuid {
             return None;
         }
 
-        let ts: u64 = u64::from(self.bytes[6] & 0x0F) << 56
-            | u64::from(self.bytes[7]) << 48
-            | u64::from(self.bytes[4]) << 40
-            | u64::from(self.bytes[5]) << 32
-            | u64::from(self.bytes[0]) << 24
-            | u64::from(self.bytes[1]) << 16
-            | u64::from(self.bytes[2]) << 8
-            | u64::from(self.bytes[3]);
+        let ts: u64 = u64::from(self.as_bytes()[6] & 0x0F) << 56
+            | u64::from(self.as_bytes()[7]) << 48
+            | u64::from(self.as_bytes()[4]) << 40
+            | u64::from(self.as_bytes()[5]) << 32
+            | u64::from(self.as_bytes()[0]) << 24
+            | u64::from(self.as_bytes()[1]) << 16
+            | u64::from(self.as_bytes()[2]) << 8
+            | u64::from(self.as_bytes()[3]);
 
-        let count: u16 =
-            u16::from(self.bytes[8] & 0x3F) << 8 | u16::from(self.bytes[9]);
+        let count: u16 = u16::from(self.as_bytes()[8] & 0x3F) << 8
+            | u16::from(self.as_bytes()[9]);
 
         Some((ts, count))
     }
@@ -910,7 +907,7 @@ impl Uuid {
 
     /// Tests if the UUID is nil
     pub fn is_nil(&self) -> bool {
-        self.bytes.iter().all(|&b| b == 0)
+        self.as_bytes().iter().all(|&b| b == 0)
     }
 }
 
@@ -922,7 +919,7 @@ impl<'a> fmt::Display for Simple<'a> {
 
 impl<'a> fmt::UpperHex for Simple<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for byte in &self.inner.bytes {
+        for byte in self.inner.as_bytes() {
             write!(f, "{:02X}", byte)?;
         }
         Ok(())
@@ -931,7 +928,7 @@ impl<'a> fmt::UpperHex for Simple<'a> {
 
 impl<'a> fmt::LowerHex for Simple<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for byte in &self.inner.bytes {
+        for byte in self.inner.as_bytes() {
             write!(f, "{:02x}", byte)?;
         }
         Ok(())
@@ -982,7 +979,7 @@ impl<'a> fmt::UpperHex for Hyphenated<'a> {
              {:04X}-\
              {:02X}{:02X}-\
              {:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
-            self.inner.bytes
+            self.inner.as_bytes()
         )
     }
 }
@@ -996,7 +993,7 @@ impl<'a> fmt::LowerHex for Hyphenated<'a> {
              {:04x}-\
              {:02x}{:02x}-\
              {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            self.inner.bytes
+            self.inner.as_bytes()
         )
     }
 }
