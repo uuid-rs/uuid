@@ -474,7 +474,7 @@ impl Uuid {
     /// ];
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
-    /// let uuid = uuid.hyphenated().to_string();
+    /// let uuid = uuid.to_hyphenated().to_string();
     ///
     /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
     ///
