@@ -27,7 +27,7 @@ impl Uuid {
         let buffer = hash.digest().bytes();
         let mut uuid = Uuid::default();
 
-        uuid.bytes.copy_from_slice(&buffer[..16]);
+        uuid.0.copy_from_slice(&buffer[..16]);
         uuid.set_variant(UuidVariant::RFC4122);
         uuid.set_version(UuidVersion::Sha1);
 

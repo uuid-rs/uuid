@@ -66,7 +66,7 @@ impl fmt::LowerHex for super::UuidHyphenated {
              {:04x}-\
              {:02x}{:02x}-\
              {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            self.0.bytes
+            self.0.as_bytes()
         )
     }
 }
@@ -80,14 +80,14 @@ impl<'a> fmt::LowerHex for super::UuidHyphenatedRef<'a> {
              {:04x}-\
              {:02x}{:02x}-\
              {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            self.0.bytes
+            self.0.as_bytes()
         )
     }
 }
 
 impl fmt::LowerHex for super::UuidSimple {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for byte in &self.0.bytes {
+        for byte in self.0.as_bytes() {
             write!(f, "{:02x}", byte)?
         }
 
@@ -97,7 +97,7 @@ impl fmt::LowerHex for super::UuidSimple {
 
 impl<'a> fmt::LowerHex for super::UuidSimpleRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for byte in &self.0.bytes {
+        for byte in self.0.as_bytes() {
             write!(f, "{:02x}", byte)?
         }
 
@@ -115,7 +115,7 @@ impl fmt::LowerHex for super::UuidUrn {
              {:04x}-\
              {:02x}{:02x}-\
              {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            self.0.bytes
+            self.0.as_bytes()
         )
     }
 }
@@ -130,7 +130,7 @@ impl<'a> fmt::LowerHex for super::UuidUrnRef<'a> {
              {:04x}-\
              {:02x}{:02x}-\
              {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            self.0.bytes
+            self.0.as_bytes()
         )
     }
 }
@@ -144,7 +144,7 @@ impl fmt::UpperHex for super::UuidHyphenated {
              {:04X}-\
              {:02X}{:02X}-\
              {:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
-            self.0.bytes
+            self.0.as_bytes()
         )
     }
 }
@@ -158,14 +158,14 @@ impl<'a> fmt::UpperHex for super::UuidHyphenatedRef<'a> {
              {:04X}-\
              {:02X}{:02X}-\
              {:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
-            self.0.bytes
+            self.0.as_bytes()
         )
     }
 }
 
 impl fmt::UpperHex for super::UuidSimple {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for byte in &self.0.bytes {
+        for byte in self.0.as_bytes() {
             write!(f, "{:02X}", byte)?
         }
 
@@ -175,7 +175,7 @@ impl fmt::UpperHex for super::UuidSimple {
 
 impl<'a> fmt::UpperHex for super::UuidSimpleRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for byte in &self.0.bytes {
+        for byte in self.0.as_bytes() {
             write!(f, "{:02X}", byte)?
         }
 
@@ -193,7 +193,7 @@ impl fmt::UpperHex for super::UuidUrn {
              {:04X}-\
              {:02X}{:02X}-\
              {:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
-            self.0.bytes
+            self.0.as_bytes()
         )
     }
 }
@@ -208,7 +208,7 @@ impl<'a> fmt::UpperHex for super::UuidUrnRef<'a> {
              {:04X}-\
              {:02X}{:02X}-\
              {:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
-            self.0.bytes
+            self.0.as_bytes()
         )
     }
 }
