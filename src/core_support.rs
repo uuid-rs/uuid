@@ -31,13 +31,14 @@ impl fmt::Display for UuidVariant {
 
 impl fmt::LowerHex for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        <super::Hyphenated as fmt::LowerHex>::fmt(&self.hyphenated(), f)
+        fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
     }
 }
 
 impl fmt::UpperHex for Uuid {
+    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        <super::Hyphenated as fmt::UpperHex>::fmt(&self.hyphenated(), f)
+        fmt::UpperHex::fmt(&self.to_hyphenated_ref(), f)
     }
 }
 
@@ -50,6 +51,7 @@ impl str::FromStr for Uuid {
 }
 
 impl Default for Uuid {
+    #[inline]
     fn default() -> Self {
         Uuid::nil()
     }
@@ -100,7 +102,7 @@ mod tests {
         let s = uuid.to_string();
         let mut buffer = String::new();
 
-        assert_eq!(s, uuid.hyphenated().to_string());
+        assert_eq!(s, uuid.to_hyphenated().to_string());
 
         check!(buffer, "{}", uuid, 36, |c| c.is_lowercase()
             || c.is_digit(10)

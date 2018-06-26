@@ -74,7 +74,7 @@
 //! fn main() {
 //!     let my_uuid =
 //!         Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
-//!     println!("{}", my_uuid.urn());
+//!     println!("{}", my_uuid.to_urn());
 //! }
 //! ```
 //!
@@ -137,12 +137,12 @@ extern crate slog;
 
 use core::{fmt, str};
 
+pub mod adapter;
 pub mod ns;
 pub mod prelude;
 #[cfg(feature = "v1")]
 pub mod v1;
 
-mod adapter;
 mod core_support;
 #[cfg(feature = "serde")]
 mod serde_support;
@@ -202,24 +202,6 @@ pub enum UuidVariant {
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Uuid(UuidBytes);
 
-/// An adaptor for formatting a `Uuid` as a simple string.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Simple<'a> {
-    inner: &'a Uuid,
-}
-
-/// An adaptor for formatting a `Uuid` as a hyphenated string.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Hyphenated<'a> {
-    inner: &'a Uuid,
-}
-
-/// An adaptor for formatting a `Uuid` as a URN string.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Urn<'a> {
-    inner: &'a Uuid,
-}
-
 /// Error details for string parsing failures.
 // TODO(kinggoesgaming): refactor this into its own module
 // BODY: The parsing error context needs to be improved
@@ -239,8 +221,8 @@ impl fmt::Display for ParseError {
             ParseError::InvalidLength(found) => write!(
                 f,
                 "Invalid length; expecting {} or {} chars, found {}",
-                adapter::UUID_SIMPLE_LENGTH,
-                adapter::UUID_HYPHENATED_LENGTH,
+                adapter::UuidSimple::LENGTH,
+                adapter::UuidHyphenated::LENGTH,
                 found
             ),
             ParseError::InvalidCharacter(found, pos) => write!(
@@ -285,7 +267,7 @@ impl Uuid {
     /// let uuid = Uuid::nil();
     ///
     /// assert_eq!(
-    ///     uuid.hyphenated().to_string(),
+    ///     uuid.to_hyphenated().to_string(),
     ///     "00000000-0000-0000-0000-000000000000"
     /// );
     /// ```
@@ -311,7 +293,7 @@ impl Uuid {
     /// let uuid = Uuid::nil();
     ///
     /// assert_eq!(
-    ///     uuid.hyphenated().to_string(),
+    ///     uuid.to_hyphenated().to_string(),
     ///     "00000000-0000-0000-0000-000000000000"
     /// );
     /// ```
@@ -336,7 +318,7 @@ impl Uuid {
     /// let d4 = [12, 3, 9, 56, 54, 43, 8, 9];
     ///
     /// let uuid = Uuid::from_fields(42, 12, 5, &d4);
-    /// let uuid = uuid.map(|uuid| uuid.hyphenated().to_string());
+    /// let uuid = uuid.map(|uuid| uuid.to_hyphenated().to_string());
     ///
     /// let expected_uuid =
     ///     Ok(String::from("0000002a-000c-0005-0c03-0938362b0809"));
@@ -404,7 +386,7 @@ impl Uuid {
     /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76, 32, 50, 87, 5, 1, 33, 43, 87];
     ///
     /// let uuid = Uuid::from_bytes(&bytes);
-    /// let uuid = uuid.map(|uuid| uuid.hyphenated().to_string());
+    /// let uuid = uuid.map(|uuid| uuid.to_hyphenated().to_string());
     ///
     /// let expected_uuid =
     ///     Ok(String::from("0436430c-2b02-624c-2032-570501212b57"));
@@ -453,7 +435,7 @@ impl Uuid {
     /// ];
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
-    /// let uuid = uuid.hyphenated().to_string();
+    /// let uuid = uuid.to_hyphenated().to_string();
     ///
     /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
     ///
@@ -492,7 +474,7 @@ impl Uuid {
     /// ];
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
-    /// let uuid = uuid.hyphenated().to_string();
+    /// let uuid = uuid.to_hyphenated().to_string();
     ///
     /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
     ///
@@ -531,7 +513,7 @@ impl Uuid {
     ///     62,
     /// ];
     /// let uuid = Uuid::from_random_bytes(bytes);
-    /// let uuid = uuid.hyphenated().to_string();
+    /// let uuid = uuid.to_hyphenated().to_string();
     ///
     /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
     ///
@@ -713,60 +695,6 @@ impl Uuid {
         &self.0
     }
 
-    /// Returns a wrapper which when formatted via `fmt::Display` will format a
-    /// string of 32 hexadecimal digits.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::nil();
-    /// assert_eq!(
-    ///     uuid.simple().to_string(),
-    ///     "00000000000000000000000000000000"
-    /// );
-    /// ```
-    pub fn simple(&self) -> Simple {
-        Simple { inner: self }
-    }
-
-    /// Returns a wrapper which when formatted via `fmt::Display` will format a
-    /// string of hexadecimal digits separated into groups with a hyphen.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::nil();
-    /// assert_eq!(
-    ///     uuid.hyphenated().to_string(),
-    ///     "00000000-0000-0000-0000-000000000000"
-    /// );
-    /// ```
-    pub fn hyphenated(&self) -> Hyphenated {
-        Hyphenated { inner: self }
-    }
-
-    /// Returns a wrapper which when formatted via `fmt::Display` will format a
-    /// string of the UUID as a full URN string.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::nil();
-    /// assert_eq!(
-    ///     uuid.urn().to_string(),
-    ///     "urn:uuid:00000000-0000-0000-0000-000000000000"
-    /// );
-    /// ```
-    pub fn urn(&self) -> Urn {
-        Urn { inner: self }
-    }
-
     /// Returns an Optional Tuple of (u64, u16) representing the timestamp and
     /// counter portion of a V1 UUID.  If the supplied UUID is not V1, this
     /// will return None
@@ -802,12 +730,10 @@ impl Uuid {
     pub fn parse_str(mut input: &str) -> Result<Uuid, ParseError> {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
-        if len == (adapter::UUID_HYPHENATED_LENGTH + 9)
-            && input.starts_with("urn:uuid:")
-        {
+        if len == adapter::UuidUrn::LENGTH && input.starts_with("urn:uuid:") {
             input = &input[9..];
-        } else if len != adapter::UUID_SIMPLE_LENGTH
-            && len != adapter::UUID_HYPHENATED_LENGTH
+        } else if len != adapter::UuidSimple::LENGTH
+            && len != adapter::UuidHyphenated::LENGTH
         {
             return Err(ParseError::InvalidLength(len));
         }
@@ -819,7 +745,7 @@ impl Uuid {
         let mut buffer = [0u8; 16];
 
         for (i_char, chr) in input.bytes().enumerate() {
-            if digit as usize >= adapter::UUID_SIMPLE_LENGTH && group != 4 {
+            if digit as usize >= adapter::UuidSimple::LENGTH && group != 4 {
                 if group == 0 {
                     return Err(ParseError::InvalidLength(len));
                 }
@@ -911,99 +837,6 @@ impl Uuid {
     }
 }
 
-impl<'a> fmt::Display for Simple<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::LowerHex::fmt(self, f)
-    }
-}
-
-impl<'a> fmt::UpperHex for Simple<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for byte in self.inner.as_bytes() {
-            write!(f, "{:02X}", byte)?;
-        }
-        Ok(())
-    }
-}
-
-impl<'a> fmt::LowerHex for Simple<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for byte in self.inner.as_bytes() {
-            write!(f, "{:02x}", byte)?;
-        }
-        Ok(())
-    }
-}
-
-impl<'a> fmt::Display for Hyphenated<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        fmt::LowerHex::fmt(self, f)
-    }
-}
-
-macro_rules! hyphenated_write {
-    ($f:expr, $format:expr, $bytes:expr) => {{
-        let data1 = u32::from($bytes[0]) << 24
-            | u32::from($bytes[1]) << 16
-            | u32::from($bytes[2]) << 8
-            | u32::from($bytes[3]);
-
-        let data2 = u16::from($bytes[4]) << 8 | u16::from($bytes[5]);
-
-        let data3 = u16::from($bytes[6]) << 8 | u16::from($bytes[7]);
-
-        write!(
-            $f,
-            $format,
-            data1,
-            data2,
-            data3,
-            $bytes[8],
-            $bytes[9],
-            $bytes[10],
-            $bytes[11],
-            $bytes[12],
-            $bytes[13],
-            $bytes[14],
-            $bytes[15]
-        )
-    }};
-}
-
-impl<'a> fmt::UpperHex for Hyphenated<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphenated_write!(
-            f,
-            "{:08X}-\
-             {:04X}-\
-             {:04X}-\
-             {:02X}{:02X}-\
-             {:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
-            self.inner.as_bytes()
-        )
-    }
-}
-
-impl<'a> fmt::LowerHex for Hyphenated<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphenated_write!(
-            f,
-            "{:08x}-\
-             {:04x}-\
-             {:04x}-\
-             {:02x}{:02x}-\
-             {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            self.inner.as_bytes()
-        )
-    }
-}
-
-impl<'a> fmt::Display for Urn<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "urn:uuid:{}", self.inner.hyphenated())
-    }
-}
-
 #[cfg(test)]
 mod tests {
     extern crate std;
@@ -1037,19 +870,19 @@ mod tests {
     #[test]
     fn test_predefined_namespaces() {
         assert_eq!(
-            NAMESPACE_DNS.hyphenated().to_string(),
+            NAMESPACE_DNS.to_hyphenated().to_string(),
             "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
         );
         assert_eq!(
-            NAMESPACE_URL.hyphenated().to_string(),
+            NAMESPACE_URL.to_hyphenated().to_string(),
             "6ba7b811-9dad-11d1-80b4-00c04fd430c8"
         );
         assert_eq!(
-            NAMESPACE_OID.hyphenated().to_string(),
+            NAMESPACE_OID.to_hyphenated().to_string(),
             "6ba7b812-9dad-11d1-80b4-00c04fd430c8"
         );
         assert_eq!(
-            NAMESPACE_X500.hyphenated().to_string(),
+            NAMESPACE_X500.to_hyphenated().to_string(),
             "6ba7b814-9dad-11d1-80b4-00c04fd430c8"
         );
     }
@@ -1209,7 +1042,7 @@ mod tests {
     #[test]
     fn test_to_simple_string() {
         let uuid1 = test_util::new();
-        let s = uuid1.simple().to_string();
+        let s = uuid1.to_simple().to_string();
 
         assert_eq!(s.len(), 32);
         assert!(s.chars().all(|c| c.is_digit(16)));
@@ -1218,7 +1051,7 @@ mod tests {
     #[test]
     fn test_to_hyphenated_string() {
         let uuid1 = test_util::new();
-        let s = uuid1.hyphenated().to_string();
+        let s = uuid1.to_hyphenated().to_string();
 
         assert!(s.len() == 36);
         assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
@@ -1243,23 +1076,23 @@ mod tests {
         check!(buf, "{:X}", u, 36, |c| c.is_uppercase()
             || c.is_digit(10)
             || c == '-');
-        check!(buf, "{:X}", u.hyphenated(), 36, |c| c.is_uppercase()
+        check!(buf, "{:X}", u.to_hyphenated(), 36, |c| c.is_uppercase()
             || c.is_digit(10)
             || c == '-');
-        check!(buf, "{:X}", u.simple(), 32, |c| c.is_uppercase()
+        check!(buf, "{:X}", u.to_simple(), 32, |c| c.is_uppercase()
             || c.is_digit(10));
 
-        check!(buf, "{:x}", u.hyphenated(), 36, |c| c.is_lowercase()
+        check!(buf, "{:x}", u.to_hyphenated(), 36, |c| c.is_lowercase()
             || c.is_digit(10)
             || c == '-');
-        check!(buf, "{:x}", u.simple(), 32, |c| c.is_lowercase()
+        check!(buf, "{:x}", u.to_simple(), 32, |c| c.is_lowercase()
             || c.is_digit(10));
     }
 
     #[test]
     fn test_to_urn_string() {
         let uuid1 = test_util::new();
-        let ss = uuid1.urn().to_string();
+        let ss = uuid1.to_urn().to_string();
         let s = &ss[9..];
 
         assert!(ss.starts_with("urn:uuid:"));
@@ -1271,8 +1104,8 @@ mod tests {
     fn test_to_simple_string_matching() {
         let uuid1 = test_util::new();
 
-        let hs = uuid1.hyphenated().to_string();
-        let ss = uuid1.simple().to_string();
+        let hs = uuid1.to_hyphenated().to_string();
+        let ss = uuid1.to_simple().to_string();
 
         let hsn = hs.chars().filter(|&c| c != '-').collect::<String>();
 
@@ -1283,7 +1116,7 @@ mod tests {
     fn test_string_roundtrip() {
         let uuid = test_util::new();
 
-        let hs = uuid.hyphenated().to_string();
+        let hs = uuid.to_hyphenated().to_string();
         let uuid_hs = Uuid::parse_str(&hs).unwrap();
         assert_eq!(uuid_hs, uuid);
 
@@ -1302,7 +1135,7 @@ mod tests {
         let u = Uuid::from_fields(d1, d2, d3, &d4).unwrap();
 
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
-        let result = u.simple().to_string();
+        let result = u.to_simple().to_string();
         assert_eq!(result, expected);
     }
 
@@ -1344,7 +1177,7 @@ mod tests {
         let u = Uuid::from_bytes(&b).unwrap();
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
 
-        assert_eq!(u.simple().to_string(), expected);
+        assert_eq!(u.to_simple().to_string(), expected);
     }
 
     #[test]
@@ -1357,7 +1190,7 @@ mod tests {
         let u = Uuid::from_uuid_bytes(b);
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
 
-        assert_eq!(u.simple().to_string(), expected);
+        assert_eq!(u.to_simple().to_string(), expected);
     }
 
     #[test]
@@ -1393,7 +1226,7 @@ mod tests {
         let u = Uuid::from_random_bytes(b);
         let expected = "a1a2a3a4b1b241c291d2d3d4d5d6d7d8";
 
-        assert_eq!(u.simple().to_string(), expected);
+        assert_eq!(u.to_simple().to_string(), expected);
     }
 
     #[test]

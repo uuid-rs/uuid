@@ -131,7 +131,7 @@ mod tests {
         for &(ref ns, ref name, ref expected) in FIXTURE {
             let uuid = Uuid::new_v5(*ns, *name);
 
-            assert_eq!(uuid.hyphenated().to_string(), *expected)
+            assert_eq!(uuid.to_hyphenated().to_string(), *expected)
         }
     }
 
