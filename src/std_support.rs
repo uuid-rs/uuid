@@ -9,8 +9,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std::error;
 use ParseError;
+use std::error;
 
 impl error::Error for ParseError {
     fn description(&self) -> &str {

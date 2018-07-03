@@ -59,8 +59,8 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```rust
-    /// use uuid::v1::UuidContext;
     /// use uuid::Uuid;
+    /// use uuid::v1::UuidContext;
     ///
     /// let context = UuidContext::new(42);
     /// if let Ok(uuid) =
@@ -145,7 +145,8 @@ impl UuidContext {
 
 impl UuidClockSequence for UuidContext {
     fn generate_sequence(&self, _: u64, _: u32) -> u16 {
-        (self.count.fetch_add(1, atomic::Ordering::SeqCst) & 0xffff) as u16
+        (self.count
+            .fetch_add(1, atomic::Ordering::SeqCst) & 0xffff) as u16
     }
 }
 
@@ -174,7 +175,10 @@ mod tests {
 
             let ts = uuid.to_timestamp().unwrap();
 
-            assert_eq!(ts.0 - 0x01B2_1DD2_1381_4000, 14_968_545_358_129_460);
+            assert_eq!(
+                ts.0 - 0x01B2_1DD2_1381_4000,
+                14_968_545_358_129_460
+            );
             assert_eq!(ts.1, 0);
         };
 
