@@ -11,7 +11,8 @@
 
 macro_rules! hyphenated_write {
     ($f:ident, $format:expr, $bytes:expr) => {{
-        let data1 = u32::from($bytes[0]) << 24 | u32::from($bytes[1]) << 16
+        let data1 = u32::from($bytes[0]) << 24
+            | u32::from($bytes[1]) << 16
             | u32::from($bytes[2]) << 8
             | u32::from($bytes[3]);
 

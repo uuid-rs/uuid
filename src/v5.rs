@@ -59,11 +59,7 @@ mod tests {
                 "rust-lang.org",
                 "c66bbb60-d62e-5f17-a399-3a0bd237c503",
             ),
-            (
-                &NAMESPACE_DNS,
-                "42",
-                "7c411b5e-9d3f-50b5-9c28-62096e41c4ed",
-            ),
+            (&NAMESPACE_DNS, "42", "7c411b5e-9d3f-50b5-9c28-62096e41c4ed"),
             (
                 &NAMESPACE_DNS,
                 "lorem ipsum",
@@ -79,11 +75,7 @@ mod tests {
                 "rust-lang.org",
                 "c48d927f-4122-5413-968c-598b1780e749",
             ),
-            (
-                &NAMESPACE_URL,
-                "42",
-                "5c2b23de-4bad-58ee-a4b3-f22f3b9cfd7d",
-            ),
+            (&NAMESPACE_URL, "42", "5c2b23de-4bad-58ee-a4b3-f22f3b9cfd7d"),
             (
                 &NAMESPACE_URL,
                 "lorem ipsum",
@@ -99,11 +91,7 @@ mod tests {
                 "rust-lang.org",
                 "8ef61ecb-977a-5844-ab0f-c25ef9b8d5d6",
             ),
-            (
-                &NAMESPACE_OID,
-                "42",
-                "ba293c61-ad33-57b9-9671-f3319f57d789",
-            ),
+            (&NAMESPACE_OID, "42", "ba293c61-ad33-57b9-9671-f3319f57d789"),
             (
                 &NAMESPACE_OID,
                 "lorem ipsum",

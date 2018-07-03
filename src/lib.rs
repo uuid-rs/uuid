@@ -108,11 +108,14 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "const_fn", feature(const_fn))]
-#![deny(missing_copy_implementations, missing_debug_implementations,
-        missing_docs)]
-#![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
-       html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-       html_root_url = "https://docs.rs/uuid")]
+#![deny(
+    missing_copy_implementations, missing_debug_implementations, missing_docs
+)]
+#![doc(
+    html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
+    html_favicon_url = "https://www.rust-lang.org/favicon.ico",
+    html_root_url = "https://docs.rs/uuid"
+)]
 
 #[cfg(feature = "byteorder")]
 extern crate byteorder;
@@ -380,8 +383,7 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
-    /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76, 32, 50, 87, 5, 1, 33, 43,
-    /// 87];
+    /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76, 32, 50, 87, 5, 1, 33, 43, 87];
     ///
     /// let uuid = Uuid::from_bytes(&bytes);
     /// let uuid = uuid.map(|uuid| uuid.to_hyphenated().to_string());
@@ -435,8 +437,7 @@ impl Uuid {
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// let uuid = uuid.to_hyphenated().to_string();
     ///
-    /// let expected_uuid =
-    /// String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
+    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -475,8 +476,7 @@ impl Uuid {
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// let uuid = uuid.to_hyphenated().to_string();
     ///
-    /// let expected_uuid =
-    /// String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
+    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -515,8 +515,7 @@ impl Uuid {
     /// let uuid = Uuid::from_random_bytes(bytes);
     /// let uuid = uuid.to_hyphenated().to_string();
     ///
-    /// let expected_uuid =
-    /// String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
+    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -620,8 +619,7 @@ impl Uuid {
     /// let uuid = Uuid::nil();
     /// assert_eq!(uuid.as_fields(), (0, 0, 0, &[0u8; 8]));
     ///
-    /// let uuid =
-    /// Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
     /// assert_eq!(
     ///     uuid.as_fields(),
     ///     (
@@ -663,8 +661,8 @@ impl Uuid {
     /// assert_eq!(
     ///     uuid.as_bytes(),
     ///     &[
-    /// 147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133,
-    /// 200,         34, 168,
+    ///         147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133, 200,
+    ///         34, 168,
     ///     ]
     /// );
     /// ```
@@ -687,8 +685,8 @@ impl Uuid {
     /// assert_eq!(
     ///     uuid.as_bytes(),
     ///     &[
-    /// 147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133,
-    /// 200,         34, 168
+    ///         147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133, 200,
+    ///         34, 168
     ///     ]
     /// );
     /// ```
@@ -701,7 +699,8 @@ impl Uuid {
     /// counter portion of a V1 UUID.  If the supplied UUID is not V1, this
     /// will return None
     pub fn to_timestamp(&self) -> Option<(u64, u16)> {
-        if self.get_version()
+        if self
+            .get_version()
             .map(|v| v != UuidVersion::Mac)
             .unwrap_or(true)
         {
@@ -845,8 +844,9 @@ mod tests {
     use self::std::prelude::v1::*;
     use super::test_util;
 
-    use super::ns::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID,
-                    NAMESPACE_URL};
+    use super::ns::{
+        NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL,
+    };
 
     use prelude::*;
 
@@ -855,7 +855,7 @@ mod tests {
         let nil = Uuid::nil();
         let not_nil = test_util::new();
         let from_bytes = Uuid::from_uuid_bytes([
-            4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87
+            4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87,
         ]);
 
         assert_eq!(from_bytes.get_version(), None);
@@ -910,26 +910,11 @@ mod tests {
         let uuid6 =
             Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
 
-        assert_eq!(
-            uuid1.get_variant().unwrap(),
-            UuidVariant::RFC4122
-        );
-        assert_eq!(
-            uuid2.get_variant().unwrap(),
-            UuidVariant::RFC4122
-        );
-        assert_eq!(
-            uuid3.get_variant().unwrap(),
-            UuidVariant::RFC4122
-        );
-        assert_eq!(
-            uuid4.get_variant().unwrap(),
-            UuidVariant::Microsoft
-        );
-        assert_eq!(
-            uuid5.get_variant().unwrap(),
-            UuidVariant::Microsoft
-        );
+        assert_eq!(uuid1.get_variant().unwrap(), UuidVariant::RFC4122);
+        assert_eq!(uuid2.get_variant().unwrap(), UuidVariant::RFC4122);
+        assert_eq!(uuid3.get_variant().unwrap(), UuidVariant::RFC4122);
+        assert_eq!(uuid4.get_variant().unwrap(), UuidVariant::Microsoft);
+        assert_eq!(uuid5.get_variant().unwrap(), UuidVariant::Microsoft);
         assert_eq!(uuid6.get_variant().unwrap(), UuidVariant::NCS);
     }
 
@@ -1088,42 +1073,20 @@ mod tests {
             };
         }
 
-        check!(
-            buf,
-            "{:X}",
-            u,
-            36,
-            |c| c.is_uppercase() || c.is_digit(10) || c == '-'
-        );
-        check!(
-            buf,
-            "{:X}",
-            u.to_hyphenated(),
-            36,
-            |c| c.is_uppercase() || c.is_digit(10) || c == '-'
-        );
-        check!(
-            buf,
-            "{:X}",
-            u.to_simple(),
-            32,
-            |c| c.is_uppercase() || c.is_digit(10)
-        );
+        check!(buf, "{:X}", u, 36, |c| c.is_uppercase()
+            || c.is_digit(10)
+            || c == '-');
+        check!(buf, "{:X}", u.to_hyphenated(), 36, |c| c.is_uppercase()
+            || c.is_digit(10)
+            || c == '-');
+        check!(buf, "{:X}", u.to_simple(), 32, |c| c.is_uppercase()
+            || c.is_digit(10));
 
-        check!(
-            buf,
-            "{:x}",
-            u.to_hyphenated(),
-            36,
-            |c| c.is_lowercase() || c.is_digit(10) || c == '-'
-        );
-        check!(
-            buf,
-            "{:x}",
-            u.to_simple(),
-            32,
-            |c| c.is_lowercase() || c.is_digit(10)
-        );
+        check!(buf, "{:x}", u.to_hyphenated(), 36, |c| c.is_lowercase()
+            || c.is_digit(10)
+            || c == '-');
+        check!(buf, "{:x}", u.to_simple(), 32, |c| c.is_lowercase()
+            || c.is_digit(10));
     }
 
     #[test]
@@ -1144,9 +1107,7 @@ mod tests {
         let hs = uuid1.to_hyphenated().to_string();
         let ss = uuid1.to_simple().to_string();
 
-        let hsn = hs.chars()
-            .filter(|&c| c != '-')
-            .collect::<String>();
+        let hsn = hs.chars().filter(|&c| c != '-').collect::<String>();
 
         assert_eq!(hsn, ss);
     }
