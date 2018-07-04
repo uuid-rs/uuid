@@ -3,8 +3,7 @@
     the `breaking` branch.  If the pull request is incomplete, prepend the Title with WIP: 
 -->
 
-**I'm submitting a ...**
-<!-- Feature|Bug|Refactor|Enhancement..., -->
+**I'm submitting a(n)** (bug fix|deprecation|feature|refactor|removal|other)
 
 
 # Description
