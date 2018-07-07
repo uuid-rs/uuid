@@ -18,12 +18,10 @@ impl Uuid {
     /// [`NAMESPACE_OID`]: ../ns/const.NAMESPACE_OID.html
     /// [`NAMESPACE_URL`]: ../ns/const.NAMESPACE_URL.html
     /// [`NAMESPACE_X500`]: ../ns/const.NAMESPACE_X500.html
-    #[cfg(feature = "v5")]
     pub fn new_v5<S: ?Sized + AsRef<[u8]>>(namespace: &Uuid, name: &S) -> Uuid {
         Uuid::new_v5_(namespace, name.as_ref())
     }
 
-    #[cfg(feature = "v5")]
     fn new_v5_(namespace: &Uuid, name: &[u8]) -> Uuid {
         let mut hash = sha1::Sha1::new();
 

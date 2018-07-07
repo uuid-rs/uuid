@@ -20,12 +20,10 @@ impl Uuid {
     /// [`NAMESPACE_URL`]: ../ns/const.NAMESPACE_URL.html
     /// [`NAMESPACE_X500`]: ../ns/const.NAMESPACE_X500.html
     /// [`Uuid`]: ../struct.Uuid.html
-    #[cfg(feature = "v3")]
     pub fn new_v3<S: ?Sized + AsRef<[u8]>>(namespace: &Uuid, name: &S) -> Uuid {
         Uuid::new_v3_(namespace, name.as_ref())
     }
 
-    #[cfg(feature = "v3")]
     fn new_v3_(namespace: &Uuid, name: &[u8]) -> Uuid {
         let mut context = md5::Context::new();
 
