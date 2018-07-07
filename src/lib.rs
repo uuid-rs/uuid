@@ -109,7 +109,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "const_fn", feature(const_fn))]
 #![deny(
-    missing_copy_implementations, missing_debug_implementations, missing_docs
+    missing_copy_implementations,
+    missing_debug_implementations,
+    missing_docs
 )]
 #![doc(
     html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
