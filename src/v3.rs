@@ -20,11 +20,7 @@ impl Uuid {
     /// [`NAMESPACE_URL`]: ../ns/const.NAMESPACE_URL.html
     /// [`NAMESPACE_X500`]: ../ns/const.NAMESPACE_X500.html
     /// [`Uuid`]: ../struct.Uuid.html
-    pub fn new_v3<S: ?Sized + AsRef<[u8]>>(namespace: &Uuid, name: &S) -> Uuid {
-        Uuid::new_v3_(namespace, name.as_ref())
-    }
-
-    fn new_v3_(namespace: &Uuid, name: &[u8]) -> Uuid {
+    pub fn new_v3(namespace: &Uuid, name: &[u8]) -> Uuid {
         let mut context = md5::Context::new();
 
         context.consume(namespace.as_bytes());
@@ -120,7 +116,7 @@ mod tests {
     #[test]
     fn test_new() {
         for &(ref ns, ref name, _) in FIXTURE {
-            let uuid = Uuid::new_v3(*ns, *name);
+            let uuid = Uuid::new_v3(*ns, name.as_bytes());
             assert_eq!(uuid.get_version().unwrap(), UuidVersion::Md5);
             assert_eq!(uuid.get_variant().unwrap(), UuidVariant::RFC4122);
         }
@@ -129,7 +125,7 @@ mod tests {
     #[test]
     fn test_to_hyphenated_string() {
         for &(ref ns, ref name, ref expected) in FIXTURE {
-            let uuid = Uuid::new_v3(*ns, *name);
+            let uuid = Uuid::new_v3(*ns, name.as_bytes());
             assert_eq!(uuid.to_hyphenated().to_string(), *expected);
         }
     }

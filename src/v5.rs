@@ -18,11 +18,7 @@ impl Uuid {
     /// [`NAMESPACE_OID`]: ../ns/const.NAMESPACE_OID.html
     /// [`NAMESPACE_URL`]: ../ns/const.NAMESPACE_URL.html
     /// [`NAMESPACE_X500`]: ../ns/const.NAMESPACE_X500.html
-    pub fn new_v5<S: ?Sized + AsRef<[u8]>>(namespace: &Uuid, name: &S) -> Uuid {
-        Uuid::new_v5_(namespace, name.as_ref())
-    }
-
-    fn new_v5_(namespace: &Uuid, name: &[u8]) -> Uuid {
+    pub fn new_v5(namespace: &Uuid, name: &[u8]) -> Uuid {
         let mut hash = sha1::Sha1::new();
 
         hash.update(namespace.as_bytes());
@@ -123,7 +119,7 @@ mod tests {
         let uuid = {
             use ns;
 
-            Uuid::new_v5(&ns::NAMESPACE_DNS, "rust-lang.org")
+            Uuid::new_v5(&ns::NAMESPACE_DNS, "rust-lang.org".as_bytes())
         };
 
         assert_eq!(uuid.get_version(), Some(UuidVersion::Sha1));
@@ -133,7 +129,7 @@ mod tests {
     #[test]
     fn test_hyphenated() {
         for &(ref ns, ref name, ref expected) in FIXTURE {
-            let uuid = Uuid::new_v5(*ns, *name);
+            let uuid = Uuid::new_v5(*ns, name.as_bytes());
 
             assert_eq!(uuid.to_hyphenated().to_string(), *expected)
         }
@@ -142,7 +138,7 @@ mod tests {
     #[test]
     fn test_new() {
         for &(ref ns, ref name, ref u) in FIXTURE {
-            let uuid = Uuid::new_v5(*ns, *name);
+            let uuid = Uuid::new_v5(*ns, name.as_bytes());
 
             assert_eq!(uuid.get_variant(), Some(UuidVariant::RFC4122));
             assert_eq!(uuid.get_version(), Some(UuidVersion::Sha1));

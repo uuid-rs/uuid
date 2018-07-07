@@ -890,7 +890,7 @@ mod tests {
     #[cfg(feature = "v3")]
     #[test]
     fn test_get_version_v3() {
-        let uuid = Uuid::new_v3(&NAMESPACE_DNS, "rust-lang.org");
+        let uuid = Uuid::new_v3(&NAMESPACE_DNS, "rust-lang.org".as_bytes());
 
         assert_eq!(uuid.get_version().unwrap(), UuidVersion::Md5);
         assert_eq!(uuid.get_version_num(), 3);
