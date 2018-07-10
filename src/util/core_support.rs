@@ -17,9 +17,9 @@ where
     T: AsRef<[usize]> + fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
+        match *self {
             util::UuidLength::Exact(v) => write!(f, "{}", v),
-            util::UuidLength::OneOf(v) => write!(f, "any one of {:?}", v),
+            util::UuidLength::OneOf(ref v) => write!(f, "any one of {:?}", v),
             util::UuidLength::Range { max, min } => {
                 write!(f, "{}..{}", min, max)
             }
