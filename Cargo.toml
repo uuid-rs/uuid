@@ -64,11 +64,6 @@ v3 = ["md5", "rand"]
 v4 = ["rand"]
 v5 = ["sha1", "rand"]
 
-# deprecated
-#------------------------
-# Use `"std"` instead
-use_std = ["std"]
-
 # since rust 1.26.0
 u128 = ["byteorder"]
 
