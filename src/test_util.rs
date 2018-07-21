@@ -9,7 +9,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use prelude::*;
+use crate::prelude::*;
 
 pub fn new() -> Uuid {
     Uuid::from_bytes([

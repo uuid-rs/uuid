@@ -10,7 +10,7 @@
 // except according to those terms.
 
 use core::fmt;
-use prelude::*;
+use crate::prelude::*;
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 impl Serialize for Uuid {
@@ -89,7 +89,7 @@ impl<'de> Deserialize<'de> for Uuid {
 mod tests {
     use serde_test;
 
-    use prelude::*;
+    use crate::prelude::*;
 
     #[test]
     fn test_serialize_readable() {

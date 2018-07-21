@@ -9,7 +9,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use prelude::*;
+use crate::prelude::*;
 use slog;
 
 impl slog::Value for Uuid {
@@ -30,7 +30,7 @@ mod tests {
     fn test_slog_kv() {
         use slog;
         use slog::Drain;
-        use test_util;
+        use crate::test_util;
 
         let root = slog::Logger::root(slog::Discard.fuse(), o!());
         let u1 = test_util::new();

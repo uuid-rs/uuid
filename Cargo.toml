@@ -1,3 +1,4 @@
+cargo-features = ["edition"]
 [package]
 authors = [
     "Ashley Mannix<ashleymannix@live.com.au>",
@@ -19,6 +20,8 @@ name = "uuid"
 readme = "README.md"
 repository = "https://github.com/uuid-rs/uuid"
 version = "0.6.5"
+edition = '2018'
+
 
 [package.metadata.docs.rs]
 all-features = true
