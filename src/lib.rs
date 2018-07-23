@@ -416,7 +416,7 @@ impl Uuid {
         let len = d4.len();
 
         if len != D4_LEN {
-            return Err(UuidError::new(D4_LEN, len))
+            return Err(UuidError::new(D4_LEN, len));
         }
 
         Ok(Uuid::from_uuid_bytes([
@@ -471,7 +471,7 @@ impl Uuid {
     /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76];
     ///
     /// let uuid = Uuid::from_bytes(&bytes);
-    /// 
+    ///
     /// let expected_uuid = Err(uuid::UuidError::new(16, 8));
     ///
     /// assert_eq!(expected_uuid, uuid);
@@ -482,7 +482,7 @@ impl Uuid {
         let len = b.len();
 
         if len != BYTES_LEN {
-            return Err(UuidError::new(BYTES_LEN, len))
+            return Err(UuidError::new(BYTES_LEN, len));
         }
 
         let mut bytes: UuidBytes = [0; 16];

@@ -89,10 +89,10 @@ impl Uuid {
         T: UuidClockSequence,
     {
         const NODE_ID_LEN: usize = 6;
-        
+
         let len = node_id.len();
         if len != NODE_ID_LEN {
-            return Err(::UuidError::new(NODE_ID_LEN, len))
+            return Err(::UuidError::new(NODE_ID_LEN, len));
         }
 
         let time_low;
