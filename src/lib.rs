@@ -167,6 +167,20 @@ mod v5;
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type UuidBytes = [u8; 16];
 
+/// The error that can occur when creating a [`Uuid`].
+///
+/// [`Uuid`]: struct.Uuid.html
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum UuidError {
+    /// Invalid number of bytes.
+    InvalidLength {
+        /// The expected number of bytes.
+        expected: usize,
+        /// The number of bytes found.
+        found: usize,
+    },
+}
+
 /// The version of the UUID, denoting the generating algorithm.
 #[derive(Debug, PartialEq, Copy, Clone)]
 #[repr(C)]
@@ -332,14 +346,16 @@ impl Uuid {
     /// An invalid length:
     ///
     /// ```
-    /// use uuid::ParseError;
-    /// use uuid::Uuid;
+    /// use uuid::prelude::*;
     ///
     /// let d4 = [12];
     ///
-    /// let uuid = Uuid::from_fields(42, 12, 5, &d4);
+    /// let uuid = uuid::Uuid::from_fields(42, 12, 5, &d4);
     ///
-    /// let expected_uuid = Err(ParseError::InvalidLength(1));
+    /// let expected_uuid = Err(uuid::UuidError::InvalidLength {
+    ///     expected: 8,
+    ///     found: d4.len(),
+    /// });
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -348,9 +364,16 @@ impl Uuid {
         d2: u16,
         d3: u16,
         d4: &[u8],
-    ) -> Result<Uuid, ParseError> {
-        if d4.len() != 8 {
-            return Err(ParseError::InvalidLength(d4.len()));
+    ) -> Result<Uuid, UuidError> {
+        const D4_LEN: usize = 8;
+
+        let len = d4.len();
+
+        if len != D4_LEN {
+            return Err(UuidError::InvalidLength {
+                expected: D4_LEN,
+                found: len, 
+            });
         }
 
         Ok(Uuid::from_uuid_bytes([
@@ -400,21 +423,29 @@ impl Uuid {
     /// An incorrect number of bytes:
     ///
     /// ```
-    /// use uuid::ParseError;
-    /// use uuid::Uuid;
+    /// use uuid::prelude::*;
     ///
     /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76];
     ///
     /// let uuid = Uuid::from_bytes(&bytes);
     ///
-    /// let expected_uuid = Err(ParseError::InvalidLength(8));
+    /// let expected_uuid = Err(uuid::UuidError::InvalidLength {
+    ///     expected: 16,
+    ///     found: 8
+    /// });
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
-    pub fn from_bytes(b: &[u8]) -> Result<Uuid, ParseError> {
+    pub fn from_bytes(b: &[u8]) -> Result<Uuid, UuidError> {
+        const BYTES_LEN: usize = 16;
+
         let len = b.len();
-        if len != 16 {
-            return Err(ParseError::InvalidLength(len));
+
+        if len != BYTES_LEN {
+            return Err(UuidError::InvalidLength {
+                expected: BYTES_LEN,
+                found: len,
+            });
         }
 
         let mut bytes: UuidBytes = [0; 16];

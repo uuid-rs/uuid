@@ -84,12 +84,18 @@ impl Uuid {
         seconds: u64,
         nano_seconds: u32,
         node_id: &[u8],
-    ) -> Result<Self, super::ParseError>
+    ) -> Result<Self, ::UuidError>
     where
         T: UuidClockSequence,
     {
-        if node_id.len() != 6 {
-            return Err(super::ParseError::InvalidLength(node_id.len()));
+        const NODE_ID_LEN: usize = 6;
+        
+        let len = node_id.len();
+        if len != NODE_ID_LEN {
+            return Err(::UuidError::InvalidLength {
+                expected: NODE_ID_LEN,
+                found: len,
+            })
         }
 
         let time_low;
