@@ -17,3 +17,9 @@ impl error::Error for ParseError {
         "UUID parse error"
     }
 }
+
+impl error::Error for ::UuidError {
+    fn description(&self) -> &str {
+        "Uuid error"
+    }
+}
