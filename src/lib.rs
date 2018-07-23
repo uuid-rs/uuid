@@ -401,10 +401,7 @@ impl Uuid {
     ///
     /// let uuid = uuid::Uuid::from_fields(42, 12, 5, &d4);
     ///
-    /// let expected_uuid = Err(uuid::UuidError::InvalidLength {
-    ///     expected: 8,
-    ///     found: d4.len(),
-    /// });
+    /// let expected_uuid = Err(uuid::UuidError::new(8, d4.len()));
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -474,11 +471,8 @@ impl Uuid {
     /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76];
     ///
     /// let uuid = Uuid::from_bytes(&bytes);
-    ///
-    /// let expected_uuid = Err(uuid::UuidError::InvalidLength {
-    ///     expected: 16,
-    ///     found: 8
-    /// });
+    /// 
+    /// let expected_uuid = Err(uuid::UuidError::new(16, 8));
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
