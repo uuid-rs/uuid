@@ -171,14 +171,9 @@ pub type UuidBytes = [u8; 16];
 ///
 /// [`Uuid`]: struct.Uuid.html
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum UuidError {
-    /// Invalid number of bytes.
-    InvalidLength {
-        /// The expected number of bytes.
-        expected: usize,
-        /// The number of bytes found.
-        found: usize,
-    },
+pub struct UuidError {
+    expected: usize,
+    found: usize,
 }
 
 /// The version of the UUID, denoting the generating algorithm.
@@ -265,6 +260,60 @@ impl fmt::Display for ParseError {
 const GROUP_LENS: [u8; 5] = [8, 4, 4, 4, 12];
 // Accumulated length of each hyphenated group in hex digits.
 const ACC_GROUP_LENS: [u8; 5] = [8, 12, 16, 20, 32];
+
+impl UuidError {
+    /// The expected number of bytes.
+    #[cfg(feature = "const_fn")]
+    #[inline]
+    pub const fn expected(&self) -> usize {
+        self.expected
+    }
+
+    /// The expected number of bytes.
+    #[cfg(not(feature = "const_fn"))]
+    #[inline]
+    pub fn expected(&self) -> usize {
+        self.expected
+    }
+
+    /// The number of bytes found.
+    #[cfg(feature = "const_fn")]
+    #[inline]
+    pub const fn found(&self) -> usize {
+        self.found
+    }
+
+    /// The number of bytes found.
+    #[cfg(not(feature = "const_fn"))]
+    #[inline]
+    pub fn found(&self) -> usize {
+        self.found
+    }
+
+    /// Create a new [`UuidError`].
+    ///
+    /// [`UuidError`]: struct.UuidError.html
+    #[cfg(feature = "const_fn")]
+    #[inline]
+    pub const fn new(expected: usize, found: usize) -> Self {
+        UuidError {
+            expected: expected,
+            found: found,
+        }
+    }
+
+    /// Create a new [`UuidError`].
+    ///
+    /// [`UuidError`]: struct.UuidError.html
+    #[cfg(not(feature = "const_fn"))]
+    #[inline]
+    pub fn new(expected: usize, found: usize) -> Self {
+        UuidError {
+            expected: expected,
+            found: found,
+        }
+    }
+}
 
 impl Uuid {
     /// The 'nil UUID'.
@@ -370,10 +419,7 @@ impl Uuid {
         let len = d4.len();
 
         if len != D4_LEN {
-            return Err(UuidError::InvalidLength {
-                expected: D4_LEN,
-                found: len, 
-            });
+            return Err(UuidError::new(D4_LEN, len))
         }
 
         Ok(Uuid::from_uuid_bytes([
@@ -442,10 +488,7 @@ impl Uuid {
         let len = b.len();
 
         if len != BYTES_LEN {
-            return Err(UuidError::InvalidLength {
-                expected: BYTES_LEN,
-                found: len,
-            });
+            return Err(UuidError::new(BYTES_LEN, len))
         }
 
         let mut bytes: UuidBytes = [0; 16];

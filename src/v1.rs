@@ -92,10 +92,7 @@ impl Uuid {
         
         let len = node_id.len();
         if len != NODE_ID_LEN {
-            return Err(::UuidError::InvalidLength {
-                expected: NODE_ID_LEN,
-                found: len,
-            })
+            return Err(::UuidError::new(NODE_ID_LEN, len))
         }
 
         let time_low;
