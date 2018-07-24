@@ -14,10 +14,10 @@ impl Uuid {
     /// Note that usage of this method requires the `v5` feature of this crate
     /// to be enabled.
     ///
-    /// [`NAMESPACE_DNS`]: ../ns/const.NAMESPACE_DNS.html
-    /// [`NAMESPACE_OID`]: ../ns/const.NAMESPACE_OID.html
-    /// [`NAMESPACE_URL`]: ../ns/const.NAMESPACE_URL.html
-    /// [`NAMESPACE_X500`]: ../ns/const.NAMESPACE_X500.html
+    /// [`NAMESPACE_DNS`]: struct.Uuid.html#associatedconst.NAMESPACE_DNS
+    /// [`NAMESPACE_OID`]: struct.Uuid.html#associatedconst.NAMESPACE_OID
+    /// [`NAMESPACE_URL`]: struct.Uuid.html#associatedconst.NAMESPACE_URL
+    /// [`NAMESPACE_X500`]: struct.Uuid.html#associatedconst.NAMESPACE_X500
     pub fn new_v5(namespace: &Uuid, name: &[u8]) -> Uuid {
         let mut hash = sha1::Sha1::new();
 
