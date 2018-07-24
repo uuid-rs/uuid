@@ -125,7 +125,7 @@ mod tests {
     #[test]
     fn test_get_version() {
         let uuid =
-            { Uuid::new_v5(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes()) };
+            Uuid::new_v5(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
 
         assert_eq!(uuid.get_version(), Some(UuidVersion::Sha1));
         assert_eq!(uuid.get_version_num(), 5);
