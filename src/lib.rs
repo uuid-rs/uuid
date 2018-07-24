@@ -140,7 +140,6 @@ extern crate slog;
 use core::{fmt, str};
 
 pub mod adapter;
-pub mod ns;
 pub mod prelude;
 pub mod util;
 #[cfg(feature = "v1")]
@@ -316,6 +315,38 @@ impl UuidError {
 }
 
 impl Uuid {
+    /// [`Uuid`] namespace for Domain Name System (DNS).
+    ///
+    /// [`Uuid`]: struct.Uuid.html
+    pub const NAMESPACE_DNS: Self = Uuid([
+        0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0,
+        0x4f, 0xd4, 0x30, 0xc8,
+    ]);
+
+    /// [`Uuid`] namespace for ISO Object Identifiers (OIDs).
+    ///
+    /// [`Uuid`]: struct.Uuid.html
+    pub const NAMESPACE_OID: Self = Uuid([
+        0x6b, 0xa7, 0xb8, 0x12, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0,
+        0x4f, 0xd4, 0x30, 0xc8,
+    ]);
+
+    /// [`Uuid`] namespace for Uniform Resource Locators (URLs).
+    ///
+    /// [`Uuid`]: struct.Uuid.html
+    pub const NAMESPACE_URL: Self = Uuid([
+        0x6b, 0xa7, 0xb8, 0x11, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0,
+        0x4f, 0xd4, 0x30, 0xc8,
+    ]);
+
+    /// [`Uuid`] namespace for X.500 Distinguished Names (DNs).
+    ///
+    /// [`Uuid`]: struct.Uuid.html
+    pub const NAMESPACE_X500: Self = Uuid([
+        0x6b, 0xa7, 0xb8, 0x14, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0,
+        0x4f, 0xd4, 0x30, 0xc8,
+    ]);
+
     /// The 'nil UUID'.
     ///
     /// The nil UUID is special form of UUID that is specified to have all
@@ -915,10 +946,6 @@ mod tests {
     use self::std::prelude::v1::*;
     use super::test_util;
 
-    use super::ns::{
-        NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL,
-    };
-
     use prelude::*;
 
     #[test]
@@ -941,19 +968,19 @@ mod tests {
     #[test]
     fn test_predefined_namespaces() {
         assert_eq!(
-            NAMESPACE_DNS.to_hyphenated().to_string(),
+            Uuid::NAMESPACE_DNS.to_hyphenated().to_string(),
             "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
         );
         assert_eq!(
-            NAMESPACE_URL.to_hyphenated().to_string(),
+            Uuid::NAMESPACE_URL.to_hyphenated().to_string(),
             "6ba7b811-9dad-11d1-80b4-00c04fd430c8"
         );
         assert_eq!(
-            NAMESPACE_OID.to_hyphenated().to_string(),
+            Uuid::NAMESPACE_OID.to_hyphenated().to_string(),
             "6ba7b812-9dad-11d1-80b4-00c04fd430c8"
         );
         assert_eq!(
-            NAMESPACE_X500.to_hyphenated().to_string(),
+            Uuid::NAMESPACE_X500.to_hyphenated().to_string(),
             "6ba7b814-9dad-11d1-80b4-00c04fd430c8"
         );
     }
@@ -961,7 +988,8 @@ mod tests {
     #[cfg(feature = "v3")]
     #[test]
     fn test_get_version_v3() {
-        let uuid = Uuid::new_v3(&NAMESPACE_DNS, "rust-lang.org".as_bytes());
+        let uuid =
+            Uuid::new_v3(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
 
         assert_eq!(uuid.get_version().unwrap(), UuidVersion::Md5);
         assert_eq!(uuid.get_version_num(), 3);
