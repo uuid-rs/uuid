@@ -29,6 +29,17 @@ impl fmt::Display for UuidVariant {
     }
 }
 
+impl fmt::Display for ::UuidError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "invalid bytes length: expected {}, found {}",
+            self.expected(),
+            self.found()
+        )
+    }
+}
+
 impl fmt::LowerHex for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
