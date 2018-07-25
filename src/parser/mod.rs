@@ -19,6 +19,22 @@ mod core_support;
 #[cfg(feature = "std")]
 mod std_support;
 
+/// The expected value.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum Expected<T> where T: AsRef<[usize]> + fmt::Debug {
+    /// Expected any one of the given values.
+    Any(T),
+    /// Expected the given value.
+    Exact(usize),
+    /// Expected any values in the given range.
+    Range {
+        /// The minimum expected value.
+        min: usize,
+        /// The maximum expected value.
+        max: usize,
+    }
+}
+
 /// An error that can occur while parsing a [`Uuid`] string.
 ///
 /// [`Uuid`]: ../struct.Uuid.html
