@@ -140,8 +140,8 @@ extern crate slog;
 use core::{fmt, str};
 
 pub mod adapter;
+pub mod parser;
 pub mod prelude;
-pub mod util;
 #[cfg(feature = "v1")]
 pub mod v1;
 
