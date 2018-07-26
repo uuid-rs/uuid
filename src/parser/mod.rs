@@ -106,7 +106,7 @@ pub fn len_matches(len: usize, crit: usize) -> bool {
 pub fn len_matches_any(len: usize, crits: &[usize]) -> bool {
     for crit in crits {
         if let true = len_matches(len, *crit) {
-            return true
+            return true;
         }
     }
 
