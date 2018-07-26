@@ -832,11 +832,18 @@ impl Uuid {
     pub fn parse_str(mut input: &str) -> Result<Uuid, ParseError> {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
-        if len == adapter::UuidUrn::LENGTH && input.starts_with("urn:uuid:") {
-            input = &input[9..];
-        } else if len != adapter::UuidSimple::LENGTH
-            && len != adapter::UuidHyphenated::LENGTH
+
+        if parser::len_matches(len, adapter::UuidUrn::LENGTH)
+            && input.starts_with("urn:uuid:")
         {
+            input = &input[9..];
+        } else if !parser::len_matches_any(
+            len,
+            &[
+                adapter::UuidHyphenated::LENGTH,
+                adapter::UuidHyphenated::LENGTH,
+            ],
+        ) {
             return Err(ParseError::InvalidLength(len));
         }
 

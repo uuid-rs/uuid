@@ -21,7 +21,10 @@ mod std_support;
 
 /// The expected value.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum Expected<T> where T: AsRef<[usize]> + fmt::Debug {
+pub enum Expected<T>
+where
+    T: AsRef<[usize]> + fmt::Debug,
+{
     /// Expected any one of the given values.
     Any(T),
     /// Expected the given value.
@@ -32,7 +35,7 @@ pub enum Expected<T> where T: AsRef<[usize]> + fmt::Debug {
         min: usize,
         /// The maximum expected value.
         max: usize,
-    }
+    },
 }
 
 /// An error that can occur while parsing a [`Uuid`] string.
@@ -89,4 +92,23 @@ where
         /// The invalid length found.
         found: usize,
     },
+}
+
+/// Check if the length matches the given criterion length.
+// TODO: Find another way handling this.
+// BODY: This is not idiomatic.
+#[inline]
+pub fn len_matches(len: usize, crit: usize) -> bool {
+    len == crit
+}
+
+/// Check if the length matches any of the given criteria lengths.
+pub fn len_matches_any(len: usize, crits: &[usize]) -> bool {
+    for crit in crits {
+        if let true = len_matches(len, *crit) {
+            return true
+        }
+    }
+
+    false
 }
