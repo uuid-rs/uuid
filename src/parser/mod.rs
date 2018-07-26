@@ -110,18 +110,10 @@ where
     }
 }
 
-/// Check if the length matches the given criterion length.
-// TODO: Find another way handling this.
-// BODY: This is not idiomatic.
-#[inline]
-pub fn len_matches(len: usize, crit: usize) -> bool {
-    len == crit
-}
-
 /// Check if the length matches any of the given criteria lengths.
 pub fn len_matches_any(len: usize, crits: &[usize]) -> bool {
     for crit in crits {
-        if let true = len_matches(len, *crit) {
+        if len == *crit {
             return true;
         }
     }
@@ -133,10 +125,8 @@ pub fn len_matches_any(len: usize, crits: &[usize]) -> bool {
 /// (inclusive).
 pub fn len_matches_range(len: usize, min: usize, max: usize) -> bool {
     for crit in min..(max + 1) {
-        if len_matches(len, crit) {
-            if len_matches(len, crit) {
+        if len == crit {
                 return true;
-            }
         }
     }
 

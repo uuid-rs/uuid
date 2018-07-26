@@ -833,7 +833,7 @@ impl Uuid {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
 
-        if parser::len_matches(len, adapter::UuidUrn::LENGTH)
+        if len == adapter::UuidUrn::LENGTH
             && input.starts_with("urn:uuid:")
         {
             input = &input[9..];
