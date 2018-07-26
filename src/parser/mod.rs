@@ -65,7 +65,7 @@ where
         // TODO: explain multiple segment count.
         // BODY: Parsers can expect a range of Uuid segment count.
         //       This needs to be expanded on.
-        expected: T,
+        expected: Expected<T>,
         /// The number of segments found.
         found: usize,
     },
@@ -74,7 +74,7 @@ where
     /// [`Uuid`]: ../struct.Uuid.html
     InvalidGroupLength {
         /// The expected length of the segment.
-        expected: T,
+        expected: Expected<T>,
         /// The length of segment found.
         found: usize,
         /// The segment with invalid length.
@@ -88,7 +88,7 @@ where
         // TODO: explain multiple lengths.
         // BODY: Parsers can expect a range of Uuid lenghts.
         //       This needs to be expanded on.
-        expected: T,
+        expected: Expected<T>,
         /// The invalid length found.
         found: usize,
     },
