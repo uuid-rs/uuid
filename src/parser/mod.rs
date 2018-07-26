@@ -126,9 +126,15 @@ pub fn len_matches_any(len: usize, crits: &[usize]) -> bool {
 pub fn len_matches_range(len: usize, min: usize, max: usize) -> bool {
     for crit in min..(max + 1) {
         if len == crit {
-                return true;
+            return true;
         }
     }
 
     false
 }
+
+// Accumulated length of each hyphenated group in hex digits.
+pub(crate) const ACC_GROUP_LENS: [usize; 5] = [8, 12, 16, 20, 32];
+
+// Length of each hyphenated group in hex digits.
+pub(crate) const GROUP_LENS: [usize; 5] = [8, 4, 4, 4, 12];

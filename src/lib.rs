@@ -255,11 +255,6 @@ impl fmt::Display for ParseError {
     }
 }
 
-// Length of each hyphenated group in hex digits.
-const GROUP_LENS: [u8; 5] = [8, 4, 4, 4, 12];
-// Accumulated length of each hyphenated group in hex digits.
-const ACC_GROUP_LENS: [u8; 5] = [8, 12, 16, 20, 32];
-
 impl UuidError {
     /// The expected number of bytes.
     #[cfg(feature = "const_fn")]
@@ -833,9 +828,7 @@ impl Uuid {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
 
-        if len == adapter::UuidUrn::LENGTH
-            && input.starts_with("urn:uuid:")
-        {
+        if len == adapter::UuidUrn::LENGTH && input.starts_with("urn:uuid:") {
             input = &input[9..];
         } else if !parser::len_matches_any(
             len,
@@ -867,18 +860,27 @@ impl Uuid {
                     b'A'...b'F' => acc = chr - b'A' + 10,
                     // Found a group delimiter
                     b'-' => {
-                        if ACC_GROUP_LENS[group] != digit {
+                        // TODO: remove the u8 cast
+                        // BODY: this only needed until we switch to
+                        //       UuidParseError
+                        if parser::ACC_GROUP_LENS[group] as u8 != digit {
                             // Calculate how many digits this group consists of
                             // in the input.
                             let found = if group > 0 {
-                                digit - ACC_GROUP_LENS[group - 1]
+                                // TODO: remove the u8 cast
+                                // BODY: this only needed until we switch to
+                                //       UuidParseError
+                                digit - parser::ACC_GROUP_LENS[group - 1] as u8
                             } else {
                                 digit
                             };
                             return Err(ParseError::InvalidGroupLength(
                                 group,
                                 found as usize,
-                                GROUP_LENS[group],
+                                // TODO: remove the u8 cast
+                                // BODY: this only needed until we switch to
+                                //       UuidParseError
+                                parser::GROUP_LENS[group] as u8,
                             ));
                         }
                         // Next group, decrement digit, it is incremented again
@@ -903,14 +905,20 @@ impl Uuid {
                     b'-' => {
                         // The byte isn't complete yet.
                         let found = if group > 0 {
-                            digit - ACC_GROUP_LENS[group - 1]
+                            // TODO: remove the u8 cast
+                            // BODY: this only needed until we switch to
+                            //       UuidParseError
+                            digit - parser::ACC_GROUP_LENS[group - 1] as u8
                         } else {
                             digit
                         };
                         return Err(ParseError::InvalidGroupLength(
                             group,
                             found as usize,
-                            GROUP_LENS[group],
+                            // TODO: remove the u8 cast
+                            // BODY: this only needed until we switch to
+                            //       UuidParseError
+                            parser::GROUP_LENS[group] as u8,
                         ));
                     }
                     _ => {
@@ -926,11 +934,17 @@ impl Uuid {
         }
 
         // Now check the last group.
-        if ACC_GROUP_LENS[4] != digit {
+        // TODO: remove the u8 cast
+        // BODY: this only needed until we switch to
+        //       UuidParseError
+        if parser::ACC_GROUP_LENS[4] as u8 != digit {
             return Err(ParseError::InvalidGroupLength(
                 group,
-                (digit - ACC_GROUP_LENS[3]) as usize,
-                GROUP_LENS[4],
+                (digit as usize - parser::ACC_GROUP_LENS[3]),
+                // TODO: remove the u8 cast
+                // BODY: this only needed until we switch to
+                //       UuidParseError
+                parser::GROUP_LENS[4] as u8,
             ));
         }
 
