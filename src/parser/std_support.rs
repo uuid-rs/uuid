@@ -18,6 +18,6 @@ where
     T: AsRef<[usize]> + fmt::Debug,
 {
     fn description(&self) -> &str {
-        "uuid parse error"
+        self._description()
     }
 }

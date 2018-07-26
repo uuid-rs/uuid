@@ -94,6 +94,20 @@ where
     },
 }
 
+impl<'chars, T> UuidParseError<'chars, T>
+where
+    T: AsRef<[usize]> + fmt::Debug
+{
+    fn _description(&self) -> &str {
+        match *self {
+            UuidParseError::InvalidCharacter {..} => "invalid character",
+            UuidParseError::InvalidGroupCount {..} => "invalid number of groups",
+            UuidParseError::InvalidGroupLength {..} => "invalid group length",
+            UuidParseError::InvalidLength {..} => "invalid length"
+        }
+    }
+}
+
 /// Check if the length matches the given criterion length.
 // TODO: Find another way handling this.
 // BODY: This is not idiomatic.

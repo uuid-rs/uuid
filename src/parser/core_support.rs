@@ -17,6 +17,8 @@ where
     T: AsRef<[usize]> + fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}: ", self._description());
+
         match *self {
             parser::UuidParseError::InvalidCharacter {
                 expected,
@@ -24,7 +26,7 @@ where
                 index,
             } => write!(
                 f,
-                "invalid character; expected {:?}, found {} at {}",
+                "expected {:?}, found {} at {}",
                 expected.chars(),
                 found,
                 index
@@ -34,7 +36,7 @@ where
                 found,
             } => write!(
                 f,
-                "invalid number of group segments; expected {:?}, found {}",
+                "expected {:?}, found {}",
                 expected, found
             ),
             parser::UuidParseError::InvalidGroupLength {
@@ -43,7 +45,7 @@ where
                 group,
             } => write!(
                 f,
-                "invalid group segment length; expected {:?}, found {} in group {}", 
+                "expected {:?}, found {} in group {}", 
                 expected,
                 found,
                 group,
@@ -53,7 +55,7 @@ where
                 found,
             } => write!(
                 f,
-                "invalid length; expected {:?}, found {}",
+                "expected {:?}, found {}",
                 expected,
                 found
             ),
