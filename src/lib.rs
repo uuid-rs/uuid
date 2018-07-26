@@ -841,7 +841,7 @@ impl Uuid {
             len,
             &[
                 adapter::UuidHyphenated::LENGTH,
-                adapter::UuidHyphenated::LENGTH,
+                adapter::UuidSimple::LENGTH,
             ],
         ) {
             return Err(ParseError::InvalidLength(len));
