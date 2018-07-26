@@ -839,10 +839,7 @@ impl Uuid {
             input = &input[9..];
         } else if !parser::len_matches_any(
             len,
-            &[
-                adapter::UuidHyphenated::LENGTH,
-                adapter::UuidSimple::LENGTH,
-            ],
+            &[adapter::UuidHyphenated::LENGTH, adapter::UuidSimple::LENGTH],
         ) {
             return Err(ParseError::InvalidLength(len));
         }

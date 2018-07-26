@@ -14,13 +14,15 @@ use parser;
 
 impl<T> fmt::Display for parser::Expected<T>
 where
-    T: AsRef<[usize]> + fmt::Debug
+    T: AsRef<[usize]> + fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             parser::Expected::Any(ref crits) => write!(f, "one of {:?}", crits),
             parser::Expected::Exact(crit) => write!(f, "{}", crit),
-            parser::Expected::Range {min, max} => write!(f, "{}..{} inclusive", min, max),
+            parser::Expected::Range { min, max } => {
+                write!(f, "{}..{} inclusive", min, max)
+            }
         }
     }
 }
@@ -47,31 +49,20 @@ where
             parser::UuidParseError::InvalidGroupCount {
                 ref expected,
                 found,
-            } => write!(
-                f,
-                "expected {}, found {}",
-                expected, found
-            ),
+            } => write!(f, "expected {}, found {}", expected, found),
             parser::UuidParseError::InvalidGroupLength {
                 ref expected,
                 found,
                 group,
             } => write!(
                 f,
-                "expected {}, found {} in group {}", 
-                expected,
-                found,
-                group,
+                "expected {}, found {} in group {}",
+                expected, found, group,
             ),
             parser::UuidParseError::InvalidLength {
                 ref expected,
                 found,
-            } => write!(
-                f,
-                "expected {}, found {}",
-                expected,
-                found
-            ),
+            } => write!(f, "expected {}, found {}", expected, found),
         }
     }
 }

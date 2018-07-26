@@ -96,14 +96,16 @@ where
 
 impl<'chars, T> UuidParseError<'chars, T>
 where
-    T: AsRef<[usize]> + fmt::Debug
+    T: AsRef<[usize]> + fmt::Debug,
 {
     fn _description(&self) -> &str {
         match *self {
-            UuidParseError::InvalidCharacter {..} => "invalid character",
-            UuidParseError::InvalidGroupCount {..} => "invalid number of groups",
-            UuidParseError::InvalidGroupLength {..} => "invalid group length",
-            UuidParseError::InvalidLength {..} => "invalid length"
+            UuidParseError::InvalidCharacter { .. } => "invalid character",
+            UuidParseError::InvalidGroupCount { .. } => {
+                "invalid number of groups"
+            }
+            UuidParseError::InvalidGroupLength { .. } => "invalid group length",
+            UuidParseError::InvalidLength { .. } => "invalid length",
         }
     }
 }
@@ -121,6 +123,20 @@ pub fn len_matches_any(len: usize, crits: &[usize]) -> bool {
     for crit in crits {
         if let true = len_matches(len, *crit) {
             return true;
+        }
+    }
+
+    false
+}
+
+/// Check if the length matches any criteria lengths in the given range
+/// (inclusive).
+pub fn len_matches_range(len: usize, min: usize, max: usize) -> bool {
+    for crit in min..(max + 1) {
+        if len_matches(len, crit) {
+            if len_matches(len, crit) {
+                return true;
+            }
         }
     }
 
