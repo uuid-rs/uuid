@@ -12,12 +12,25 @@
 use core::fmt;
 use parser;
 
+impl<T> fmt::Display for parser::Expected<T>
+where
+    T: AsRef<[usize]> + fmt::Debug
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            parser::Expected::Any(ref crits) => write!(f, "one of {:?}", crits),
+            parser::Expected::Exact(crit) => write!(f, "{}", crit),
+            parser::Expected::Range {min, max} => write!(f, "{}..{} inclusive", min, max),
+        }
+    }
+}
+
 impl<'chars, T> fmt::Display for parser::UuidParseError<'chars, T>
 where
     T: AsRef<[usize]> + fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}: ", self._description());
+        write!(f, "{}: ", self._description())?;
 
         match *self {
             parser::UuidParseError::InvalidCharacter {
@@ -36,7 +49,7 @@ where
                 found,
             } => write!(
                 f,
-                "expected {:?}, found {}",
+                "expected {}, found {}",
                 expected, found
             ),
             parser::UuidParseError::InvalidGroupLength {
@@ -45,7 +58,7 @@ where
                 group,
             } => write!(
                 f,
-                "expected {:?}, found {} in group {}", 
+                "expected {}, found {} in group {}", 
                 expected,
                 found,
                 group,
@@ -55,7 +68,7 @@ where
                 found,
             } => write!(
                 f,
-                "expected {:?}, found {}",
+                "expected {}, found {}",
                 expected,
                 found
             ),
