@@ -13,20 +13,15 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
-use core::fmt;
-
 mod core_support;
 #[cfg(feature = "std")]
 mod std_support;
 
 /// The expected value.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum Expected<T>
-where
-    T: AsRef<[usize]> + fmt::Debug,
-{
+pub enum Expected<'a> {
     /// Expected any one of the given values.
-    Any(T),
+    Any(&'a [usize]),
     /// Expected the given value.
     Exact(usize),
     /// Expected any values in the given range.
@@ -42,16 +37,13 @@ where
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum UuidParseError<'chars, T>
-where
-    T: AsRef<[usize]> + fmt::Debug,
-{
+pub enum UuidParseError<'a> {
     /// Invalid character in the [`Uuid`] string.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     InvalidCharacter {
         /// The expected characters.
-        expected: &'chars str,
+        expected: &'a str,
         /// The invalid character found.
         found: char,
         /// The invalid character position.
@@ -65,7 +57,7 @@ where
         // TODO: explain multiple segment count.
         // BODY: Parsers can expect a range of Uuid segment count.
         //       This needs to be expanded on.
-        expected: Expected<T>,
+        expected: Expected<'a>,
         /// The number of segments found.
         found: usize,
     },
@@ -74,7 +66,7 @@ where
     /// [`Uuid`]: ../struct.Uuid.html
     InvalidGroupLength {
         /// The expected length of the segment.
-        expected: Expected<T>,
+        expected: Expected<'a>,
         /// The length of segment found.
         found: usize,
         /// The segment with invalid length.
@@ -88,16 +80,13 @@ where
         // TODO: explain multiple lengths.
         // BODY: Parsers can expect a range of Uuid lenghts.
         //       This needs to be expanded on.
-        expected: Expected<T>,
+        expected: Expected<'a>,
         /// The invalid length found.
         found: usize,
     },
 }
 
-impl<'chars, T> UuidParseError<'chars, T>
-where
-    T: AsRef<[usize]> + fmt::Debug,
-{
+impl<'a> UuidParseError<'a> {
     fn _description(&self) -> &str {
         match *self {
             UuidParseError::InvalidCharacter { .. } => "invalid character",

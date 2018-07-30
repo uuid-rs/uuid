@@ -12,10 +12,7 @@
 use core::fmt;
 use parser;
 
-impl<T> fmt::Display for parser::Expected<T>
-where
-    T: AsRef<[usize]> + fmt::Debug,
-{
+impl<'a> fmt::Display for parser::Expected<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             parser::Expected::Any(ref crits) => write!(f, "one of {:?}", crits),
@@ -27,10 +24,7 @@ where
     }
 }
 
-impl<'chars, T> fmt::Display for parser::UuidParseError<'chars, T>
-where
-    T: AsRef<[usize]> + fmt::Debug,
-{
+impl<'a> fmt::Display for parser::UuidParseError<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}: ", self._description())?;
 

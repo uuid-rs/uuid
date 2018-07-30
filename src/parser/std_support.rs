@@ -9,14 +9,10 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use core::fmt;
 use parser;
 use std::error;
 
-impl<'chars, T> error::Error for parser::UuidParseError<'chars, T>
-where
-    T: AsRef<[usize]> + fmt::Debug,
-{
+impl<'a> error::Error for parser::UuidParseError<'a> {
     fn description(&self) -> &str {
         self._description()
     }
