@@ -967,7 +967,7 @@ impl Uuid {
             });
         }
 
-        Ok(Uuid::from_bytes(&buffer).unwrap())
+        Ok(Uuid::from_uuid_bytes(buffer))
     }
 
     /// Tests if the UUID is nil
