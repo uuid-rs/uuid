@@ -12,7 +12,7 @@
 use parser;
 use std::error;
 
-impl<'a> error::Error for parser::UuidParseError<'a> {
+impl error::Error for parser::UuidParseError {
     fn description(&self) -> &str {
         self._description()
     }

@@ -907,7 +907,6 @@ impl Uuid {
                         digit -= 1;
                     }
                     _ => {
-
                         return Err(parser::UuidParseError::InvalidCharacter {
                             expected: "0123456789abcdefABCDEF-",
                             found: input[i_char..].chars().next().unwrap(),
@@ -933,11 +932,15 @@ impl Uuid {
                             digit
                         };
 
-                        return Err(parser::UuidParseError::InvalidGroupLength {
-                            expected: parser::Expected::Exact(parser::GROUP_LENS[group]),
-                            found: found as usize,
-                            group,
-                        });
+                        return Err(
+                            parser::UuidParseError::InvalidGroupLength {
+                                expected: parser::Expected::Exact(
+                                    parser::GROUP_LENS[group],
+                                ),
+                                found: found as usize,
+                                group,
+                            },
+                        );
                     }
                     _ => {
                         return Err(parser::UuidParseError::InvalidCharacter {
@@ -1055,13 +1058,40 @@ mod tests {
     fn test_parse_uuid_v4() {
         use super::ParseError::*;
 
+        use adapter;
+        use parser;
+
+        const EXPECTED_LENGTHS: parser::Expected<'static> =
+            parser::Expected::Any(&[
+                adapter::UuidHyphenated::LENGTH,
+                adapter::UuidSimple::LENGTH,
+            ]);
+
         // Invalid
-        assert_eq!(Uuid::parse_str(""), Err(InvalidLength(0)));
-        assert_eq!(Uuid::parse_str("!"), Err(InvalidLength(1)));
+        assert_eq!(
+            Uuid::parse_str(""),
+            Err(parser::UuidParseError::InvalidLength {
+                expected: EXPECTED_LENGTHS,
+                found: 0,
+            })
+        );
+
+        assert_eq!(
+            Uuid::parse_str("!"),
+            Err(parser::UuidParseError::InvalidLength {
+                expected: EXPECTED_LENGTHS,
+                found: 1
+            })
+        );
+
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E45"),
-            Err(InvalidLength(37))
+            Err(parser::UuidParseError::InvalidLength {
+                expected: EXPECTED_LENGTHS,
+                found: 37,
+            }),
         );
+
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa-BBF-329BF39FA1E4"),
             Err(InvalidLength(35))

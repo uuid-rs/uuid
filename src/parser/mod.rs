@@ -19,9 +19,9 @@ mod std_support;
 
 /// The expected value.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum Expected<'a> {
+pub enum Expected {
     /// Expected any one of the given values.
-    Any(&'a [usize]),
+    Any(&'static [usize]),
     /// Expected the given value.
     Exact(usize),
     /// Expected any values in the given range.
@@ -37,13 +37,13 @@ pub enum Expected<'a> {
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum UuidParseError<'a> {
+pub enum UuidParseError {
     /// Invalid character in the [`Uuid`] string.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     InvalidCharacter {
         /// The expected characters.
-        expected: &'a str,
+        expected: &'static str,
         /// The invalid character found.
         found: char,
         /// The invalid character position.
@@ -57,7 +57,7 @@ pub enum UuidParseError<'a> {
         // TODO: explain multiple segment count.
         // BODY: Parsers can expect a range of Uuid segment count.
         //       This needs to be expanded on.
-        expected: Expected<'a>,
+        expected: Expected,
         /// The number of segments found.
         found: usize,
     },
@@ -66,7 +66,7 @@ pub enum UuidParseError<'a> {
     /// [`Uuid`]: ../struct.Uuid.html
     InvalidGroupLength {
         /// The expected length of the segment.
-        expected: Expected<'a>,
+        expected: Expected,
         /// The length of segment found.
         found: usize,
         /// The segment with invalid length.
@@ -80,13 +80,13 @@ pub enum UuidParseError<'a> {
         // TODO: explain multiple lengths.
         // BODY: Parsers can expect a range of Uuid lenghts.
         //       This needs to be expanded on.
-        expected: Expected<'a>,
+        expected: Expected,
         /// The invalid length found.
         found: usize,
     },
 }
 
-impl<'a> UuidParseError<'a> {
+impl UuidParseError {
     fn _description(&self) -> &str {
         match *self {
             UuidParseError::InvalidCharacter { .. } => "invalid character",

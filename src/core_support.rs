@@ -54,10 +54,10 @@ impl fmt::UpperHex for Uuid {
     }
 }
 
-impl<'a> str::FromStr for Uuid {
-    type Err = parser::UuidParseError<'a>;
+impl str::FromStr for Uuid {
+    type Err = parser::UuidParseError;
 
-    fn from_str(uuid_str: &'a str) -> Result<Uuid, parser::UuidParseError<'a>> {
+    fn from_str(uuid_str: &str) -> Result<Self, Self::Err> {
         Uuid::parse_str(uuid_str)
     }
 }
