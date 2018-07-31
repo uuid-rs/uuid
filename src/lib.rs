@@ -1061,17 +1061,20 @@ mod tests {
         use adapter;
         use parser;
 
-        const EXPECTED_LENGTHS: parser::Expected<'static> =
-            parser::Expected::Any(&[
-                adapter::UuidHyphenated::LENGTH,
-                adapter::UuidSimple::LENGTH,
-            ]);
+        const EXPECTED_UUID_LENGTHS: parser::Expected = parser::Expected::Any(
+            &[adapter::UuidHyphenated::LENGTH, adapter::UuidSimple::LENGTH],
+        );
+
+        const EXPECTED_GROUP_COUNTS: parser::Expected =
+            parser::Expected::Any(&[1, 5]);
+
+        const EXPECTED_CHARS: &'static str = "0123456789abcdefABCDEF-";
 
         // Invalid
         assert_eq!(
             Uuid::parse_str(""),
             Err(parser::UuidParseError::InvalidLength {
-                expected: EXPECTED_LENGTHS,
+                expected: EXPECTED_UUID_LENGTHS,
                 found: 0,
             })
         );
@@ -1079,7 +1082,7 @@ mod tests {
         assert_eq!(
             Uuid::parse_str("!"),
             Err(parser::UuidParseError::InvalidLength {
-                expected: EXPECTED_LENGTHS,
+                expected: EXPECTED_UUID_LENGTHS,
                 found: 1
             })
         );
@@ -1087,63 +1090,115 @@ mod tests {
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E45"),
             Err(parser::UuidParseError::InvalidLength {
-                expected: EXPECTED_LENGTHS,
+                expected: EXPECTED_UUID_LENGTHS,
                 found: 37,
             }),
         );
 
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa-BBF-329BF39FA1E4"),
-            Err(InvalidLength(35))
+            Err(parser::UuidParseError::InvalidLength {
+                expected: EXPECTED_UUID_LENGTHS,
+                found: 35
+            })
         );
+
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4"),
-            Err(InvalidCharacter('G', 20))
+            Err(parser::UuidParseError::InvalidCharacter {
+                expected: EXPECTED_CHARS,
+                found: 'G',
+                index: 20,
+            })
         );
+
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2F4faaFB6BFF329BF39FA1E4"),
-            Err(InvalidGroups(2))
+            Err(parser::UuidParseError::InvalidGroupCount {
+                expected: EXPECTED_GROUP_COUNTS,
+                found: 2
+            })
         );
+
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faaFB6BFF329BF39FA1E4"),
-            Err(InvalidGroups(3))
+            Err(parser::UuidParseError::InvalidGroupCount {
+                expected: EXPECTED_GROUP_COUNTS,
+                found: 3,
+            })
         );
+
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4"),
-            Err(InvalidGroups(4))
+            Err(parser::UuidParseError::InvalidGroupCount {
+                expected: EXPECTED_GROUP_COUNTS,
+                found: 4,
+            })
         );
+
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa"),
-            Err(InvalidLength(18))
+            Err(parser::UuidParseError::InvalidLength {
+                expected: EXPECTED_UUID_LENGTHS,
+                found: 18,
+            })
         );
+
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faaXB6BFF329BF39FA1E4"),
-            Err(InvalidCharacter('X', 18))
+            Err(parser::UuidParseError::InvalidCharacter {
+                expected: EXPECTED_CHARS,
+                found: 'X',
+                index: 18,
+            })
         );
+
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB-24fa-eB6BFF32-BF39FA1E4"),
-            Err(InvalidGroupLength(1, 3, 4))
+            Err(parser::UuidParseError::InvalidGroupLength {
+                expected: parser::Expected::Exact(4),
+                found: 3,
+                group: 1,
+            })
         );
+/*
+(group, found, expecting)
+*/
         assert_eq!(
             Uuid::parse_str("01020304-1112-2122-3132-41424344"),
-            Err(InvalidGroupLength(4, 8, 12))
+            Err(parser::UuidParseError::InvalidGroupLength {
+                expected: parser::Expected::Exact(12),
+                found: 8,
+                group: 4,
+            })
         );
+
         assert_eq!(
             Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"),
-            Err(InvalidLength(31))
+            Err(parser::UuidParseError::InvalidLength {
+                expected: EXPECTED_UUID_LENGTHS,
+                found: 31,
+            })
         );
+
         assert_eq!(
             Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c88"),
-            Err(InvalidLength(33))
+            Err(parser::UuidParseError::InvalidLength {
+                expected: EXPECTED_UUID_LENGTHS,
+                found: 33,
+            })
         );
+
         assert_eq!(
             Uuid::parse_str("67e5504410b1426f9247bb680e5fe0cg8"),
             Err(InvalidLength(33))
         );
+
         assert_eq!(
             Uuid::parse_str("67e5504410b1426%9247bb680e5fe0c8"),
             Err(InvalidCharacter('%', 15))
         );
+
         assert_eq!(
             Uuid::parse_str("231231212212423424324323477343246663"),
             Err(InvalidLength(36))
