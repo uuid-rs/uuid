@@ -1046,7 +1046,7 @@ mod tests {
             Err(parser::UuidParseError::InvalidLength {
                 expected: EXPECTED_UUID_LENGTHS,
                 found: 37,
-            }),
+            })
         );
 
         assert_eq!(
