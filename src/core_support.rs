@@ -10,6 +10,7 @@
 // except according to those terms.
 
 use core::{fmt, str};
+use parser;
 use prelude::*;
 
 impl fmt::Display for Uuid {
@@ -54,9 +55,9 @@ impl fmt::UpperHex for Uuid {
 }
 
 impl str::FromStr for Uuid {
-    type Err = super::ParseError;
+    type Err = parser::UuidParseError;
 
-    fn from_str(uuid_str: &str) -> Result<Uuid, super::ParseError> {
+    fn from_str(uuid_str: &str) -> Result<Self, Self::Err> {
         Uuid::parse_str(uuid_str)
     }
 }
