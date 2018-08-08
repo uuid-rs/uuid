@@ -1117,7 +1117,6 @@ mod tests {
                 group: 1,
             })
         );
-        //
         // (group, found, expecting)
         //
         assert_eq!(
