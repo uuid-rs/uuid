@@ -1015,9 +1015,11 @@ mod tests {
         use adapter;
         use parser;
 
-        const EXPECTED_UUID_LENGTHS: parser::Expected = parser::Expected::Any(
-            &[adapter::UuidHyphenated::LENGTH, adapter::UuidSimple::LENGTH],
-        );
+        const EXPECTED_UUID_LENGTHS: parser::Expected =
+            parser::Expected::Any(&[
+                adapter::UuidHyphenated::LENGTH,
+                adapter::UuidSimple::LENGTH,
+            ]);
 
         const EXPECTED_GROUP_COUNTS: parser::Expected =
             parser::Expected::Any(&[1, 5]);
@@ -1115,9 +1117,9 @@ mod tests {
                 group: 1,
             })
         );
-/*
-(group, found, expecting)
-*/
+        //
+        // (group, found, expecting)
+        //
         assert_eq!(
             Uuid::parse_str("01020304-1112-2122-3132-41424344"),
             Err(parser::UuidParseError::InvalidGroupLength {
