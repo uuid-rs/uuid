@@ -1222,8 +1222,8 @@ mod tests {
 
     use super::test_util;
 
-    use super::{NAMESPACE_X500, NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL};
     use super::{Uuid, UuidVariant, UuidVersion};
+    use super::{NAMESPACE_DNS, NAMESPACE_OID, NAMESPACE_URL, NAMESPACE_X500};
 
     #[cfg(feature = "v3")]
     static FIXTURE_V3: &'static [(&'static Uuid, &'static str, &'static str)] = &[
