@@ -32,16 +32,13 @@ features = ["i128"]
 optional = true
 version = "1"
 
-[dependencies.cfg-if]
-version = "0.1.2"
-
 [dependencies.md5]
 optional = true
 version = "0.3"
 
 [dependencies.rand]
 optional = true
-version = "0.4"
+version = "0.5"
 
 [dependencies.serde]
 default-features = false
@@ -66,11 +63,6 @@ v1 = []
 v3 = ["md5", "rand"]
 v4 = ["rand"]
 v5 = ["sha1", "rand"]
-
-# deprecated
-#------------------------
-# Use `"std"` instead
-use_std = ["std"]
 
 # since rust 1.26.0
 u128 = ["byteorder"]

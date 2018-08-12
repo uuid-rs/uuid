@@ -7,7 +7,7 @@ language: rust
 matrix:
   include:
   - os: osx
-    rust: 1.18.0
+    rust: 1.22.0
   - os: osx
     rust: nightly
   - rust: nightly
@@ -29,7 +29,7 @@ notifications:
 os: linux
 
 rust:
-- 1.18.0
+- 1.22.0
 - stable
 - beta
 - nightly
@@ -42,6 +42,7 @@ script:
 - cargo test --features "v3"
 - cargo test --features "v4"
 - cargo test --features "v5"
+- cargo test --features "slog"
 - cargo test --features "serde std v1 v3 v4 v5"
 
 sudo: false

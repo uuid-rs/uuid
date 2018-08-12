@@ -9,11 +9,11 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use std;
-use ParseError;
+use parser;
+use std::error;
 
-impl std::error::Error for ParseError {
+impl error::Error for parser::UuidParseError {
     fn description(&self) -> &str {
-        "UUID parse error"
+        self._description()
     }
 }
