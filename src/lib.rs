@@ -480,9 +480,9 @@ impl Uuid {
     ///
     /// ```
     /// use uuid::Uuid;
-    /// use uuid::UuidBytes;
+    /// use uuid::Bytes;
     ///
-    /// let bytes: UuidBytes = [
+    /// let bytes: Bytes = [
     ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
     ///     62,
     /// ];
