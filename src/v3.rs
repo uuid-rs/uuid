@@ -28,8 +28,8 @@ impl Uuid {
 
         let mut uuid = Uuid::from_uuid_bytes(context.compute().into());
 
-        uuid.set_variant(UuidVariant::RFC4122);
-        uuid.set_version(UuidVersion::Md5);
+        uuid.set_variant(Variant::RFC4122);
+        uuid.set_version(Version::Md5);
         uuid
     }
 }
@@ -125,8 +125,8 @@ mod tests {
     fn test_new() {
         for &(ref ns, ref name, _) in FIXTURE {
             let uuid = Uuid::new_v3(*ns, name.as_bytes());
-            assert_eq!(uuid.get_version().unwrap(), UuidVersion::Md5);
-            assert_eq!(uuid.get_variant().unwrap(), UuidVariant::RFC4122);
+            assert_eq!(uuid.get_version().unwrap(), Version::Md5);
+            assert_eq!(uuid.get_variant().unwrap(), Variant::RFC4122);
         }
     }
 

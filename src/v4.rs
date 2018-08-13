@@ -43,15 +43,15 @@ mod tests {
     fn test_new() {
         let uuid = Uuid::new_v4();
 
-        assert_eq!(uuid.get_version(), Some(UuidVersion::Random));
-        assert_eq!(uuid.get_variant(), Some(UuidVariant::RFC4122));
+        assert_eq!(uuid.get_version(), Some(Version::Random));
+        assert_eq!(uuid.get_variant(), Some(Variant::RFC4122));
     }
 
     #[test]
     fn test_get_version() {
         let uuid = Uuid::new_v4();
 
-        assert_eq!(uuid.get_version(), Some(UuidVersion::Random));
+        assert_eq!(uuid.get_version(), Some(Version::Random));
         assert_eq!(uuid.get_version_num(), 4)
     }
 }

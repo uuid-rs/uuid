@@ -15,49 +15,49 @@ use prelude::*;
 #[macro_use]
 mod macros;
 
-impl fmt::Display for super::UuidHyphenated {
+impl fmt::Display for super::Hyphenated {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
-impl<'a> fmt::Display for super::UuidHyphenatedRef<'a> {
+impl<'a> fmt::Display for super::HyphenatedRef<'a> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
-impl fmt::Display for super::UuidSimple {
+impl fmt::Display for super::Simple {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
-impl<'a> fmt::Display for super::UuidSimpleRef<'a> {
+impl<'a> fmt::Display for super::SimpleRef<'a> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
-impl fmt::Display for super::UuidUrn {
+impl fmt::Display for super::Urn {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
-impl<'a> fmt::Display for super::UuidUrnRef<'a> {
+impl<'a> fmt::Display for super::UrnRef<'a> {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
-impl fmt::LowerHex for super::UuidHyphenated {
+impl fmt::LowerHex for super::Hyphenated {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         hyphenated_write!(
             f,
@@ -71,7 +71,7 @@ impl fmt::LowerHex for super::UuidHyphenated {
     }
 }
 
-impl<'a> fmt::LowerHex for super::UuidHyphenatedRef<'a> {
+impl<'a> fmt::LowerHex for super::HyphenatedRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         hyphenated_write!(
             f,
@@ -85,7 +85,7 @@ impl<'a> fmt::LowerHex for super::UuidHyphenatedRef<'a> {
     }
 }
 
-impl fmt::LowerHex for super::UuidSimple {
+impl fmt::LowerHex for super::Simple {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for byte in self.0.as_bytes() {
             write!(f, "{:02x}", byte)?
@@ -95,7 +95,7 @@ impl fmt::LowerHex for super::UuidSimple {
     }
 }
 
-impl<'a> fmt::LowerHex for super::UuidSimpleRef<'a> {
+impl<'a> fmt::LowerHex for super::SimpleRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for byte in self.0.as_bytes() {
             write!(f, "{:02x}", byte)?
@@ -105,7 +105,7 @@ impl<'a> fmt::LowerHex for super::UuidSimpleRef<'a> {
     }
 }
 
-impl fmt::LowerHex for super::UuidUrn {
+impl fmt::LowerHex for super::Urn {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         hyphenated_write!(
             f,
@@ -120,7 +120,7 @@ impl fmt::LowerHex for super::UuidUrn {
     }
 }
 
-impl<'a> fmt::LowerHex for super::UuidUrnRef<'a> {
+impl<'a> fmt::LowerHex for super::UrnRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         hyphenated_write!(
             f,
@@ -135,7 +135,7 @@ impl<'a> fmt::LowerHex for super::UuidUrnRef<'a> {
     }
 }
 
-impl fmt::UpperHex for super::UuidHyphenated {
+impl fmt::UpperHex for super::Hyphenated {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         hyphenated_write!(
             f,
@@ -149,7 +149,7 @@ impl fmt::UpperHex for super::UuidHyphenated {
     }
 }
 
-impl<'a> fmt::UpperHex for super::UuidHyphenatedRef<'a> {
+impl<'a> fmt::UpperHex for super::HyphenatedRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         hyphenated_write!(
             f,
@@ -163,7 +163,7 @@ impl<'a> fmt::UpperHex for super::UuidHyphenatedRef<'a> {
     }
 }
 
-impl fmt::UpperHex for super::UuidSimple {
+impl fmt::UpperHex for super::Simple {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for byte in self.0.as_bytes() {
             write!(f, "{:02X}", byte)?
@@ -173,7 +173,7 @@ impl fmt::UpperHex for super::UuidSimple {
     }
 }
 
-impl<'a> fmt::UpperHex for super::UuidSimpleRef<'a> {
+impl<'a> fmt::UpperHex for super::SimpleRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         for byte in self.0.as_bytes() {
             write!(f, "{:02X}", byte)?
@@ -183,7 +183,7 @@ impl<'a> fmt::UpperHex for super::UuidSimpleRef<'a> {
     }
 }
 
-impl fmt::UpperHex for super::UuidUrn {
+impl fmt::UpperHex for super::Urn {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         hyphenated_write!(
             f,
@@ -198,7 +198,7 @@ impl fmt::UpperHex for super::UuidUrn {
     }
 }
 
-impl<'a> fmt::UpperHex for super::UuidUrnRef<'a> {
+impl<'a> fmt::UpperHex for super::UrnRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         hyphenated_write!(
             f,
@@ -213,44 +213,44 @@ impl<'a> fmt::UpperHex for super::UuidUrnRef<'a> {
     }
 }
 
-impl From<Uuid> for super::UuidHyphenated {
+impl From<Uuid> for super::Hyphenated {
     #[inline]
     fn from(f: Uuid) -> Self {
-        super::UuidHyphenated::from_uuid(f)
+        super::Hyphenated::from_uuid(f)
     }
 }
 
-impl<'a> From<&'a Uuid> for super::UuidHyphenatedRef<'a> {
+impl<'a> From<&'a Uuid> for super::HyphenatedRef<'a> {
     #[inline]
     fn from(f: &'a Uuid) -> Self {
-        super::UuidHyphenatedRef::from_uuid_ref(f)
+        super::HyphenatedRef::from_uuid_ref(f)
     }
 }
 
-impl From<Uuid> for super::UuidSimple {
+impl From<Uuid> for super::Simple {
     #[inline]
     fn from(f: Uuid) -> Self {
-        super::UuidSimple::from_uuid(f)
+        super::Simple::from_uuid(f)
     }
 }
 
-impl<'a> From<&'a Uuid> for super::UuidSimpleRef<'a> {
+impl<'a> From<&'a Uuid> for super::SimpleRef<'a> {
     #[inline]
     fn from(f: &'a Uuid) -> Self {
-        super::UuidSimpleRef::from_uuid_ref(f)
+        super::SimpleRef::from_uuid_ref(f)
     }
 }
 
-impl From<Uuid> for super::UuidUrn {
+impl From<Uuid> for super::Urn {
     #[inline]
     fn from(f: Uuid) -> Self {
-        super::UuidUrn::from_uuid(f)
+        super::Urn::from_uuid(f)
     }
 }
 
-impl<'a> From<&'a Uuid> for super::UuidUrnRef<'a> {
+impl<'a> From<&'a Uuid> for super::UrnRef<'a> {
     #[inline]
     fn from(f: &'a Uuid) -> Self {
-        super::UuidUrnRef::from_uuid_ref(f)
+        super::UrnRef::from_uuid_ref(f)
     }
 }

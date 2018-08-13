@@ -162,13 +162,13 @@ mod v4;
 mod v5;
 
 /// A 128-bit (16 byte) buffer containing the ID.
-pub type UuidBytes = [u8; 16];
+pub type Bytes = [u8; 16];
 
 /// The error that can occur when creating a [`Uuid`].
 ///
 /// [`Uuid`]: struct.Uuid.html
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct UuidError {
+pub struct BytesError {
     expected: usize,
     found: usize,
 }
@@ -176,7 +176,7 @@ pub struct UuidError {
 /// The version of the UUID, denoting the generating algorithm.
 #[derive(Debug, PartialEq, Copy, Clone)]
 #[repr(C)]
-pub enum UuidVersion {
+pub enum Version {
     /// Special case for `nil` [`Uuid`].
     ///
     /// [`Uuid`]: struct.Uuid.html
@@ -196,7 +196,7 @@ pub enum UuidVersion {
 /// The reserved variants of UUIDs.
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[repr(C)]
-pub enum UuidVariant {
+pub enum Variant {
     /// Reserved by the NCS for backward compatibility
     NCS = 0,
     /// As described in the RFC4122 Specification (default)
@@ -209,9 +209,9 @@ pub enum UuidVariant {
 
 /// A Universally Unique Identifier (UUID).
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Uuid(UuidBytes);
+pub struct Uuid(Bytes);
 
-impl UuidError {
+impl BytesError {
     /// The expected number of bytes.
     #[cfg(feature = "const_fn")]
     #[inline]
@@ -246,7 +246,7 @@ impl UuidError {
     #[cfg(feature = "const_fn")]
     #[inline]
     pub const fn new(expected: usize, found: usize) -> Self {
-        UuidError {
+        BytesError {
             expected: expected,
             found: found,
         }
@@ -258,9 +258,9 @@ impl UuidError {
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn new(expected: usize, found: usize) -> Self {
-        UuidError {
-            expected: expected,
-            found: found,
+        BytesError {
+            expected,
+            found,
         }
     }
 }
@@ -387,18 +387,19 @@ impl Uuid {
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
+    // TODO: discuss rename to `from_slice`
     pub fn from_fields(
         d1: u32,
         d2: u16,
         d3: u16,
         d4: &[u8],
-    ) -> Result<Uuid, UuidError> {
+    ) -> Result<Uuid, BytesError> {
         const D4_LEN: usize = 8;
 
         let len = d4.len();
 
         if len != D4_LEN {
-            return Err(UuidError::new(D4_LEN, len));
+            return Err(BytesError::new(D4_LEN, len));
         }
 
         Ok(Uuid::from_uuid_bytes([
@@ -458,16 +459,17 @@ impl Uuid {
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
-    pub fn from_bytes(b: &[u8]) -> Result<Uuid, UuidError> {
+    // TODO: discuss rename to `from_slice`
+    pub fn from_bytes(b: &[u8]) -> Result<Uuid, BytesError> {
         const BYTES_LEN: usize = 16;
 
         let len = b.len();
 
         if len != BYTES_LEN {
-            return Err(UuidError::new(BYTES_LEN, len));
+            return Err(BytesError::new(BYTES_LEN, len));
         }
 
-        let mut bytes: UuidBytes = [0; 16];
+        let mut bytes: Bytes = [0; 16];
         bytes.copy_from_slice(b);
         Ok(Uuid::from_uuid_bytes(bytes))
     }
@@ -506,8 +508,9 @@ impl Uuid {
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// ```
+    // TODO: discuss rename to `from_bytes`
     #[cfg(not(feature = "const_fn"))]
-    pub fn from_uuid_bytes(bytes: UuidBytes) -> Uuid {
+    pub fn from_uuid_bytes(bytes: Bytes) -> Uuid {
         Uuid(bytes)
     }
 
@@ -545,8 +548,9 @@ impl Uuid {
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// ```
+    // TODO: discuss rename to `from_bytes`
     #[cfg(feature = "const_fn")]
-    pub const fn from_uuid_bytes(bytes: UuidBytes) -> Uuid {
+    pub const fn from_uuid_bytes(bytes: Bytes) -> Uuid {
         Uuid(bytes)
     }
 
@@ -573,21 +577,21 @@ impl Uuid {
     /// assert_eq!(expected_uuid, uuid);
     /// ```
     ///
-    pub fn from_random_bytes(bytes: UuidBytes) -> Uuid {
+    pub fn from_random_bytes(bytes: Bytes) -> Uuid {
         let mut uuid = Uuid::from_uuid_bytes(bytes);
-        uuid.set_variant(UuidVariant::RFC4122);
-        uuid.set_version(UuidVersion::Random);
+        uuid.set_variant(Variant::RFC4122);
+        uuid.set_version(Version::Random);
         uuid
     }
 
     /// Specifies the variant of the UUID structure
-    fn set_variant(&mut self, v: UuidVariant) {
+    fn set_variant(&mut self, v: Variant) {
         // Octet 8 contains the variant in the most significant 3 bits
         self.0[8] = match v {
-            UuidVariant::NCS => self.as_bytes()[8] & 0x7f, // b0xx...
-            UuidVariant::RFC4122 => (self.as_bytes()[8] & 0x3f) | 0x80, /* b10x... */
-            UuidVariant::Microsoft => (self.as_bytes()[8] & 0x1f) | 0xc0, /* b110... */
-            UuidVariant::Future => (self.as_bytes()[8] & 0x1f) | 0xe0, /* b111... */
+            Variant::NCS => self.as_bytes()[8] & 0x7f, // b0xx...
+            Variant::RFC4122 => (self.as_bytes()[8] & 0x3f) | 0x80, /* b10x... */
+            Variant::Microsoft => (self.as_bytes()[8] & 0x1f) | 0xc0, /* b110... */
+            Variant::Future => (self.as_bytes()[8] & 0x1f) | 0xe0, /* b111... */
         }
     }
 
@@ -597,18 +601,18 @@ impl Uuid {
     /// Currently only the RFC4122 variant is generated by this module.
     ///
     /// * [Variant Reference](http://tools.ietf.org/html/rfc4122#section-4.1.1)
-    pub fn get_variant(&self) -> Option<UuidVariant> {
+    pub fn get_variant(&self) -> Option<Variant> {
         match self.as_bytes()[8] {
-            x if x & 0x80 == 0x00 => Some(UuidVariant::NCS),
-            x if x & 0xc0 == 0x80 => Some(UuidVariant::RFC4122),
-            x if x & 0xe0 == 0xc0 => Some(UuidVariant::Microsoft),
-            x if x & 0xe0 == 0xe0 => Some(UuidVariant::Future),
+            x if x & 0x80 == 0x00 => Some(Variant::NCS),
+            x if x & 0xc0 == 0x80 => Some(Variant::RFC4122),
+            x if x & 0xe0 == 0xc0 => Some(Variant::Microsoft),
+            x if x & 0xe0 == 0xe0 => Some(Variant::Future),
             _ => None,
         }
     }
 
     /// Specifies the version number of the `Uuid`.
-    fn set_version(&mut self, v: UuidVersion) {
+    fn set_version(&mut self, v: Version) {
         self.0[6] = (self.as_bytes()[6] & 0xF) | ((v as u8) << 4);
     }
 
@@ -630,15 +634,15 @@ impl Uuid {
     /// Returns the version of the `Uuid`.
     ///
     /// This represents the algorithm used to generate the contents
-    pub fn get_version(&self) -> Option<UuidVersion> {
+    pub fn get_version(&self) -> Option<Version> {
         let v = self.as_bytes()[6] >> 4;
         match v {
-            0 if self.is_nil() => Some(UuidVersion::Nil),
-            1 => Some(UuidVersion::Mac),
-            2 => Some(UuidVersion::Dce),
-            3 => Some(UuidVersion::Md5),
-            4 => Some(UuidVersion::Random),
-            5 => Some(UuidVersion::Sha1),
+            0 if self.is_nil() => Some(Version::Nil),
+            1 => Some(Version::Mac),
+            2 => Some(Version::Dce),
+            3 => Some(Version::Md5),
+            4 => Some(Version::Random),
+            5 => Some(Version::Sha1),
             _ => None,
         }
     }
@@ -720,7 +724,7 @@ impl Uuid {
     /// );
     /// ```
     #[cfg(feature = "const_fn")]
-    pub const fn as_bytes(&self) -> &UuidBytes {
+    pub const fn as_bytes(&self) -> &Bytes {
         &self.0
     }
 
@@ -744,7 +748,7 @@ impl Uuid {
     /// );
     /// ```
     #[cfg(not(feature = "const_fn"))]
-    pub fn as_bytes(&self) -> &UuidBytes {
+    pub fn as_bytes(&self) -> &Bytes {
         &self.0
     }
 
@@ -754,7 +758,7 @@ impl Uuid {
     pub fn to_timestamp(&self) -> Option<(u64, u16)> {
         if self
             .get_version()
-            .map(|v| v != UuidVersion::Mac)
+            .map(|v| v != Version::Mac)
             .unwrap_or(true)
         {
             return None;
@@ -784,16 +788,16 @@ impl Uuid {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
 
-        if len == adapter::UuidUrn::LENGTH && input.starts_with("urn:uuid:") {
+        if len == adapter::Urn::LENGTH && input.starts_with("urn:uuid:") {
             input = &input[9..];
         } else if !parser::len_matches_any(
             len,
-            &[adapter::UuidHyphenated::LENGTH, adapter::UuidSimple::LENGTH],
+            &[adapter::Hyphenated::LENGTH, adapter::Simple::LENGTH],
         ) {
             return Err(parser::UuidParseError::InvalidLength {
                 expected: parser::Expected::Any(&[
-                    adapter::UuidHyphenated::LENGTH,
-                    adapter::UuidSimple::LENGTH,
+                    adapter::Hyphenated::LENGTH,
+                    adapter::Simple::LENGTH,
                 ]),
                 found: len,
             });
@@ -806,12 +810,12 @@ impl Uuid {
         let mut buffer = [0u8; 16];
 
         for (i_char, chr) in input.bytes().enumerate() {
-            if digit as usize >= adapter::UuidSimple::LENGTH && group != 4 {
+            if digit as usize >= adapter::Simple::LENGTH && group != 4 {
                 if group == 0 {
                     return Err(parser::UuidParseError::InvalidLength {
                         expected: parser::Expected::Any(&[
-                            adapter::UuidHyphenated::LENGTH,
-                            adapter::UuidSimple::LENGTH,
+                            adapter::Hyphenated::LENGTH,
+                            adapter::Simple::LENGTH,
                         ]),
                         found: len,
                     });
@@ -953,8 +957,8 @@ mod tests {
         assert!(nil.is_nil());
         assert!(!not_nil.is_nil());
 
-        assert_eq!(nil.get_version(), Some(UuidVersion::Nil));
-        assert_eq!(not_nil.get_version(), Some(UuidVersion::Random))
+        assert_eq!(nil.get_version(), Some(Version::Nil));
+        assert_eq!(not_nil.get_version(), Some(Version::Random))
     }
 
     #[test]
@@ -983,7 +987,7 @@ mod tests {
         let uuid =
             Uuid::new_v3(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
 
-        assert_eq!(uuid.get_version().unwrap(), UuidVersion::Md5);
+        assert_eq!(uuid.get_version().unwrap(), Version::Md5);
         assert_eq!(uuid.get_version_num(), 3);
     }
 
@@ -1001,12 +1005,12 @@ mod tests {
         let uuid6 =
             Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
 
-        assert_eq!(uuid1.get_variant().unwrap(), UuidVariant::RFC4122);
-        assert_eq!(uuid2.get_variant().unwrap(), UuidVariant::RFC4122);
-        assert_eq!(uuid3.get_variant().unwrap(), UuidVariant::RFC4122);
-        assert_eq!(uuid4.get_variant().unwrap(), UuidVariant::Microsoft);
-        assert_eq!(uuid5.get_variant().unwrap(), UuidVariant::Microsoft);
-        assert_eq!(uuid6.get_variant().unwrap(), UuidVariant::NCS);
+        assert_eq!(uuid1.get_variant().unwrap(), Variant::RFC4122);
+        assert_eq!(uuid2.get_variant().unwrap(), Variant::RFC4122);
+        assert_eq!(uuid3.get_variant().unwrap(), Variant::RFC4122);
+        assert_eq!(uuid4.get_variant().unwrap(), Variant::Microsoft);
+        assert_eq!(uuid5.get_variant().unwrap(), Variant::Microsoft);
+        assert_eq!(uuid6.get_variant().unwrap(), Variant::NCS);
     }
 
     #[test]
@@ -1016,8 +1020,8 @@ mod tests {
 
         const EXPECTED_UUID_LENGTHS: parser::Expected =
             parser::Expected::Any(&[
-                adapter::UuidHyphenated::LENGTH,
-                adapter::UuidSimple::LENGTH,
+                adapter::Hyphenated::LENGTH,
+                adapter::Simple::LENGTH,
             ]);
 
         const EXPECTED_GROUP_COUNTS: parser::Expected =
@@ -1401,7 +1405,7 @@ mod tests {
 
     #[test]
     fn test_bytes_roundtrip() {
-        let b_in: ::UuidBytes = [
+        let b_in: ::Bytes = [
             0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
             0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
         ];
