@@ -137,8 +137,6 @@ extern crate sha1;
 #[cfg_attr(test, macro_use)]
 extern crate slog;
 
-use core::{fmt, str};
-
 pub mod adapter;
 pub mod parser;
 pub mod prelude;
@@ -383,7 +381,7 @@ impl Uuid {
     ///
     /// let uuid = uuid::Uuid::from_fields(42, 12, 5, &d4);
     ///
-    /// let expected_uuid = Err(uuid::UuidError::new(8, d4.len()));
+    /// let expected_uuid = Err(uuid::BytesError::new(8, d4.len()));
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -455,7 +453,7 @@ impl Uuid {
     ///
     /// let uuid = Uuid::from_bytes(&bytes);
     ///
-    /// let expected_uuid = Err(uuid::UuidError::new(16, 8));
+    /// let expected_uuid = Err(uuid::BytesError::new(16, 8));
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
@@ -522,9 +520,9 @@ impl Uuid {
     ///
     /// ```
     /// use uuid::Uuid;
-    /// use uuid::UuidBytes;
+    /// use uuid::Bytes;
     ///
-    /// let bytes: UuidBytes = [
+    /// let bytes: Bytes = [
     ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
     ///     62,
     /// ];
@@ -541,10 +539,9 @@ impl Uuid {
     ///
     /// ```compile_fail
     /// use uuid::Uuid;
-    /// use uuid::UuidBytes;
+    /// use uuid::Bytes;
     ///
-    /// let bytes: UuidBytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't
-    /// compile
+    /// let bytes: Bytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
     ///
     /// let uuid = Uuid::from_uuid_bytes(bytes);
     /// ```
@@ -563,9 +560,9 @@ impl Uuid {
     ///
     /// ```
     /// use uuid::Uuid;
-    /// use uuid::UuidBytes;
+    /// use uuid::Bytes;
     ///
-    /// let bytes: UuidBytes = [
+    /// let bytes: Bytes = [
     ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
     ///     62,
     /// ];
@@ -1260,7 +1257,7 @@ mod tests {
 
     #[test]
     fn test_upper_lower_hex() {
-        use super::fmt::Write;
+        use tests::std::fmt::Write;
 
         let mut buf = String::new();
         let u = test_util::new();
