@@ -39,15 +39,15 @@
 //!
 #![cfg_attr(feature = "v1",
 doc = "
-[`uuid::v1`]`::{`[`UuidClockSequence`],[`UuidContext`]`}`: The types useful for
+[`uuid::v1`]`::{`[`UuidClockSequence`],[`Context`]`}`: The types useful for
 handling uuid version 1. Requires feature `v1`.
 
 [`uuid::v1`]: ../v1/index.html
-[`UuidContext`]: ../v1/struct.UuidContext.html
+[`Context`]: ../v1/struct.Context.html
 [`UuidClockSequence`]: ../v1/trait.UuidClockSequence.html")]
 
 #[doc(inline)]
-pub use super::{Uuid, UuidBytes, UuidVariant, UuidVersion};
+pub use super::{Bytes, Uuid, Variant, Version};
 #[cfg(feature = "v1")]
 #[doc(inline)]
-pub use v1::{UuidClockSequence, UuidContext};
+pub use v1::{ClockSequence, Context};

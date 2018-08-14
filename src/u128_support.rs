@@ -27,7 +27,7 @@ impl Uuid {
 
 impl From<u128> for Uuid {
     fn from(f: u128) -> Self {
-        let mut bytes: ::UuidBytes = [0; 16];
+        let mut bytes: ::Bytes = [0; 16];
 
         {
             use byteorder::ByteOrder;
