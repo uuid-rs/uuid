@@ -100,7 +100,7 @@ impl UuidParseError {
 }
 
 /// Check if the length matches any of the given criteria lengths.
-pub fn len_matches_any(len: usize, crits: &[usize]) -> bool {
+pub(crate) fn len_matches_any(len: usize, crits: &[usize]) -> bool {
     for crit in crits {
         if len == *crit {
             return true;
@@ -112,7 +112,7 @@ pub fn len_matches_any(len: usize, crits: &[usize]) -> bool {
 
 /// Check if the length matches any criteria lengths in the given range
 /// (inclusive).
-pub fn len_matches_range(len: usize, min: usize, max: usize) -> bool {
+pub(crate) fn len_matches_range(len: usize, min: usize, max: usize) -> bool {
     for crit in min..(max + 1) {
         if len == crit {
             return true;
