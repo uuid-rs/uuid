@@ -256,10 +256,7 @@ impl BytesError {
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn new(expected: usize, found: usize) -> Self {
-        BytesError {
-            expected,
-            found,
-        }
+        BytesError { expected, found }
     }
 }
 
@@ -479,8 +476,8 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// use uuid::Uuid;
     /// use uuid::Bytes;
+    /// use uuid::Uuid;
     ///
     /// let bytes: Bytes = [
     ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
@@ -519,8 +516,8 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// use uuid::Uuid;
     /// use uuid::Bytes;
+    /// use uuid::Uuid;
     ///
     /// let bytes: Bytes = [
     ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
@@ -538,8 +535,8 @@ impl Uuid {
     /// An incorrect number of bytes:
     ///
     /// ```compile_fail
-    /// use uuid::Uuid;
     /// use uuid::Bytes;
+    /// use uuid::Uuid;
     ///
     /// let bytes: Bytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
     ///
@@ -559,8 +556,8 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// use uuid::Uuid;
     /// use uuid::Bytes;
+    /// use uuid::Uuid;
     ///
     /// let bytes: Bytes = [
     ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
@@ -586,9 +583,9 @@ impl Uuid {
         // Octet 8 contains the variant in the most significant 3 bits
         self.0[8] = match v {
             Variant::NCS => self.as_bytes()[8] & 0x7f, // b0xx...
-            Variant::RFC4122 => (self.as_bytes()[8] & 0x3f) | 0x80, /* b10x... */
-            Variant::Microsoft => (self.as_bytes()[8] & 0x1f) | 0xc0, /* b110... */
-            Variant::Future => (self.as_bytes()[8] & 0x1f) | 0xe0, /* b111... */
+            Variant::RFC4122 => (self.as_bytes()[8] & 0x3f) | 0x80, // b10x...
+            Variant::Microsoft => (self.as_bytes()[8] & 0x1f) | 0xc0, // b110...
+            Variant::Future => (self.as_bytes()[8] & 0x1f) | 0xe0, // b111...
         }
     }
 

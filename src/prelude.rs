@@ -47,7 +47,7 @@ handling uuid version 1. Requires feature `v1`.
 [`UuidClockSequence`]: ../v1/trait.UuidClockSequence.html")]
 
 #[doc(inline)]
-pub use super::{Uuid, Bytes, Variant, Version};
+pub use super::{Bytes, Uuid, Variant, Version};
 #[cfg(feature = "v1")]
 #[doc(inline)]
 pub use v1::{ClockSequence, Context};
