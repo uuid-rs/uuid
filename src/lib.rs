@@ -148,6 +148,7 @@ mod core_support;
 mod serde_support;
 #[cfg(feature = "slog")]
 mod slog_support;
+mod std_support;
 #[cfg(test)]
 mod test_util;
 #[cfg(feature = "u128")]
