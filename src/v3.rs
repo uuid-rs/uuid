@@ -26,7 +26,7 @@ impl Uuid {
         context.consume(namespace.as_bytes());
         context.consume(name);
 
-        let mut uuid = Uuid::from_uuid_bytes(context.compute().into());
+        let mut uuid = Uuid::from_bytes(context.compute().into());
 
         uuid.set_variant(Variant::RFC4122);
         uuid.set_version(Version::Md5);
