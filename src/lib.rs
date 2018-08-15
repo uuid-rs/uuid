@@ -433,7 +433,7 @@ impl Uuid {
     ///
     /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76, 32, 50, 87, 5, 1, 33, 43, 87];
     ///
-    /// let uuid = Uuid::from_bytes(&bytes);
+    /// let uuid = Uuid::from_slice(&bytes);
     /// let uuid = uuid.map(|uuid| uuid.to_hyphenated().to_string());
     ///
     /// let expected_uuid =
