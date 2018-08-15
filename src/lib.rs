@@ -384,7 +384,6 @@ impl Uuid {
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
-    // TODO: discuss rename to `from_slice`
     pub fn from_fields(
         d1: u32,
         d2: u16,
@@ -456,8 +455,7 @@ impl Uuid {
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
-    // TODO: discuss rename to `from_slice`
-    pub fn from_bytes(b: &[u8]) -> Result<Uuid, BytesError> {
+    pub fn from_slice(b: &[u8]) -> Result<Uuid, BytesError> {
         const BYTES_LEN: usize = 16;
 
         let len = b.len();
