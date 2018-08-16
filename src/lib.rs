@@ -344,7 +344,7 @@ impl Uuid {
     /// ```
     #[cfg(not(feature = "const_fn"))]
     pub fn nil() -> Uuid {
-        Uuid::from_uuid_bytes([0; 16])
+        Uuid::from_bytes([0; 16])
     }
 
     /// Creates a `Uuid` from four field values.
@@ -484,7 +484,7 @@ impl Uuid {
     ///     62,
     /// ];
     ///
-    /// let uuid = Uuid::from_uuid_bytes(bytes);
+    /// let uuid = Uuid::from_bytes(bytes);
     /// let uuid = uuid.to_hyphenated().to_string();
     ///
     /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
@@ -501,7 +501,7 @@ impl Uuid {
     /// let bytes: UuidBytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't
     /// compile
     ///
-    /// let uuid = Uuid::from_uuid_bytes(bytes);
+    /// let uuid = Uuid::from_bytes(bytes);
     /// ```
     #[cfg(not(feature = "const_fn"))]
     pub fn from_bytes(bytes: Bytes) -> Uuid {
@@ -1361,7 +1361,7 @@ mod tests {
     }
 
     #[test]
-    fn test_from_bytes() {
+    fn test_from_slice() {
         let b = [
             0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
             0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
@@ -1374,7 +1374,7 @@ mod tests {
     }
 
     #[test]
-    fn test_from_uuid_bytes() {
+    fn test_from_bytes() {
         let b = [
             0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
             0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
