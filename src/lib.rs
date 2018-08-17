@@ -318,7 +318,7 @@ impl Uuid {
     /// ```
     #[cfg(feature = "const_fn")]
     pub const fn nil() -> Self {
-        Uuid::from_uuid_bytes([0; 16])
+        Uuid::from_bytes([0; 16])
     }
 
     /// The 'nil UUID'.
@@ -344,7 +344,7 @@ impl Uuid {
     /// ```
     #[cfg(not(feature = "const_fn"))]
     pub fn nil() -> Uuid {
-        Uuid::from_uuid_bytes([0; 16])
+        Uuid::from_bytes([0; 16])
     }
 
     /// Creates a `Uuid` from four field values.
@@ -384,7 +384,6 @@ impl Uuid {
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
-    // TODO: discuss rename to `from_slice`
     pub fn from_fields(
         d1: u32,
         d2: u16,
@@ -399,7 +398,7 @@ impl Uuid {
             return Err(BytesError::new(D4_LEN, len));
         }
 
-        Ok(Uuid::from_uuid_bytes([
+        Ok(Uuid::from_bytes([
             (d1 >> 24) as u8,
             (d1 >> 16) as u8,
             (d1 >> 8) as u8,
@@ -434,7 +433,7 @@ impl Uuid {
     ///
     /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76, 32, 50, 87, 5, 1, 33, 43, 87];
     ///
-    /// let uuid = Uuid::from_bytes(&bytes);
+    /// let uuid = Uuid::from_slice(&bytes);
     /// let uuid = uuid.map(|uuid| uuid.to_hyphenated().to_string());
     ///
     /// let expected_uuid =
@@ -450,14 +449,13 @@ impl Uuid {
     ///
     /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76];
     ///
-    /// let uuid = Uuid::from_bytes(&bytes);
+    /// let uuid = Uuid::from_slice(&bytes);
     ///
     /// let expected_uuid = Err(uuid::BytesError::new(16, 8));
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
-    // TODO: discuss rename to `from_slice`
-    pub fn from_bytes(b: &[u8]) -> Result<Uuid, BytesError> {
+    pub fn from_slice(b: &[u8]) -> Result<Uuid, BytesError> {
         const BYTES_LEN: usize = 16;
 
         let len = b.len();
@@ -468,7 +466,7 @@ impl Uuid {
 
         let mut bytes: Bytes = [0; 16];
         bytes.copy_from_slice(b);
-        Ok(Uuid::from_uuid_bytes(bytes))
+        Ok(Uuid::from_bytes(bytes))
     }
 
     /// Creates a `Uuid` using the supplied bytes.
@@ -486,7 +484,7 @@ impl Uuid {
     ///     62,
     /// ];
     ///
-    /// let uuid = Uuid::from_uuid_bytes(bytes);
+    /// let uuid = Uuid::from_bytes(bytes);
     /// let uuid = uuid.to_hyphenated().to_string();
     ///
     /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
@@ -503,11 +501,10 @@ impl Uuid {
     /// let bytes: UuidBytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't
     /// compile
     ///
-    /// let uuid = Uuid::from_uuid_bytes(bytes);
+    /// let uuid = Uuid::from_bytes(bytes);
     /// ```
-    // TODO: discuss rename to `from_bytes`
     #[cfg(not(feature = "const_fn"))]
-    pub fn from_uuid_bytes(bytes: Bytes) -> Uuid {
+    pub fn from_bytes(bytes: Bytes) -> Uuid {
         Uuid(bytes)
     }
 
@@ -526,7 +523,7 @@ impl Uuid {
     ///     62,
     /// ];
     ///
-    /// let uuid = Uuid::from_uuid_bytes(bytes);
+    /// let uuid = Uuid::from_bytes(bytes);
     /// let uuid = uuid.to_hyphenated().to_string();
     ///
     /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
@@ -542,11 +539,10 @@ impl Uuid {
     ///
     /// let bytes: Bytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
     ///
-    /// let uuid = Uuid::from_uuid_bytes(bytes);
+    /// let uuid = Uuid::from_bytes(bytes);
     /// ```
-    // TODO: discuss rename to `from_bytes`
     #[cfg(feature = "const_fn")]
-    pub const fn from_uuid_bytes(bytes: Bytes) -> Uuid {
+    pub const fn from_bytes(bytes: Bytes) -> Uuid {
         Uuid(bytes)
     }
 
@@ -574,7 +570,7 @@ impl Uuid {
     /// ```
     ///
     pub fn from_random_bytes(bytes: Bytes) -> Uuid {
-        let mut uuid = Uuid::from_uuid_bytes(bytes);
+        let mut uuid = Uuid::from_bytes(bytes);
         uuid.set_variant(Variant::RFC4122);
         uuid.set_version(Version::Random);
         uuid
@@ -923,7 +919,7 @@ impl Uuid {
             });
         }
 
-        Ok(Uuid::from_uuid_bytes(buffer))
+        Ok(Uuid::from_bytes(buffer))
     }
 
     /// Tests if the UUID is nil
@@ -944,7 +940,7 @@ mod tests {
     fn test_nil() {
         let nil = Uuid::nil();
         let not_nil = test_util::new();
-        let from_bytes = Uuid::from_uuid_bytes([
+        let from_bytes = Uuid::from_bytes([
             4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87,
         ]);
 
@@ -1365,26 +1361,26 @@ mod tests {
     }
 
     #[test]
-    fn test_from_bytes() {
+    fn test_from_slice() {
         let b = [
             0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
             0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
         ];
 
-        let u = Uuid::from_bytes(&b).unwrap();
+        let u = Uuid::from_slice(&b).unwrap();
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
 
         assert_eq!(u.to_simple().to_string(), expected);
     }
 
     #[test]
-    fn test_from_uuid_bytes() {
+    fn test_from_bytes() {
         let b = [
             0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
             0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
         ];
 
-        let u = Uuid::from_uuid_bytes(b);
+        let u = Uuid::from_bytes(b);
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
 
         assert_eq!(u.to_simple().to_string(), expected);
@@ -1406,7 +1402,7 @@ mod tests {
             0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
         ];
 
-        let u = Uuid::from_bytes(&b_in).unwrap();
+        let u = Uuid::from_slice(&b_in).unwrap();
 
         let b_out = u.as_bytes();
 

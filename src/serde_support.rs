@@ -54,7 +54,7 @@ impl<'de> Deserialize<'de> for Uuid {
                     self,
                     value: &[u8],
                 ) -> Result<Uuid, E> {
-                    Uuid::from_bytes(value).map_err(E::custom)
+                    Uuid::from_slice(value).map_err(E::custom)
                 }
             }
 
@@ -76,7 +76,7 @@ impl<'de> Deserialize<'de> for Uuid {
                     self,
                     value: &[u8],
                 ) -> Result<Uuid, E> {
-                    Uuid::from_bytes(value).map_err(E::custom)
+                    Uuid::from_slice(value).map_err(E::custom)
                 }
             }
 
@@ -108,7 +108,7 @@ mod tests {
         use serde_test::Configure;
 
         let uuid_bytes = b"F9168C5E-CEB2-4F";
-        let u = Uuid::from_bytes(uuid_bytes).unwrap();
+        let u = Uuid::from_slice(uuid_bytes).unwrap();
         serde_test::assert_tokens(
             &u.compact(),
             &[serde_test::Token::Bytes(uuid_bytes)],
