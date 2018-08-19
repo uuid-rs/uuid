@@ -70,7 +70,6 @@ impl Uuid {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidHyphenated`]: struct.UuidHyphenated.html
-    // TODO: discuss to_ vs as_ vs into_
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn to_hyphenated(self) -> Hyphenated {
@@ -81,7 +80,6 @@ impl Uuid {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidHyphenated`]: struct.UuidHyphenated.html
-    // TODO: discuss to_ vs as_ vs into_
     #[cfg(feature = "const_fn")]
     #[inline]
     pub fn to_hyphenated(self) -> Hyphenated {
@@ -92,7 +90,6 @@ impl Uuid {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidHyphenatedRef`]: struct.UuidHyphenatedRef.html
-    // TODO(: discuss to_ vs as_ vs into_
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn to_hyphenated_ref(&self) -> HyphenatedRef {
@@ -103,7 +100,6 @@ impl Uuid {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidHyphenatedRef`]: struct.UuidHyphenatedRef.html
-    // TODO: discuss to_ vs as_ vs into_
     #[cfg(feature = "const_fn")]
     #[inline]
     pub fn to_hyphenated_ref(&self) -> HyphenatedRef {
@@ -114,7 +110,6 @@ impl Uuid {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidSimple`]: struct.UuidSimple.html
-    // TODO: discuss to_ vs as_ vs into_
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn to_simple(self) -> Simple {
@@ -125,7 +120,6 @@ impl Uuid {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidSimple`]: struct.UuidSimple.html
-    // TODO: discuss to_ vs as_ vs into_
     #[cfg(feature = "const_fn")]
     #[inline]
     pub fn to_simple(self) -> Simple {
@@ -136,7 +130,6 @@ impl Uuid {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidSimpleRef`]: struct.UuidSimpleRef.html
-    // TODO: discuss to_ vs as_ vs into_
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn to_simple_ref(&self) -> SimpleRef {
@@ -147,7 +140,6 @@ impl Uuid {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidSimpleRef`]: struct.UuidSimpleRef.html
-    // TODO: discuss to_ vs as_ vs into_
     #[cfg(feature = "const_fn")]
     #[inline]
     pub fn to_simple_ref(&self) -> SimpleRef {
@@ -158,7 +150,6 @@ impl Uuid {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidUrn`]: struct.UuidUrn.html
-    // TODO: discuss to_ vs as_ vs into_
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn to_urn(self) -> Urn {
@@ -169,7 +160,6 @@ impl Uuid {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidUrn`]: struct.UuidUrn.html
-    // TODO: discuss to_ vs as_ vs into_
     #[cfg(feature = "const_fn")]
     #[inline]
     pub fn to_urn(self) -> Urn {
@@ -180,7 +170,6 @@ impl Uuid {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidUrnRef`]: struct.UuidUrnRef.html
-    // TODO: discuss to_ vs as_ vs into_
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn to_urn_ref(&self) -> UrnRef {
@@ -191,7 +180,6 @@ impl Uuid {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidUrnRef`]: struct.UuidUrnRef.html
-    // TODO: discuss to_ vs as_ vs into_
     #[cfg(feature = "const_fn")]
     #[inline]
     pub fn to_urn_ref(&self) -> UrnRef {
