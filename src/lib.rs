@@ -215,26 +215,26 @@ pub enum Variant {
 pub struct Uuid(Bytes);
 
 impl BytesError {
-    /// The expected number of bytes.
     #[inline]
+    /// The expected number of bytes.
     const_ft! {
      pub fn expected(&self) -> usize {
         self.expected
     }
     }
 
-    /// The number of bytes found.
     #[inline]
+    /// The number of bytes found.
     const_ft! {
         pub fn found(&self) -> usize {
             self.found
         }
     }
 
+    #[inline]
     /// Create a new [`UuidError`].
     ///
     /// [`UuidError`]: struct.UuidError.html
-    #[inline]
     const_ft! {
         pub fn new(expected: usize, found: usize) -> Self {
             BytesError { expected, found }
