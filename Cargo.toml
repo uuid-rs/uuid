@@ -53,6 +53,9 @@ version = "0.6"
 optional = true
 version = "2"
 
+[dependencies.const-ft]
+version = "0.1.2"
+
 [dev-dependencies.serde_test]
 version = "1.0.56"
 
@@ -70,6 +73,6 @@ u128 = ["byteorder"]
 # nightly rust
 #------------------------
 # Allow using `const fn`s
-const_fn = ["nightly"]
+const_fn = ["nightly", "const-ft/const_fn"]
 # Nightly marker feature gate
 nightly = []

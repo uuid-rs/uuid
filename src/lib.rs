@@ -137,6 +137,9 @@ extern crate sha1;
 #[cfg_attr(test, macro_use)]
 extern crate slog;
 
+#[macro_use]
+extern crate const_ft;
+
 pub mod adapter;
 pub mod parser;
 pub mod prelude;
@@ -213,52 +216,29 @@ pub struct Uuid(Bytes);
 
 impl BytesError {
     /// The expected number of bytes.
-    #[cfg(feature = "const_fn")]
     #[inline]
-    pub const fn expected(&self) -> usize {
+    const_ft! {
+     pub fn expected(&self) -> usize {
         self.expected
     }
-
-    /// The expected number of bytes.
-    #[cfg(not(feature = "const_fn"))]
-    #[inline]
-    pub fn expected(&self) -> usize {
-        self.expected
     }
 
     /// The number of bytes found.
-    #[cfg(feature = "const_fn")]
     #[inline]
-    pub const fn found(&self) -> usize {
-        self.found
-    }
-
-    /// The number of bytes found.
-    #[cfg(not(feature = "const_fn"))]
-    #[inline]
-    pub fn found(&self) -> usize {
-        self.found
-    }
-
-    /// Create a new [`UuidError`].
-    ///
-    /// [`UuidError`]: struct.UuidError.html
-    #[cfg(feature = "const_fn")]
-    #[inline]
-    pub const fn new(expected: usize, found: usize) -> Self {
-        BytesError {
-            expected: expected,
-            found: found,
+    const_ft! {
+        pub fn found(&self) -> usize {
+            self.found
         }
     }
 
     /// Create a new [`UuidError`].
     ///
     /// [`UuidError`]: struct.UuidError.html
-    #[cfg(not(feature = "const_fn"))]
     #[inline]
-    pub fn new(expected: usize, found: usize) -> Self {
-        BytesError { expected, found }
+    const_ft! {
+        pub fn new(expected: usize, found: usize) -> Self {
+            BytesError { expected, found }
+        }
     }
 }
 
@@ -316,35 +296,10 @@ impl Uuid {
     ///     "00000000-0000-0000-0000-000000000000"
     /// );
     /// ```
-    #[cfg(feature = "const_fn")]
-    pub const fn nil() -> Self {
-        Uuid::from_bytes([0; 16])
-    }
-
-    /// The 'nil UUID'.
-    ///
-    /// The nil UUID is special form of UUID that is specified to have all
-    /// 128 bits set to zero, as defined in [IETF RFC 4122 Section 4.1.7][RFC].
-    ///
-    /// [RFC]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::nil();
-    ///
-    /// assert_eq!(
-    ///     uuid.to_hyphenated().to_string(),
-    ///     "00000000-0000-0000-0000-000000000000"
-    /// );
-    /// ```
-    #[cfg(not(feature = "const_fn"))]
-    pub fn nil() -> Uuid {
-        Uuid::from_bytes([0; 16])
+    const_ft! {
+        pub fn nil() -> Uuid {
+            Uuid::from_bytes([0; 16])
+        }
     }
 
     /// Creates a `Uuid` from four field values.
@@ -503,47 +458,10 @@ impl Uuid {
     ///
     /// let uuid = Uuid::from_bytes(bytes);
     /// ```
-    #[cfg(not(feature = "const_fn"))]
-    pub fn from_bytes(bytes: Bytes) -> Uuid {
-        Uuid(bytes)
-    }
-
-    /// Creates a `Uuid` using the supplied bytes.
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// use uuid::Bytes;
-    /// use uuid::Uuid;
-    ///
-    /// let bytes: Bytes = [
-    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
-    ///     62,
-    /// ];
-    ///
-    /// let uuid = Uuid::from_bytes(bytes);
-    /// let uuid = uuid.to_hyphenated().to_string();
-    ///
-    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
-    ///
-    /// assert_eq!(expected_uuid, uuid);
-    /// ```
-    ///
-    /// An incorrect number of bytes:
-    ///
-    /// ```compile_fail
-    /// use uuid::Bytes;
-    /// use uuid::Uuid;
-    ///
-    /// let bytes: Bytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
-    ///
-    /// let uuid = Uuid::from_bytes(bytes);
-    /// ```
-    #[cfg(feature = "const_fn")]
-    pub const fn from_bytes(bytes: Bytes) -> Uuid {
-        Uuid(bytes)
+    const_ft! {
+        pub fn from_bytes(bytes: Bytes) -> Uuid {
+            Uuid(bytes)
+        }
     }
 
     /// Creates a v4 Uuid from random bytes (e.g. bytes supplied from `Rand`
@@ -711,37 +629,14 @@ impl Uuid {
     ///     uuid.as_bytes(),
     ///     &[
     ///         147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133, 200,
-    ///         34, 168,
-    ///     ]
-    /// );
-    /// ```
-    #[cfg(feature = "const_fn")]
-    pub const fn as_bytes(&self) -> &Bytes {
-        &self.0
-    }
-
-    /// Returns an array of 16 octets containing the UUID data.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::nil();
-    /// assert_eq!(uuid.as_bytes(), &[0; 16]);
-    ///
-    /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
-    /// assert_eq!(
-    ///     uuid.as_bytes(),
-    ///     &[
-    ///         147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133, 200,
     ///         34, 168
     ///     ]
     /// );
     /// ```
-    #[cfg(not(feature = "const_fn"))]
-    pub fn as_bytes(&self) -> &Bytes {
-        &self.0
+    const_ft! {
+        pub fn as_bytes(&self) -> &Bytes {
+            &self.0
+        }
     }
 
     /// Returns an Optional Tuple of (u64, u16) representing the timestamp and
