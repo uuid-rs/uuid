@@ -10,10 +10,8 @@
 // except according to those terms.
 
 use core::fmt;
+use core::str;
 use prelude::*;
-
-#[macro_use]
-mod macros;
 
 impl fmt::Display for super::Hyphenated {
     #[inline]
@@ -57,159 +55,121 @@ impl<'a> fmt::Display for super::UrnRef<'a> {
     }
 }
 
+fn format(
+    f: &mut fmt::Formatter,
+    uuid: &Uuid,
+    hyphens: bool,
+    upper: bool,
+) -> fmt::Result {
+    const UPPER: [u8; 16] = [
+        b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'A', b'B',
+        b'C', b'D', b'E', b'F',
+    ];
+    const LOWER: [u8; 16] = [
+        b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'a', b'b',
+        b'c', b'd', b'e', b'f',
+    ];
+
+    let mut buffer = [b'-'; 36];
+    let mut idx = 0;
+
+    let characters = if upper { &UPPER } else { &LOWER };
+
+    for b in uuid.as_bytes() {
+        buffer[idx] = characters[(b >> 4) as usize];
+        buffer[idx + 1] = characters[(b & 0b1111) as usize];
+
+        // Now skip forward to the place to write the next two
+        // characters.  We need to skip forward an extra one to leave
+        // a hyphen when we've just written the two bytes before it
+        // (but only if hyphens are turned on):
+        //
+        // uuid: 00000000-0000-0000-0000-000000000000
+        //             ^    ^    ^    ^
+        // idx:            111111111122
+        //       0123456789012345678901
+        match idx {
+            6 | 11 | 16 | 21 if hyphens => idx += 3,
+            _ => idx += 2,
+        }
+    }
+    let len = if hyphens { 36 } else { 32 };
+    f.write_str(str::from_utf8(&buffer[..len]).unwrap())
+}
+
 impl fmt::LowerHex for super::Hyphenated {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphenated_write!(
-            f,
-            "{:08x}-\
-             {:04x}-\
-             {:04x}-\
-             {:02x}{:02x}-\
-             {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            self.0.as_bytes()
-        )
+        format(f, &self.0, true, false)
     }
 }
 
 impl<'a> fmt::LowerHex for super::HyphenatedRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphenated_write!(
-            f,
-            "{:08x}-\
-             {:04x}-\
-             {:04x}-\
-             {:02x}{:02x}-\
-             {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            self.0.as_bytes()
-        )
+        format(f, self.0, true, false)
     }
 }
 
 impl fmt::LowerHex for super::Simple {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for byte in self.0.as_bytes() {
-            write!(f, "{:02x}", byte)?
-        }
-
-        Ok(())
+        format(f, &self.0, false, false)
     }
 }
 
 impl<'a> fmt::LowerHex for super::SimpleRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for byte in self.0.as_bytes() {
-            write!(f, "{:02x}", byte)?
-        }
-
-        Ok(())
+        format(f, self.0, false, false)
     }
 }
 
 impl fmt::LowerHex for super::Urn {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphenated_write!(
-            f,
-            "urn:uuid:\
-             {:08x}-\
-             {:04x}-\
-             {:04x}-\
-             {:02x}{:02x}-\
-             {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            self.0.as_bytes()
-        )
+        f.write_str("urn:uuid:")?;
+        format(f, &self.0, true, false)
     }
 }
 
 impl<'a> fmt::LowerHex for super::UrnRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphenated_write!(
-            f,
-            "urn:uuid:\
-             {:08x}-\
-             {:04x}-\
-             {:04x}-\
-             {:02x}{:02x}-\
-             {:02x}{:02x}{:02x}{:02x}{:02x}{:02x}",
-            self.0.as_bytes()
-        )
+        f.write_str("urn:uuid:")?;
+        format(f, self.0, true, false)
     }
 }
 
 impl fmt::UpperHex for super::Hyphenated {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphenated_write!(
-            f,
-            "{:08X}-\
-             {:04X}-\
-             {:04X}-\
-             {:02X}{:02X}-\
-             {:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
-            self.0.as_bytes()
-        )
+        format(f, &self.0, true, true)
     }
 }
 
 impl<'a> fmt::UpperHex for super::HyphenatedRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphenated_write!(
-            f,
-            "{:08X}-\
-             {:04X}-\
-             {:04X}-\
-             {:02X}{:02X}-\
-             {:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
-            self.0.as_bytes()
-        )
+        format(f, self.0, true, true)
     }
 }
 
 impl fmt::UpperHex for super::Simple {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for byte in self.0.as_bytes() {
-            write!(f, "{:02X}", byte)?
-        }
-
-        Ok(())
+        format(f, &self.0, false, true)
     }
 }
 
 impl<'a> fmt::UpperHex for super::SimpleRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        for byte in self.0.as_bytes() {
-            write!(f, "{:02X}", byte)?
-        }
-
-        Ok(())
+        format(f, self.0, false, true)
     }
 }
 
 impl fmt::UpperHex for super::Urn {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphenated_write!(
-            f,
-            "urn:uuid:\
-             {:08X}-\
-             {:04X}-\
-             {:04X}-\
-             {:02X}{:02X}-\
-             {:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
-            self.0.as_bytes()
-        )
+        f.write_str("urn:uuid:")?;
+        format(f, &self.0, true, true)
     }
 }
 
 impl<'a> fmt::UpperHex for super::UrnRef<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        hyphenated_write!(
-            f,
-            "urn:uuid:\
-             {:08X}-\
-             {:04X}-\
-             {:04X}-\
-             {:02X}{:02X}-\
-             {:02X}{:02X}{:02X}{:02X}{:02X}{:02X}",
-            self.0.as_bytes()
-        )
+        f.write_str("urn:uuid:")?;
+        format(f, self.0, true, true)
     }
 }
 
