@@ -29,7 +29,7 @@ impl fmt::Display for parser::ParseError {
         write!(f, "{}: ", self._description())?;
 
         match *self {
-            parser::UuidParseError::InvalidCharacter {
+            parser::ParseError::InvalidCharacter {
                 expected,
                 found,
                 index,
@@ -40,11 +40,11 @@ impl fmt::Display for parser::ParseError {
                 found,
                 index
             ),
-            parser::UuidParseError::InvalidGroupCount {
+            parser::ParseError::InvalidGroupCount {
                 ref expected,
                 found,
             } => write!(f, "expected {}, found {}", expected, found),
-            parser::UuidParseError::InvalidGroupLength {
+            parser::ParseError::InvalidGroupLength {
                 ref expected,
                 found,
                 group,
@@ -53,7 +53,7 @@ impl fmt::Display for parser::ParseError {
                 "expected {}, found {} in group {}",
                 expected, found, group,
             ),
-            parser::UuidParseError::InvalidLength {
+            parser::ParseError::InvalidLength {
                 ref expected,
                 found,
             } => write!(f, "expected {}, found {}", expected, found),

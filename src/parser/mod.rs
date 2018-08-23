@@ -89,12 +89,12 @@ pub enum ParseError {
 impl ParseError {
     fn _description(&self) -> &str {
         match *self {
-            UuidParseError::InvalidCharacter { .. } => "invalid character",
-            UuidParseError::InvalidGroupCount { .. } => {
+            ParseError::InvalidCharacter { .. } => "invalid character",
+            ParseError::InvalidGroupCount { .. } => {
                 "invalid number of groups"
             }
-            UuidParseError::InvalidGroupLength { .. } => "invalid group length",
-            UuidParseError::InvalidLength { .. } => "invalid length",
+            ParseError::InvalidGroupLength { .. } => "invalid group length",
+            ParseError::InvalidLength { .. } => "invalid length",
         }
     }
 }
