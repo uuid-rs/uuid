@@ -55,7 +55,7 @@ impl fmt::UpperHex for Uuid {
 }
 
 impl str::FromStr for Uuid {
-    type Err = parser::UuidParseError;
+    type Err = parser::ParseError;
 
     fn from_str(uuid_str: &str) -> Result<Self, Self::Err> {
         Uuid::parse_str(uuid_str)

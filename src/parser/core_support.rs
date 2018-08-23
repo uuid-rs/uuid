@@ -24,7 +24,7 @@ impl<'a> fmt::Display for parser::Expected {
     }
 }
 
-impl fmt::Display for parser::UuidParseError {
+impl fmt::Display for parser::ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}: ", self._description())?;
 
