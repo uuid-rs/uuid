@@ -90,9 +90,7 @@ impl ParseError {
     fn _description(&self) -> &str {
         match *self {
             ParseError::InvalidCharacter { .. } => "invalid character",
-            ParseError::InvalidGroupCount { .. } => {
-                "invalid number of groups"
-            }
+            ParseError::InvalidGroupCount { .. } => "invalid number of groups",
             ParseError::InvalidGroupLength { .. } => "invalid group length",
             ParseError::InvalidLength { .. } => "invalid length",
         }

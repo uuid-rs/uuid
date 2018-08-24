@@ -884,15 +884,13 @@ impl Uuid {
                             digit
                         };
 
-                        return Err(
-                            parser::ParseError::InvalidGroupLength {
-                                expected: parser::Expected::Exact(
-                                    parser::GROUP_LENS[group],
-                                ),
-                                found: found as usize,
-                                group,
-                            },
-                        );
+                        return Err(parser::ParseError::InvalidGroupLength {
+                            expected: parser::Expected::Exact(
+                                parser::GROUP_LENS[group],
+                            ),
+                            found: found as usize,
+                            group,
+                        });
                     }
                     _ => {
                         return Err(parser::ParseError::InvalidCharacter {
