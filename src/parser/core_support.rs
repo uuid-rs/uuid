@@ -24,12 +24,12 @@ impl<'a> fmt::Display for parser::Expected {
     }
 }
 
-impl fmt::Display for parser::UuidParseError {
+impl fmt::Display for parser::ParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}: ", self._description())?;
 
         match *self {
-            parser::UuidParseError::InvalidCharacter {
+            parser::ParseError::InvalidCharacter {
                 expected,
                 found,
                 index,
@@ -40,11 +40,11 @@ impl fmt::Display for parser::UuidParseError {
                 found,
                 index
             ),
-            parser::UuidParseError::InvalidGroupCount {
+            parser::ParseError::InvalidGroupCount {
                 ref expected,
                 found,
             } => write!(f, "expected {}, found {}", expected, found),
-            parser::UuidParseError::InvalidGroupLength {
+            parser::ParseError::InvalidGroupLength {
                 ref expected,
                 found,
                 group,
@@ -53,7 +53,7 @@ impl fmt::Display for parser::UuidParseError {
                 "expected {}, found {} in group {}",
                 expected, found, group,
             ),
-            parser::UuidParseError::InvalidLength {
+            parser::ParseError::InvalidLength {
                 ref expected,
                 found,
             } => write!(f, "expected {}, found {}", expected, found),

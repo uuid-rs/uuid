@@ -37,7 +37,7 @@ pub enum Expected {
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum UuidParseError {
+pub enum ParseError {
     /// Invalid character in the [`Uuid`] string.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
@@ -86,15 +86,13 @@ pub enum UuidParseError {
     },
 }
 
-impl UuidParseError {
+impl ParseError {
     fn _description(&self) -> &str {
         match *self {
-            UuidParseError::InvalidCharacter { .. } => "invalid character",
-            UuidParseError::InvalidGroupCount { .. } => {
-                "invalid number of groups"
-            }
-            UuidParseError::InvalidGroupLength { .. } => "invalid group length",
-            UuidParseError::InvalidLength { .. } => "invalid length",
+            ParseError::InvalidCharacter { .. } => "invalid character",
+            ParseError::InvalidGroupCount { .. } => "invalid number of groups",
+            ParseError::InvalidGroupLength { .. } => "invalid group length",
+            ParseError::InvalidLength { .. } => "invalid length",
         }
     }
 }
