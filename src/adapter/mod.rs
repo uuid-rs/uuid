@@ -13,7 +13,7 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
-use prelude::*;
+use crate::prelude::*;
 
 mod core_support;
 

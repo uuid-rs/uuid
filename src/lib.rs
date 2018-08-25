@@ -119,20 +119,6 @@
     html_root_url = "https://docs.rs/uuid"
 )]
 
-#[cfg(feature = "byteorder")]
-extern crate byteorder;
-#[cfg(feature = "std")]
-extern crate core;
-#[cfg(feature = "md5")]
-extern crate md5;
-#[cfg(feature = "rand")]
-extern crate rand;
-#[cfg(feature = "serde")]
-extern crate serde;
-#[cfg(all(feature = "serde", test))]
-extern crate serde_test;
-#[cfg(feature = "sha1")]
-extern crate sha1;
 #[cfg(feature = "slog")]
 #[cfg_attr(test, macro_use)]
 extern crate slog;
@@ -932,7 +918,7 @@ mod tests {
 
     use self::std::prelude::v1::*;
     use super::test_util;
-    use prelude::*;
+    use crate::prelude::*;
 
     #[test]
     fn test_nil() {
@@ -1005,8 +991,8 @@ mod tests {
 
     #[test]
     fn test_parse_uuid_v4() {
-        use adapter;
-        use parser;
+        use crate::adapter;
+        use crate::parser;
 
         const EXPECTED_UUID_LENGTHS: parser::Expected =
             parser::Expected::Any(&[
@@ -1250,7 +1236,7 @@ mod tests {
 
     #[test]
     fn test_upper_lower_hex() {
-        use tests::std::fmt::Write;
+        use crate::tests::std::fmt::Write;
 
         let mut buf = String::new();
         let u = test_util::new();
@@ -1395,7 +1381,7 @@ mod tests {
 
     #[test]
     fn test_bytes_roundtrip() {
-        let b_in: ::Bytes = [
+        let b_in: crate::Bytes = [
             0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
             0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
         ];

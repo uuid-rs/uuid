@@ -10,7 +10,7 @@
 // except according to those terms.
 
 use core::fmt;
-use parser;
+use crate::parser;
 
 impl<'a> fmt::Display for parser::Expected {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

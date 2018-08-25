@@ -29,7 +29,7 @@ mod tests {
     #[test]
     fn test_slog_kv() {
         use slog;
-        use slog::Drain;
+        use slog::{crit, Drain};
         use crate::test_util;
 
         let root = slog::Logger::root(slog::Discard.fuse(), o!());

@@ -11,7 +11,7 @@
 
 use core::fmt;
 use core::str;
-use prelude::*;
+use crate::prelude::*;
 
 impl fmt::Display for super::Hyphenated {
     #[inline]

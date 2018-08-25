@@ -10,8 +10,8 @@
 // except according to those terms.
 
 use core::{fmt, str};
-use parser;
-use prelude::*;
+use crate::parser;
+use crate::prelude::*;
 
 impl fmt::Display for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -30,7 +30,7 @@ impl fmt::Display for Variant {
     }
 }
 
-impl fmt::Display for ::BytesError {
+impl fmt::Display for crate::BytesError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -74,8 +74,8 @@ mod tests {
     extern crate std;
 
     use self::std::prelude::v1::*;
-    use prelude::*;
-    use test_util;
+    use crate::prelude::*;
+    use crate::test_util;
 
     macro_rules! check {
         ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {

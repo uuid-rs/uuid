@@ -10,7 +10,7 @@
 // except according to those terms.
 
 use byteorder;
-use prelude::*;
+use crate::prelude::*;
 
 impl Uuid {
     /// Creates a new [`Uuid`] from a `u128` value.
@@ -27,7 +27,7 @@ impl Uuid {
 
 impl From<u128> for Uuid {
     fn from(f: u128) -> Self {
-        let mut bytes: ::Bytes = [0; 16];
+        let mut bytes: crate::Bytes = [0; 16];
 
         {
             use byteorder::ByteOrder;
@@ -41,7 +41,7 @@ impl From<u128> for Uuid {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
+    use crate::prelude::*;
 
     #[test]
     fn test_from_u128() {
