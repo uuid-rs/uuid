@@ -110,6 +110,7 @@ pub(crate) fn len_matches_any(len: usize, crits: &[usize]) -> bool {
 
 /// Check if the length matches any criteria lengths in the given range
 /// (inclusive).
+#[allow(dead_code)]
 pub(crate) fn len_matches_range(len: usize, min: usize, max: usize) -> bool {
     for crit in min..(max + 1) {
         if len == crit {
