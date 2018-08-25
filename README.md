@@ -69,7 +69,7 @@ you'll need to change how you depend on `uuid`:
 
 ```toml
 [dependencies]
-uuid = { version = "0.6", features = ["v4"] }
+uuid = { version = "0.7.0-beta", features = ["v4"] }
 ```
 
 Next, you'll write:
