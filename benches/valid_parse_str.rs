@@ -11,7 +11,7 @@ use test::Bencher;
 use uuid::prelude::*;
 
 #[bench]
-fn bench_parse(b: &mut Bencher) {
+fn bench_parse_valid_strings(b: &mut Bencher) {
     b.iter(|| {
         // Valid
         let _ = Uuid::parse_str("00000000000000000000000000000000");
