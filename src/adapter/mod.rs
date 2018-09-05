@@ -162,7 +162,7 @@ impl Uuid {
     /// [`UuidUrn`]: struct.UuidUrn.html
     #[cfg(feature = "const_fn")]
     #[inline]
-    pub constfn to_urn(self) -> Urn {
+    pub const fn to_urn(self) -> Urn {
         Urn::from_uuid(self)
     }
 
