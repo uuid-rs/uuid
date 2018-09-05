@@ -568,7 +568,6 @@ impl Uuid {
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
-    ///
     pub fn from_random_bytes(bytes: Bytes) -> Uuid {
         let mut uuid = Uuid::from_bytes(bytes);
         uuid.set_variant(Variant::RFC4122);
