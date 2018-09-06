@@ -47,21 +47,21 @@
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = "0.7.0-beta"
+//! uuid = "0.7"
 //! ```
 //!
 //! To activate various features, use syntax like:
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = { version = "0.7.0-beta", features = ["serde", "v4"] }
+//! uuid = { version = "0.7", features = ["serde", "v4"] }
 //! ```
 //!
 //! You can disable default features with:
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = { version = "0.7.0-beta", default-features = false }
+//! uuid = { version = "0.7", default-features = false }
 //! ```
 //!
 //! # Examples
