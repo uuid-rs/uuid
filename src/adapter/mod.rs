@@ -83,7 +83,7 @@ impl Uuid {
     /// [`UuidHyphenated`]: struct.UuidHyphenated.html
     #[cfg(feature = "const_fn")]
     #[inline]
-    pub fn to_hyphenated(self) -> Hyphenated {
+    pub const fn to_hyphenated(self) -> Hyphenated {
         Hyphenated::from_uuid(self)
     }
 
@@ -103,7 +103,7 @@ impl Uuid {
     /// [`UuidHyphenatedRef`]: struct.UuidHyphenatedRef.html
     #[cfg(feature = "const_fn")]
     #[inline]
-    pub fn to_hyphenated_ref(&self) -> HyphenatedRef {
+    pub const fn to_hyphenated_ref(&self) -> HyphenatedRef {
         HyphenatedRef::from_uuid_ref(self)
     }
 
@@ -123,7 +123,7 @@ impl Uuid {
     /// [`UuidSimple`]: struct.UuidSimple.html
     #[cfg(feature = "const_fn")]
     #[inline]
-    pub fn to_simple(self) -> Simple {
+    pub const fn to_simple(self) -> Simple {
         Simple::from_uuid(self)
     }
 
@@ -143,7 +143,7 @@ impl Uuid {
     /// [`UuidSimpleRef`]: struct.UuidSimpleRef.html
     #[cfg(feature = "const_fn")]
     #[inline]
-    pub fn to_simple_ref(&self) -> SimpleRef {
+    pub const fn to_simple_ref(&self) -> SimpleRef {
         SimpleRef::from_uuid_ref(self)
     }
 
@@ -163,7 +163,7 @@ impl Uuid {
     /// [`UuidUrn`]: struct.UuidUrn.html
     #[cfg(feature = "const_fn")]
     #[inline]
-    pub fn to_urn(self) -> Urn {
+    pub const fn to_urn(self) -> Urn {
         Urn::from_uuid(self)
     }
 
@@ -183,7 +183,7 @@ impl Uuid {
     /// [`UuidUrnRef`]: struct.UuidUrnRef.html
     #[cfg(feature = "const_fn")]
     #[inline]
-    pub fn to_urn_ref(&self) -> UrnRef {
+    pub const fn to_urn_ref(&self) -> UrnRef {
         UrnRef::from_uuid_ref(self)
     }
 }
@@ -269,7 +269,7 @@ impl Hyphenated {
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidHyphenated`]: struct.UuidHyphenated.html
     #[cfg(feature = "const_fn")]
-    pub fn from_uuid(uuid: Uuid) -> Self {
+    pub const fn from_uuid(uuid: Uuid) -> Self {
         Hyphenated(uuid)
     }
 
@@ -384,7 +384,7 @@ impl<'a> HyphenatedRef<'a> {
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidHyphenatedRef`]: struct.UuidHyphenatedRef.html
     #[cfg(feature = "const_fn")]
-    pub fn from_uuid_ref(uuid: &'a Uuid) -> Self {
+    pub const fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         HyphenatedRef(uuid)
     }
 
@@ -506,7 +506,7 @@ impl Simple {
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidSimple`]: struct.UuidSimple.html
     #[cfg(feature = "const_fn")]
-    pub fn from_uuid(uuid: Uuid) -> Self {
+    pub const fn from_uuid(uuid: Uuid) -> Self {
         Simple(uuid)
     }
 
@@ -619,7 +619,7 @@ impl<'a> SimpleRef<'a> {
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidSimpleRef`]: struct.UuidSimpleRef.html
     #[cfg(feature = "const_fn")]
-    pub fn from_uuid_ref(uuid: &'a Uuid) -> Self {
+    pub const fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         SimpleRef(uuid)
     }
 
@@ -732,7 +732,7 @@ impl Urn {
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidUrn`]: struct.UuidUrn.html
     #[cfg(feature = "const_fn")]
-    pub fn from_uuid(uuid: Uuid) -> Self {
+    pub const fn from_uuid(uuid: Uuid) -> Self {
         Urn(uuid)
     }
 
@@ -854,7 +854,7 @@ impl<'a> UrnRef<'a> {
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UuidUrnRef`]: struct.UuidUrnRef.html
     #[cfg(feature = "const_fn")]
-    pub fn from_uuid_ref(uuid: &'a Uuid) -> Self {
+    pub const fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         UrnRef(&uuid)
     }
 
