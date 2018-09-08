@@ -32,8 +32,8 @@
 //! various pieces of functionality:
 //!
 //! * `v1` - adds the `Uuid::new_v1` function and the ability to create a V1
-//!   using an implementation of `UuidV1ClockSequence` (usually `UuidV1Context`)
-//!   and a timestamp from `time::timespec`.
+//!   using an implementation of `uuid::v1::ClockSequence` (usually
+//! `uuid::v1::Context`) and a timestamp from `time::timespec`.
 //! * `v3` - adds the `Uuid::new_v3` function and the ability to create a V3
 //!   UUID based on the MD5 hash of some data.
 //! * `v4` - adds the `Uuid::new_v4` function and the ability to randomly
