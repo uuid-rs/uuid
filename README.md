@@ -30,7 +30,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-uuid = "0.6"
+uuid = "0.7"
 ```
 
 and this to your crate root:
@@ -89,7 +89,7 @@ you'll also need to change how you depend on `uuid`:
 
 ```toml
 [dependencies]
-uuid = { version = "0.6", features = ["v5"] }
+uuid = { version = "0.7", features = ["v5"] }
 ```
 
 Next, you'll write:
@@ -99,7 +99,7 @@ extern crate uuid;
 use uuid::Uuid;
 
 fn main() {
-    let my_uuid = Uuid::new_v5(&uuid::NAMESPACE_DNS, "foo");
+    let my_uuid = Uuid::new_v5(&Uuid::NAMESPACE_DNS, "foo".as_bytes());
     println!("{}", my_uuid);
 }
 ```
