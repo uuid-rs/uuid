@@ -28,15 +28,15 @@ impl Uuid {
     ///
     /// This expects two values representing a monotonically increasing value
     /// as well as a unique 6 byte NodeId, and an implementation of
-    /// [`UuidClockSequence`]. This function is only guaranteed to produce
+    /// [`ClockSequence`]. This function is only guaranteed to produce
     /// unique values if the following conditions hold:
     ///
     /// 1. The *NodeId* is unique for this process,
     /// 2. The *Context* is shared across all threads which are generating v1
     ///    [`Uuid`]s,
-    /// 3. The [`UuidClockSequence`] implementation reliably returns unique
-    ///    clock sequences (this crate provides [`UuidV1Context`] for this
-    ///    purpose. However you can create your own [`UuidClockSequence`]
+    /// 3. The [`ClockSequence`] implementation reliably returns unique
+    ///    clock sequences (this crate provides [`Context`] for this
+    ///    purpose. However you can create your own [`ClockSequence`]
     ///    implementation, if [`Context`] does not meet your needs).
     ///
     /// The NodeID must be exactly 6 bytes long. If the NodeID is not a valid
@@ -77,7 +77,7 @@ impl Uuid {
     ///
     /// [`ParseError`]: ../enum.ParseError.html
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidClockSequence`]: struct.UuidClockSequence.html
+    /// [`ClockSequence`]: struct.ClockSequence.html
     /// [`Context`]: struct.Context.html
     pub fn new_v1<T>(
         context: &T,

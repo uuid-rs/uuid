@@ -67,120 +67,120 @@ pub struct Urn(Uuid);
 pub struct UrnRef<'a>(&'a Uuid);
 
 impl Uuid {
-    /// Creates a [`UuidHyphenated`] instance from a [`Uuid`].
+    /// Creates a [`Hyphenated`] instance from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidHyphenated`]: struct.UuidHyphenated.html
+    /// [`Hyphenated`]: adapter/struct.Hyphenated.html
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn to_hyphenated(self) -> Hyphenated {
         Hyphenated::from_uuid(self)
     }
 
-    /// Creates a [`UuidHyphenated`] instance from a [`Uuid`].
+    /// Creates a [`Hyphenated`] instance from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidHyphenated`]: struct.UuidHyphenated.html
+    /// [`Hyphenated`]: adapter/struct.Hyphenated.html
     #[cfg(feature = "const_fn")]
     #[inline]
     pub const fn to_hyphenated(self) -> Hyphenated {
         Hyphenated::from_uuid(self)
     }
 
-    /// Creates a [`UuidHyphenatedRef`] instance from a [`Uuid`] reference.
+    /// Creates a [`HyphenatedRef`] instance from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidHyphenatedRef`]: struct.UuidHyphenatedRef.html
+    /// [`HyphenatedRef`]: adapter/struct.HyphenatedRef.html
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn to_hyphenated_ref(&self) -> HyphenatedRef {
         HyphenatedRef::from_uuid_ref(self)
     }
 
-    /// Creates a [`UuidHyphenatedRef`] instance from a [`Uuid`] reference.
+    /// Creates a [`HyphenatedRef`] instance from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidHyphenatedRef`]: struct.UuidHyphenatedRef.html
+    /// [`HyphenatedRef`]: adapter/struct.HyphenatedRef.html
     #[cfg(feature = "const_fn")]
     #[inline]
     pub const fn to_hyphenated_ref(&self) -> HyphenatedRef {
         HyphenatedRef::from_uuid_ref(self)
     }
 
-    /// Creates a [`UuidSimple`] instance from a [`Uuid`].
+    /// Creates a [`Simple`] instance from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidSimple`]: struct.UuidSimple.html
+    /// [`Simple`]: adapter/struct.Simple.html
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn to_simple(self) -> Simple {
         Simple::from_uuid(self)
     }
 
-    /// Creates a [`UuidSimple`] instance from a [`Uuid`].
+    /// Creates a [`Simple`] instance from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidSimple`]: struct.UuidSimple.html
+    /// [`Simple`]: adapter/struct.Simple.html
     #[cfg(feature = "const_fn")]
     #[inline]
     pub const fn to_simple(self) -> Simple {
         Simple::from_uuid(self)
     }
 
-    /// Creates a [`UuidSimpleRef`] instance from a [`Uuid`] reference.
+    /// Creates a [`SimpleRef`] instance from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidSimpleRef`]: struct.UuidSimpleRef.html
+    /// [`SimpleRef`]: adapter/struct.SimpleRef.html
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn to_simple_ref(&self) -> SimpleRef {
         SimpleRef::from_uuid_ref(self)
     }
 
-    /// Creates a [`UuidSimpleRef`] instance from a [`Uuid`] reference.
+    /// Creates a [`SimpleRef`] instance from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidSimpleRef`]: struct.UuidSimpleRef.html
+    /// [`SimpleRef`]: adapter/struct.SimpleRef.html
     #[cfg(feature = "const_fn")]
     #[inline]
     pub const fn to_simple_ref(&self) -> SimpleRef {
         SimpleRef::from_uuid_ref(self)
     }
 
-    /// Creates a [`UuidUrn`] instance from a [`Uuid`].
+    /// Creates a [`Urn`] instance from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidUrn`]: struct.UuidUrn.html
+    /// [`Urn`]: adapter/struct.Urn.html
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn to_urn(self) -> Urn {
         Urn::from_uuid(self)
     }
 
-    /// Creates a [`UuidUrn`] instance from a [`Uuid`].
+    /// Creates a [`Urn`] instance from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidUrn`]: struct.UuidUrn.html
+    /// [`Urn`]: adapter/struct.Urn.html
     #[cfg(feature = "const_fn")]
     #[inline]
     pub const fn to_urn(self) -> Urn {
         Urn::from_uuid(self)
     }
 
-    /// Creates a [`UuidUrnRef`] instance from a [`Uuid`] reference.
+    /// Creates a [`UrnRef`] instance from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidUrnRef`]: struct.UuidUrnRef.html
+    /// [`UrnRef`]: adapter/struct.UrnRef.html
     #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn to_urn_ref(&self) -> UrnRef {
         UrnRef::from_uuid_ref(self)
     }
 
-    /// Creates a [`UuidUrnRef`] instance from a [`Uuid`] reference.
+    /// Creates a [`UrnRef`] instance from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidUrnRef`]: struct.UuidUrnRef.html
+    /// [`UrnRef`]: adapter/struct.UrnRef.html
     #[cfg(feature = "const_fn")]
     #[inline]
     pub const fn to_urn_ref(&self) -> UrnRef {
@@ -255,25 +255,25 @@ impl Hyphenated {
     /// [`Uuid`]: ../struct.Uuid.html
     pub const LENGTH: usize = 36;
 
-    /// Creates a [`UuidHyphenated`] from a [`Uuid`].
+    /// Creates a [`Hyphenated`] from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidHyphenated`]: struct.UuidHyphenated.html
+    /// [`Hyphenated`]: struct.Hyphenated.html
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid(uuid: Uuid) -> Self {
         Hyphenated(uuid)
     }
 
-    /// Creates a [`UuidHyphenated`] from a [`Uuid`].
+    /// Creates a [`Hyphenated`] from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidHyphenated`]: struct.UuidHyphenated.html
+    /// [`Hyphenated`]: struct.Hyphenated.html
     #[cfg(feature = "const_fn")]
     pub const fn from_uuid(uuid: Uuid) -> Self {
         Hyphenated(uuid)
     }
 
-    /// Writes the [`UUID`] as a lower-case hyphenated string to
+    /// Writes the [`Uuid`] as a lower-case hyphenated string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
     ///
@@ -318,7 +318,7 @@ impl Hyphenated {
         encode(buffer, 0, &self.0, true, false)
     }
 
-    /// Writes the [`UUID`] as an upper-case hyphenated string to
+    /// Writes the [`Uuid`] as an upper-case hyphenated string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
     ///
@@ -370,25 +370,25 @@ impl<'a> HyphenatedRef<'a> {
     /// [`Uuid`]: ../struct.Uuid.html
     pub const LENGTH: usize = 36;
 
-    /// Creates a [`UuidHyphenatedRef`] from a [`Uuid`] reference.
+    /// Creates a [`HyphenatedRef`] from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidHyphenatedRef`]: struct.UuidHyphenatedRef.html
+    /// [`HyphenatedRef`]: struct.HyphenatedRef.html
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         HyphenatedRef(uuid)
     }
 
-    /// Creates a [`UuidHyphenatedRef`] from a [`Uuid`] reference.
+    /// Creates a [`HyphenatedRef`] from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidHyphenatedRef`]: struct.UuidHyphenatedRef.html
+    /// [`HyphenatedRef`]: struct.HyphenatedRef.html
     #[cfg(feature = "const_fn")]
     pub const fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         HyphenatedRef(uuid)
     }
 
-    /// Writes the [`UUID`] as a lower-case hyphenated string to
+    /// Writes the [`Uuid`] as a lower-case hyphenated string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
     ///
@@ -437,7 +437,7 @@ impl<'a> HyphenatedRef<'a> {
         encode(buffer, 0, self.0, true, false)
     }
 
-    /// Writes the [`UUID`] as an upper-case hyphenated string to
+    /// Writes the [`Uuid`] as an upper-case hyphenated string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
     ///
@@ -492,25 +492,25 @@ impl Simple {
     /// [`Uuid`]: ../struct.Uuid.html
     pub const LENGTH: usize = 32;
 
-    /// Creates a [`UuidSimple`] from a [`Uuid`].
+    /// Creates a [`Simple`] from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidSimple`]: struct.UuidSimple.html
+    /// [`Simple`]: struct.Simple.html
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid(uuid: Uuid) -> Self {
         Simple(uuid)
     }
 
-    /// Creates a [`UuidSimple`] from a [`Uuid`].
+    /// Creates a [`Simple`] from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidSimple`]: struct.UuidSimple.html
+    /// [`Simple`]: struct.Simple.html
     #[cfg(feature = "const_fn")]
     pub const fn from_uuid(uuid: Uuid) -> Self {
         Simple(uuid)
     }
 
-    /// Writes the [`UUID`] as a lower-case simple string to `buffer`,
+    /// Writes the [`Uuid`] as a lower-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
     ///
     /// This is slightly more efficient than using the formatting
@@ -556,7 +556,7 @@ impl Simple {
         encode(buffer, 0, &self.0, false, false)
     }
 
-    /// Writes the [`UUID`] as an upper-case simple string to `buffer`,
+    /// Writes the [`Uuid`] as an upper-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
@@ -605,25 +605,25 @@ impl<'a> SimpleRef<'a> {
     /// [`Uuid`]: ../struct.Uuid.html
     pub const LENGTH: usize = 32;
 
-    /// Creates a [`UuidSimpleRef`] from a [`Uuid`] reference.
+    /// Creates a [`SimpleRef`] from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidSimpleRef`]: struct.UuidSimpleRef.html
+    /// [`SimpleRef`]: struct.SimpleRef.html
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         SimpleRef(uuid)
     }
 
-    /// Creates a [`UuidSimpleRef`] from a [`Uuid`] reference.
+    /// Creates a [`SimpleRef`] from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidSimpleRef`]: struct.UuidSimpleRef.html
+    /// [`SimpleRef`]: struct.SimpleRef.html
     #[cfg(feature = "const_fn")]
     pub const fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         SimpleRef(uuid)
     }
 
-    /// Writes the [`UUID`] as a lower-case simple string to `buffer`,
+    /// Writes the [`Uuid`] as a lower-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
     ///
     /// This is slightly more efficient than using the formatting
@@ -669,7 +669,7 @@ impl<'a> SimpleRef<'a> {
         encode(buffer, 0, self.0, false, false)
     }
 
-    /// Writes the [`UUID`] as an upper-case simple string to `buffer`,
+    /// Writes the [`Uuid`] as an upper-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
@@ -718,25 +718,25 @@ impl Urn {
     /// [`Uuid`]: ../struct.Uuid.html
     pub const LENGTH: usize = 45;
 
-    /// Creates a [`UuidUrn`] from a [`Uuid`].
+    /// Creates a [`Urn`] from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidUrn`]: struct.UuidUrn.html
+    /// [`Urn`]: struct.Urn.html
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid(uuid: Uuid) -> Self {
         Urn(uuid)
     }
 
-    /// Creates a [`UuidUrn`] from a [`Uuid`].
+    /// Creates a [`Urn`] from a [`Uuid`].
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidUrn`]: struct.UuidUrn.html
+    /// [`Urn`]: struct.Urn.html
     #[cfg(feature = "const_fn")]
     pub const fn from_uuid(uuid: Uuid) -> Self {
         Urn(uuid)
     }
 
-    /// Writes the [`UUID`] as a lower-case URN string to
+    /// Writes the [`Uuid`] as a lower-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
     ///
@@ -785,7 +785,7 @@ impl Urn {
         encode(buffer, 9, &self.0, true, false)
     }
 
-    /// Writes the [`UUID`] as an upper-case URN string to
+    /// Writes the [`Uuid`] as an upper-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
     ///
@@ -840,25 +840,25 @@ impl<'a> UrnRef<'a> {
     /// [`Uuid`]: ../struct.Uuid.html
     pub const LENGTH: usize = 45;
 
-    /// Creates a [`UuidUrnRef`] from a [`Uuid`] reference.
+    /// Creates a [`UrnRef`] from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidUrnRef`]: struct.UuidUrnRef.html
+    /// [`UrnRef`]: struct.UrnRef.html
     #[cfg(not(feature = "const_fn"))]
     pub fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         UrnRef(uuid)
     }
 
-    /// Creates a [`UuidUrnRef`] from a [`Uuid`] reference.
+    /// Creates a [`UrnRef`] from a [`Uuid`] reference.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidUrnRef`]: struct.UuidUrnRef.html
+    /// [`UrnRef`]: struct.UrnRef.html
     #[cfg(feature = "const_fn")]
     pub const fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         UrnRef(&uuid)
     }
 
-    /// Writes the [`UUID`] as a lower-case URN string to
+    /// Writes the [`Uuid`] as a lower-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
     ///
@@ -907,7 +907,7 @@ impl<'a> UrnRef<'a> {
         encode(buffer, 9, self.0, true, false)
     }
 
-    /// Writes the [`UUID`] as an upper-case URN string to
+    /// Writes the [`Uuid`] as an upper-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
     ///
