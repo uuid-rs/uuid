@@ -46,8 +46,6 @@ handling uuid version 1. Requires feature `v1`.
 [`Context`]: ../v1/struct.Context.html
 [`ClockSequence`]: ../v1/trait.ClockSequence.html")]
 
-#[doc(inline)]
 pub use super::{Bytes, Uuid, Variant, Version};
 #[cfg(feature = "v1")]
-#[doc(inline)]
 pub use v1::{ClockSequence, Context};
