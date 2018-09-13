@@ -171,7 +171,7 @@ pub type Bytes = [u8; 16];
 pub struct BytesError {
     expected: usize,
     found: usize,
-}saga/
+}
 
 /// The version of the UUID, denoting the generating algorithm.
 #[derive(Debug, PartialEq, Copy, Clone)]
