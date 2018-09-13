@@ -956,6 +956,8 @@ impl<'a> UrnRef<'a> {
     }
 }
 
+// TODO: uncomment when we undo the pub(crate) change
+/*
 #[cfg(test)]
 mod tests {
     use Uuid;
@@ -1037,3 +1039,5 @@ mod tests {
         Uuid::nil().to_urn_ref().encode_lower(&mut [0; 44]);
     }
 }
+*/
+
