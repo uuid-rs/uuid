@@ -171,7 +171,7 @@ pub type Bytes = [u8; 16];
 pub struct BytesError {
     expected: usize,
     found: usize,
-}
+}saga/
 
 /// The version of the UUID, denoting the generating algorithm.
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -950,7 +950,7 @@ impl Uuid {
     ///     "urn:uuid:00000000-0000-0000-0000-000000000000"
     /// );
     /// ```
-    pub fn encode_buffer() -> [u8; adapter::Urn::LENGTH] {
+    pub(crate) fn encode_buffer() -> [u8; adapter::Urn::LENGTH] {
         [0; adapter::Urn::LENGTH]
     }
 }

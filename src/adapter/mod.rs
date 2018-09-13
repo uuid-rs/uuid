@@ -314,7 +314,7 @@ impl Hyphenated {
     ///     b"936da01f-9abd-4d9d-80c7-02af85c822a8!!!!" as &[_]
     /// );
     /// ```
-    pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, &self.0, true, false)
     }
 
@@ -359,7 +359,7 @@ impl Hyphenated {
     ///     b"936DA01F-9ABD-4D9D-80C7-02AF85C822A8!!!!" as &[_]
     /// );
     /// ```
-    pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, &self.0, true, true)
     }
 }
@@ -433,7 +433,7 @@ impl<'a> HyphenatedRef<'a> {
     ///     b"936da01f-9abd-4d9d-80c7-02af85c822a8!!!!" as &[_]
     /// );
     /// ```
-    pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, self.0, true, false)
     }
 
@@ -481,7 +481,7 @@ impl<'a> HyphenatedRef<'a> {
     ///     b"936DA01F-9ABD-4D9D-80C7-02AF85C822A8!!!!" as &[_]
     /// );
     /// ```
-    pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, self.0, true, true)
     }
 }
@@ -552,7 +552,7 @@ impl Simple {
     ///     b"936da01f9abd4d9d80c702af85c822a8!!!!" as &[_]
     /// );
     /// ```
-    pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, &self.0, false, false)
     }
 
@@ -594,7 +594,7 @@ impl Simple {
     ///     b"936DA01F9ABD4D9D80C702AF85C822A8!!!!" as &[_]
     /// );
     /// ```
-    pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, &self.0, false, true)
     }
 }
@@ -665,7 +665,7 @@ impl<'a> SimpleRef<'a> {
     ///     b"936da01f9abd4d9d80c702af85c822a8!!!!" as &[_]
     /// );
     /// ```
-    pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, self.0, false, false)
     }
 
@@ -707,7 +707,7 @@ impl<'a> SimpleRef<'a> {
     ///     b"936DA01F9ABD4D9D80C702AF85C822A8!!!!" as &[_]
     /// );
     /// ```
-    pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, self.0, false, true)
     }
 }
@@ -780,7 +780,7 @@ impl Urn {
     ///     b"urn:uuid:936da01f-9abd-4d9d-80c7-02af85c822a8!!!!" as &[_]
     /// );
     /// ```
-    pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, &self.0, true, false)
     }
@@ -828,7 +828,7 @@ impl Urn {
     ///     b"urn:uuid:936DA01F-9ABD-4D9D-80C7-02AF85C822A8!!!!" as &[_]
     /// );
     /// ```
-    pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, &self.0, true, true)
     }
@@ -902,7 +902,7 @@ impl<'a> UrnRef<'a> {
     ///     b"urn:uuid:936da01f-9abd-4d9d-80c7-02af85c822a8!!!!" as &[_]
     /// );
     /// ```
-    pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, self.0, true, false)
     }
@@ -950,7 +950,7 @@ impl<'a> UrnRef<'a> {
     ///     b"urn:uuid:936DA01F-9ABD-4D9D-80C7-02AF85C822A8!!!!" as &[_]
     /// );
     /// ```
-    pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, self.0, true, true)
     }
