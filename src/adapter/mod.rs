@@ -273,6 +273,7 @@ impl Hyphenated {
         Hyphenated(uuid)
     }
 
+    /*
     /// Writes the [`Uuid`] as a lower-case hyphenated string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
@@ -314,6 +315,7 @@ impl Hyphenated {
     ///     b"936da01f-9abd-4d9d-80c7-02af85c822a8!!!!" as &[_]
     /// );
     /// ```
+    /// */
     pub(crate) fn encode_lower<'buf>(
         &self,
         buffer: &'buf mut [u8],
@@ -321,6 +323,7 @@ impl Hyphenated {
         encode(buffer, 0, &self.0, true, false)
     }
 
+    /*
     /// Writes the [`Uuid`] as an upper-case hyphenated string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
@@ -362,6 +365,7 @@ impl Hyphenated {
     ///     b"936DA01F-9ABD-4D9D-80C7-02AF85C822A8!!!!" as &[_]
     /// );
     /// ```
+    /// */
     pub(crate) fn encode_upper<'buf>(
         &self,
         buffer: &'buf mut [u8],
@@ -393,7 +397,8 @@ impl<'a> HyphenatedRef<'a> {
     pub const fn from_uuid_ref(uuid: &'a Uuid) -> Self {
         HyphenatedRef(uuid)
     }
-
+    
+    /*
     /// Writes the [`Uuid`] as a lower-case hyphenated string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
@@ -439,6 +444,7 @@ impl<'a> HyphenatedRef<'a> {
     ///     b"936da01f-9abd-4d9d-80c7-02af85c822a8!!!!" as &[_]
     /// );
     /// ```
+    /// */
     pub(crate) fn encode_lower<'buf>(
         &self,
         buffer: &'buf mut [u8],
@@ -446,6 +452,7 @@ impl<'a> HyphenatedRef<'a> {
         encode(buffer, 0, self.0, true, false)
     }
 
+    /*
     /// Writes the [`Uuid`] as an upper-case hyphenated string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
@@ -490,6 +497,7 @@ impl<'a> HyphenatedRef<'a> {
     ///     b"936DA01F-9ABD-4D9D-80C7-02AF85C822A8!!!!" as &[_]
     /// );
     /// ```
+    /// */
     pub(crate) fn encode_upper<'buf>(
         &self,
         buffer: &'buf mut [u8],
@@ -522,6 +530,7 @@ impl Simple {
         Simple(uuid)
     }
 
+    /*
     /// Writes the [`Uuid`] as a lower-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
     ///
@@ -564,6 +573,7 @@ impl Simple {
     ///     b"936da01f9abd4d9d80c702af85c822a8!!!!" as &[_]
     /// );
     /// ```
+    /// */
     pub(crate) fn encode_lower<'buf>(
         &self,
         buffer: &'buf mut [u8],
@@ -571,6 +581,7 @@ impl Simple {
         encode(buffer, 0, &self.0, false, false)
     }
 
+    /*
     /// Writes the [`Uuid`] as an upper-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
     ///
@@ -609,6 +620,7 @@ impl Simple {
     ///     b"936DA01F9ABD4D9D80C702AF85C822A8!!!!" as &[_]
     /// );
     /// ```
+    /// */
     pub(crate) fn encode_upper<'buf>(
         &self,
         buffer: &'buf mut [u8],
@@ -641,6 +653,7 @@ impl<'a> SimpleRef<'a> {
         SimpleRef(uuid)
     }
 
+    /*
     /// Writes the [`Uuid`] as a lower-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
     ///
@@ -683,6 +696,7 @@ impl<'a> SimpleRef<'a> {
     ///     b"936da01f9abd4d9d80c702af85c822a8!!!!" as &[_]
     /// );
     /// ```
+    /// */
     pub(crate) fn encode_lower<'buf>(
         &self,
         buffer: &'buf mut [u8],
@@ -690,6 +704,7 @@ impl<'a> SimpleRef<'a> {
         encode(buffer, 0, self.0, false, false)
     }
 
+    /*
     /// Writes the [`Uuid`] as an upper-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
     ///
@@ -728,6 +743,7 @@ impl<'a> SimpleRef<'a> {
     ///     b"936DA01F9ABD4D9D80C702AF85C822A8!!!!" as &[_]
     /// );
     /// ```
+    /// */
     pub(crate) fn encode_upper<'buf>(
         &self,
         buffer: &'buf mut [u8],
@@ -760,6 +776,7 @@ impl Urn {
         Urn(uuid)
     }
 
+    /*
     /// Writes the [`Uuid`] as a lower-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
@@ -804,6 +821,7 @@ impl Urn {
     ///     b"urn:uuid:936da01f-9abd-4d9d-80c7-02af85c822a8!!!!" as &[_]
     /// );
     /// ```
+    /// */
     pub(crate) fn encode_lower<'buf>(
         &self,
         buffer: &'buf mut [u8],
@@ -812,6 +830,7 @@ impl Urn {
         encode(buffer, 9, &self.0, true, false)
     }
 
+    /*
     /// Writes the [`Uuid`] as an upper-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
@@ -855,6 +874,7 @@ impl Urn {
     ///     b"urn:uuid:936DA01F-9ABD-4D9D-80C7-02AF85C822A8!!!!" as &[_]
     /// );
     /// ```
+    /// */
     pub(crate) fn encode_upper<'buf>(
         &self,
         buffer: &'buf mut [u8],
@@ -888,6 +908,7 @@ impl<'a> UrnRef<'a> {
         UrnRef(&uuid)
     }
 
+    /*
     /// Writes the [`Uuid`] as a lower-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
@@ -932,6 +953,7 @@ impl<'a> UrnRef<'a> {
     ///     b"urn:uuid:936da01f-9abd-4d9d-80c7-02af85c822a8!!!!" as &[_]
     /// );
     /// ```
+    /// */
     pub(crate) fn encode_lower<'buf>(
         &self,
         buffer: &'buf mut [u8],
@@ -940,6 +962,7 @@ impl<'a> UrnRef<'a> {
         encode(buffer, 9, self.0, true, false)
     }
 
+    /*
     /// Writes the [`Uuid`] as an upper-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
@@ -983,6 +1006,7 @@ impl<'a> UrnRef<'a> {
     ///     b"urn:uuid:936DA01F-9ABD-4D9D-80C7-02AF85C822A8!!!!" as &[_]
     /// );
     /// ```
+    /// */
     pub(crate) fn encode_upper<'buf>(
         &self,
         buffer: &'buf mut [u8],

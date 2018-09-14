@@ -923,7 +923,7 @@ impl Uuid {
     pub fn is_nil(&self) -> bool {
         self.as_bytes().iter().all(|&b| b == 0)
     }
-
+    /*
     /// A buffer that can be used for `encode_...` calls, that is
     /// guaranteed to be long enough for any of the adapters.
     ///
@@ -949,7 +949,9 @@ impl Uuid {
     ///     uuid.to_urn().encode_lower(&mut Uuid::encode_buffer()),
     ///     "urn:uuid:00000000-0000-0000-0000-000000000000"
     /// );
-    /// ```
+    ///
+    ///```
+    */
     pub(crate) fn encode_buffer() -> [u8; adapter::Urn::LENGTH] {
         [0; adapter::Urn::LENGTH]
     }
