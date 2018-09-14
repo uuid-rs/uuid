@@ -314,7 +314,10 @@ impl Hyphenated {
     ///     b"936da01f-9abd-4d9d-80c7-02af85c822a8!!!!" as &[_]
     /// );
     /// ```
-    pub(crate) fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_lower<'buf>(
+        &self,
+        buffer: &'buf mut [u8],
+    ) -> &'buf mut str {
         encode(buffer, 0, &self.0, true, false)
     }
 
@@ -359,7 +362,10 @@ impl Hyphenated {
     ///     b"936DA01F-9ABD-4D9D-80C7-02AF85C822A8!!!!" as &[_]
     /// );
     /// ```
-    pub(crate) fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_upper<'buf>(
+        &self,
+        buffer: &'buf mut [u8],
+    ) -> &'buf mut str {
         encode(buffer, 0, &self.0, true, true)
     }
 }
@@ -433,7 +439,10 @@ impl<'a> HyphenatedRef<'a> {
     ///     b"936da01f-9abd-4d9d-80c7-02af85c822a8!!!!" as &[_]
     /// );
     /// ```
-    pub(crate) fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_lower<'buf>(
+        &self,
+        buffer: &'buf mut [u8],
+    ) -> &'buf mut str {
         encode(buffer, 0, self.0, true, false)
     }
 
@@ -481,7 +490,10 @@ impl<'a> HyphenatedRef<'a> {
     ///     b"936DA01F-9ABD-4D9D-80C7-02AF85C822A8!!!!" as &[_]
     /// );
     /// ```
-    pub(crate) fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_upper<'buf>(
+        &self,
+        buffer: &'buf mut [u8],
+    ) -> &'buf mut str {
         encode(buffer, 0, self.0, true, true)
     }
 }
@@ -552,7 +564,10 @@ impl Simple {
     ///     b"936da01f9abd4d9d80c702af85c822a8!!!!" as &[_]
     /// );
     /// ```
-    pub(crate) fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_lower<'buf>(
+        &self,
+        buffer: &'buf mut [u8],
+    ) -> &'buf mut str {
         encode(buffer, 0, &self.0, false, false)
     }
 
@@ -594,7 +609,10 @@ impl Simple {
     ///     b"936DA01F9ABD4D9D80C702AF85C822A8!!!!" as &[_]
     /// );
     /// ```
-    pub(crate) fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_upper<'buf>(
+        &self,
+        buffer: &'buf mut [u8],
+    ) -> &'buf mut str {
         encode(buffer, 0, &self.0, false, true)
     }
 }
@@ -665,7 +683,10 @@ impl<'a> SimpleRef<'a> {
     ///     b"936da01f9abd4d9d80c702af85c822a8!!!!" as &[_]
     /// );
     /// ```
-    pub(crate) fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_lower<'buf>(
+        &self,
+        buffer: &'buf mut [u8],
+    ) -> &'buf mut str {
         encode(buffer, 0, self.0, false, false)
     }
 
@@ -707,7 +728,10 @@ impl<'a> SimpleRef<'a> {
     ///     b"936DA01F9ABD4D9D80C702AF85C822A8!!!!" as &[_]
     /// );
     /// ```
-    pub(crate) fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_upper<'buf>(
+        &self,
+        buffer: &'buf mut [u8],
+    ) -> &'buf mut str {
         encode(buffer, 0, self.0, false, true)
     }
 }
@@ -780,7 +804,10 @@ impl Urn {
     ///     b"urn:uuid:936da01f-9abd-4d9d-80c7-02af85c822a8!!!!" as &[_]
     /// );
     /// ```
-    pub(crate) fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_lower<'buf>(
+        &self,
+        buffer: &'buf mut [u8],
+    ) -> &'buf mut str {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, &self.0, true, false)
     }
@@ -828,7 +855,10 @@ impl Urn {
     ///     b"urn:uuid:936DA01F-9ABD-4D9D-80C7-02AF85C822A8!!!!" as &[_]
     /// );
     /// ```
-    pub(crate) fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_upper<'buf>(
+        &self,
+        buffer: &'buf mut [u8],
+    ) -> &'buf mut str {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, &self.0, true, true)
     }
@@ -902,7 +932,10 @@ impl<'a> UrnRef<'a> {
     ///     b"urn:uuid:936da01f-9abd-4d9d-80c7-02af85c822a8!!!!" as &[_]
     /// );
     /// ```
-    pub(crate) fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_lower<'buf>(
+        &self,
+        buffer: &'buf mut [u8],
+    ) -> &'buf mut str {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, self.0, true, false)
     }
@@ -950,94 +983,94 @@ impl<'a> UrnRef<'a> {
     ///     b"urn:uuid:936DA01F-9ABD-4D9D-80C7-02AF85C822A8!!!!" as &[_]
     /// );
     /// ```
-    pub(crate) fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
+    pub(crate) fn encode_upper<'buf>(
+        &self,
+        buffer: &'buf mut [u8],
+    ) -> &'buf mut str {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, self.0, true, true)
     }
 }
 
 // TODO: uncomment when we undo the pub(crate) change
-/*
-#[cfg(test)]
-mod tests {
-    use Uuid;
-
-    #[test]
-    fn hyphenated_trailing() {
-        let mut buf = [b'x'; 100];
-        let len = Uuid::nil().to_hyphenated().encode_lower(&mut buf).len();
-        assert_eq!(len, super::Hyphenated::LENGTH);
-        assert!(buf[len..].iter().all(|x| *x == b'x'));
-    }
-    #[test]
-    fn hyphenated_ref_trailing() {
-        let mut buf = [b'x'; 100];
-        let len = Uuid::nil().to_hyphenated().encode_lower(&mut buf).len();
-        assert_eq!(len, super::HyphenatedRef::LENGTH);
-        assert!(buf[len..].iter().all(|x| *x == b'x'));
-    }
-
-    #[test]
-    fn simple_trailing() {
-        let mut buf = [b'x'; 100];
-        let len = Uuid::nil().to_simple().encode_lower(&mut buf).len();
-        assert_eq!(len, super::Simple::LENGTH);
-        assert!(buf[len..].iter().all(|x| *x == b'x'));
-    }
-    #[test]
-    fn simple_ref_trailing() {
-        let mut buf = [b'x'; 100];
-        let len = Uuid::nil().to_simple().encode_lower(&mut buf).len();
-        assert_eq!(len, super::SimpleRef::LENGTH);
-        assert!(buf[len..].iter().all(|x| *x == b'x'));
-    }
-
-    #[test]
-    fn urn_trailing() {
-        let mut buf = [b'x'; 100];
-        let len = Uuid::nil().to_urn().encode_lower(&mut buf).len();
-        assert_eq!(len, super::Urn::LENGTH);
-        assert!(buf[len..].iter().all(|x| *x == b'x'));
-    }
-    #[test]
-    fn urn_ref_trailing() {
-        let mut buf = [b'x'; 100];
-        let len = Uuid::nil().to_urn().encode_lower(&mut buf).len();
-        assert_eq!(len, super::UrnRef::LENGTH);
-        assert!(buf[len..].iter().all(|x| *x == b'x'));
-    }
-
-    #[test]
-    #[should_panic]
-    fn hyphenated_too_small() {
-        Uuid::nil().to_hyphenated().encode_lower(&mut [0; 35]);
-    }
-    #[test]
-    #[should_panic]
-    fn hyphenated_ref_too_small() {
-        Uuid::nil().to_hyphenated_ref().encode_lower(&mut [0; 35]);
-    }
-
-    #[test]
-    #[should_panic]
-    fn simple_too_small() {
-        Uuid::nil().to_simple().encode_lower(&mut [0; 31]);
-    }
-    #[test]
-    #[should_panic]
-    fn simple_ref_too_small() {
-        Uuid::nil().to_simple_ref().encode_lower(&mut [0; 31]);
-    }
-    #[test]
-    #[should_panic]
-    fn urn_too_small() {
-        Uuid::nil().to_urn().encode_lower(&mut [0; 44]);
-    }
-    #[test]
-    #[should_panic]
-    fn urn_ref_too_small() {
-        Uuid::nil().to_urn_ref().encode_lower(&mut [0; 44]);
-    }
-}
-*/
-
+// #[cfg(test)]
+// mod tests {
+// use Uuid;
+//
+// #[test]
+// fn hyphenated_trailing() {
+// let mut buf = [b'x'; 100];
+// let len = Uuid::nil().to_hyphenated().encode_lower(&mut buf).len();
+// assert_eq!(len, super::Hyphenated::LENGTH);
+// assert!(buf[len..].iter().all(|x| *x == b'x'));
+// }
+// #[test]
+// fn hyphenated_ref_trailing() {
+// let mut buf = [b'x'; 100];
+// let len = Uuid::nil().to_hyphenated().encode_lower(&mut buf).len();
+// assert_eq!(len, super::HyphenatedRef::LENGTH);
+// assert!(buf[len..].iter().all(|x| *x == b'x'));
+// }
+//
+// #[test]
+// fn simple_trailing() {
+// let mut buf = [b'x'; 100];
+// let len = Uuid::nil().to_simple().encode_lower(&mut buf).len();
+// assert_eq!(len, super::Simple::LENGTH);
+// assert!(buf[len..].iter().all(|x| *x == b'x'));
+// }
+// #[test]
+// fn simple_ref_trailing() {
+// let mut buf = [b'x'; 100];
+// let len = Uuid::nil().to_simple().encode_lower(&mut buf).len();
+// assert_eq!(len, super::SimpleRef::LENGTH);
+// assert!(buf[len..].iter().all(|x| *x == b'x'));
+// }
+//
+// #[test]
+// fn urn_trailing() {
+// let mut buf = [b'x'; 100];
+// let len = Uuid::nil().to_urn().encode_lower(&mut buf).len();
+// assert_eq!(len, super::Urn::LENGTH);
+// assert!(buf[len..].iter().all(|x| *x == b'x'));
+// }
+// #[test]
+// fn urn_ref_trailing() {
+// let mut buf = [b'x'; 100];
+// let len = Uuid::nil().to_urn().encode_lower(&mut buf).len();
+// assert_eq!(len, super::UrnRef::LENGTH);
+// assert!(buf[len..].iter().all(|x| *x == b'x'));
+// }
+//
+// #[test]
+// #[should_panic]
+// fn hyphenated_too_small() {
+// Uuid::nil().to_hyphenated().encode_lower(&mut [0; 35]);
+// }
+// #[test]
+// #[should_panic]
+// fn hyphenated_ref_too_small() {
+// Uuid::nil().to_hyphenated_ref().encode_lower(&mut [0; 35]);
+// }
+//
+// #[test]
+// #[should_panic]
+// fn simple_too_small() {
+// Uuid::nil().to_simple().encode_lower(&mut [0; 31]);
+// }
+// #[test]
+// #[should_panic]
+// fn simple_ref_too_small() {
+// Uuid::nil().to_simple_ref().encode_lower(&mut [0; 31]);
+// }
+// #[test]
+// #[should_panic]
+// fn urn_too_small() {
+// Uuid::nil().to_urn().encode_lower(&mut [0; 44]);
+// }
+// #[test]
+// #[should_panic]
+// fn urn_ref_too_small() {
+// Uuid::nil().to_urn_ref().encode_lower(&mut [0; 44]);
+// }
+// }
