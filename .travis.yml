@@ -6,6 +6,17 @@ language: rust
 
 matrix:
   include:
+  - os: linux
+    rust: 1.22.0
+    script:
+    - cargo test --no-default-features
+    - cargo test
+    - cargo test --features "serde"
+    - cargo test --features "v1"
+    - cargo test --features "v3"
+    - cargo test --features "v4"
+    - cargo test --features "v5"
+    - cargo test --features "serde std v1 v3 v4 v5"
   - os: osx
     rust: 1.22.0
     script:
@@ -38,7 +49,6 @@ notifications:
 os: linux
 
 rust:
-- 1.22.0
 - stable
 - beta
 - nightly
