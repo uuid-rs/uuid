@@ -19,7 +19,8 @@ impl Serialize for Uuid {
         serializer: S,
     ) -> Result<S::Ok, S::Error> {
         if serializer.is_human_readable() {
-            serializer.collect_str(&self.to_hyphenated())
+            serializer
+                .serialize_str(&self.to_hyphenated().encode_lower(&mut [0; 36]))
         } else {
             serializer.serialize_bytes(self.as_bytes())
         }
@@ -54,7 +55,7 @@ impl<'de> Deserialize<'de> for Uuid {
                     self,
                     value: &[u8],
                 ) -> Result<Uuid, E> {
-                    Uuid::from_bytes(value).map_err(E::custom)
+                    Uuid::from_slice(value).map_err(E::custom)
                 }
             }
 
@@ -76,7 +77,7 @@ impl<'de> Deserialize<'de> for Uuid {
                     self,
                     value: &[u8],
                 ) -> Result<Uuid, E> {
-                    Uuid::from_bytes(value).map_err(E::custom)
+                    Uuid::from_slice(value).map_err(E::custom)
                 }
             }
 
@@ -108,7 +109,7 @@ mod tests {
         use serde_test::Configure;
 
         let uuid_bytes = b"F9168C5E-CEB2-4F";
-        let u = Uuid::from_bytes(uuid_bytes).unwrap();
+        let u = Uuid::from_slice(uuid_bytes).unwrap();
         serde_test::assert_tokens(
             &u.compact(),
             &[serde_test::Token::Bytes(uuid_bytes)],

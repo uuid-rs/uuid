@@ -28,8 +28,8 @@ impl Uuid {
         let mut uuid = Uuid::default();
 
         uuid.0.copy_from_slice(&buffer[..16]);
-        uuid.set_variant(UuidVariant::RFC4122);
-        uuid.set_version(UuidVersion::Sha1);
+        uuid.set_variant(Variant::RFC4122);
+        uuid.set_version(Version::Sha1);
 
         uuid
     }
@@ -127,7 +127,7 @@ mod tests {
         let uuid =
             Uuid::new_v5(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
 
-        assert_eq!(uuid.get_version(), Some(UuidVersion::Sha1));
+        assert_eq!(uuid.get_version(), Some(Version::Sha1));
         assert_eq!(uuid.get_version_num(), 5);
     }
 
@@ -145,8 +145,8 @@ mod tests {
         for &(ref ns, ref name, ref u) in FIXTURE {
             let uuid = Uuid::new_v5(*ns, name.as_bytes());
 
-            assert_eq!(uuid.get_variant(), Some(UuidVariant::RFC4122));
-            assert_eq!(uuid.get_version(), Some(UuidVersion::Sha1));
+            assert_eq!(uuid.get_variant(), Some(Variant::RFC4122));
+            assert_eq!(uuid.get_version(), Some(Version::Sha1));
             assert_eq!(Ok(uuid), u.parse());
         }
     }

@@ -1,26 +1,16 @@
 <!--
-    As we are working towards a stable version of uuid, we require that you 
-    open an issue, before submitting a pull request. If the pull request is 
-    imcomplete, prepend the Title with WIP: 
+    If this PR is a breaking change, ensure that you are opening it against 
+    the `breaking` branch.  If the pull request is incomplete, prepend the Title with WIP: 
 -->
 
-**I'm submitting a ...**
-  - [ ] bug fix
-  - [ ] feature enhancement
-  - [ ] deprecation or removal
-  - [ ] refactor
+**I'm submitting a(n)** (bug fix|deprecation|feature|refactor|removal|other)
+
 
 # Description
-<!-- Provide a summary of your changes in the Title above -->
 
 # Motivation
-<!-- Why is this change required -->
 
 # Tests
 <!-- How are these changes tested? -->
 
 # Related Issue(s)
-<!-- 
-    As noted above, we require an issue for every PR. Please link to the issue
-    here
--->

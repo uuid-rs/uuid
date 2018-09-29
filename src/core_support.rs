@@ -19,18 +19,18 @@ impl fmt::Display for Uuid {
     }
 }
 
-impl fmt::Display for UuidVariant {
+impl fmt::Display for Variant {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            UuidVariant::NCS => write!(f, "NCS"),
-            UuidVariant::RFC4122 => write!(f, "RFC4122"),
-            UuidVariant::Microsoft => write!(f, "Microsoft"),
-            UuidVariant::Future => write!(f, "Future"),
+            Variant::NCS => write!(f, "NCS"),
+            Variant::RFC4122 => write!(f, "RFC4122"),
+            Variant::Microsoft => write!(f, "Microsoft"),
+            Variant::Future => write!(f, "Future"),
         }
     }
 }
 
-impl fmt::Display for ::UuidError {
+impl fmt::Display for ::BytesError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
@@ -55,7 +55,7 @@ impl fmt::UpperHex for Uuid {
 }
 
 impl str::FromStr for Uuid {
-    type Err = parser::UuidParseError;
+    type Err = parser::ParseError;
 
     fn from_str(uuid_str: &str) -> Result<Self, Self::Err> {
         Uuid::parse_str(uuid_str)

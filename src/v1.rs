@@ -10,12 +10,12 @@ use prelude::*;
 /// A thread-safe, stateful context for the v1 generator to help ensure
 /// process-wide uniqueness.
 #[derive(Debug)]
-pub struct UuidContext {
+pub struct Context {
     count: atomic::AtomicUsize,
 }
 
 /// A trait that abstracts over generation of Uuid v1 "Clock Sequence" values.
-pub trait UuidClockSequence {
+pub trait ClockSequence {
     /// Return a 16-bit number that will be used as the "clock sequence" in
     /// the Uuid. The number must be different if the time has changed since
     /// the last time a clock sequence was requested.
@@ -28,16 +28,16 @@ impl Uuid {
     ///
     /// This expects two values representing a monotonically increasing value
     /// as well as a unique 6 byte NodeId, and an implementation of
-    /// [`UuidClockSequence`]. This function is only guaranteed to produce
+    /// [`ClockSequence`]. This function is only guaranteed to produce
     /// unique values if the following conditions hold:
     ///
     /// 1. The *NodeId* is unique for this process,
     /// 2. The *Context* is shared across all threads which are generating v1
     ///    [`Uuid`]s,
-    /// 3. The [`UuidClockSequence`] implementation reliably returns unique
-    ///    clock sequences (this crate provides [`UuidV1Context`] for this
-    ///    purpose. However you can create your own [`UuidClockSequence`]
-    ///    implementation, if [`UuidContext`] does not meet your needs).
+    /// 3. The [`ClockSequence`] implementation reliably returns unique
+    ///    clock sequences (this crate provides [`Context`] for this
+    ///    purpose. However you can create your own [`ClockSequence`]
+    ///    implementation, if [`Context`] does not meet your needs).
     ///
     /// The NodeID must be exactly 6 bytes long. If the NodeID is not a valid
     /// length this will return a [`ParseError`]`::InvalidLength`.
@@ -59,10 +59,10 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```rust
-    /// use uuid::v1::UuidContext;
+    /// use uuid::v1::Context;
     /// use uuid::Uuid;
     ///
-    /// let context = UuidContext::new(42);
+    /// let context = Context::new(42);
     /// if let Ok(uuid) =
     ///     Uuid::new_v1(&context, 1497624119, 1234, &[1, 2, 3, 4, 5, 6])
     /// {
@@ -77,22 +77,22 @@ impl Uuid {
     ///
     /// [`ParseError`]: ../enum.ParseError.html
     /// [`Uuid`]: ../struct.Uuid.html
-    /// [`UuidClockSequence`]: struct.UuidClockSequence.html
-    /// [`UuidContext`]: struct.UuidContext.html
+    /// [`ClockSequence`]: struct.ClockSequence.html
+    /// [`Context`]: struct.Context.html
     pub fn new_v1<T>(
         context: &T,
         seconds: u64,
         nano_seconds: u32,
         node_id: &[u8],
-    ) -> Result<Self, ::UuidError>
+    ) -> Result<Self, ::BytesError>
     where
-        T: UuidClockSequence,
+        T: ClockSequence,
     {
         const NODE_ID_LEN: usize = 6;
 
         let len = node_id.len();
         if len != NODE_ID_LEN {
-            return Err(::UuidError::new(NODE_ID_LEN, len));
+            return Err(::BytesError::new(NODE_ID_LEN, len));
         }
 
         let time_low;
@@ -128,7 +128,7 @@ impl Uuid {
     }
 }
 
-impl UuidContext {
+impl Context {
     /// Creates a thread-safe, internally mutable context to help ensure
     /// uniqueness.
     ///
@@ -146,7 +146,7 @@ impl UuidContext {
     }
 }
 
-impl UuidClockSequence for UuidContext {
+impl ClockSequence for Context {
     fn generate_sequence(&self, _: u64, _: u32) -> u16 {
         (self.count.fetch_add(1, atomic::Ordering::SeqCst) & 0xffff) as u16
     }
@@ -156,20 +156,20 @@ impl UuidClockSequence for UuidContext {
 mod tests {
     #[test]
     fn test_new_v1() {
-        use super::UuidContext;
+        use super::Context;
         use prelude::*;
 
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
         let node = [1, 2, 3, 4, 5, 6];
-        let context = UuidContext::new(0);
+        let context = Context::new(0);
 
         {
             let uuid =
                 Uuid::new_v1(&context, time, time_fraction, &node).unwrap();
 
-            assert_eq!(uuid.get_version(), Some(UuidVersion::Mac));
-            assert_eq!(uuid.get_variant(), Some(UuidVariant::RFC4122));
+            assert_eq!(uuid.get_version(), Some(Version::Mac));
+            assert_eq!(uuid.get_variant(), Some(Variant::RFC4122));
             assert_eq!(
                 uuid.to_hyphenated().to_string(),
                 "20616934-4ba2-11e7-8000-010203040506"

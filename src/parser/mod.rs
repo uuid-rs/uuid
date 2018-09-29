@@ -37,7 +37,7 @@ pub enum Expected {
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum UuidParseError {
+pub enum ParseError {
     /// Invalid character in the [`Uuid`] string.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
@@ -86,21 +86,19 @@ pub enum UuidParseError {
     },
 }
 
-impl UuidParseError {
+impl ParseError {
     fn _description(&self) -> &str {
         match *self {
-            UuidParseError::InvalidCharacter { .. } => "invalid character",
-            UuidParseError::InvalidGroupCount { .. } => {
-                "invalid number of groups"
-            }
-            UuidParseError::InvalidGroupLength { .. } => "invalid group length",
-            UuidParseError::InvalidLength { .. } => "invalid length",
+            ParseError::InvalidCharacter { .. } => "invalid character",
+            ParseError::InvalidGroupCount { .. } => "invalid number of groups",
+            ParseError::InvalidGroupLength { .. } => "invalid group length",
+            ParseError::InvalidLength { .. } => "invalid length",
         }
     }
 }
 
 /// Check if the length matches any of the given criteria lengths.
-pub fn len_matches_any(len: usize, crits: &[usize]) -> bool {
+pub(crate) fn len_matches_any(len: usize, crits: &[usize]) -> bool {
     for crit in crits {
         if len == *crit {
             return true;
@@ -112,7 +110,8 @@ pub fn len_matches_any(len: usize, crits: &[usize]) -> bool {
 
 /// Check if the length matches any criteria lengths in the given range
 /// (inclusive).
-pub fn len_matches_range(len: usize, min: usize, max: usize) -> bool {
+#[allow(dead_code)]
+pub(crate) fn len_matches_range(len: usize, min: usize, max: usize) -> bool {
     for crit in min..(max + 1) {
         if len == crit {
             return true;
