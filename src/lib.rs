@@ -752,11 +752,11 @@ impl Uuid {
     /// original `Uuid` back.
     ///
     /// * The first field value represents the first group of (eight) hex
-    ///   digits, taken as a little-endian `u32` value.  For V1 UUIDs, this field
-    ///   represents the low 32 bits of the timestamp.
+    ///   digits, taken as a little-endian `u32` value.  For V1 UUIDs, this
+    ///   field represents the low 32 bits of the timestamp.
     /// * The second field value represents the second group of (four) hex
-    ///   digits, taken as a little-endian `u16` value.  For V1 UUIDs, this field
-    ///   represents the middle 16 bits of the timestamp.
+    ///   digits, taken as a little-endian `u16` value.  For V1 UUIDs, this
+    ///   field represents the middle 16 bits of the timestamp.
     /// * The third field value represents the third group of (four) hex
     ///   digits, taken as a little-endian `u16` value.  The 4 most significant
     ///   bits give the UUID version, and for V1 UUIDs, the last 12 bits
