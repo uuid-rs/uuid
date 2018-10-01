@@ -793,7 +793,7 @@ impl Uuid {
             | u32::from(self.as_bytes()[0]);
 
         let d2 =
-            u16::from(self.as_bytes()[5]) << 8 | u16::from(self.as_bytes()[5]);
+            u16::from(self.as_bytes()[5]) << 8 | u16::from(self.as_bytes()[4]);
 
         let d3 =
             u16::from(self.as_bytes()[7]) << 8 | u16::from(self.as_bytes()[6]);
