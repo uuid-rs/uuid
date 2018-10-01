@@ -584,14 +584,14 @@ impl Uuid {
     }
 
     /// Creates a `Uuid` using the supplied big-endian bytes.
-    /// This method is wraps [`from_bytes_be`]: #method.from_bytes_be
+    /// This method wraps [`from_bytes_be`]: #method.from_bytes_be
     #[cfg(not(feature = "const_fn"))]
     pub fn from_bytes(bytes: Bytes) -> Uuid {
         Self::from_bytes_be(bytes)
     }
 
     /// Creates a `Uuid` using the supplied big-endian bytes.
-    /// This method is wraps [`from_bytes_be`]: #method.from_bytes_be
+    /// This method wraps [`from_bytes_be`]: #method.from_bytes_be
     #[cfg(feature = "const_fn")]
     pub const fn from_bytes(bytes: Bytes) -> Uuid {
         Self::from_bytes_be(bytes)
