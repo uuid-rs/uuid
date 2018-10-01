@@ -578,47 +578,7 @@ impl Uuid {
     ///
     /// let uuid = Uuid::from_bytes_le(bytes);
     /// ```
-    #[cfg(not(feature = "const_fn"))]
     pub fn from_bytes_le(mut bytes: Bytes) -> Uuid {
-        Self::be_to_le_bytes(&mut bytes);
-        Self::from_bytes_be(bytes)
-    }
-
-    /// Creates a `Uuid` using the supplied little-endian bytes.
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// use uuid::Bytes;
-    /// use uuid::Uuid;
-    ///
-    /// let bytes: Bytes = [
-    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
-    ///     62,
-    /// ];
-    ///
-    /// let uuid = Uuid::from_bytes_le(bytes);
-    /// let uuid = uuid.to_hyphenated().to_string();
-    ///
-    /// let expected_uuid = String::from("eed0eb46-6d0e-c943-b90d-ccc35a913f3e");
-    ///
-    /// assert_eq!(expected_uuid, uuid);
-    /// ```
-    ///
-    /// An incorrect number of bytes:
-    ///
-    /// ```compile_fail
-    /// use uuid::Bytes;
-    /// use uuid::Uuid;
-    ///
-    /// let bytes: Bytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
-    ///
-    /// let uuid = Uuid::from_bytes_le(bytes);
-    /// ```
-    #[cfg(feature = "const_fn")]
-    pub const fn from_bytes_le(mut bytes: Bytes) -> Uuid {
         Self::be_to_le_bytes(&mut bytes);
         Self::from_bytes_be(bytes)
     }
@@ -916,33 +876,6 @@ impl Uuid {
     ///     ]
     /// );
     /// ```
-    #[cfg(feature = "const_fn")]
-    pub const fn to_bytes_le(&self) -> Bytes {
-        let mut bytes = self.0;
-        Self::be_to_le_bytes(&mut bytes);
-        bytes
-    }
-
-    /// Returns an array of 16 octets containing the UUID data in little-endian.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::nil();
-    /// assert_eq!(uuid.to_bytes_le(), [0; 16]);
-    ///
-    /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
-    /// assert_eq!(
-    ///     uuid.to_bytes_le(),
-    ///     [
-    ///         31, 160, 109, 147, 189, 154, 157, 77, 128, 199, 2, 175, 133, 200,
-    ///         34, 168
-    ///     ]
-    /// );
-    /// ```
-    #[cfg(not(feature = "const_fn"))]
     pub fn to_bytes_le(&self) -> Bytes {
         let mut bytes = self.0;
         Self::be_to_le_bytes(&mut bytes);
