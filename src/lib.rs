@@ -622,7 +622,10 @@ impl Uuid {
     ///
     /// assert_eq!(expected_uuid, uuid);
     /// ```
-    #[deprecated(since="0.7.2", note="please use the `UuidBuilder` instead")]
+    #[deprecated(
+        since = "0.7.2",
+        note = "please use the `UuidBuilder` instead"
+    )]
     pub fn from_random_bytes(bytes: Bytes) -> Uuid {
         let mut uuid = Uuid::from_bytes(bytes);
         uuid.set_variant(Variant::RFC4122);
