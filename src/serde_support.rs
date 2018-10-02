@@ -115,7 +115,7 @@ impl<'de> Deserialize<'de> for Uuid {
 #[cfg(all(feature = "serde", not(feature = "dense_serde")))]
 impl<'de> Deserialize<'de> for Uuid {
     fn deserialize<D: Deserializer<'de>>(
-        deserializer: D
+        deserializer: D,
     ) -> Result<Self, D::Error> {
         if deserializer.is_human_readable() {
             deserializer.deserialize_str(UuidStringVisitor)
