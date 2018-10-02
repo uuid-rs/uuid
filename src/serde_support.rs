@@ -11,9 +11,9 @@
 
 use core::fmt;
 use prelude::*;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::{self, SeqAccess, Error};
 use serde::ser::SerializeTuple;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 #[cfg(all(feature = "serde", not(feature = "dense_serde")))]
 impl Serialize for Uuid {
@@ -40,8 +40,7 @@ impl Serialize for Uuid {
             serializer
                 .serialize_str(&self.to_hyphenated().encode_lower(&mut [0; 36]))
         } else {
-            let mut seq =
-                serializer.serialize_tuple(16)?;
+            let mut seq = serializer.serialize_tuple(16)?;
 
             for byte in self.as_bytes() {
                 seq.serialize_element(byte)?;
@@ -57,24 +56,15 @@ struct UuidStringVisitor;
 impl<'vi> de::Visitor<'vi> for UuidStringVisitor {
     type Value = Uuid;
 
-    fn expecting(
-        &self,
-        formatter: &mut fmt::Formatter,
-    ) -> fmt::Result {
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
         write!(formatter, "a UUID string")
     }
 
-    fn visit_str<E: de::Error>(
-        self,
-        value: &str,
-    ) -> Result<Uuid, E> {
+    fn visit_str<E: de::Error>(self, value: &str) -> Result<Uuid, E> {
         value.parse::<Uuid>().map_err(E::custom)
     }
 
-    fn visit_bytes<E: de::Error>(
-        self,
-        value: &[u8],
-    ) -> Result<Uuid, E> {
+    fn visit_bytes<E: de::Error>(self, value: &[u8]) -> Result<Uuid, E> {
         Uuid::from_slice(value).map_err(E::custom)
     }
 }
@@ -124,9 +114,7 @@ impl<'de> Deserialize<'de> for Uuid {
 
 #[cfg(all(feature = "serde", not(feature = "dense_serde")))]
 impl<'de> Deserialize<'de> for Uuid {
-    fn deserialize<D: Deserializer<'de>>(
-        deserializer: D,
-    ) -> Result<Self, D::Error> {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         if deserializer.is_human_readable() {
             deserializer.deserialize_str(UuidStringVisitor)
         } else {
@@ -230,7 +218,7 @@ mod dense_serde_tests {
                 serde_test::Token::U8(uuid_bytes[13]),
                 serde_test::Token::U8(uuid_bytes[14]),
                 serde_test::Token::U8(uuid_bytes[15]),
-                serde_test::Token::TupleEnd
+                serde_test::Token::TupleEnd,
             ],
         )
     }
