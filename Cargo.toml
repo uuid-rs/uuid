@@ -69,6 +69,7 @@ v1 = []
 v3 = ["md5", "rand"]
 v4 = ["rand"]
 v5 = ["sha1", "rand"]
+dense_serde = ["serde"]
 
 # since rust 1.26.0
 u128 = ["byteorder"]

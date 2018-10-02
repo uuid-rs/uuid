@@ -127,7 +127,7 @@ extern crate core;
 extern crate md5;
 #[cfg(feature = "rand")]
 extern crate rand;
-#[cfg(feature = "serde")]
+#[cfg(any(feature = "serde", feature = "dense_serde"))]
 extern crate serde;
 #[cfg(all(feature = "serde", test))]
 extern crate serde_test;
