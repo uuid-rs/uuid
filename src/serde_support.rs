@@ -11,7 +11,7 @@
 
 use core::fmt;
 use prelude::*;
-use serde::de::{self, SeqAccess, Error};
+use serde::de::{self, Error, SeqAccess};
 use serde::ser::SerializeTuple;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -114,7 +114,9 @@ impl<'de> Deserialize<'de> for Uuid {
 
 #[cfg(all(feature = "serde", not(feature = "dense_serde")))]
 impl<'de> Deserialize<'de> for Uuid {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+    fn deserialize<D: Deserializer<'de>>(
+        deserializer: D
+    ) -> Result<Self, D::Error> {
         if deserializer.is_human_readable() {
             deserializer.deserialize_str(UuidStringVisitor)
         } else {
