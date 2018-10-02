@@ -5,7 +5,8 @@ use super::Variant;
 use super::Version;
 
 /// A builder struct for creating a [`Uuid`]
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[allow(missing_copy_implementations)]
+#[derive(Debug)]
 pub struct UuidBuilder {
     uuid: Uuid,
 }
