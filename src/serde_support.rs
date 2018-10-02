@@ -11,7 +11,8 @@
 
 use core::fmt;
 use prelude::*;
-use serde::{de::{self, SeqAccess, Error}, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::de::{self, SeqAccess, Error};
 use serde::ser::SerializeTuple;
 
 #[cfg(all(feature = "serde", not(feature = "dense_serde")))]
