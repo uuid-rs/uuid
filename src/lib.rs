@@ -137,6 +137,9 @@ extern crate sha1;
 #[cfg_attr(test, macro_use)]
 extern crate slog;
 
+mod builder;
+pub use builder::UuidBuilder;
+
 pub mod adapter;
 pub mod parser;
 pub mod prelude;
@@ -584,14 +587,14 @@ impl Uuid {
     }
 
     /// Creates a `Uuid` using the supplied big-endian bytes.
-    /// This method wraps [`from_bytes_be`]: #method.from_bytes_be
+    /// This method wraps [`Uuid::from_bytes_be`]
     #[cfg(not(feature = "const_fn"))]
     pub fn from_bytes(bytes: Bytes) -> Uuid {
         Self::from_bytes_be(bytes)
     }
 
     /// Creates a `Uuid` using the supplied big-endian bytes.
-    /// This method wraps [`from_bytes_be`]: #method.from_bytes_be
+    /// This method wraps [`Uuid::from_bytes_be`]
     #[cfg(feature = "const_fn")]
     pub const fn from_bytes(bytes: Bytes) -> Uuid {
         Self::from_bytes_be(bytes)
@@ -804,7 +807,7 @@ impl Uuid {
     }
 
     /// Returns the four field values of the UUID in big-endian order.
-    /// This method wraps [`as_bytes_be`]: #method.as_bytes_be
+    /// This method wraps [`Uuid::as_bytes_be`]
     pub fn as_fields(&self) -> (u32, u16, u16, &[u8; 8]) {
         self.as_fields_be()
     }
@@ -883,14 +886,14 @@ impl Uuid {
     }
 
     /// Returns an array of 16 octets containing the UUID data.
-    /// This method wraps [`to_bytes_be`]: #method.to_bytes_be
+    /// This method wraps [`Uuid::as_bytes_be`]
     #[cfg(feature = "const_fn")]
     pub const fn as_bytes(&self) -> &Bytes {
         self.as_bytes_be()
     }
 
     /// Returns an array of 16 octets containing the UUID data.
-    /// This method wraps [`to_bytes_be`]: #method.to_bytes_be
+    /// This method wraps [`Uuid::as_bytes_be`]
     #[cfg(not(feature = "const_fn"))]
     pub fn as_bytes(&self) -> &Bytes {
         self.as_bytes_be()
