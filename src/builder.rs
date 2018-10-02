@@ -125,9 +125,7 @@ impl UuidBuilder {
     ///
     /// let builder = UuidBuilder::from_slice(&bytes);
     ///
-    /// let expected_err = Err(uuid::BytesError::new(16, 8));
-    ///
-    /// assert_eq!(expected_err, builder);
+    /// assert!(builder.is_err());
     /// ```
     pub fn from_slice(b: &[u8]) -> Result<Self, BytesError> {
         const BYTES_LEN: usize = 16;
@@ -177,9 +175,7 @@ impl UuidBuilder {
     ///
     /// let builder = uuid::UuidBuilder::from_fields(42, 12, 5, &d4);
     ///
-    /// let expected_err = Err(uuid::BytesError::new(8, d4.len()));
-    ///
-    /// assert_eq!(expected_err, builder);
+    /// assert!(builder.is_err());
     /// ```
     pub fn from_fields(
         d1: u32,
