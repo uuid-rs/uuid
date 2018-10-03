@@ -938,7 +938,7 @@ impl Uuid {
         Some((ts, count))
     }
 
-    /// Parses the length of a provided UUID and returns true if the 
+    /// Parses the length of a provided UUID and returns true if the
     /// length matches a valid from (urn, hexadecimal, or hyphenated hex)
     /// Returns valid UUID or ParseError
     pub fn valid_length_check(input: &str) -> Result<&str, parser::ParseError> {
@@ -946,10 +946,10 @@ impl Uuid {
 
         if len == adapter::Urn::LENGTH && input.starts_with("urn:uuid:") {
             // Length and start value matches, return just UUID portion
-            return Ok(&input[9..])
+            return Ok(&input[9..]);
         } else if !parser::len_matches_any(
             len,
-            &[adapter::Hyphenated::LENGTH, adapter::Simple::LENGTH], 
+            &[adapter::Hyphenated::LENGTH, adapter::Simple::LENGTH],
         ) {
             return Err(parser::ParseError::InvalidLength {
                 expected: parser::Expected::Any(&[
@@ -971,24 +971,24 @@ impl Uuid {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
 
-       /* if len == adapter::Urn::LENGTH && input.starts_with("urn:uuid:") {
-            input = &input[9..];
-        } else if !parser::len_matches_any(
-            len,
-            &[adapter::Hyphenated::LENGTH, adapter::Simple::LENGTH],
-        ) {
-            return Err(parser::ParseError::InvalidLength {
-                expected: parser::Expected::Any(&[
-                    adapter::Hyphenated::LENGTH,
-                    adapter::Simple::LENGTH,
-                ]),
-                found: len,
-            });
-        }*/
+        // if len == adapter::Urn::LENGTH && input.starts_with("urn:uuid:") {
+        // input = &input[9..];
+        // } else if !parser::len_matches_any(
+        // len,
+        // &[adapter::Hyphenated::LENGTH, adapter::Simple::LENGTH],
+        // ) {
+        // return Err(parser::ParseError::InvalidLength {
+        // expected: parser::Expected::Any(&[
+        // adapter::Hyphenated::LENGTH,
+        // adapter::Simple::LENGTH,
+        // ]),
+        // found: len,
+        // });
+        // }
 
         let input = match Uuid::valid_length_check(input) {
             Ok(input) => input,
-            Err(e) => return Err(e)
+            Err(e) => return Err(e),
         };
 
         // `digit` counts only hexadecimal digits, `i_char` counts all chars.
