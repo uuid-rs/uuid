@@ -131,6 +131,9 @@ extern crate rand;
 extern crate serde;
 #[cfg(all(feature = "serde", test))]
 extern crate serde_test;
+#[cfg(all(feature = "serde", test))]
+#[macro_use]
+extern crate serde_derive;
 #[cfg(feature = "sha1")]
 extern crate sha1;
 #[cfg(feature = "slog")]
