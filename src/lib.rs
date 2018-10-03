@@ -941,7 +941,7 @@ impl Uuid {
     /// Parses the length of a provided UUID and returns true if the 
     /// length matches a valid from (urn, hexadecimal, or hyphenated hex)
     /// Returns valid UUID or ParseError
-    pub fn uuid_valid_length_check(input: &str) -> Result<&str, parser::ParseError> {
+    pub fn valid_length_check(input: &str) -> Result<&str, parser::ParseError> {
         let len = input.len();
 
         if len == adapter::Urn::LENGTH && input.starts_with("urn:uuid:") {
@@ -986,7 +986,7 @@ impl Uuid {
             });
         }*/
 
-        let input = match Uuid::uuid_valid_length_check(input) {
+        let input = match Uuid::valid_length_check(input) {
             Ok(input) => input,
             Err(e) => return Err(e)
         };
