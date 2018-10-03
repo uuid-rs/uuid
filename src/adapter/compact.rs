@@ -18,7 +18,6 @@ pub fn serialize<S: Serializer>(
     u: &Uuid,
     serializer: S,
 ) -> Result<S::Ok, S::Error> {
-    println!("sereeeeeeeeealize");
     let mut seq = serializer.serialize_tuple(16)?;
 
     for byte in u.as_bytes() {
@@ -34,7 +33,6 @@ pub fn serialize<S: Serializer>(
 pub fn deserialize<'de, D: Deserializer<'de>>(
     deserializer: D,
 ) -> Result<Uuid, D::Error> {
-    println!("desereeeeeeeeialize");
     struct DenseUuidBytesVisitor;
 
     impl<'vi> de::Visitor<'vi> for DenseUuidBytesVisitor {
