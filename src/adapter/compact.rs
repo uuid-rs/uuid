@@ -71,8 +71,8 @@ mod tests {
 
     #[derive(Serialize, Debug, Deserialize, PartialEq)]
     struct UuidContainer {
-        #[serde(with = "super")] // In practice this would be #[serde(with = "uuid::adapter::compact")]
-        u: Uuid
+        #[serde(with = "super")]
+        u: Uuid,
     }
 
     #[test]
@@ -80,13 +80,19 @@ mod tests {
         use serde_test::Configure;
 
         let uuid_bytes = b"F9168C5E-CEB2-4F";
-        let container = UuidContainer { u: Uuid::from_slice(uuid_bytes).unwrap() };
+        let container = UuidContainer {
+            u: Uuid::from_slice(uuid_bytes).unwrap(),
+        };
 
-        // more complex because of the struct wrapping the actual UUID serialization
+        // more complex because of the struct wrapping the actual UUID
+        // serialization
         serde_test::assert_tokens(
             &container.compact(),
             &[
-                serde_test::Token::Struct { name: "UuidContainer", len: 1 },
+                serde_test::Token::Struct {
+                    name: "UuidContainer",
+                    len: 1,
+                },
                 serde_test::Token::Str("u"),
                 serde_test::Token::Tuple { len: 16 },
                 serde_test::Token::U8(uuid_bytes[0]),
@@ -106,8 +112,8 @@ mod tests {
                 serde_test::Token::U8(uuid_bytes[14]),
                 serde_test::Token::U8(uuid_bytes[15]),
                 serde_test::Token::TupleEnd,
-                serde_test::Token::StructEnd
-            ]
+                serde_test::Token::StructEnd,
+            ],
         )
     }
 }
