@@ -137,14 +137,15 @@ extern crate sha1;
 #[cfg_attr(test, macro_use)]
 extern crate slog;
 
-mod builder;
-pub use builder::UuidBuilder;
 
 pub mod adapter;
+pub mod builder;
 pub mod parser;
 pub mod prelude;
 #[cfg(feature = "v1")]
 pub mod v1;
+
+pub use builder::Builder;
 
 mod core_support;
 #[cfg(feature = "serde")]
@@ -624,7 +625,7 @@ impl Uuid {
     /// ```
     #[deprecated(
         since = "0.7.2",
-        note = "please use the `UuidBuilder` instead"
+        note = "please use the `uuid::Builder` instead"
     )]
     pub fn from_random_bytes(bytes: Bytes) -> Uuid {
         let mut uuid = Uuid::from_bytes(bytes);

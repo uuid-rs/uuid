@@ -29,13 +29,14 @@
 //!
 //! Currently the prelude reexports the following:
 //!
-//! [`uuid`]`::{`[`Uuid`], [`Variant`], [`Version`]`}`: The fundamental
+//! [`uuid`]`::{`[`Uuid`], [`Variant`], [`Version`], builder::[`Builder`]`}`: The fundamental
 //! types used in [`uuid`] crate.
 //!
 //! [`uuid`]: ../index.html
 //! [`Uuid`]: ../struct.Uuid.html
 //! [`Variant`]: ../enum.Variant.html
 //! [`Version`]: ../enum.Version.html
+//! [`Builder`]: ../builder/struct.Builder.html
 //!
 #![cfg_attr(feature = "v1",
 doc = "
@@ -46,6 +47,6 @@ handling uuid version 1. Requires feature `v1`.
 [`Context`]: ../v1/struct.Context.html
 [`ClockSequence`]: ../v1/trait.ClockSequence.html")]
 
-pub use super::{Bytes, Uuid, Variant, Version};
+pub use super::{Bytes, Uuid, Variant, Version, builder::Builder};
 #[cfg(feature = "v1")]
 pub use v1::{ClockSequence, Context};
