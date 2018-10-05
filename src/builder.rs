@@ -290,7 +290,7 @@ impl Builder {
     ///     "00000000-0000-0000-0000-000000000000"
     /// );
     /// ```
-    pub fn build(&self) -> Uuid {
+    pub fn build(&mut self) -> Uuid {
         self.0
     }
 }
