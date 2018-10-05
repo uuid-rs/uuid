@@ -140,7 +140,6 @@ extern crate sha1;
 #[cfg_attr(test, macro_use)]
 extern crate slog;
 
-
 pub mod adapter;
 pub mod builder;
 pub mod parser;

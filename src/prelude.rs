@@ -29,8 +29,8 @@
 //!
 //! Currently the prelude reexports the following:
 //!
-//! [`uuid`]`::{`[`Uuid`], [`Variant`], [`Version`], builder::[`Builder`]`}`: The fundamental
-//! types used in [`uuid`] crate.
+//! [`uuid`]`::{`[`Uuid`], [`Variant`], [`Version`], builder::[`Builder`]`}`:
+//! The fundamental types used in [`uuid`] crate.
 //!
 //! [`uuid`]: ../index.html
 //! [`Uuid`]: ../struct.Uuid.html
@@ -47,6 +47,6 @@ handling uuid version 1. Requires feature `v1`.
 [`Context`]: ../v1/struct.Context.html
 [`ClockSequence`]: ../v1/trait.ClockSequence.html")]
 
-pub use super::{Bytes, Uuid, Variant, Version, builder::Builder};
+pub use super::{Builder, Bytes, Uuid, Variant, Version};
 #[cfg(feature = "v1")]
 pub use v1::{ClockSequence, Context};

@@ -9,7 +9,6 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-
 //! A Builder type for [`Uuid`]s.
 //!
 //! [`Uuid`]: ../struct.Uuid.html
@@ -30,8 +29,8 @@ impl Builder {
     /// Basic usage:
     ///
     /// ```
-    /// use uuid::Bytes;
     /// use uuid::Builder;
+    /// use uuid::Bytes;
     ///
     /// let bytes: Bytes = [
     ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
@@ -49,8 +48,8 @@ impl Builder {
     /// An incorrect number of bytes:
     ///
     /// ```compile_fail
-    /// use uuid::Bytes;
     /// use uuid::Builder;
+    /// use uuid::Bytes;
     ///
     /// let bytes: Bytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
     ///
@@ -67,8 +66,8 @@ impl Builder {
     /// Basic usage:
     ///
     /// ```
-    /// use uuid::Bytes;
     /// use uuid::Builder;
+    /// use uuid::Bytes;
     ///
     /// let bytes: Bytes = [
     ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
@@ -86,8 +85,8 @@ impl Builder {
     /// An incorrect number of bytes:
     ///
     /// ```compile_fail
-    /// use uuid::Bytes;
     /// use uuid::Builder;
+    /// use uuid::Bytes;
     ///
     /// let bytes: Bytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
     ///
