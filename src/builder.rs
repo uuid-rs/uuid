@@ -38,7 +38,7 @@ impl Builder {
     ///     62,
     /// ];
     ///
-    /// let builder = Builder::from_bytes_be(bytes);
+    /// let mut builder = Builder::from_bytes_be(bytes);
     /// let uuid = builder.build().to_hyphenated().to_string();
     ///
     /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
@@ -75,7 +75,7 @@ impl Builder {
     ///     62,
     /// ];
     ///
-    /// let builder = Builder::from_bytes_le(bytes);
+    /// let mut builder = Builder::from_bytes_le(bytes);
     /// let uuid = builder.build().to_hyphenated().to_string();
     ///
     /// let expected_uuid = String::from("eed0eb46-6d0e-c943-b90d-ccc35a913f3e");
@@ -114,7 +114,7 @@ impl Builder {
     ///
     /// let builder = Builder::from_slice_be(&bytes);
     /// let uuid =
-    ///     builder.map(|builder| builder.build().to_hyphenated().to_string());
+    ///     builder.map(|mut builder| builder.build().to_hyphenated().to_string());
     ///
     /// let expected_uuid =
     ///     Ok(String::from("0436430c-2b02-624c-2032-570501212b57"));
@@ -165,7 +165,7 @@ impl Builder {
     ///
     /// let builder = Builder::from_slice_le(&bytes);
     /// let uuid =
-    ///     builder.map(|builder| builder.build().to_hyphenated().to_string());
+    ///     builder.map(|mut builder| builder.build().to_hyphenated().to_string());
     ///
     /// let expected_uuid =
     ///     Ok(String::from("0c433604-022b-4c62-2032-570501212b57"));
@@ -216,7 +216,7 @@ impl Builder {
     ///
     /// let builder = Builder::from_fields(42, 12, 5, &d4);
     /// let uuid =
-    ///     builder.map(|builder| builder.build().to_hyphenated().to_string());
+    ///     builder.map(|mut builder| builder.build().to_hyphenated().to_string());
     ///
     /// let expected_uuid =
     ///     Ok(String::from("0000002a-000c-0005-0c03-0938362b0809"));
@@ -252,7 +252,7 @@ impl Builder {
     /// ```
     /// use uuid::Builder;
     ///
-    /// let builder = Builder::nil();
+    /// let mut builder = Builder::nil();
     ///
     /// assert_eq!(
     ///     builder.build().to_hyphenated().to_string(),
