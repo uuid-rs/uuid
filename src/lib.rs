@@ -153,8 +153,6 @@ pub mod v1;
 pub use builder::Builder;
 
 mod core_support;
-#[cfg(feature = "winapi")]
-mod guid_support;
 #[cfg(feature = "serde")]
 mod serde_support;
 #[cfg(feature = "slog")]
@@ -171,6 +169,8 @@ mod v3;
 mod v4;
 #[cfg(feature = "v5")]
 mod v5;
+#[cfg(feature = "winapi")]
+mod winapi_support;
 
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type Bytes = [u8; 16];
