@@ -153,6 +153,8 @@ pub mod v1;
 pub use builder::Builder;
 
 mod core_support;
+#[cfg(feature = "winapi")]
+mod guid_support;
 #[cfg(feature = "serde")]
 mod serde_support;
 #[cfg(feature = "slog")]
@@ -163,8 +165,6 @@ mod std_support;
 mod test_util;
 #[cfg(feature = "u128")]
 mod u128_support;
-#[cfg(feature = "winapi")]
-mod guid_support;
 #[cfg(feature = "v3")]
 mod v3;
 #[cfg(feature = "v4")]
