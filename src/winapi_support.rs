@@ -17,11 +17,12 @@ impl Uuid {
         )
     }
 
-    /// Converts a [`Uuid`] into a winapi `GUID`
+    /// Converts a [`Uuid`] into a little endian winapi `GUID`
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     fn to_guid(&self) -> guiddef::GUID {
         let (data1, data2, data3, data4) = self.to_fields_le();
+        
         guiddef::GUID {
             Data1: data1,
             Data2: data2,
