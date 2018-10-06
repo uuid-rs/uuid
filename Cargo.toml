@@ -27,7 +27,7 @@ all-features = true
 features = ["serde", "u128", "v1", "v3", "v4", "v5"]
 
 [dependencies.winapi]
-version = "0.3.6"
+version = "0.3"
 optional = true
 
 [dependencies.byteorder]
