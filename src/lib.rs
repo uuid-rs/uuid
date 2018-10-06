@@ -140,6 +140,9 @@ extern crate sha1;
 #[cfg_attr(test, macro_use)]
 extern crate slog;
 
+#[cfg(feature = "winapi")]
+extern crate winapi;
+
 pub mod adapter;
 pub mod builder;
 pub mod parser;
@@ -160,6 +163,8 @@ mod std_support;
 mod test_util;
 #[cfg(feature = "u128")]
 mod u128_support;
+#[cfg(feature = "winapi")]
+mod guid_support;
 #[cfg(feature = "v3")]
 mod v3;
 #[cfg(feature = "v4")]

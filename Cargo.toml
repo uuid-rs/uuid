@@ -26,6 +26,10 @@ all-features = true
 [package.metadata.playground]
 features = ["serde", "u128", "v1", "v3", "v4", "v5"]
 
+[dependencies.winapi]
+version = "0.3.6"
+optional = true
+
 [dependencies.byteorder]
 default-features = false
 features = ["i128"]
