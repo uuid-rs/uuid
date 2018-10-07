@@ -40,7 +40,8 @@ mod tests {
 
     #[test]
     fn test_to_uuid() {
-        let uuid = Uuid::from_str("735d359d-4bc4-4e07-8c49-eb3e99a048dc").unwrap();
+        let uuid =
+            Uuid::from_str("735d359d-4bc4-4e07-8c49-eb3e99a048dc").unwrap();
         let guid = uuid.to_guid();
         assert_eq!(Ok(uuid), Uuid::from_guid(guid));
     }
@@ -55,7 +56,10 @@ mod tests {
         };
 
         let uuid = Uuid::from_guid(guid).unwrap();
-        assert_eq!("4a35229d-5527-4f30-8647-9dc54e1ee1e8", uuid.to_hyphenated().to_string());
+        assert_eq!(
+            "4a35229d-5527-4f30-8647-9dc54e1ee1e8",
+            uuid.to_hyphenated().to_string()
+        );
         assert_eq!(Ok(uuid), Uuid::from_guid(guid));
     }
 }
