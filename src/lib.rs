@@ -140,6 +140,9 @@ extern crate sha1;
 #[cfg_attr(test, macro_use)]
 extern crate slog;
 
+#[cfg(feature = "winapi")]
+extern crate winapi;
+
 pub mod adapter;
 pub mod builder;
 pub mod parser;
@@ -166,6 +169,8 @@ mod v3;
 mod v4;
 #[cfg(feature = "v5")]
 mod v5;
+#[cfg(feature = "winapi")]
+mod winapi_support;
 
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type Bytes = [u8; 16];
