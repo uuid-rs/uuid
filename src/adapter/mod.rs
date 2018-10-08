@@ -238,7 +238,7 @@ fn encode<'a>(
                 let b = bytes[idx];
                 let out_idx = hyphens_before + 2 * idx;
 
-                buffer[out_idx + 0] = hex[(b >> 4) as usize];
+                buffer[out_idx] = hex[(b >> 4) as usize];
                 buffer[out_idx + 1] = hex[(b & 0b1111) as usize];
             }
 
