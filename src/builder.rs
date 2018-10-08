@@ -240,7 +240,7 @@ impl Builder {
         d3: u16,
         d4: &[u8],
     ) -> Result<Self, BytesError> {
-        Uuid::from_fields(d1, d2, d3, d4).map(|uuid| Builder(uuid))
+        Uuid::from_fields(d1, d2, d3, d4).map(Builder)
     }
 
     /// Creates a `Builder` with an initial [`Uuid::nil`]
