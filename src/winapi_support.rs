@@ -4,6 +4,7 @@ use BytesError;
 
 use winapi::shared::guiddef;
 
+#[cfg(feature = "guid")]
 impl Uuid {
     /// Attempts to create a [`Uuid`] from a winapi `GUID`
     ///
@@ -32,6 +33,7 @@ impl Uuid {
     }
 }
 
+#[cfg(feature = "guid")]
 #[cfg(test)]
 mod tests {
     use prelude::*;

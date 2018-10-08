@@ -139,7 +139,6 @@ extern crate sha1;
 #[cfg(feature = "slog")]
 #[cfg_attr(test, macro_use)]
 extern crate slog;
-
 #[cfg(feature = "winapi")]
 extern crate winapi;
 

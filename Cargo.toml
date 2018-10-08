@@ -26,10 +26,6 @@ all-features = true
 [package.metadata.playground]
 features = ["serde", "u128", "v1", "v3", "v4", "v5"]
 
-[dependencies.winapi]
-version = "0.3"
-optional = true
-
 [dependencies.byteorder]
 default-features = false
 features = ["i128"]
@@ -57,20 +53,25 @@ version = "0.6"
 optional = true
 version = "2"
 
-[dev-dependencies]
-serde_derive = "1.0.79"
-
-[dev-dependencies.serde_test]
-version = "1.0.56"
-
-[dev-dependencies.serde_json]
-version = "1.0"
+[dependencies.winapi]
+version = "0.3"
+optional = true
 
 [dev-dependencies.bincode]
 version = "1.0"
 
+[dev-dependencies.serde_derive]
+version = "1.0.79"
+
+[dev-dependencies.serde_json]
+version = "1.0"
+
+[dev-dependencies.serde_test]
+version = "1.0.56"
+
 [features]
 default = ["std"]
+guid = ["winapi"]
 std = []
 v1 = []
 v3 = ["md5", "rand"]
