@@ -234,7 +234,12 @@ fn encode<'a>(
             // number.
             let hyphens_before = if hyphens { group } else { 0 };
 
-            for (idx, b) in bytes.iter().enumerate().take(BYTE_POSITIONS[group + 1]).skip(BYTE_POSITIONS[group]) {
+            for (idx, b) in bytes
+                .iter()
+                .enumerate()
+                .take(BYTE_POSITIONS[group + 1])
+                .skip(BYTE_POSITIONS[group])
+            {
                 let out_idx = hyphens_before + 2 * idx;
 
                 buffer[out_idx] = hex[(b >> 4) as usize];
