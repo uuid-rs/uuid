@@ -16,6 +16,7 @@
 mod core_support;
 #[cfg(feature = "std")]
 mod std_support;
+use adapter;
 
 /// The expected value.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
@@ -120,6 +121,35 @@ pub(crate) fn len_matches_range(len: usize, min: usize, max: usize) -> bool {
 
     false
 }
+
+    /// Parses the length of a provided [`Uuid`] and returns true if the
+    /// length matches a valid from (urn, hexadecimal, or hyphenated hex)
+    /// Returns valid 
+    /// [`Uuid`] or [`ParseError`]
+    /// 
+    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`ParseError`]: ./enum.ParseError.html
+    pub fn valid_length_check(input: &str) -> Result<&str, ParseError> {
+        let len = input.len();
+
+        if len == adapter::Urn::LENGTH && input.starts_with("urn:uuid:") {
+            // Length and start value matches, return just [`Uuid`]: ../struct.Uuid.html portion
+            return Ok(&input[9..]);
+        } else if !len_matches_any(
+            len,
+            &[adapter::Hyphenated::LENGTH, adapter::Simple::LENGTH],
+        ) {
+            return Err(ParseError::InvalidLength {
+                expected: Expected::Any(&[
+                    adapter::Hyphenated::LENGTH,
+                    adapter::Simple::LENGTH,
+                ]),
+                found: len,
+            });
+        }
+        // No errors found, return [`Uuid`]: ../struct.Uuid.html
+        Ok(input)
+    }
 
 // Accumulated length of each hyphenated group in hex digits.
 pub(crate) const ACC_GROUP_LENS: [usize; 5] = [8, 12, 16, 20, 32];

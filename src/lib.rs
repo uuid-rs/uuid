@@ -938,30 +938,6 @@ impl Uuid {
         Some((ts, count))
     }
 
-    /// Parses the length of a provided UUID and returns true if the
-    /// length matches a valid from (urn, hexadecimal, or hyphenated hex)
-    /// Returns valid UUID or ParseError
-    pub fn valid_length_check(input: &str) -> Result<&str, parser::ParseError> {
-        let len = input.len();
-
-        if len == adapter::Urn::LENGTH && input.starts_with("urn:uuid:") {
-            // Length and start value matches, return just UUID portion
-            return Ok(&input[9..]);
-        } else if !parser::len_matches_any(
-            len,
-            &[adapter::Hyphenated::LENGTH, adapter::Simple::LENGTH],
-        ) {
-            return Err(parser::ParseError::InvalidLength {
-                expected: parser::Expected::Any(&[
-                    adapter::Hyphenated::LENGTH,
-                    adapter::Simple::LENGTH,
-                ]),
-                found: len,
-            });
-        }
-        // No errors found, return UUID
-        Ok(input)
-    }
     /// Parses a `Uuid` from a string of hexadecimal digits with optional
     /// hyphens.
     ///
@@ -986,7 +962,7 @@ impl Uuid {
         // });
         // }
 
-        let input = match Uuid::valid_length_check(input) {
+        let input = match parser::valid_length_check(input) {
             Ok(input) => input,
             Err(e) => return Err(e),
         };
