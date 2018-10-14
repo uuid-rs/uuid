@@ -947,21 +947,6 @@ impl Uuid {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
 
-        // if len == adapter::Urn::LENGTH && input.starts_with("urn:uuid:") {
-        // input = &input[9..];
-        // } else if !parser::len_matches_any(
-        // len,
-        // &[adapter::Hyphenated::LENGTH, adapter::Simple::LENGTH],
-        // ) {
-        // return Err(parser::ParseError::InvalidLength {
-        // expected: parser::Expected::Any(&[
-        // adapter::Hyphenated::LENGTH,
-        // adapter::Simple::LENGTH,
-        // ]),
-        // found: len,
-        // });
-        // }
-
         let input = match parser::valid_length_check(input) {
             Ok(input) => input,
             Err(e) => return Err(e),
