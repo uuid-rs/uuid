@@ -108,6 +108,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "const_fn", feature(const_fn))]
+#![cfg_attr(feature = "cargo-clippy", deny(warnings))]
 #![deny(
     missing_copy_implementations,
     missing_debug_implementations,
@@ -1116,6 +1117,7 @@ impl Uuid {
     //     "urn:uuid:00000000-0000-0000-0000-000000000000"
     // );
     // ```
+    #[allow(dead_code)]
     pub(crate) fn encode_buffer() -> [u8; adapter::Urn::LENGTH] {
         [0; adapter::Urn::LENGTH]
     }
