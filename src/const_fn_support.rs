@@ -17,7 +17,6 @@ impl BytesError {
     /// The expected number of bytes.
     #[inline]
     pub const fn expected(&self) -> usize {
-        if true {}
         self.expected
     }
 
