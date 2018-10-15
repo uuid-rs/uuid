@@ -151,6 +151,8 @@ pub mod v1;
 
 pub use builder::Builder;
 
+#[cfg(feature = "const_fn")]
+mod const_fn_support;
 mod core_support;
 #[cfg(feature = "serde")]
 mod serde_support;
@@ -221,30 +223,15 @@ pub enum Variant {
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Uuid(Bytes);
 
+#[cfg(not(feature = "const_fn"))]
 impl BytesError {
     /// The expected number of bytes.
-    #[cfg(feature = "const_fn")]
-    #[inline]
-    pub const fn expected(&self) -> usize {
-        self.expected
-    }
-
-    /// The expected number of bytes.
-    #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn expected(&self) -> usize {
         self.expected
     }
 
     /// The number of bytes found.
-    #[cfg(feature = "const_fn")]
-    #[inline]
-    pub const fn found(&self) -> usize {
-        self.found
-    }
-
-    /// The number of bytes found.
-    #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn found(&self) -> usize {
         self.found
@@ -253,19 +240,6 @@ impl BytesError {
     /// Create a new [`UuidError`].
     ///
     /// [`UuidError`]: struct.UuidError.html
-    #[cfg(feature = "const_fn")]
-    #[inline]
-    pub const fn new(expected: usize, found: usize) -> Self {
-        BytesError {
-            expected: expected,
-            found: found,
-        }
-    }
-
-    /// Create a new [`UuidError`].
-    ///
-    /// [`UuidError`]: struct.UuidError.html
-    #[cfg(not(feature = "const_fn"))]
     #[inline]
     pub fn new(expected: usize, found: usize) -> Self {
         BytesError { expected, found }
@@ -305,95 +279,81 @@ impl Uuid {
         0x4f, 0xd4, 0x30, 0xc8,
     ]);
 
-    /// The 'nil UUID'.
-    ///
-    /// The nil UUID is special form of UUID that is specified to have all
-    /// 128 bits set to zero, as defined in [IETF RFC 4122 Section 4.1.7][RFC].
-    ///
-    /// [RFC]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
+    /// Creates a `Uuid` using the supplied little-endian bytes.
     ///
     /// # Examples
     ///
     /// Basic usage:
     ///
     /// ```
+    /// use uuid::Bytes;
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::nil();
+    /// let bytes: Bytes = [
+    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
+    ///     62,
+    /// ];
     ///
-    /// assert_eq!(
-    ///     uuid.to_hyphenated().to_string(),
-    ///     "00000000-0000-0000-0000-000000000000"
-    /// );
+    /// let uuid = Uuid::from_bytes_le(bytes);
+    /// let uuid = uuid.to_hyphenated().to_string();
+    ///
+    /// let expected_uuid = String::from("eed0eb46-6d0e-c943-b90d-ccc35a913f3e");
+    ///
+    /// assert_eq!(expected_uuid, uuid);
     /// ```
-    #[cfg(feature = "const_fn")]
-    pub const fn nil() -> Self {
-        Uuid::from_bytes([0; 16])
-    }
-
-    /// The 'nil UUID'.
     ///
-    /// The nil UUID is special form of UUID that is specified to have all
-    /// 128 bits set to zero, as defined in [IETF RFC 4122 Section 4.1.7][RFC].
+    /// An incorrect number of bytes:
     ///
-    /// [RFC]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
+    /// ```compile_fail
+    /// use uuid::Bytes;
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::nil();
+    /// let bytes: Bytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
     ///
-    /// assert_eq!(
-    ///     uuid.to_hyphenated().to_string(),
-    ///     "00000000-0000-0000-0000-000000000000"
-    /// );
+    /// let uuid = Uuid::from_bytes_le(bytes);
     /// ```
-    #[cfg(not(feature = "const_fn"))]
-    pub fn nil() -> Uuid {
-        Uuid::from_bytes([0; 16])
+    pub fn from_bytes_le(mut bytes: Bytes) -> Uuid {
+        Self::be_to_le_bytes(&mut bytes);
+        Self::from_bytes_be(bytes)
     }
 
     /// Creates a `Uuid` from four field values.
-    ///
-    /// # Errors
-    ///
-    /// This function will return an error if `d4`'s length is not 8 bytes.
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let d4 = [12, 3, 9, 56, 54, 43, 8, 9];
-    ///
-    /// let uuid = Uuid::from_fields(42, 12, 5, &d4);
-    /// let uuid = uuid.map(|uuid| uuid.to_hyphenated().to_string());
-    ///
-    /// let expected_uuid =
-    ///     Ok(String::from("0000002a-000c-0005-0c03-0938362b0809"));
-    ///
-    /// assert_eq!(expected_uuid, uuid);
-    /// ```
-    ///
-    /// An invalid length:
-    ///
-    /// ```
-    /// use uuid::prelude::*;
-    ///
-    /// let d4 = [12];
-    ///
-    /// let uuid = uuid::Uuid::from_fields(42, 12, 5, &d4);
-    ///
-    /// let expected_uuid = Err(uuid::BytesError::new(8, d4.len()));
-    ///
-    /// assert_eq!(expected_uuid, uuid);
-    /// ```
+///
+/// # Errors
+///
+/// This function will return an error if `d4`'s length is not 8 bytes.
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```
+/// use uuid::Uuid;
+///
+/// let d4 = [12, 3, 9, 56, 54, 43, 8, 9];
+///
+/// let uuid = Uuid::from_fields(42, 12, 5, &d4);
+/// let uuid = uuid.map(|uuid| uuid.to_hyphenated().to_string());
+///
+/// let expected_uuid =
+///     Ok(String::from("0000002a-000c-0005-0c03-0938362b0809"));
+///
+/// assert_eq!(expected_uuid, uuid);
+/// ```
+///
+/// An invalid length:
+///
+/// ```
+/// use uuid::prelude::*;
+///
+/// let d4 = [12];
+///
+/// let uuid = uuid::Uuid::from_fields(42, 12, 5, &d4);
+///
+/// let expected_uuid = Err(uuid::BytesError::new(8, d4.len()));
+///
+/// assert_eq!(expected_uuid, uuid);
+/// ```
     pub fn from_fields(
         d1: u32,
         d2: u16,
@@ -479,134 +439,6 @@ impl Uuid {
         Ok(Uuid::from_bytes(bytes))
     }
 
-    /// Creates a `Uuid` using the supplied big-endian bytes.
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// use uuid::Bytes;
-    /// use uuid::Uuid;
-    ///
-    /// let bytes: Bytes = [
-    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
-    ///     62,
-    /// ];
-    ///
-    /// let uuid = Uuid::from_bytes_be(bytes);
-    /// let uuid = uuid.to_hyphenated().to_string();
-    ///
-    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
-    ///
-    /// assert_eq!(expected_uuid, uuid);
-    /// ```
-    ///
-    /// An incorrect number of bytes:
-    ///
-    /// ```compile_fail
-    /// use uuid::Bytes;
-    /// use uuid::Uuid;
-    ///
-    /// let bytes: Bytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
-    ///
-    /// let uuid = Uuid::from_bytes_be(bytes);
-    /// ```
-    #[cfg(not(feature = "const_fn"))]
-    pub fn from_bytes_be(bytes: Bytes) -> Uuid {
-        Uuid(bytes)
-    }
-
-    /// Creates a `Uuid` using the supplied big-endian bytes.
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// use uuid::Bytes;
-    /// use uuid::Uuid;
-    ///
-    /// let bytes: Bytes = [
-    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
-    ///     62,
-    /// ];
-    ///
-    /// let uuid = Uuid::from_bytes_be(bytes);
-    /// let uuid = uuid.to_hyphenated().to_string();
-    ///
-    /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
-    ///
-    /// assert_eq!(expected_uuid, uuid);
-    /// ```
-    ///
-    /// An incorrect number of bytes:
-    ///
-    /// ```compile_fail
-    /// use uuid::Bytes;
-    /// use uuid::Uuid;
-    ///
-    /// let bytes: Bytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
-    ///
-    /// let uuid = Uuid::from_bytes_be(bytes);
-    /// ```
-    #[cfg(feature = "const_fn")]
-    pub const fn from_bytes_be(bytes: Bytes) -> Uuid {
-        Uuid(bytes)
-    }
-
-    /// Creates a `Uuid` using the supplied little-endian bytes.
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// use uuid::Bytes;
-    /// use uuid::Uuid;
-    ///
-    /// let bytes: Bytes = [
-    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
-    ///     62,
-    /// ];
-    ///
-    /// let uuid = Uuid::from_bytes_le(bytes);
-    /// let uuid = uuid.to_hyphenated().to_string();
-    ///
-    /// let expected_uuid = String::from("eed0eb46-6d0e-c943-b90d-ccc35a913f3e");
-    ///
-    /// assert_eq!(expected_uuid, uuid);
-    /// ```
-    ///
-    /// An incorrect number of bytes:
-    ///
-    /// ```compile_fail
-    /// use uuid::Bytes;
-    /// use uuid::Uuid;
-    ///
-    /// let bytes: Bytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
-    ///
-    /// let uuid = Uuid::from_bytes_le(bytes);
-    /// ```
-    pub fn from_bytes_le(mut bytes: Bytes) -> Uuid {
-        Self::be_to_le_bytes(&mut bytes);
-        Self::from_bytes_be(bytes)
-    }
-
-    /// Creates a `Uuid` using the supplied big-endian bytes.
-    /// This method wraps [`Uuid::from_bytes_be`]
-    #[cfg(not(feature = "const_fn"))]
-    pub fn from_bytes(bytes: Bytes) -> Uuid {
-        Self::from_bytes_be(bytes)
-    }
-
-    /// Creates a `Uuid` using the supplied big-endian bytes.
-    /// This method wraps [`Uuid::from_bytes_be`]
-    #[cfg(feature = "const_fn")]
-    pub const fn from_bytes(bytes: Bytes) -> Uuid {
-        Self::from_bytes_be(bytes)
-    }
-
     /// Creates a v4 Uuid from random bytes (e.g. bytes supplied from `Rand`
     /// crate)
     ///
@@ -630,284 +462,14 @@ impl Uuid {
     /// assert_eq!(expected_uuid, uuid);
     /// ```
     #[deprecated(
-        since = "0.7.2",
-        note = "please use the `uuid::Builder` instead"
+    since = "0.7.2",
+    note = "please use the `uuid::Builder` instead"
     )]
     pub fn from_random_bytes(bytes: Bytes) -> Uuid {
         let mut uuid = Uuid::from_bytes(bytes);
         uuid.set_variant(Variant::RFC4122);
         uuid.set_version(Version::Random);
         uuid
-    }
-
-    /// Specifies the variant of the UUID structure
-    fn set_variant(&mut self, v: Variant) {
-        // Octet 8 contains the variant in the most significant 3 bits
-        self.0[8] = match v {
-            Variant::NCS => self.as_bytes()[8] & 0x7f, // b0xx...
-            Variant::RFC4122 => (self.as_bytes()[8] & 0x3f) | 0x80, // b10x...
-            Variant::Microsoft => (self.as_bytes()[8] & 0x1f) | 0xc0, // b110...
-            Variant::Future => (self.as_bytes()[8] & 0x1f) | 0xe0, // b111...
-        }
-    }
-
-    /// Returns the variant of the `Uuid` structure.
-    ///
-    /// This determines the interpretation of the structure of the UUID.
-    /// Currently only the RFC4122 variant is generated by this module.
-    ///
-    /// * [Variant Reference](http://tools.ietf.org/html/rfc4122#section-4.1.1)
-    pub fn get_variant(&self) -> Option<Variant> {
-        match self.as_bytes()[8] {
-            x if x & 0x80 == 0x00 => Some(Variant::NCS),
-            x if x & 0xc0 == 0x80 => Some(Variant::RFC4122),
-            x if x & 0xe0 == 0xc0 => Some(Variant::Microsoft),
-            x if x & 0xe0 == 0xe0 => Some(Variant::Future),
-            _ => None,
-        }
-    }
-
-    /// Specifies the version number of the `Uuid`.
-    fn set_version(&mut self, v: Version) {
-        self.0[6] = (self.as_bytes()[6] & 0xF) | ((v as u8) << 4);
-    }
-
-    /// Returns the version number of the `Uuid`.
-    ///
-    /// This represents the algorithm used to generate the contents.
-    ///
-    /// Currently only the Random (V4) algorithm is supported by this
-    /// module.  There are security and privacy implications for using
-    /// older versions - see [Wikipedia: Universally Unique Identifier](
-    /// http://en.wikipedia.org/wiki/Universally_unique_identifier) for
-    /// details.
-    ///
-    /// * [Version Reference](http://tools.ietf.org/html/rfc4122#section-4.1.3)
-    pub fn get_version_num(&self) -> usize {
-        (self.as_bytes()[6] >> 4) as usize
-    }
-
-    /// Returns the version of the `Uuid`.
-    ///
-    /// This represents the algorithm used to generate the contents
-    pub fn get_version(&self) -> Option<Version> {
-        let v = self.as_bytes()[6] >> 4;
-        match v {
-            0 if self.is_nil() => Some(Version::Nil),
-            1 => Some(Version::Mac),
-            2 => Some(Version::Dce),
-            3 => Some(Version::Md5),
-            4 => Some(Version::Random),
-            5 => Some(Version::Sha1),
-            _ => None,
-        }
-    }
-
-    /// Returns the four field values of the UUID in big-endian order.
-    ///
-    /// These values can be passed to the `from_fields()` method to get the
-    /// original `Uuid` back.
-    ///
-    /// * The first field value represents the first group of (eight) hex
-    ///   digits, taken as a big-endian `u32` value.  For V1 UUIDs, this field
-    ///   represents the low 32 bits of the timestamp.
-    /// * The second field value represents the second group of (four) hex
-    ///   digits, taken as a big-endian `u16` value.  For V1 UUIDs, this field
-    ///   represents the middle 16 bits of the timestamp.
-    /// * The third field value represents the third group of (four) hex
-    ///   digits, taken as a big-endian `u16` value.  The 4 most significant
-    ///   bits give the UUID version, and for V1 UUIDs, the last 12 bits
-    ///   represent the high 12 bits of the timestamp.
-    /// * The last field value represents the last two groups of four and
-    ///   twelve hex digits, taken in order.  The first 1-3 bits of this
-    ///   indicate the UUID variant, and for V1 UUIDs, the next 13-15 bits
-    ///   indicate the clock sequence and the last 48 bits indicate the node
-    ///   ID.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::nil();
-    /// assert_eq!(uuid.as_fields_be(), (0, 0, 0, &[0u8; 8]));
-    ///
-    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
-    /// assert_eq!(
-    ///     uuid.as_fields_be(),
-    ///     (
-    ///         0x936DA01F,
-    ///         0x9ABD,
-    ///         0x4D9D,
-    ///         b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"
-    ///     )
-    /// );
-    /// ```
-    pub fn as_fields_be(&self) -> (u32, u16, u16, &[u8; 8]) {
-        let d1 = u32::from(self.as_bytes()[0]) << 24
-            | u32::from(self.as_bytes()[1]) << 16
-            | u32::from(self.as_bytes()[2]) << 8
-            | u32::from(self.as_bytes()[3]);
-
-        let d2 =
-            u16::from(self.as_bytes()[4]) << 8 | u16::from(self.as_bytes()[5]);
-
-        let d3 =
-            u16::from(self.as_bytes()[6]) << 8 | u16::from(self.as_bytes()[7]);
-
-        let d4: &[u8; 8] =
-            unsafe { &*(self.as_bytes()[8..16].as_ptr() as *const [u8; 8]) };
-        (d1, d2, d3, d4)
-    }
-
-    /// Returns the four field values of the UUID in little-endian order.
-    ///
-    /// These values can be passed to the `from_fields()` method to get the
-    /// original `Uuid` back.
-    ///
-    /// * The first field value represents the first group of (eight) hex
-    ///   digits, taken as a little-endian `u32` value.  For V1 UUIDs, this
-    ///   field represents the low 32 bits of the timestamp.
-    /// * The second field value represents the second group of (four) hex
-    ///   digits, taken as a little-endian `u16` value.  For V1 UUIDs, this
-    ///   field represents the middle 16 bits of the timestamp.
-    /// * The third field value represents the third group of (four) hex
-    ///   digits, taken as a little-endian `u16` value.  The 4 most significant
-    ///   bits give the UUID version, and for V1 UUIDs, the last 12 bits
-    ///   represent the high 12 bits of the timestamp.
-    /// * The last field value represents the last two groups of four and
-    ///   twelve hex digits, taken in order.  The first 1-3 bits of this
-    ///   indicate the UUID variant, and for V1 UUIDs, the next 13-15 bits
-    ///   indicate the clock sequence and the last 48 bits indicate the node
-    ///   ID.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::nil();
-    /// assert_eq!(uuid.to_fields_le(), (0, 0, 0, [0u8; 8]));
-    ///
-    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
-    /// assert_eq!(
-    ///     uuid.to_fields_le(),
-    ///     (
-    ///         0x1FA06D93,
-    ///         0xBD9A,
-    ///         0x9D4D,
-    ///         *b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"
-    ///     )
-    /// );
-    /// ```
-    pub fn to_fields_le(&self) -> (u32, u16, u16, [u8; 8]) {
-        let d1 = u32::from(self.as_bytes()[3]) << 24
-            | u32::from(self.as_bytes()[2]) << 16
-            | u32::from(self.as_bytes()[1]) << 8
-            | u32::from(self.as_bytes()[0]);
-
-        let d2 =
-            u16::from(self.as_bytes()[5]) << 8 | u16::from(self.as_bytes()[4]);
-
-        let d3 =
-            u16::from(self.as_bytes()[7]) << 8 | u16::from(self.as_bytes()[6]);
-
-        let d4: [u8; 8] =
-            unsafe { *(self.as_bytes()[8..16].as_ptr() as *const [u8; 8]) };
-        (d1, d2, d3, d4)
-    }
-
-    /// Returns the four field values of the UUID in big-endian order.
-    /// This method wraps [`Uuid::as_bytes_be`]
-    pub fn as_fields(&self) -> (u32, u16, u16, &[u8; 8]) {
-        self.as_fields_be()
-    }
-
-    /// Returns an array of 16 octets containing the UUID data.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::nil();
-    /// assert_eq!(uuid.as_bytes_be(), &[0; 16]);
-    ///
-    /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
-    /// assert_eq!(
-    ///     uuid.as_bytes_be(),
-    ///     &[
-    ///         147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133, 200,
-    ///         34, 168,
-    ///     ]
-    /// );
-    /// ```
-    #[cfg(feature = "const_fn")]
-    pub const fn as_bytes_be(&self) -> &Bytes {
-        &self.0
-    }
-
-    /// Returns an array of 16 octets containing the UUID data.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::nil();
-    /// assert_eq!(uuid.as_bytes_be(), &[0; 16]);
-    ///
-    /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
-    /// assert_eq!(
-    ///     uuid.as_bytes_be(),
-    ///     &[
-    ///         147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133, 200,
-    ///         34, 168
-    ///     ]
-    /// );
-    /// ```
-    #[cfg(not(feature = "const_fn"))]
-    pub fn as_bytes_be(&self) -> &Bytes {
-        &self.0
-    }
-
-    /// Returns an array of 16 octets containing the UUID data in little-endian.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::nil();
-    /// assert_eq!(uuid.to_bytes_le(), [0; 16]);
-    ///
-    /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
-    /// assert_eq!(
-    ///     uuid.to_bytes_le(),
-    ///     [
-    ///         31, 160, 109, 147, 189, 154, 157, 77, 128, 199, 2, 175, 133, 200,
-    ///         34, 168
-    ///     ]
-    /// );
-    /// ```
-    pub fn to_bytes_le(&self) -> Bytes {
-        let mut bytes = self.0;
-        Self::be_to_le_bytes(&mut bytes);
-        bytes
-    }
-
-    /// Returns an array of 16 octets containing the UUID data.
-    /// This method wraps [`Uuid::as_bytes_be`]
-    #[cfg(feature = "const_fn")]
-    pub const fn as_bytes(&self) -> &Bytes {
-        self.as_bytes_be()
-    }
-
-    /// Returns an array of 16 octets containing the UUID data.
-    /// This method wraps [`Uuid::as_bytes_be`]
-    #[cfg(not(feature = "const_fn"))]
-    pub fn as_bytes(&self) -> &Bytes {
-        self.as_bytes_be()
     }
 
     /// Returns an Optional Tuple of (u64, u16) representing the timestamp and
@@ -918,9 +480,9 @@ impl Uuid {
             .get_version()
             .map(|v| v != Version::Mac)
             .unwrap_or(true)
-        {
-            return None;
-        }
+            {
+                return None;
+            }
 
         let ts: u64 = u64::from(self.as_bytes()[6] & 0x0F) << 56
             | u64::from(self.as_bytes()[7]) << 48
@@ -1090,32 +652,33 @@ impl Uuid {
     pub fn is_nil(&self) -> bool {
         self.as_bytes().iter().all(|&b| b == 0)
     }
-    // A buffer that can be used for `encode_...` calls, that is
-    // guaranteed to be long enough for any of the adapters.
-    //
-    // # Examples
-    //
-    // ```rust
-    // use uuid::Uuid;
-    //
-    // let uuid = Uuid::nil();
-    //
-    // assert_eq!(
-    //     uuid.to_simple().encode_lower(&mut Uuid::encode_buffer()),
-    //     "00000000000000000000000000000000"
-    // );
-    //
-    // assert_eq!(
-    //     uuid.to_hyphenated()
-    //         .encode_lower(&mut Uuid::encode_buffer()),
-    //     "00000000-0000-0000-0000-000000000000"
-    // );
-    //
-    // assert_eq!(
-    //     uuid.to_urn().encode_lower(&mut Uuid::encode_buffer()),
-    //     "urn:uuid:00000000-0000-0000-0000-000000000000"
-    // );
-    // ```
+
+    /// A buffer that can be used for `encode_...` calls, that is
+    /// guaranteed to be long enough for any of the adapters.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    ///
+    /// assert_eq!(
+    ///     uuid.to_simple().encode_lower(&mut Uuid::encode_buffer()),
+    ///     "00000000000000000000000000000000"
+    /// );
+    ///
+    /// assert_eq!(
+    ///     uuid.to_hyphenated()
+    ///         .encode_lower(&mut Uuid::encode_buffer()),
+    ///     "00000000-0000-0000-0000-000000000000"
+    /// );
+    ///
+    /// assert_eq!(
+    ///     uuid.to_urn().encode_lower(&mut Uuid::encode_buffer()),
+    ///     "urn:uuid:00000000-0000-0000-0000-000000000000"
+    /// );
+    /// ```
     pub(crate) fn encode_buffer() -> [u8; adapter::Urn::LENGTH] {
         [0; adapter::Urn::LENGTH]
     }
@@ -1124,6 +687,314 @@ impl Uuid {
         bytes[0..4].reverse();
         bytes[4..6].reverse();
         bytes[6..8].reverse();
+    }
+
+    /// Returns an array of 16 octets containing the UUID data in little-endian.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    /// assert_eq!(uuid.to_bytes_le(), [0; 16]);
+    ///
+    /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
+    /// assert_eq!(
+    ///     uuid.to_bytes_le(),
+    ///     [
+    ///         31, 160, 109, 147, 189, 154, 157, 77, 128, 199, 2, 175, 133, 200,
+    ///         34, 168
+    ///     ]
+    /// );
+    /// ```
+    pub fn to_bytes_le(&self) -> Bytes {
+        let mut bytes = self.0;
+        Self::be_to_le_bytes(&mut bytes);
+        bytes
+    }
+
+    /// Specifies the variant of the UUID structure
+    fn set_variant(&mut self, v: Variant) {
+        // Octet 8 contains the variant in the most significant 3 bits
+        self.0[8] = match v {
+            Variant::NCS => self.as_bytes()[8] & 0x7f, // b0xx...
+            Variant::RFC4122 => (self.as_bytes()[8] & 0x3f) | 0x80, // b10x...
+            Variant::Microsoft => (self.as_bytes()[8] & 0x1f) | 0xc0, // b110...
+            Variant::Future => (self.as_bytes()[8] & 0x1f) | 0xe0, // b111...
+        }
+    }
+
+    /// Returns the variant of the `Uuid` structure.
+    ///
+    /// This determines the interpretation of the structure of the UUID.
+    /// Currently only the RFC4122 variant is generated by this module.
+    ///
+    /// * [Variant Reference](http://tools.ietf.org/html/rfc4122#section-4.1.1)
+    pub fn get_variant(&self) -> Option<Variant> {
+        match self.as_bytes()[8] {
+            x if x & 0x80 == 0x00 => Some(Variant::NCS),
+            x if x & 0xc0 == 0x80 => Some(Variant::RFC4122),
+            x if x & 0xe0 == 0xc0 => Some(Variant::Microsoft),
+            x if x & 0xe0 == 0xe0 => Some(Variant::Future),
+            _ => None,
+        }
+    }
+
+    /// Specifies the version number of the `Uuid`.
+    fn set_version(&mut self, v: Version) {
+        self.0[6] = (self.as_bytes()[6] & 0xF) | ((v as u8) << 4);
+    }
+
+    /// Returns the version number of the `Uuid`.
+    ///
+    /// This represents the algorithm used to generate the contents.
+    ///
+    /// Currently only the Random (V4) algorithm is supported by this
+    /// module.  There are security and privacy implications for using
+    /// older versions - see [Wikipedia: Universally Unique Identifier](
+    /// http://en.wikipedia.org/wiki/Universally_unique_identifier) for
+    /// details.
+    ///
+    /// * [Version Reference](http://tools.ietf.org/html/rfc4122#section-4.1.3)
+    pub fn get_version_num(&self) -> usize {
+        (self.as_bytes()[6] >> 4) as usize
+    }
+
+    /// Returns the version of the `Uuid`.
+    ///
+    /// This represents the algorithm used to generate the contents
+    pub fn get_version(&self) -> Option<Version> {
+        let v = self.as_bytes()[6] >> 4;
+        match v {
+            0 if self.is_nil() => Some(Version::Nil),
+            1 => Some(Version::Mac),
+            2 => Some(Version::Dce),
+            3 => Some(Version::Md5),
+            4 => Some(Version::Random),
+            5 => Some(Version::Sha1),
+            _ => None,
+        }
+    }
+
+    /// Returns the four field values of the UUID in big-endian order.
+    ///
+    /// These values can be passed to the `from_fields()` method to get the
+    /// original `Uuid` back.
+    ///
+    /// * The first field value represents the first group of (eight) hex
+    ///   digits, taken as a big-endian `u32` value.  For V1 UUIDs, this field
+    ///   represents the low 32 bits of the timestamp.
+    /// * The second field value represents the second group of (four) hex
+    ///   digits, taken as a big-endian `u16` value.  For V1 UUIDs, this field
+    ///   represents the middle 16 bits of the timestamp.
+    /// * The third field value represents the third group of (four) hex
+    ///   digits, taken as a big-endian `u16` value.  The 4 most significant
+    ///   bits give the UUID version, and for V1 UUIDs, the last 12 bits
+    ///   represent the high 12 bits of the timestamp.
+    /// * The last field value represents the last two groups of four and
+    ///   twelve hex digits, taken in order.  The first 1-3 bits of this
+    ///   indicate the UUID variant, and for V1 UUIDs, the next 13-15 bits
+    ///   indicate the clock sequence and the last 48 bits indicate the node
+    ///   ID.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    /// assert_eq!(uuid.as_fields_be(), (0, 0, 0, &[0u8; 8]));
+    ///
+    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
+    /// assert_eq!(
+    ///     uuid.as_fields_be(),
+    ///     (
+    ///         0x936DA01F,
+    ///         0x9ABD,
+    ///         0x4D9D,
+    ///         b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"
+    ///     )
+    /// );
+    /// ```
+    pub fn as_fields_be(&self) -> (u32, u16, u16, &[u8; 8]) {
+        let d1 = u32::from(self.as_bytes()[0]) << 24
+            | u32::from(self.as_bytes()[1]) << 16
+            | u32::from(self.as_bytes()[2]) << 8
+            | u32::from(self.as_bytes()[3]);
+
+        let d2 =
+            u16::from(self.as_bytes()[4]) << 8 | u16::from(self.as_bytes()[5]);
+
+        let d3 =
+            u16::from(self.as_bytes()[6]) << 8 | u16::from(self.as_bytes()[7]);
+
+        let d4: &[u8; 8] =
+            unsafe { &*(self.as_bytes()[8..16].as_ptr() as *const [u8; 8]) };
+        (d1, d2, d3, d4)
+    }
+
+    /// Returns the four field values of the UUID in big-endian order.
+    /// This method wraps [`Uuid::as_bytes_be`]
+    pub fn as_fields(&self) -> (u32, u16, u16, &[u8; 8]) {
+        self.as_fields_be()
+    }
+
+    /// Returns the four field values of the UUID in little-endian order.
+    ///
+    /// These values can be passed to the `from_fields()` method to get the
+    /// original `Uuid` back.
+    ///
+    /// * The first field value represents the first group of (eight) hex
+    ///   digits, taken as a little-endian `u32` value.  For V1 UUIDs, this
+    ///   field represents the low 32 bits of the timestamp.
+    /// * The second field value represents the second group of (four) hex
+    ///   digits, taken as a little-endian `u16` value.  For V1 UUIDs, this
+    ///   field represents the middle 16 bits of the timestamp.
+    /// * The third field value represents the third group of (four) hex
+    ///   digits, taken as a little-endian `u16` value.  The 4 most significant
+    ///   bits give the UUID version, and for V1 UUIDs, the last 12 bits
+    ///   represent the high 12 bits of the timestamp.
+    /// * The last field value represents the last two groups of four and
+    ///   twelve hex digits, taken in order.  The first 1-3 bits of this
+    ///   indicate the UUID variant, and for V1 UUIDs, the next 13-15 bits
+    ///   indicate the clock sequence and the last 48 bits indicate the node
+    ///   ID.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    /// assert_eq!(uuid.to_fields_le(), (0, 0, 0, [0u8; 8]));
+    ///
+    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
+    /// assert_eq!(
+    ///     uuid.to_fields_le(),
+    ///     (
+    ///         0x1FA06D93,
+    ///         0xBD9A,
+    ///         0x9D4D,
+    ///         *b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"
+    ///     )
+    /// );
+    /// ```
+    pub fn to_fields_le(&self) -> (u32, u16, u16, [u8; 8]) {
+        let d1 = u32::from(self.as_bytes()[3]) << 24
+            | u32::from(self.as_bytes()[2]) << 16
+            | u32::from(self.as_bytes()[1]) << 8
+            | u32::from(self.as_bytes()[0]);
+
+        let d2 =
+            u16::from(self.as_bytes()[5]) << 8 | u16::from(self.as_bytes()[4]);
+
+        let d3 =
+            u16::from(self.as_bytes()[7]) << 8 | u16::from(self.as_bytes()[6]);
+
+        let d4: [u8; 8] =
+            unsafe { *(self.as_bytes()[8..16].as_ptr() as *const [u8; 8]) };
+        (d1, d2, d3, d4)
+    }
+}
+
+#[cfg(not(feature = "const_fn"))]
+impl Uuid {
+    /// Returns an array of 16 octets containing the UUID data.
+    /// This method wraps [`Uuid::as_bytes_be`]
+    pub fn as_bytes(&self) -> &Bytes {
+        self.as_bytes_be()
+    }
+
+    /// Returns an array of 16 octets containing the UUID data.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    /// assert_eq!(uuid.as_bytes_be(), &[0; 16]);
+    ///
+    /// let uuid = Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
+    /// assert_eq!(
+    ///     uuid.as_bytes_be(),
+    ///     &[
+    ///         147, 109, 160, 31, 154, 189, 77, 157, 128, 199, 2, 175, 133, 200,
+    ///         34, 168,
+    ///     ]
+    /// );
+    /// ```
+    pub fn as_bytes_be(&self) -> &Bytes {
+        &self.0
+    }
+
+    /// Creates a `Uuid` using the supplied big-endian bytes.
+    /// This method wraps [`Uuid::from_bytes_be`]
+    pub fn from_bytes(bytes: Bytes) -> Uuid {
+        Self::from_bytes_be(bytes)
+    }
+
+    /// Creates a `Uuid` using the supplied big-endian bytes.
+ ///
+ /// # Examples
+ ///
+ /// Basic usage:
+ ///
+ /// ```
+ /// use uuid::Bytes;
+ /// use uuid::Uuid;
+ ///
+ /// let bytes: Bytes = [
+ ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
+ ///     62,
+ /// ];
+ ///
+ /// let uuid = Uuid::from_bytes_be(bytes);
+ /// let uuid = uuid.to_hyphenated().to_string();
+ ///
+ /// let expected_uuid = String::from("46ebd0ee-0e6d-43c9-b90d-ccc35a913f3e");
+ ///
+ /// assert_eq!(expected_uuid, uuid);
+ /// ```
+ ///
+ /// An incorrect number of bytes:
+ ///
+ /// ```compile_fail
+ /// use uuid::Bytes;
+ /// use uuid::Uuid;
+ ///
+ /// let bytes: Bytes = [4, 54, 67, 12, 43, 2, 98, 76]; // doesn't compile
+ ///
+ /// let uuid = Uuid::from_bytes_be(bytes);
+ /// ```
+    pub fn from_bytes_be(bytes: Bytes) -> Uuid {
+        Uuid(bytes)
+    }
+
+    /// The 'nil UUID'.
+    ///
+    /// The nil UUID is special form of UUID that is specified to have all
+    /// 128 bits set to zero, as defined in [IETF RFC 4122 Section 4.1.7][RFC].
+    ///
+    /// [RFC]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    ///
+    /// assert_eq!(
+    ///     uuid.to_hyphenated().to_string(),
+    ///     "00000000-0000-0000-0000-000000000000"
+    /// );
+    /// ```
+    pub fn nil() -> Self {
+        Uuid::from_bytes([0; 16])
     }
 }
 
