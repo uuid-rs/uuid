@@ -947,7 +947,7 @@ impl Uuid {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
 
-        let input = match parser::valid_length_check(input) {
+        input = match parser::valid_length_check(input) {
             Ok(input) => input,
             Err(e) => return Err(e),
         };
