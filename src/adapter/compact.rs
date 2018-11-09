@@ -3,13 +3,9 @@
 //!
 //! [`Uuid`]: ../../struct.Uuid.html
 
-use serde::de::{self, Error, SeqAccess};
-use serde::ser::SerializeTuple;
-use serde::{Deserializer, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use prelude::*;
-
-use std::fmt;
 
 /// Serializer for a [`Uuid`] into a `[u8; 16]`
 ///
@@ -18,13 +14,7 @@ pub fn serialize<S: Serializer>(
     u: &Uuid,
     serializer: S,
 ) -> Result<S::Ok, S::Error> {
-    let mut seq = serializer.serialize_tuple(16)?;
-
-    for byte in u.as_bytes() {
-        seq.serialize_element(byte)?;
-    }
-
-    seq.end()
+    u.as_bytes().serialize(serializer)
 }
 
 /// Deserializer from a `[u8; 16]` into a [`Uuid`]
@@ -33,32 +23,9 @@ pub fn serialize<S: Serializer>(
 pub fn deserialize<'de, D: Deserializer<'de>>(
     deserializer: D,
 ) -> Result<Uuid, D::Error> {
-    struct DenseUuidBytesVisitor;
+    let bytes = <[u8; 16]>::deserialize(deserializer)?;
 
-    impl<'vi> de::Visitor<'vi> for DenseUuidBytesVisitor {
-        type Value = Uuid;
-
-        fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-            write!(formatter, "tuple")
-        }
-
-        fn visit_seq<A: SeqAccess<'vi>>(
-            self,
-            mut seq: A,
-        ) -> Result<Self::Value, A::Error> {
-            if seq.size_hint() == Some(16) {
-                let mut buf = [0; 16];
-                for i in 0..16 {
-                    buf[i] = seq.next_element().unwrap().unwrap()
-                }
-                Ok(Uuid::from_bytes(buf))
-            } else {
-                Err(Error::custom("Uuid must be 16 bytes long"))
-            }
-        }
-    }
-
-    deserializer.deserialize_tuple(16, DenseUuidBytesVisitor)
+    Ok(Uuid::from_bytes(bytes))
 }
 
 #[cfg(test)]
