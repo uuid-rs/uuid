@@ -38,7 +38,12 @@ version = "0.5"
 
 [dependencies.rand]
 optional = true
-version = "0.5"
+version = "0.6.0-pre.1"
+
+[target.wasm32-unknown-unknown.dependencies.rand]
+optional = true
+version = "0.6.0-pre.1"
+features = ["wasm-bindgen"]
 
 [dependencies.serde]
 default-features = false
