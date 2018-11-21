@@ -650,15 +650,14 @@ impl Uuid {
     /// * The second field value represents the second group of (four) hex
     ///   digits, taken as a big-endian `u16` value.  For V1 UUIDs, this field
     ///   represents the middle 16 bits of the timestamp.
-    /// * The third field value represents the third group of (four) hex
-    ///   digits, taken as a big-endian `u16` value.  The 4 most significant
-    ///   bits give the UUID version, and for V1 UUIDs, the last 12 bits
-    ///   represent the high 12 bits of the timestamp.
-    /// * The last field value represents the last two groups of four and
-    ///   twelve hex digits, taken in order.  The first 1-3 bits of this
-    ///   indicate the UUID variant, and for V1 UUIDs, the next 13-15 bits
-    ///   indicate the clock sequence and the last 48 bits indicate the node
-    ///   ID.
+    /// * The third field value represents the third group of (four) hex digits,
+    ///   taken as a big-endian `u16` value.  The 4 most significant bits give
+    ///   the UUID version, and for V1 UUIDs, the last 12 bits represent the
+    ///   high 12 bits of the timestamp.
+    /// * The last field value represents the last two groups of four and twelve
+    ///   hex digits, taken in order.  The first 1-3 bits of this indicate the
+    ///   UUID variant, and for V1 UUIDs, the next 13-15 bits indicate the clock
+    ///   sequence and the last 48 bits indicate the node ID.
     ///
     /// # Examples
     ///
@@ -1198,20 +1197,14 @@ mod tests {
 
         // Valid
         assert!(Uuid::parse_str("00000000000000000000000000000000").is_ok());
-        assert!(
-            Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").is_ok()
-        );
-        assert!(
-            Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4").is_ok()
-        );
+        assert!(Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").is_ok());
+        assert!(Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4").is_ok());
         assert!(Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c8").is_ok());
-        assert!(
-            Uuid::parse_str("01020304-1112-2122-3132-414243444546").is_ok()
-        );
-        assert!(
-            Uuid::parse_str("urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8")
-                .is_ok()
-        );
+        assert!(Uuid::parse_str("01020304-1112-2122-3132-414243444546").is_ok());
+        assert!(Uuid::parse_str(
+            "urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8"
+        )
+        .is_ok());
 
         // Nil
         let nil = Uuid::nil();
