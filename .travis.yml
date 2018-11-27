@@ -39,21 +39,24 @@ rust:
 - beta
 - nightly
 
+before_script:
+  - rustup target add wasm32-unknown-unknown
+
 script:
 - cargo test --no-default-features
 - cargo test
 - cargo test --features "serde"
 - cargo test --features "v1"
 - cargo test --features "v3"
-- cargo test --features "v3 stdweb"
-- cargo test --features "v3 wasm-bindgen"
 - cargo test --features "v4"
-- cargo test --features "v4 stdweb"
-- cargo test --features "v4 wasm-bindgen"
 - cargo test --features "v5"
-- cargo test --features "v5 stdweb"
-- cargo test --features "v5 wasm-bindgen"
 - cargo test --features "slog"
 - cargo test --features "serde std v1 v3 v4 v5"
+- cargo build --target wasm32-unknown-unknown --features "v3 stdweb"
+- cargo build --target wasm32-unknown-unknown --features "v3 wasm-bindgen"
+- cargo build --target wasm32-unknown-unknown --features "v4 stdweb"
+- cargo build --target wasm32-unknown-unknown --features "v4 wasm-bindgen"
+- cargo build --target wasm32-unknown-unknown --features "v5 stdweb"
+- cargo build --target wasm32-unknown-unknown --features "v5 wasm-bindgen"
 
 sudo: false
