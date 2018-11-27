@@ -160,11 +160,47 @@ mod std_support;
 mod test_util;
 #[cfg(feature = "u128")]
 mod u128_support;
-#[cfg(feature = "v3")]
+#[cfg(all(
+    feature = "v3",
+    any(
+        not(target_arch = "wasm32"),
+        all(
+            target_arch = "wasm32",
+            any(
+                all(feature = "stdweb", not(feature = "wasm-bindgen")),
+                all(feature = "wasm-bindgen", not(feature = "stdweb"))
+            )
+        )
+    )
+))]
 mod v3;
-#[cfg(feature = "v4")]
+#[cfg(all(
+    feature = "v4",
+    any(
+        not(target_arch = "wasm32"),
+        all(
+            target_arch = "wasm32",
+            any(
+                all(feature = "stdweb", not(feature = "wasm-bindgen")),
+                all(feature = "wasm-bindgen", not(feature = "stdweb"))
+            )
+        )
+    )
+))]
 mod v4;
-#[cfg(feature = "v5")]
+#[cfg(all(
+    feature = "v5",
+    any(
+        not(target_arch = "wasm32"),
+        all(
+            target_arch = "wasm32",
+            any(
+                all(feature = "stdweb", not(feature = "wasm-bindgen")),
+                all(feature = "wasm-bindgen", not(feature = "stdweb"))
+            )
+        )
+    )
+))]
 mod v5;
 #[cfg(all(windows, feature = "winapi"))]
 mod winapi_support;
