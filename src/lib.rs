@@ -166,10 +166,7 @@ mod u128_support;
         not(target_arch = "wasm32"),
         all(
             target_arch = "wasm32",
-            any(
-                all(feature = "stdweb", not(feature = "wasm-bindgen")),
-                all(feature = "wasm-bindgen", not(feature = "stdweb"))
-            )
+            any(feature = "stdweb", feature = "wasm-bindgen")
         )
     )
 ))]
@@ -180,10 +177,7 @@ mod v3;
         not(target_arch = "wasm32"),
         all(
             target_arch = "wasm32",
-            any(
-                all(feature = "stdweb", not(feature = "wasm-bindgen")),
-                all(feature = "wasm-bindgen", not(feature = "stdweb"))
-            )
+            any(feature = "stdweb", feature = "wasm-bindgen")
         )
     )
 ))]
@@ -194,10 +188,7 @@ mod v4;
         not(target_arch = "wasm32"),
         all(
             target_arch = "wasm32",
-            any(
-                all(feature = "stdweb", not(feature = "wasm-bindgen")),
-                all(feature = "wasm-bindgen", not(feature = "stdweb"))
-            )
+            any(feature = "stdweb", feature = "wasm-bindgen")
         )
     )
 ))]
