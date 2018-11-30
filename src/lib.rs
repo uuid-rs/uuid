@@ -650,15 +650,14 @@ impl Uuid {
     /// * The second field value represents the second group of (four) hex
     ///   digits, taken as a big-endian `u16` value.  For V1 UUIDs, this field
     ///   represents the middle 16 bits of the timestamp.
-    /// * The third field value represents the third group of (four) hex
-    ///   digits, taken as a big-endian `u16` value.  The 4 most significant
-    ///   bits give the UUID version, and for V1 UUIDs, the last 12 bits
-    ///   represent the high 12 bits of the timestamp.
-    /// * The last field value represents the last two groups of four and
-    ///   twelve hex digits, taken in order.  The first 1-3 bits of this
-    ///   indicate the UUID variant, and for V1 UUIDs, the next 13-15 bits
-    ///   indicate the clock sequence and the last 48 bits indicate the node
-    ///   ID.
+    /// * The third field value represents the third group of (four) hex digits,
+    ///   taken as a big-endian `u16` value.  The 4 most significant bits give
+    ///   the UUID version, and for V1 UUIDs, the last 12 bits represent the
+    ///   high 12 bits of the timestamp.
+    /// * The last field value represents the last two groups of four and twelve
+    ///   hex digits, taken in order.  The first 1-3 bits of this indicate the
+    ///   UUID variant, and for V1 UUIDs, the next 13-15 bits indicate the clock
+    ///   sequence and the last 48 bits indicate the node ID.
     ///
     /// # Examples
     ///
