@@ -34,7 +34,7 @@ version = "1"
 
 [dependencies.md5]
 optional = true
-version = "0.5"
+version = "0.6"
 
 [dependencies.rand]
 optional = true
