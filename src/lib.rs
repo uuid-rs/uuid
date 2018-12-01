@@ -43,6 +43,14 @@
 //! * `serde` - adds the ability to serialize and deserialize a `Uuid` using the
 //!   `serde` crate.
 //!
+//! You need to enable one of the following Cargo features together with
+//! `v3`, `v4` or `v5` feature if you're targeting `wasm32` architecture:
+//!
+//! * `stdweb` - enables support for `OsRng` on `wasm32-unknown-unknown` via
+//!   `stdweb` combined with `cargo-web`
+//! * `wasm-bindgen` - `wasm-bindgen` enables support for `OsRng` on
+//!   `wasm32-unknown-unknown` via [`wasm-bindgen`]
+//!
 //! By default, `uuid` can be depended on with:
 //!
 //! ```toml
@@ -103,6 +111,8 @@
 //!
 //! * [Wikipedia: Universally Unique Identifier](     http://en.wikipedia.org/wiki/Universally_unique_identifier)
 //! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](     http://tools.ietf.org/html/rfc4122)
+//!
+//! [`wasm-bindgen`]: https://github.com/rustwasm/wasm-bindgen
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![cfg_attr(feature = "const_fn", feature(const_fn))]
@@ -160,11 +170,38 @@ mod std_support;
 mod test_util;
 #[cfg(feature = "u128")]
 mod u128_support;
-#[cfg(feature = "v3")]
+#[cfg(all(
+    feature = "v3",
+    any(
+        not(target_arch = "wasm32"),
+        all(
+            target_arch = "wasm32",
+            any(feature = "stdweb", feature = "wasm-bindgen")
+        )
+    )
+))]
 mod v3;
-#[cfg(feature = "v4")]
+#[cfg(all(
+    feature = "v4",
+    any(
+        not(target_arch = "wasm32"),
+        all(
+            target_arch = "wasm32",
+            any(feature = "stdweb", feature = "wasm-bindgen")
+        )
+    )
+))]
 mod v4;
-#[cfg(feature = "v5")]
+#[cfg(all(
+    feature = "v5",
+    any(
+        not(target_arch = "wasm32"),
+        all(
+            target_arch = "wasm32",
+            any(feature = "stdweb", feature = "wasm-bindgen")
+        )
+    )
+))]
 mod v5;
 #[cfg(all(windows, feature = "winapi"))]
 mod winapi_support;

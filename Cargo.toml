@@ -38,7 +38,7 @@ version = "0.5"
 
 [dependencies.rand]
 optional = true
-version = "0.5"
+version = "0.6"
 
 [dependencies.serde]
 default-features = false
@@ -77,6 +77,8 @@ v1 = []
 v3 = ["md5", "rand"]
 v4 = ["rand"]
 v5 = ["sha1", "rand"]
+stdweb = ["rand/stdweb"]
+wasm-bindgen = ["rand/wasm-bindgen"]
 
 # since rust 1.26.0
 u128 = ["byteorder"]
