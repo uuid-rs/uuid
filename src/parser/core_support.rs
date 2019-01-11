@@ -35,8 +35,8 @@ impl fmt::Display for parser::ParseError {
                 index,
             } => write!(
                 f,
-                "expected {:?}, found {} at {}",
-                expected.chars(),
+                "expected {}, found {} at {}",
+                expected,
                 found,
                 index
             ),
