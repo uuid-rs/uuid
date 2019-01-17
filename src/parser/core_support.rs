@@ -33,13 +33,9 @@ impl fmt::Display for parser::ParseError {
                 expected,
                 found,
                 index,
-            } => write!(
-                f,
-                "expected {}, found {} at {}",
-                expected,
-                found,
-                index
-            ),
+            } => {
+                write!(f, "expected {}, found {} at {}", expected, found, index)
+            }
             parser::ParseError::InvalidGroupCount {
                 ref expected,
                 found,
