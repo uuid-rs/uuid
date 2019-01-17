@@ -28,11 +28,11 @@ matrix:
     - cargo test --features "const_fn"
   - rust: beta
     before_script:
-      - rustup target add wasm32-unknown-unknown
+      - cargo install cargo-web
     script:
-      - cargo build --target wasm32-unknown-unknown --features "v3 wasm-bindgen"
-      - cargo build --target wasm32-unknown-unknown --features "v4 wasm-bindgen"
-      - cargo build --target wasm32-unknown-unknown --features "v5 wasm-bindgen"
+      - cargo web build --features "v3 wasm-bindgen"
+      - cargo web build --features "v4 wasm-bindgen"
+      - cargo web build --features "v5 wasm-bindgen"
   - rust: stable
     before_script:
     - rustup component add clippy-preview
