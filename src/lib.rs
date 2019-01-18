@@ -253,7 +253,7 @@ pub enum Variant {
 }
 
 /// A Universally Unique Identifier (UUID).
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Uuid(Bytes);
 
 impl BytesError {
