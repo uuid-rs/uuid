@@ -115,7 +115,6 @@
 //! [`wasm-bindgen`]: https://github.com/rustwasm/wasm-bindgen
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(feature = "const_fn", feature(const_fn))]
 #![deny(
     missing_copy_implementations,
     missing_debug_implementations,

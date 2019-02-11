@@ -83,9 +83,11 @@ wasm-bindgen = ["rand/wasm-bindgen"]
 # since rust 1.26.0
 u128 = ["byteorder"]
 
+# since rust 1.31.0
+const_fn = []
+
 # nightly rust
 #------------------------
 # Allow using `const fn`s
-const_fn = ["nightly"]
 # Nightly marker feature gate
 nightly = []
