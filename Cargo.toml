@@ -88,6 +88,5 @@ const_fn = []
 
 # nightly rust
 #------------------------
-# Allow using `const fn`s
 # Nightly marker feature gate
 nightly = []
