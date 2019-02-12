@@ -7,20 +7,44 @@ language: rust
 matrix:
   include:
   - os: osx
-    rust: 1.22.0
-  - os: osx
     rust: nightly
   - rust: nightly
     before_script:
     - rustup component add rustfmt-preview
+    - cargo install cargo-web
     script:
     - cargo fmt --all -- --check
     - cargo test --features "serde std v1 v3 v4 v5"
     - cargo bench --features "serde std v1 v3 v4 v5"
+    - cargo web build --features "v3 stdweb"
+    - cargo web build --features "v4 stdweb"
+    - cargo web build --features "v5 stdweb"
+    - cargo web build --features "v3 wasm-bindgen"
+    - cargo web build --features "v4 wasm-bindgen"
+    - cargo web build --features "v5 wasm-bindgen"
   - os: linux
     rust: nightly
     script:
     - cargo test --features "const_fn"
+  - rust: beta
+    before_script:
+      - cargo install cargo-web
+    script:
+      - cargo web build --features "v3 wasm-bindgen"
+      - cargo web build --features "v4 wasm-bindgen"
+      - cargo web build --features "v5 wasm-bindgen"
+  - rust: stable
+    before_script:
+    - rustup component add clippy-preview
+    - rustup target add wasm32-unknown-unknown
+    script:
+    - cargo clippy --features "u128 v1 v3 v4 v5 slog"
+    - cargo build --target wasm32-unknown-unknown --features "v3 wasm-bindgen"
+    - cargo build --target wasm32-unknown-unknown --features "v4 wasm-bindgen"
+    - cargo build --target wasm32-unknown-unknown --features "v5 wasm-bindgen"
+  - rust: 1.22.0
+    script:
+    - cargo test --features "serde std v4"
 
 notifications:
   email:
@@ -29,7 +53,6 @@ notifications:
 os: linux
 
 rust:
-- 1.22.0
 - stable
 - beta
 - nightly

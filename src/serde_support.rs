@@ -13,19 +13,22 @@ use core::fmt;
 use crate::prelude::*;
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
+#[cfg(feature = "serde")]
 impl Serialize for Uuid {
     fn serialize<S: Serializer>(
         &self,
         serializer: S,
     ) -> Result<S::Ok, S::Error> {
         if serializer.is_human_readable() {
-            serializer.collect_str(&self.to_hyphenated())
+            serializer
+                .serialize_str(&self.to_hyphenated().encode_lower(&mut [0; 36]))
         } else {
             serializer.serialize_bytes(self.as_bytes())
         }
     }
 }
 
+#[cfg(feature = "serde")]
 impl<'de> Deserialize<'de> for Uuid {
     fn deserialize<D: Deserializer<'de>>(
         deserializer: D,
@@ -85,8 +88,8 @@ impl<'de> Deserialize<'de> for Uuid {
     }
 }
 
-#[cfg(test)]
-mod tests {
+#[cfg(all(test, feature = "serde"))]
+mod serde_tests {
     use serde_test;
 
     use crate::prelude::*;

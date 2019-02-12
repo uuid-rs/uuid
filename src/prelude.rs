@@ -29,25 +29,24 @@
 //!
 //! Currently the prelude reexports the following:
 //!
-//! [`uuid`]`::{`[`Uuid`], [`UuidVariant`], [`UuidVersion`]`}`: The fundamental
-//! types used in [`uuid`] crate.
+//! [`uuid`]`::{`[`Uuid`], [`Variant`], [`Version`], builder::[`Builder`]`}`:
+//! The fundamental types used in [`uuid`] crate.
 //!
 //! [`uuid`]: ../index.html
 //! [`Uuid`]: ../struct.Uuid.html
-//! [`UuidVariant`]: ../enum.UuidVariant.html
-//! [`UuidVersion`]: ../enum.UuidVersion.html
+//! [`Variant`]: ../enum.Variant.html
+//! [`Version`]: ../enum.Version.html
+//! [`Builder`]: ../builder/struct.Builder.html
 //!
 #![cfg_attr(feature = "v1",
 doc = "
-[`uuid::v1`]`::{`[`UuidClockSequence`],[`Context`]`}`: The types useful for
+[`uuid::v1`]`::{`[`ClockSequence`],[`Context`]`}`: The types useful for
 handling uuid version 1. Requires feature `v1`.
 
 [`uuid::v1`]: ../v1/index.html
 [`Context`]: ../v1/struct.Context.html
-[`UuidClockSequence`]: ../v1/trait.UuidClockSequence.html")]
+[`ClockSequence`]: ../v1/trait.ClockSequence.html")]
 
-#[doc(inline)]
-pub use super::{Bytes, Uuid, Variant, Version};
+pub use super::{Builder, Bytes, Uuid, Variant, Version};
 #[cfg(feature = "v1")]
-#[doc(inline)]
-pub use crate::v1::{ClockSequence, Context};
+pub use v1::{ClockSequence, Context};
