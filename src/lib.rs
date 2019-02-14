@@ -127,29 +127,6 @@
     html_root_url = "https://docs.rs/uuid/0.7.2"
 )]
 
-#[cfg(feature = "byteorder")]
-extern crate byteorder;
-#[cfg(feature = "std")]
-extern crate core;
-#[cfg(feature = "md5")]
-extern crate md5;
-#[cfg(feature = "rand")]
-extern crate rand;
-#[cfg(feature = "serde")]
-extern crate serde;
-#[cfg(all(feature = "serde", test))]
-extern crate serde_test;
-#[cfg(all(feature = "serde", test))]
-#[macro_use]
-extern crate serde_derive;
-#[cfg(feature = "sha1")]
-extern crate sha1;
-#[cfg(feature = "slog")]
-#[cfg_attr(test, macro_use)]
-extern crate slog;
-#[cfg(feature = "winapi")]
-extern crate winapi;
-
 pub mod adapter;
 pub mod builder;
 pub mod parser;

@@ -13,8 +13,8 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
-use prelude::*;
-use BytesError;
+use crate::prelude::*;
+use crate::BytesError;
 
 /// A builder struct for creating a [`Uuid`]
 ///
@@ -37,7 +37,7 @@ use BytesError;
 /// ```
 #[allow(missing_copy_implementations)]
 #[derive(Debug)]
-pub struct Builder(Uuid);
+pub struct Builder(crate::Uuid);
 
 impl Builder {
     /// Creates a `Builder` using the supplied big-endian bytes.
@@ -74,7 +74,7 @@ impl Builder {
     /// let uuid = Builder::from_bytes(bytes);
     /// ```
     pub fn from_bytes(b: Bytes) -> Self {
-        Builder(Uuid::from_bytes(b))
+        Builder(crate::Uuid::from_bytes(b))
     }
 
     /// Creates a `Builder` using the supplied big-endian bytes.
@@ -114,16 +114,16 @@ impl Builder {
     ///
     /// assert!(builder.is_err());
     /// ```
-    pub fn from_slice(b: &[u8]) -> Result<Self, BytesError> {
+    pub fn from_slice(b: &[u8]) -> Result<Self, crate::BytesError> {
         const BYTES_LEN: usize = 16;
 
         let len = b.len();
 
         if len != BYTES_LEN {
-            return Err(BytesError::new(BYTES_LEN, len));
+            return Err(crate::BytesError::new(BYTES_LEN, len));
         }
 
-        let mut bytes: Bytes = [0; 16];
+        let mut bytes: crate::Bytes = [0; 16];
         bytes.copy_from_slice(b);
         Ok(Self::from_bytes(bytes))
     }
@@ -169,8 +169,8 @@ impl Builder {
         d2: u16,
         d3: u16,
         d4: &[u8],
-    ) -> Result<Self, BytesError> {
-        Uuid::from_fields(d1, d2, d3, d4).map(Builder)
+    ) -> Result<Self, crate::BytesError> {
+        crate::Uuid::from_fields(d1, d2, d3, d4).map(Builder)
     }
 
     /// Creates a `Builder` with an initial [`Uuid::nil`]
@@ -189,17 +189,17 @@ impl Builder {
     /// );
     /// ```
     pub fn nil() -> Self {
-        Builder(Uuid::nil())
+        Builder(crate::Uuid::nil())
     }
 
     /// Specifies the variant of the internal [`Uuid`].
-    pub fn set_variant(&mut self, v: Variant) -> &mut Self {
+    pub fn set_variant(&mut self, v: crate::Variant) -> &mut Self {
         self.0.set_variant(v);
         self
     }
 
     /// Specifies the version number of the internal [`Uuid`].
-    pub fn set_version(&mut self, v: Version) -> &mut Self {
+    pub fn set_version(&mut self, v: crate::Version) -> &mut Self {
         self.0.set_version(v);
         self
     }

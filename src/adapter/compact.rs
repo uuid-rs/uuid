@@ -5,13 +5,13 @@
 
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-use prelude::*;
+use crate::prelude::*;
 
 /// Serializer for a [`Uuid`] into a `[u8; 16]`
 ///
 /// [`Uuid`]: ../../struct.Uuid.html
 pub fn serialize<S: Serializer>(
-    u: &Uuid,
+    u: &crate::Uuid,
     serializer: S,
 ) -> Result<S::Ok, S::Error> {
     u.as_bytes().serialize(serializer)
@@ -22,31 +22,32 @@ pub fn serialize<S: Serializer>(
 /// [`Uuid`]: ../../struct.Uuid.html
 pub fn deserialize<'de, D: Deserializer<'de>>(
     deserializer: D,
-) -> Result<Uuid, D::Error> {
+) -> Result<crate::Uuid, D::Error> {
     let bytes = <[u8; 16]>::deserialize(deserializer)?;
 
-    Ok(Uuid::from_bytes(bytes))
+    Ok(crate::Uuid::from_bytes(bytes))
 }
 
 #[cfg(test)]
 mod tests {
     use serde_test;
+    use serde::{Serialize, Deserialize};
 
-    use prelude::*;
+    use crate::prelude::*;
 
-    #[derive(Serialize, Debug, Deserialize, PartialEq)]
-    struct UuidContainer {
-        #[serde(with = "super")]
-        u: Uuid,
-    }
-
+    #[cfg(feature=serde)]
     #[test]
     fn test_serialize_compact() {
+            #[derive(Serialize, Debug, Deserialize, PartialEq)]
+            struct UuidContainer {
+//                #[serde(with = "super")]
+                u: crate::Uuid,
+            }
         use serde_test::Configure;
 
         let uuid_bytes = b"F9168C5E-CEB2-4F";
         let container = UuidContainer {
-            u: Uuid::from_slice(uuid_bytes).unwrap(),
+            u: crate::Uuid::from_slice(uuid_bytes).unwrap(),
         };
 
         // more complex because of the struct wrapping the actual UUID
