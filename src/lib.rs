@@ -134,7 +134,7 @@ pub mod prelude;
 #[cfg(feature = "v1")]
 pub mod v1;
 
-pub use builder::Builder;
+pub use crate::builder::Builder;
 
 mod core_support;
 #[cfg(feature = "serde")]

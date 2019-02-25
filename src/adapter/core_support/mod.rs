@@ -10,7 +10,6 @@
 // except according to those terms.
 
 use core::fmt;
-use core::str;
 use crate::prelude::*;
 
 impl fmt::Display for super::Hyphenated {

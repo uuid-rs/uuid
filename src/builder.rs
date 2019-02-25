@@ -14,7 +14,6 @@
 //! [`Uuid`]: ../struct.Uuid.html
 
 use crate::prelude::*;
-use crate::BytesError;
 
 /// A builder struct for creating a [`Uuid`]
 ///
