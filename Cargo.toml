@@ -86,6 +86,7 @@ const_fn = ["nightly"]
 # Nightly marker feature gate
 nightly = []
 
-[target.'cfg(all(windows, target_env="msrv"))'.dependencies.winapi]
+[target.'cfg(windows)'.dependencies.winapi]
 optional = true
 version = "0.3"
+
