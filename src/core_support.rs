@@ -20,6 +20,15 @@ impl fmt::Debug for Uuid {
     }
 }
 
+impl fmt::Display for super::Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            super::Error::Bytes(err) => fmt::Display::fmt(&err, self.fmt),
+            super::Error::Parse(err) => fmt::Display::fmt(&err, self.fmt),
+        }
+    }
+}
+
 impl fmt::Display for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
