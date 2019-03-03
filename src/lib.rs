@@ -620,8 +620,7 @@ impl Uuid {
     /// use uuid::Uuid;
     ///
     /// let bytes: Bytes = [
-    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
-    ///     62,
+    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63, 62,
     /// ];
     /// let uuid = Uuid::from_random_bytes(bytes);
     /// let uuid = uuid.to_hyphenated().to_string();
