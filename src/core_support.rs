@@ -29,8 +29,8 @@ impl fmt::Debug for Uuid {
 impl fmt::Display for super::Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            super::Error::Bytes(err) => fmt::Display::fmt(&err, self.fmt),
-            super::Error::Parse(err) => fmt::Display::fmt(&err, self.fmt),
+            super::Error::Bytes(ref err) => fmt::Display::fmt(&err, f),
+            super::Error::Parse(ref err) => fmt::Display::fmt(&err, f),
         }
     }
 }

@@ -20,8 +20,8 @@ impl error::Error for super::BytesError {
 impl error::Error for super::Error {
     fn description(&self) -> &str {
         match *self {
-            super::Error::Bytes(err) => error::Error::description(&err),
-            super::Error::Parse(err) => error::Error::description(&err),
+            super::Error::Bytes(ref err) => error::Error::description(err),
+            super::Error::Parse(ref err) => error::Error::description(err),
         }
     }
 }
