@@ -13,6 +13,12 @@ use core::{fmt, str};
 use parser;
 use prelude::*;
 
+impl From<super::BytesError> for super::Error {
+    fn from(err: super::BytesError) -> Self {
+        super::Error::Bytes(err)
+    }
+}
+
 impl fmt::Debug for Uuid {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
