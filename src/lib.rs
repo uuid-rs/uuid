@@ -227,6 +227,7 @@ pub struct BytesError {
 ///
 /// [`Uuid`]: struct.Uuid.html
 // TODO: improve the doc
+// BODY: This detail should be fine for initial merge
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum Error {
     /// An error occurred while handling [`Uuid`] bytes.
