@@ -25,4 +25,3 @@ impl error::Error for super::Error {
         }
     }
 }
-

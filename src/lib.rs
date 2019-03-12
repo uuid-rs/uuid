@@ -222,7 +222,7 @@ pub struct BytesError {
 ///
 /// Although specialized error types exist in the crate,
 /// sometimes where particular error type occurred is hidden
-/// until errors need to be handled. This allows to enumerate 
+/// until errors need to be handled. This allows to enumerate
 /// the errors.
 ///
 /// [`Uuid`]: struct.Uuid.html
