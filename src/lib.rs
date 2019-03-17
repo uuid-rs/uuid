@@ -995,34 +995,34 @@ impl Uuid {
     pub fn is_nil(&self) -> bool {
         self.as_bytes().iter().all(|&b| b == 0)
     }
-    // A buffer that can be used for `encode_...` calls, that is
-    // guaranteed to be long enough for any of the adapters.
-    //
-    // # Examples
-    //
-    // ```rust
-    // use uuid::Uuid;
-    //
-    // let uuid = Uuid::nil();
-    //
-    // assert_eq!(
-    //     uuid.to_simple().encode_lower(&mut Uuid::encode_buffer()),
-    //     "00000000000000000000000000000000"
-    // );
-    //
-    // assert_eq!(
-    //     uuid.to_hyphenated()
-    //         .encode_lower(&mut Uuid::encode_buffer()),
-    //     "00000000-0000-0000-0000-000000000000"
-    // );
-    //
-    // assert_eq!(
-    //     uuid.to_urn().encode_lower(&mut Uuid::encode_buffer()),
-    //     "urn:uuid:00000000-0000-0000-0000-000000000000"
-    // );
-    // ```
-    #[allow(dead_code)]
-    pub(crate) fn encode_buffer() -> [u8; adapter::Urn::LENGTH] {
+
+    /// A buffer that can be used for `encode_...` calls, that is
+    /// guaranteed to be long enough for any of the adapters.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    ///
+    /// assert_eq!(
+    ///     uuid.to_simple().encode_lower(&mut Uuid::encode_buffer()),
+    ///     "00000000000000000000000000000000"
+    /// );
+    ///
+    /// assert_eq!(
+    ///     uuid.to_hyphenated()
+    ///         .encode_lower(&mut Uuid::encode_buffer()),
+    ///     "00000000-0000-0000-0000-000000000000"
+    /// );
+    ///
+    /// assert_eq!(
+    ///     uuid.to_urn().encode_lower(&mut Uuid::encode_buffer()),
+    ///     "urn:uuid:00000000-0000-0000-0000-000000000000"
+    /// );
+    /// ```
+    pub fn encode_buffer() -> [u8; adapter::Urn::LENGTH] {
         [0; adapter::Urn::LENGTH]
     }
 }
