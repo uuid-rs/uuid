@@ -218,6 +218,38 @@ pub struct BytesError {
     found: usize,
 }
 
+/// A general error that can occur when handling [`Uuid`]s.
+///
+/// Although specialized error types exist in the crate,
+/// sometimes where particular error type occurred is hidden
+/// until errors need to be handled. This allows to enumerate
+/// the errors.
+///
+/// [`Uuid`]: struct.Uuid.html
+// TODO: improve the doc
+// BODY: This detail should be fine for initial merge
+
+// TODO: write tests for Error
+// BODY: not immediately blocking, but should be covered for 1.0
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum Error {
+    /// An error occurred while handling [`Uuid`] bytes.
+    ///
+    /// See [`BytesError`]
+    ///
+    /// [`BytesError`]: struct.BytesError.html
+    /// [`Uuid`]: struct.Uuid.html
+    Bytes(BytesError),
+
+    /// An error occurred while parsing a [`Uuid`] string.
+    ///
+    /// See [`parser::ParseError`]
+    ///
+    /// [`parser::ParseError`]: parser/enum.ParseError.html
+    /// [`Uuid`]: struct.Uuid.html
+    Parse(parser::ParseError),
+}
+
 /// The version of the UUID, denoting the generating algorithm.
 #[derive(Debug, PartialEq, Copy, Clone)]
 #[repr(C)]
