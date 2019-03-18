@@ -278,36 +278,36 @@ impl Hyphenated {
     /// Writes the [`Uuid`] as a lower-case hyphenated string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
-    /// 
+    ///
     /// This is slightly more efficient than using the formatting
     /// infrastructure as it avoids virtual calls, and may avoid
     /// double buffering.
-    /// 
+    ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if the buffer is not large enough: it must have length at least
     /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
     /// sufficiently-large temporary buffer.
-    /// 
+    ///
     /// [`LENGTH`]: #associatedconstant.LENGTH
     /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use uuid::Uuid;
-    /// 
+    ///
     /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8").unwrap();
-    /// 
+    ///
     /// // the encoded portion is returned
     /// assert_eq!(
     ///     uuid.to_hyphenated()
     ///         .encode_lower(&mut Uuid::encode_buffer()),
     ///     "936da01f-9abd-4d9d-80c7-02af85c822a8"
     /// );
-    /// 
+    ///
     /// // the buffer is mutated directly, and trailing contents remains
     /// let mut buf = [b'!'; 40];
     /// uuid.to_hyphenated().encode_lower(&mut buf);
@@ -317,10 +317,7 @@ impl Hyphenated {
     /// );
     /// ```
     /// */
-    pub fn encode_lower<'buf>(
-        &self,
-        buffer: &'buf mut [u8],
-    ) -> &'buf mut str {
+    pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, &self.0, true, false)
     }
 
@@ -344,7 +341,7 @@ impl Hyphenated {
     /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
     ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use uuid::Uuid;
     ///
@@ -366,10 +363,7 @@ impl Hyphenated {
     /// );
     /// ```
     /// */
-    pub fn encode_upper<'buf>(
-        &self,
-        buffer: &'buf mut [u8],
-    ) -> &'buf mut str {
+    pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, &self.0, true, true)
     }
 }
@@ -444,10 +438,7 @@ impl<'a> HyphenatedRef<'a> {
     /// );
     /// ```
     /// */
-    pub fn encode_lower<'buf>(
-        &self,
-        buffer: &'buf mut [u8],
-    ) -> &'buf mut str {
+    pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, self.0, true, false)
     }
 
@@ -496,10 +487,7 @@ impl<'a> HyphenatedRef<'a> {
     /// );
     /// ```
     /// */
-    pub fn encode_upper<'buf>(
-        &self,
-        buffer: &'buf mut [u8],
-    ) -> &'buf mut str {
+    pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, self.0, true, true)
     }
 }
@@ -530,35 +518,35 @@ impl Simple {
 
     /// Writes the [`Uuid`] as a lower-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
-    /// 
+    ///
     /// This is slightly more efficient than using the formatting
     /// infrastructure as it avoids virtual calls, and may avoid
     /// double buffering.
-    /// 
+    ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if the buffer is not large enough: it must have length at least
     /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
     /// sufficiently-large temporary buffer.
-    /// 
+    ///
     /// [`LENGTH`]: #associatedconstant.LENGTH
     /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use uuid::Uuid;
-    /// 
+    ///
     /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8").unwrap();
-    /// 
+    ///
     /// // the encoded portion is returned
     /// assert_eq!(
     ///     uuid.to_simple().encode_lower(&mut Uuid::encode_buffer()),
     ///     "936da01f9abd4d9d80c702af85c822a8"
     /// );
-    /// 
+    ///
     /// // the buffer is mutated directly, and trailing contents remains
     /// let mut buf = [b'!'; 36];
     /// assert_eq!(
@@ -571,40 +559,37 @@ impl Simple {
     /// );
     /// ```
     /// */
-    pub fn encode_lower<'buf>(
-        &self,
-        buffer: &'buf mut [u8],
-    ) -> &'buf mut str {
+    pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, &self.0, false, false)
     }
 
     /// Writes the [`Uuid`] as an upper-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
-    /// 
+    ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if the buffer is not large enough: it must have length at least
     /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
     /// sufficiently-large temporary buffer.
-    /// 
+    ///
     /// [`LENGTH`]: #associatedconstant.LENGTH
     /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use uuid::Uuid;
-    /// 
+    ///
     /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8").unwrap();
-    /// 
+    ///
     /// // the encoded portion is returned
     /// assert_eq!(
     ///     uuid.to_simple().encode_upper(&mut Uuid::encode_buffer()),
     ///     "936DA01F9ABD4D9D80C702AF85C822A8"
     /// );
-    /// 
+    ///
     /// // the buffer is mutated directly, and trailing contents remains
     /// let mut buf = [b'!'; 36];
     /// assert_eq!(
@@ -617,10 +602,7 @@ impl Simple {
     /// );
     /// ```
     /// */
-    pub fn encode_upper<'buf>(
-        &self,
-        buffer: &'buf mut [u8],
-    ) -> &'buf mut str {
+    pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, &self.0, false, true)
     }
 }
@@ -651,35 +633,35 @@ impl<'a> SimpleRef<'a> {
 
     /// Writes the [`Uuid`] as a lower-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
-    /// 
+    ///
     /// This is slightly more efficient than using the formatting
     /// infrastructure as it avoids virtual calls, and may avoid
     /// double buffering.
-    /// 
+    ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if the buffer is not large enough: it must have length at least
     /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
     /// sufficiently-large temporary buffer.
-    /// 
+    ///
     /// [`LENGTH`]: #associatedconstant.LENGTH
     /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use uuid::Uuid;
-    /// 
+    ///
     /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8").unwrap();
-    /// 
+    ///
     /// // the encoded portion is returned
     /// assert_eq!(
     ///     uuid.to_simple().encode_lower(&mut Uuid::encode_buffer()),
     ///     "936da01f9abd4d9d80c702af85c822a8"
     /// );
-    /// 
+    ///
     /// // the buffer is mutated directly, and trailing contents remains
     /// let mut buf = [b'!'; 36];
     /// assert_eq!(
@@ -692,40 +674,37 @@ impl<'a> SimpleRef<'a> {
     /// );
     /// ```
     /// */
-    pub fn encode_lower<'buf>(
-        &self,
-        buffer: &'buf mut [u8],
-    ) -> &'buf mut str {
+    pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, self.0, false, false)
     }
 
     /// Writes the [`Uuid`] as an upper-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
-    /// 
+    ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if the buffer is not large enough: it must have length at least
     /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
     /// sufficiently-large temporary buffer.
-    /// 
+    ///
     /// [`LENGTH`]: #associatedconstant.LENGTH
     /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use uuid::Uuid;
-    /// 
+    ///
     /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8").unwrap();
-    /// 
+    ///
     /// // the encoded portion is returned
     /// assert_eq!(
     ///     uuid.to_simple().encode_upper(&mut Uuid::encode_buffer()),
     ///     "936DA01F9ABD4D9D80C702AF85C822A8"
     /// );
-    /// 
+    ///
     /// // the buffer is mutated directly, and trailing contents remains
     /// let mut buf = [b'!'; 36];
     /// assert_eq!(
@@ -738,10 +717,7 @@ impl<'a> SimpleRef<'a> {
     /// );
     /// ```
     /// */
-    pub fn encode_upper<'buf>(
-        &self,
-        buffer: &'buf mut [u8],
-    ) -> &'buf mut str {
+    pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, self.0, false, true)
     }
 }
@@ -773,35 +749,35 @@ impl Urn {
     /// Writes the [`Uuid`] as a lower-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
-    /// 
+    ///
     /// This is slightly more efficient than using the formatting
     /// infrastructure as it avoids virtual calls, and may avoid
     /// double buffering.
-    /// 
+    ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if the buffer is not large enough: it must have length at least
     /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
     /// sufficiently-large temporary buffer.
-    /// 
+    ///
     /// [`LENGTH`]: #associatedconstant.LENGTH
     /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use uuid::Uuid;
-    /// 
+    ///
     /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8").unwrap();
-    /// 
+    ///
     /// // the encoded portion is returned
     /// assert_eq!(
     ///     uuid.to_urn().encode_lower(&mut Uuid::encode_buffer()),
     ///     "urn:uuid:936da01f-9abd-4d9d-80c7-02af85c822a8"
     /// );
-    /// 
+    ///
     /// // the buffer is mutated directly, and trailing contents remains
     /// let mut buf = [b'!'; 49];
     /// uuid.to_urn().encode_lower(&mut buf);
@@ -815,10 +791,7 @@ impl Urn {
     /// );
     /// ```
     /// */
-    pub fn encode_lower<'buf>(
-        &self,
-        buffer: &'buf mut [u8],
-    ) -> &'buf mut str {
+    pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, &self.0, true, false)
     }
@@ -826,35 +799,35 @@ impl Urn {
     /// Writes the [`Uuid`] as an upper-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
-    /// 
+    ///
     /// This is slightly more efficient than using the formatting
     /// infrastructure as it avoids virtual calls, and may avoid
     /// double buffering.
-    /// 
+    ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if the buffer is not large enough: it must have length at least
     /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
     /// sufficiently-large temporary buffer.
-    /// 
+    ///
     /// [`LENGTH`]: #associatedconstant.LENGTH
     /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use uuid::Uuid;
-    /// 
+    ///
     /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8").unwrap();
-    /// 
+    ///
     /// // the encoded portion is returned
     /// assert_eq!(
     ///     uuid.to_urn().encode_upper(&mut Uuid::encode_buffer()),
     ///     "urn:uuid:936DA01F-9ABD-4D9D-80C7-02AF85C822A8"
     /// );
-    /// 
+    ///
     /// // the buffer is mutated directly, and trailing contents remains
     /// let mut buf = [b'!'; 49];
     /// assert_eq!(
@@ -867,10 +840,7 @@ impl Urn {
     /// );
     /// ```
     /// */
-    pub fn encode_upper<'buf>(
-        &self,
-        buffer: &'buf mut [u8],
-    ) -> &'buf mut str {
+    pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, &self.0, true, true)
     }
@@ -903,35 +873,35 @@ impl<'a> UrnRef<'a> {
     /// Writes the [`Uuid`] as a lower-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
-    /// 
+    ///
     /// This is slightly more efficient than using the formatting
     /// infrastructure as it avoids virtual calls, and may avoid
     /// double buffering.
-    /// 
+    ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if the buffer is not large enough: it must have length at least
     /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
     /// sufficiently-large temporary buffer.
-    /// 
+    ///
     /// [`LENGTH`]: #associatedconstant.LENGTH
     /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use uuid::Uuid;
-    /// 
+    ///
     /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8").unwrap();
-    /// 
+    ///
     /// // the encoded portion is returned
     /// assert_eq!(
     ///     uuid.to_urn().encode_lower(&mut Uuid::encode_buffer()),
     ///     "urn:uuid:936da01f-9abd-4d9d-80c7-02af85c822a8"
     /// );
-    /// 
+    ///
     /// // the buffer is mutated directly, and trailing contents remains
     /// let mut buf = [b'!'; 49];
     /// uuid.to_urn().encode_lower(&mut buf);
@@ -945,10 +915,7 @@ impl<'a> UrnRef<'a> {
     /// );
     /// ```
     /// */
-    pub fn encode_lower<'buf>(
-        &self,
-        buffer: &'buf mut [u8],
-    ) -> &'buf mut str {
+    pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, self.0, true, false)
     }
@@ -956,35 +923,35 @@ impl<'a> UrnRef<'a> {
     /// Writes the [`Uuid`] as an upper-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
-    /// 
+    ///
     /// This is slightly more efficient than using the formatting
     /// infrastructure as it avoids virtual calls, and may avoid
     /// double buffering.
-    /// 
+    ///
     /// [`Uuid`]: ../struct.Uuid.html
-    /// 
+    ///
     /// # Panics
-    /// 
+    ///
     /// Panics if the buffer is not large enough: it must have length at least
     /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
     /// sufficiently-large temporary buffer.
-    /// 
+    ///
     /// [`LENGTH`]: #associatedconstant.LENGTH
     /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
-    /// 
+    ///
     /// # Examples
-    /// 
+    ///
     /// ```rust
     /// use uuid::Uuid;
-    /// 
+    ///
     /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8").unwrap();
-    /// 
+    ///
     /// // the encoded portion is returned
     /// assert_eq!(
     ///     uuid.to_urn().encode_upper(&mut Uuid::encode_buffer()),
     ///     "urn:uuid:936DA01F-9ABD-4D9D-80C7-02AF85C822A8"
     /// );
-    /// 
+    ///
     /// // the buffer is mutated directly, and trailing contents remains
     /// let mut buf = [b'!'; 49];
     /// assert_eq!(
@@ -997,10 +964,7 @@ impl<'a> UrnRef<'a> {
     /// );
     /// ```
     /// */
-    pub fn encode_upper<'buf>(
-        &self,
-        buffer: &'buf mut [u8],
-    ) -> &'buf mut str {
+    pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, self.0, true, true)
     }
