@@ -27,8 +27,7 @@ all-features = true
 features = ["serde", "u128", "v1", "v3", "v4", "v5"]
 
 [badges.appveyor]
-repository = "KodrAus/uuid"
-service = "github"
+repository = "uuid-rs/uuid"
 
 [badges.is-it-maintained-issue-resolution]
 repository = "uuid-rs/uuid"

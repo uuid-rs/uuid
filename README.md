@@ -4,7 +4,7 @@ uuid
 [![Latest Version](https://img.shields.io/crates/v/uuid.svg)](https://crates.io/crates/uuid)
 [![Join the chat at https://gitter.im/uuid-rs/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/uuid-rs/Lobby?utm_source=badge&utm_medium=badge&utm_content=badge)
 ![Minimum rustc version](https://img.shields.io/badge/rustc-1.22.0+-yellow.svg)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/KodrAus/uuid?branch=master&svg=true)](https://ci.appveyor.com/project/KodrAus/uuid/branch/master)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/uuid-rs/uuid?branch=master&svg=true)](https://ci.appveyor.com/project/uuid-rs/uuid/branch/master)
 [![Build Status](https://travis-ci.org/uuid-rs/uuid.svg?branch=master)](https://travis-ci.org/uuid-rs/uuid)
 [![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/uuid-rs/uuid.svg)](https://isitmaintained.com/project/uuid-rs/uuid "Average time to resolve an issue")
 [![Percentage of issues still open](https://isitmaintained.com/badge/open/uuid-rs/uuid.svg)](https://isitmaintained.com/project/uuid-rs/uuid "Percentage of issues still open")
