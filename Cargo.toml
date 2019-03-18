@@ -26,6 +26,21 @@ all-features = true
 [package.metadata.playground]
 features = ["serde", "u128", "v1", "v3", "v4", "v5"]
 
+[badges.appveyor]
+repository = "KodrAus/uuid"
+
+[badges.is-it-maintained-issue-resolution]
+repository = "uuid-rs/uuid"
+
+[badges.is-it-maintained-open-issues]
+repository = "uuid-rs/uuid"
+
+[badges.maintenance]
+status = "actively-developed"
+
+[badges.travis-ci]
+repository = "uuid-rs/uuid"
+
 [dependencies.byteorder]
 default-features = false
 features = ["i128"]
