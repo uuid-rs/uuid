@@ -10,6 +10,8 @@
 
 {{readme}}
 
+[`Uuid`]: https://docs.rs/uuid/{{version}}/uuid/struct.Uuid.html
+
 ---
 # License
 
