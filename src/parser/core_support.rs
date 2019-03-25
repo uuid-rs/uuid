@@ -12,9 +12,9 @@
 use core::fmt;
 use crate::parser;
 
-impl From<parser::ParseError> for ::Error {
+impl From<parser::ParseError> for crate::Error {
     fn from(err: parser::ParseError) -> Self {
-        ::Error::Parse(err)
+        crate::Error::Parse(err)
     }
 }
 
