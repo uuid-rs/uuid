@@ -21,6 +21,7 @@ repository = "https://github.com/uuid-rs/uuid"
 version = "0.7.3" # remember to update html_root_url in lib.rs
 
 [package.metadata.docs.rs]
+features = [ "guid", "serde", "slog", "v1", "v3", "v4", "v5" ]
 default-target = "x86_64-pc-windows-msvc"
 
 [package.metadata.playground]
