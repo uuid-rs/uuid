@@ -11,8 +11,21 @@
 
 use std::error;
 
+<<<<<<< HEAD
 impl error::Error for crate::BytesError {
+=======
+impl error::Error for super::BytesError {
+>>>>>>> master
     fn description(&self) -> &str {
         "invalid number of uuid bytes"
+    }
+}
+
+impl error::Error for super::Error {
+    fn description(&self) -> &str {
+        match *self {
+            super::Error::Bytes(ref err) => error::Error::description(err),
+            super::Error::Parse(ref err) => error::Error::description(err),
+        }
     }
 }

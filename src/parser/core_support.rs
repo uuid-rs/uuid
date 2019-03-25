@@ -12,6 +12,12 @@
 use core::fmt;
 use crate::parser;
 
+impl From<parser::ParseError> for ::Error {
+    fn from(err: parser::ParseError) -> Self {
+        ::Error::Parse(err)
+    }
+}
+
 impl<'a> fmt::Display for parser::Expected {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {

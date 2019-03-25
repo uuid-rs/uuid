@@ -124,7 +124,7 @@
 #![doc(
     html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
     html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-    html_root_url = "https://docs.rs/uuid/0.7.2"
+    html_root_url = "https://docs.rs/uuid/0.7.3"
 )]
 
 pub mod adapter;
@@ -193,6 +193,38 @@ pub type Bytes = [u8; 16];
 pub struct BytesError {
     expected: usize,
     found: usize,
+}
+
+/// A general error that can occur when handling [`Uuid`]s.
+///
+/// Although specialized error types exist in the crate,
+/// sometimes where particular error type occurred is hidden
+/// until errors need to be handled. This allows to enumerate
+/// the errors.
+///
+/// [`Uuid`]: struct.Uuid.html
+// TODO: improve the doc
+// BODY: This detail should be fine for initial merge
+
+// TODO: write tests for Error
+// BODY: not immediately blocking, but should be covered for 1.0
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum Error {
+    /// An error occurred while handling [`Uuid`] bytes.
+    ///
+    /// See [`BytesError`]
+    ///
+    /// [`BytesError`]: struct.BytesError.html
+    /// [`Uuid`]: struct.Uuid.html
+    Bytes(BytesError),
+
+    /// An error occurred while parsing a [`Uuid`] string.
+    ///
+    /// See [`parser::ParseError`]
+    ///
+    /// [`parser::ParseError`]: parser/enum.ParseError.html
+    /// [`Uuid`]: struct.Uuid.html
+    Parse(parser::ParseError),
 }
 
 /// The version of the UUID, denoting the generating algorithm.
@@ -569,8 +601,7 @@ impl Uuid {
     /// use uuid::Uuid;
     ///
     /// let bytes: Bytes = [
-    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63,
-    ///     62,
+    ///     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90, 145, 63, 62,
     /// ];
     /// let uuid = Uuid::from_random_bytes(bytes);
     /// let uuid = uuid.to_hyphenated().to_string();
@@ -941,34 +972,34 @@ impl Uuid {
     pub fn is_nil(&self) -> bool {
         self.as_bytes().iter().all(|&b| b == 0)
     }
-    // A buffer that can be used for `encode_...` calls, that is
-    // guaranteed to be long enough for any of the adapters.
-    //
-    // # Examples
-    //
-    // ```rust
-    // use uuid::Uuid;
-    //
-    // let uuid = Uuid::nil();
-    //
-    // assert_eq!(
-    //     uuid.to_simple().encode_lower(&mut Uuid::encode_buffer()),
-    //     "00000000000000000000000000000000"
-    // );
-    //
-    // assert_eq!(
-    //     uuid.to_hyphenated()
-    //         .encode_lower(&mut Uuid::encode_buffer()),
-    //     "00000000-0000-0000-0000-000000000000"
-    // );
-    //
-    // assert_eq!(
-    //     uuid.to_urn().encode_lower(&mut Uuid::encode_buffer()),
-    //     "urn:uuid:00000000-0000-0000-0000-000000000000"
-    // );
-    // ```
-    #[allow(dead_code)]
-    pub(crate) fn encode_buffer() -> [u8; adapter::Urn::LENGTH] {
+
+    /// A buffer that can be used for `encode_...` calls, that is
+    /// guaranteed to be long enough for any of the adapters.
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::nil();
+    ///
+    /// assert_eq!(
+    ///     uuid.to_simple().encode_lower(&mut Uuid::encode_buffer()),
+    ///     "00000000000000000000000000000000"
+    /// );
+    ///
+    /// assert_eq!(
+    ///     uuid.to_hyphenated()
+    ///         .encode_lower(&mut Uuid::encode_buffer()),
+    ///     "00000000-0000-0000-0000-000000000000"
+    /// );
+    ///
+    /// assert_eq!(
+    ///     uuid.to_urn().encode_lower(&mut Uuid::encode_buffer()),
+    ///     "urn:uuid:00000000-0000-0000-0000-000000000000"
+    /// );
+    /// ```
+    pub fn encode_buffer() -> [u8; adapter::Urn::LENGTH] {
         [0; adapter::Urn::LENGTH]
     }
 }

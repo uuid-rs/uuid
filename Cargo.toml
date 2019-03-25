@@ -19,13 +19,28 @@ homepage = "https://github.com/uuid-rs/uuid"
 name = "uuid"
 readme = "README.md"
 repository = "https://github.com/uuid-rs/uuid"
-version = "0.7.2" # remember to update html_root_url in lib.rs
+version = "0.7.3" # remember to update html_root_url in lib.rs
 
 [package.metadata.docs.rs]
 all-features = true
 
 [package.metadata.playground]
 features = ["serde", "u128", "v1", "v3", "v4", "v5"]
+
+[badges.appveyor]
+repository = "uuid-rs/uuid"
+
+[badges.is-it-maintained-issue-resolution]
+repository = "uuid-rs/uuid"
+
+[badges.is-it-maintained-open-issues]
+repository = "uuid-rs/uuid"
+
+[badges.maintenance]
+status = "actively-developed"
+
+[badges.travis-ci]
+repository = "uuid-rs/uuid"
 
 [dependencies.byteorder]
 default-features = false
@@ -54,10 +69,6 @@ version = "0.6"
 optional = true
 version = "2"
 
-[dependencies.winapi]
-version = "0.3"
-optional = true
-
 [dev-dependencies.bincode]
 version = "1.0"
 
@@ -75,9 +86,9 @@ default = ["std"]
 guid = ["winapi"]
 std = []
 v1 = []
-v3 = ["md5", "rand"]
+v3 = ["md5"]
 v4 = ["rand"]
-v5 = ["sha1", "rand"]
+v5 = ["sha1"]
 stdweb = ["rand/stdweb"]
 wasm-bindgen = ["rand/wasm-bindgen"]
 
@@ -90,3 +101,8 @@ u128 = ["byteorder"]
 const_fn = ["nightly"]
 # Nightly marker feature gate
 nightly = []
+
+[target.'cfg(windows)'.dependencies.winapi]
+optional = true
+version = "0.3"
+
