@@ -116,7 +116,7 @@ Examples of string representations:
 
 [`wasm-bindgen`]: https://github.com/rustwasm/wasm-bindgen
 
-[`Uuid`]: https://docs.rs/uuid/0.7.3/uuid/struct.Uuid.html
+[`Uuid`]: https://docs.rs/uuid/0.7.4/uuid/struct.Uuid.html
 
 ---
 # License
