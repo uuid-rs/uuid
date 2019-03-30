@@ -9,124 +9,124 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use crate::prelude::*;
 use core::fmt;
-use prelude::*;
 
 impl fmt::Display for super::Hyphenated {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
 impl<'a> fmt::Display for super::HyphenatedRef<'a> {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
 impl fmt::Display for super::Simple {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
 impl<'a> fmt::Display for super::SimpleRef<'a> {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
 impl fmt::Display for super::Urn {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
 impl<'a> fmt::Display for super::UrnRef<'a> {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
 impl fmt::LowerHex for super::Hyphenated {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.encode_lower(&mut [0; Self::LENGTH]))
     }
 }
 
 impl<'a> fmt::LowerHex for super::HyphenatedRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO: Self doesn't work https://github.com/rust-lang/rust/issues/52808
         f.write_str(self.encode_lower(&mut [0; super::HyphenatedRef::LENGTH]))
     }
 }
 
 impl fmt::LowerHex for super::Simple {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.encode_lower(&mut [0; Self::LENGTH]))
     }
 }
 
 impl<'a> fmt::LowerHex for super::SimpleRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO: Self doesn't work https://github.com/rust-lang/rust/issues/52808
         f.write_str(self.encode_lower(&mut [0; super::SimpleRef::LENGTH]))
     }
 }
 
 impl fmt::LowerHex for super::Urn {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.encode_lower(&mut [0; Self::LENGTH]))
     }
 }
 
 impl<'a> fmt::LowerHex for super::UrnRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO: Self doesn't work https://github.com/rust-lang/rust/issues/52808
         f.write_str(self.encode_lower(&mut [0; super::UrnRef::LENGTH]))
     }
 }
 
 impl fmt::UpperHex for super::Hyphenated {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.encode_upper(&mut [0; Self::LENGTH]))
     }
 }
 
 impl<'a> fmt::UpperHex for super::HyphenatedRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO: Self doesn't work https://github.com/rust-lang/rust/issues/52808
         f.write_str(self.encode_upper(&mut [0; super::HyphenatedRef::LENGTH]))
     }
 }
 
 impl fmt::UpperHex for super::Simple {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.encode_upper(&mut [0; Self::LENGTH]))
     }
 }
 
 impl<'a> fmt::UpperHex for super::SimpleRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO: Self doesn't work https://github.com/rust-lang/rust/issues/52808
         f.write_str(self.encode_upper(&mut [0; super::SimpleRef::LENGTH]))
     }
 }
 
 impl fmt::UpperHex for super::Urn {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.write_str(self.encode_upper(&mut [0; Self::LENGTH]))
     }
 }
 
 impl<'a> fmt::UpperHex for super::UrnRef<'a> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         // TODO: Self doesn't work https://github.com/rust-lang/rust/issues/52808
         f.write_str(self.encode_upper(&mut [0; super::UrnRef::LENGTH]))
     }

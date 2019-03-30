@@ -9,7 +9,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use parser;
+use crate::parser;
 use std::error;
 
 impl error::Error for parser::ParseError {

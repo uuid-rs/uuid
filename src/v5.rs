@@ -1,4 +1,4 @@
-use prelude::*;
+use crate::prelude::*;
 use sha1;
 
 impl Uuid {
@@ -37,7 +37,7 @@ impl Uuid {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
+    use crate::prelude::*;
 
     static FIXTURE: &'static [(&'static Uuid, &'static str, &'static str)] = &[
         (

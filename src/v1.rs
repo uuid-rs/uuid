@@ -4,8 +4,8 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
+use crate::prelude::*;
 use core::sync::atomic;
-use prelude::*;
 
 /// A thread-safe, stateful context for the v1 generator to help ensure
 /// process-wide uniqueness.
@@ -84,7 +84,7 @@ impl Uuid {
         seconds: u64,
         nano_seconds: u32,
         node_id: &[u8],
-    ) -> Result<Self, ::BytesError>
+    ) -> Result<Self, crate::BytesError>
     where
         T: ClockSequence,
     {
@@ -92,7 +92,7 @@ impl Uuid {
 
         let len = node_id.len();
         if len != NODE_ID_LEN {
-            return Err(::BytesError::new(NODE_ID_LEN, len));
+            return Err(crate::BytesError::new(NODE_ID_LEN, len));
         }
 
         let time_low;
@@ -157,7 +157,7 @@ mod tests {
     #[test]
     fn test_new_v1() {
         use super::Context;
-        use prelude::*;
+        use crate::prelude::*;
 
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;

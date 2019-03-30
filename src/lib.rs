@@ -127,29 +127,6 @@
     html_root_url = "https://docs.rs/uuid/0.7.4"
 )]
 
-#[cfg(feature = "byteorder")]
-extern crate byteorder;
-#[cfg(feature = "std")]
-extern crate core;
-#[cfg(feature = "md5")]
-extern crate md5;
-#[cfg(feature = "rand")]
-extern crate rand;
-#[cfg(feature = "serde")]
-extern crate serde;
-#[cfg(all(feature = "serde", test))]
-extern crate serde_test;
-#[cfg(all(feature = "serde", test))]
-#[macro_use]
-extern crate serde_derive;
-#[cfg(feature = "sha1")]
-extern crate sha1;
-#[cfg(feature = "slog")]
-#[cfg_attr(test, macro_use)]
-extern crate slog;
-#[cfg(feature = "winapi")]
-extern crate winapi;
-
 pub mod adapter;
 pub mod builder;
 pub mod parser;
@@ -157,7 +134,7 @@ pub mod prelude;
 #[cfg(feature = "v1")]
 pub mod v1;
 
-pub use builder::Builder;
+pub use crate::builder::Builder;
 
 mod core_support;
 #[cfg(feature = "serde")]
@@ -894,9 +871,9 @@ impl Uuid {
                 // First digit of the byte.
                 match chr {
                     // Calulate upper half.
-                    b'0'...b'9' => acc = chr - b'0',
-                    b'a'...b'f' => acc = chr - b'a' + 10,
-                    b'A'...b'F' => acc = chr - b'A' + 10,
+                    b'0'..=b'9' => acc = chr - b'0',
+                    b'a'..=b'f' => acc = chr - b'a' + 10,
+                    b'A'..=b'F' => acc = chr - b'A' + 10,
                     // Found a group delimiter
                     b'-' => {
                         // TODO: remove the u8 cast
@@ -941,9 +918,9 @@ impl Uuid {
                 // Second digit of the byte, shift the upper half.
                 acc *= 16;
                 match chr {
-                    b'0'...b'9' => acc += chr - b'0',
-                    b'a'...b'f' => acc += chr - b'a' + 10,
-                    b'A'...b'F' => acc += chr - b'A' + 10,
+                    b'0'..=b'9' => acc += chr - b'0',
+                    b'a'..=b'f' => acc += chr - b'a' + 10,
+                    b'A'..=b'F' => acc += chr - b'A' + 10,
                     b'-' => {
                         // The byte isn't complete yet.
                         let found = if group > 0 {
@@ -1029,11 +1006,11 @@ impl Uuid {
 
 #[cfg(test)]
 mod tests {
-    extern crate std;
+    pub extern crate std;
 
-    use self::std::prelude::v1::*;
     use super::test_util;
-    use prelude::*;
+    use crate::prelude::*;
+    pub use std::prelude::v1::*;
 
     #[test]
     fn test_nil() {
@@ -1106,8 +1083,8 @@ mod tests {
 
     #[test]
     fn test_parse_uuid_v4() {
-        use adapter;
-        use parser;
+        use crate::adapter;
+        use crate::parser;
 
         const EXPECTED_UUID_LENGTHS: parser::Expected =
             parser::Expected::Any(&[
@@ -1345,7 +1322,7 @@ mod tests {
 
     #[test]
     fn test_upper_lower_hex() {
-        use tests::std::fmt::Write;
+        use std::fmt::Write;
 
         let mut buf = String::new();
         let u = test_util::new();
@@ -1536,7 +1513,7 @@ mod tests {
 
     #[test]
     fn test_bytes_roundtrip() {
-        let b_in: ::Bytes = [
+        let b_in: crate::Bytes = [
             0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
             0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
         ];

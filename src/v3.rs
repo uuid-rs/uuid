@@ -1,5 +1,5 @@
+use crate::prelude::*;
 use md5;
-use prelude::*;
 
 impl Uuid {
     /// Creates a [`Uuid`] using a name from a namespace, based on the MD5
@@ -36,7 +36,7 @@ impl Uuid {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
+    use crate::prelude::*;
 
     static FIXTURE: &'static [(&'static Uuid, &'static str, &'static str)] = &[
         (

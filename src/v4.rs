@@ -1,4 +1,4 @@
-use prelude::*;
+use crate::prelude::*;
 use rand;
 
 impl Uuid {
@@ -40,7 +40,7 @@ impl Uuid {
 
 #[cfg(test)]
 mod tests {
-    use prelude::*;
+    use crate::prelude::*;
 
     #[test]
     fn test_new() {

@@ -11,7 +11,7 @@
 
 use std::error;
 
-impl error::Error for super::BytesError {
+impl error::Error for crate::BytesError {
     fn description(&self) -> &str {
         "invalid number of uuid bytes"
     }
