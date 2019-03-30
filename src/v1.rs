@@ -4,8 +4,8 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
-use core::sync::atomic;
 use crate::prelude::*;
+use core::sync::atomic;
 
 /// A thread-safe, stateful context for the v1 generator to help ensure
 /// process-wide uniqueness.

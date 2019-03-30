@@ -871,9 +871,9 @@ impl Uuid {
                 // First digit of the byte.
                 match chr {
                     // Calulate upper half.
-                    b'0'...b'9' => acc = chr - b'0',
-                    b'a'...b'f' => acc = chr - b'a' + 10,
-                    b'A'...b'F' => acc = chr - b'A' + 10,
+                    b'0'..=b'9' => acc = chr - b'0',
+                    b'a'..=b'f' => acc = chr - b'a' + 10,
+                    b'A'..=b'F' => acc = chr - b'A' + 10,
                     // Found a group delimiter
                     b'-' => {
                         // TODO: remove the u8 cast
@@ -918,9 +918,9 @@ impl Uuid {
                 // Second digit of the byte, shift the upper half.
                 acc *= 16;
                 match chr {
-                    b'0'...b'9' => acc += chr - b'0',
-                    b'a'...b'f' => acc += chr - b'a' + 10,
-                    b'A'...b'F' => acc += chr - b'A' + 10,
+                    b'0'..=b'9' => acc += chr - b'0',
+                    b'a'..=b'f' => acc += chr - b'a' + 10,
+                    b'A'..=b'F' => acc += chr - b'A' + 10,
                     b'-' => {
                         // The byte isn't complete yet.
                         let found = if group > 0 {
@@ -1006,9 +1006,7 @@ impl Uuid {
 
 #[cfg(test)]
 mod tests {
-    extern crate std;
-
-    use self::std::prelude::v1::*;
+    use std::prelude::v1::*;
     use super::test_util;
     use crate::prelude::*;
 
@@ -1322,7 +1320,7 @@ mod tests {
 
     #[test]
     fn test_upper_lower_hex() {
-        use crate::tests::std::fmt::Write;
+        use std::fmt::Write;
 
         let mut buf = String::new();
         let u = test_util::new();

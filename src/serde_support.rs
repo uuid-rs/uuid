@@ -9,8 +9,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use core::fmt;
 use crate::prelude::*;
+use core::fmt;
 use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
 
 #[cfg(feature = "serde")]
@@ -41,7 +41,7 @@ impl<'de> Deserialize<'de> for Uuid {
 
                 fn expecting(
                     &self,
-                    formatter: &mut fmt::Formatter,
+                    formatter: &mut fmt::Formatter<'_>,
                 ) -> fmt::Result {
                     write!(formatter, "a UUID string")
                 }
@@ -70,7 +70,7 @@ impl<'de> Deserialize<'de> for Uuid {
 
                 fn expecting(
                     &self,
-                    formatter: &mut fmt::Formatter,
+                    formatter: &mut fmt::Formatter<'_>,
                 ) -> fmt::Result {
                     write!(formatter, "bytes")
                 }

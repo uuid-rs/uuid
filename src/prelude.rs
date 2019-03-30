@@ -51,4 +51,3 @@ handling uuid version 1. Requires feature `v1`.
 pub use super::{Builder, Bytes, Error, Uuid, Variant, Version};
 #[cfg(feature = "v1")]
 pub use crate::v1::{ClockSequence, Context};
-

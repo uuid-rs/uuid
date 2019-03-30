@@ -96,7 +96,7 @@ impl Uuid {
     /// [`HyphenatedRef`]: adapter/struct.HyphenatedRef.html
     #[cfg(not(feature = "const_fn"))]
     #[inline]
-    pub fn to_hyphenated_ref(&self) -> HyphenatedRef {
+    pub fn to_hyphenated_ref(&self) -> HyphenatedRef<'_> {
         HyphenatedRef::from_uuid_ref(self)
     }
 
@@ -106,7 +106,7 @@ impl Uuid {
     /// [`HyphenatedRef`]: adapter/struct.HyphenatedRef.html
     #[cfg(feature = "const_fn")]
     #[inline]
-    pub const fn to_hyphenated_ref(&self) -> HyphenatedRef {
+    pub const fn to_hyphenated_ref(&self) -> HyphenatedRef<'_> {
         HyphenatedRef::from_uuid_ref(self)
     }
 
@@ -136,7 +136,7 @@ impl Uuid {
     /// [`SimpleRef`]: adapter/struct.SimpleRef.html
     #[cfg(not(feature = "const_fn"))]
     #[inline]
-    pub fn to_simple_ref(&self) -> SimpleRef {
+    pub fn to_simple_ref(&self) -> SimpleRef<'_> {
         SimpleRef::from_uuid_ref(self)
     }
 
@@ -146,7 +146,7 @@ impl Uuid {
     /// [`SimpleRef`]: adapter/struct.SimpleRef.html
     #[cfg(feature = "const_fn")]
     #[inline]
-    pub const fn to_simple_ref(&self) -> SimpleRef {
+    pub const fn to_simple_ref(&self) -> SimpleRef<'_> {
         SimpleRef::from_uuid_ref(self)
     }
 
@@ -176,7 +176,7 @@ impl Uuid {
     /// [`UrnRef`]: adapter/struct.UrnRef.html
     #[cfg(not(feature = "const_fn"))]
     #[inline]
-    pub fn to_urn_ref(&self) -> UrnRef {
+    pub fn to_urn_ref(&self) -> UrnRef<'_> {
         UrnRef::from_uuid_ref(self)
     }
 
@@ -186,7 +186,7 @@ impl Uuid {
     /// [`UrnRef`]: adapter/struct.UrnRef.html
     #[cfg(feature = "const_fn")]
     #[inline]
-    pub const fn to_urn_ref(&self) -> UrnRef {
+    pub const fn to_urn_ref(&self) -> UrnRef<'_> {
         UrnRef::from_uuid_ref(self)
     }
 }

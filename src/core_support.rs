@@ -9,9 +9,9 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use core::{fmt, str};
 use crate::parser;
 use crate::prelude::*;
+use core::{fmt, str};
 
 impl From<super::BytesError> for super::Error {
     fn from(err: super::BytesError) -> Self {
@@ -21,13 +21,13 @@ impl From<super::BytesError> for super::Error {
 
 impl fmt::Debug for Uuid {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
 impl fmt::Display for super::Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             super::Error::Bytes(ref err) => fmt::Display::fmt(&err, f),
             super::Error::Parse(ref err) => fmt::Display::fmt(&err, f),
@@ -36,13 +36,13 @@ impl fmt::Display for super::Error {
 }
 
 impl fmt::Display for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
     }
 }
 
 impl fmt::Display for Variant {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Variant::NCS => write!(f, "NCS"),
             Variant::RFC4122 => write!(f, "RFC4122"),
@@ -53,7 +53,7 @@ impl fmt::Display for Variant {
 }
 
 impl fmt::Display for crate::BytesError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
             "invalid bytes length: expected {}, found {}",
@@ -64,14 +64,14 @@ impl fmt::Display for crate::BytesError {
 }
 
 impl fmt::LowerHex for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
     }
 }
 
 impl fmt::UpperHex for Uuid {
     #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::UpperHex::fmt(&self.to_hyphenated_ref(), f)
     }
 }
@@ -93,7 +93,7 @@ impl Default for Uuid {
 
 #[cfg(test)]
 mod tests {
-    extern crate std;
+    use std;
 
     use self::std::prelude::v1::*;
     use crate::prelude::*;

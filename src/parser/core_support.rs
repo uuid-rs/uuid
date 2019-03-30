@@ -9,8 +9,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use core::fmt;
 use crate::parser;
+use core::fmt;
 
 impl From<parser::ParseError> for crate::Error {
     fn from(err: parser::ParseError) -> Self {
@@ -19,7 +19,7 @@ impl From<parser::ParseError> for crate::Error {
 }
 
 impl<'a> fmt::Display for parser::Expected {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             parser::Expected::Any(ref crits) => write!(f, "one of {:?}", crits),
             parser::Expected::Exact(crit) => write!(f, "{}", crit),
@@ -31,7 +31,7 @@ impl<'a> fmt::Display for parser::Expected {
 }
 
 impl fmt::Display for parser::ParseError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}: ", self._description())?;
 
         match *self {

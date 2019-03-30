@@ -1,5 +1,5 @@
-use md5;
 use crate::prelude::*;
+use md5;
 
 impl Uuid {
     /// Creates a [`Uuid`] using a name from a namespace, based on the MD5

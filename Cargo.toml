@@ -59,6 +59,7 @@ version = "0.6"
 
 [dependencies.serde]
 default-features = false
+features = [ "serde_derive" ]
 optional = true
 version = "1.0.56"
 
@@ -86,11 +87,11 @@ version = "1.0.56"
 default = ["std"]
 guid = ["winapi"]
 std = []
+stdweb = [ "rand/stdweb" ]
 v1 = []
 v3 = ["md5"]
 v4 = ["rand"]
 v5 = ["sha1"]
-stdweb = ["rand/stdweb"]
 wasm-bindgen = ["rand/wasm-bindgen"]
 
 # since rust 1.26.0
