@@ -19,10 +19,11 @@ homepage = "https://github.com/uuid-rs/uuid"
 name = "uuid"
 readme = "README.md"
 repository = "https://github.com/uuid-rs/uuid"
-version = "0.7.3" # remember to update html_root_url in lib.rs
+version = "0.7.4" # remember to update html_root_url in lib.rs
 
 [package.metadata.docs.rs]
-all-features = true
+features = [ "guid", "serde", "slog", "v1", "v3", "v4", "v5" ]
+default-target = "x86_64-pc-windows-msvc"
 
 [package.metadata.playground]
 features = ["serde", "u128", "v1", "v3", "v4", "v5"]
