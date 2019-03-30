@@ -93,9 +93,9 @@ impl Default for Uuid {
 
 #[cfg(test)]
 mod tests {
-    use std;
+    use crate::tests::std;
 
-    use self::std::prelude::v1::*;
+    use crate::tests::*;
     use crate::prelude::*;
     use crate::test_util;
 

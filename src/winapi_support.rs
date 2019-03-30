@@ -34,7 +34,6 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use crate::prelude::*;
-    use std::str::FromStr;
     use winapi::shared::guiddef;
 
     #[test]
