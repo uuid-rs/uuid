@@ -1008,9 +1008,9 @@ impl Uuid {
 mod tests {
     pub extern crate std;
 
-    pub use std::prelude::v1::*;
     use super::test_util;
     use crate::prelude::*;
+    pub use std::prelude::v1::*;
 
     #[test]
     fn test_nil() {

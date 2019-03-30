@@ -93,11 +93,9 @@ impl Default for Uuid {
 
 #[cfg(test)]
 mod tests {
-    use crate::tests::std;
-
-    use crate::tests::*;
     use crate::prelude::*;
     use crate::test_util;
+    use crate::tests::*;
 
     macro_rules! check {
         ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {
