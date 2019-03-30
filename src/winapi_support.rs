@@ -33,7 +33,7 @@ impl Uuid {
 #[cfg(feature = "guid")]
 #[cfg(test)]
 mod tests {
-    use prelude::*;
+    use crate::prelude::*;
     use std::str::FromStr;
     use winapi::shared::guiddef;
 
