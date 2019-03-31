@@ -37,6 +37,7 @@ impl fmt::Display for super::Error {
 
 impl fmt::Display for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::LowerHex::fmt(self, f)
     }
 }
 
