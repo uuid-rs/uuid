@@ -938,7 +938,7 @@ impl Uuid {
 
 #[cfg(test)]
 mod tests {
-    pub extern crate std;
+    pub use std;
 
     use super::test_util;
     use crate::prelude::*;
