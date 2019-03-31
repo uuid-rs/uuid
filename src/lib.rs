@@ -267,48 +267,22 @@ pub struct Uuid(Bytes);
 
 impl BytesError {
     /// The expected number of bytes.
-    #[cfg(feature = "const_fn")]
     #[inline]
     pub const fn expected(&self) -> usize {
         self.expected
     }
 
-    /// The expected number of bytes.
-    #[cfg(not(feature = "const_fn"))]
-    #[inline]
-    pub fn expected(&self) -> usize {
-        self.expected
-    }
-
     /// The number of bytes found.
-    #[cfg(feature = "const_fn")]
     #[inline]
     pub const fn found(&self) -> usize {
         self.found
     }
 
-    /// The number of bytes found.
-    #[cfg(not(feature = "const_fn"))]
-    #[inline]
-    pub fn found(&self) -> usize {
-        self.found
-    }
-
     /// Create a new [`UuidError`].
     ///
     /// [`UuidError`]: struct.UuidError.html
-    #[cfg(feature = "const_fn")]
     #[inline]
     pub const fn new(expected: usize, found: usize) -> Self {
-        BytesError { expected, found }
-    }
-
-    /// Create a new [`UuidError`].
-    ///
-    /// [`UuidError`]: struct.UuidError.html
-    #[cfg(not(feature = "const_fn"))]
-    #[inline]
-    pub fn new(expected: usize, found: usize) -> Self {
         BytesError { expected, found }
     }
 }
@@ -367,34 +341,7 @@ impl Uuid {
     ///     "00000000-0000-0000-0000-000000000000"
     /// );
     /// ```
-    #[cfg(feature = "const_fn")]
     pub const fn nil() -> Self {
-        Uuid::from_bytes([0; 16])
-    }
-
-    /// The 'nil UUID'.
-    ///
-    /// The nil UUID is special form of UUID that is specified to have all
-    /// 128 bits set to zero, as defined in [IETF RFC 4122 Section 4.1.7][RFC].
-    ///
-    /// [RFC]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// use uuid::Uuid;
-    ///
-    /// let uuid = Uuid::nil();
-    ///
-    /// assert_eq!(
-    ///     uuid.to_hyphenated().to_string(),
-    ///     "00000000-0000-0000-0000-000000000000"
-    /// );
-    /// ```
-    #[cfg(not(feature = "const_fn"))]
-    pub fn nil() -> Uuid {
         Uuid::from_bytes([0; 16])
     }
 
@@ -578,13 +525,6 @@ impl Uuid {
     }
 
     /// Creates a `Uuid` using the supplied big-endian bytes.
-    #[cfg(not(feature = "const_fn"))]
-    pub fn from_bytes(bytes: Bytes) -> Uuid {
-        Uuid(bytes)
-    }
-
-    /// Creates a `Uuid` using the supplied big-endian bytes.
-    #[cfg(feature = "const_fn")]
     pub const fn from_bytes(bytes: Bytes) -> Uuid {
         Uuid(bytes)
     }
@@ -780,15 +720,7 @@ impl Uuid {
 
     /// Returns an array of 16 octets containing the UUID data.
     /// This method wraps [`Uuid::as_bytes`]
-    #[cfg(feature = "const_fn")]
     pub const fn as_bytes(&self) -> &Bytes {
-        &self.0
-    }
-
-    /// Returns an array of 16 octets containing the UUID data.
-    /// This method wraps [`Uuid::as_bytes`]
-    #[cfg(not(feature = "const_fn"))]
-    pub fn as_bytes(&self) -> &Bytes {
         &self.0
     }
 
