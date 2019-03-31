@@ -22,10 +22,6 @@ matrix:
     - cargo web build --features "v3 wasm-bindgen"
     - cargo web build --features "v4 wasm-bindgen"
     - cargo web build --features "v5 wasm-bindgen"
-  - os: linux
-    rust: nightly
-    script:
-    - cargo test --features "const_fn"
   - rust: beta
     before_script:
       - cargo install cargo-web
