@@ -855,7 +855,7 @@ mod tests {
         assert_eq!(len, super::Hyphenated::LENGTH);
         assert!(buf[len..].iter().all(|x| *x == b'x'));
     }
-    
+
     #[test]
     fn hyphenated_ref_trailing() {
         let mut buf = [b'x'; 100];
@@ -871,7 +871,7 @@ mod tests {
         assert_eq!(len, super::Simple::LENGTH);
         assert!(buf[len..].iter().all(|x| *x == b'x'));
     }
-    
+
     #[test]
     fn simple_ref_trailing() {
         let mut buf = [b'x'; 100];
