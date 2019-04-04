@@ -46,7 +46,6 @@ repository = "uuid-rs/uuid"
 [dependencies.byteorder]
 default-features = false
 features = ["i128"]
-optional = true
 version = "1"
 
 [dependencies.md5]
