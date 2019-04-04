@@ -26,7 +26,7 @@ features = [ "guid", "serde", "slog", "v1", "v3", "v4", "v5" ]
 default-target = "x86_64-pc-windows-msvc"
 
 [package.metadata.playground]
-features = ["serde", "u128", "v1", "v3", "v4", "v5"]
+features = ["serde", "v1", "v3", "v4", "v5"]
 
 [badges.appveyor]
 repository = "uuid-rs/uuid"
@@ -93,9 +93,6 @@ v3 = ["md5"]
 v4 = ["rand"]
 v5 = ["sha1"]
 wasm-bindgen = ["rand/wasm-bindgen"]
-
-# since rust 1.26.0
-u128 = ["byteorder"]
 
 [target.'cfg(windows)'.dependencies.winapi]
 optional = true
