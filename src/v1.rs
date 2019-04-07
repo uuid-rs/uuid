@@ -139,7 +139,7 @@ impl Context {
     /// process.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    pub fn new(count: u16) -> Self {
+    pub const fn new(count: u16) -> Self {
         Self {
             count: atomic::AtomicUsize::new(count as usize),
         }
