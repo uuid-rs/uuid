@@ -9,44 +9,37 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::parser;
 use core::fmt;
 
-impl From<parser::ParseError> for crate::Error {
-    fn from(err: parser::ParseError) -> Self {
-        crate::Error::Parse(err)
-    }
-}
-
-impl<'a> fmt::Display for parser::Expected {
+impl<'a> fmt::Display for crate::Expected {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            parser::Expected::Any(ref crits) => write!(f, "one of {:?}", crits),
-            parser::Expected::Exact(crit) => write!(f, "{}", crit),
-            parser::Expected::Range { min, max } => {
+            crate::Expected::Any(ref crits) => write!(f, "one of {:?}", crits),
+            crate::Expected::Exact(crit) => write!(f, "{}", crit),
+            crate::Expected::Range { min, max } => {
                 write!(f, "{}..{} inclusive", min, max)
             }
         }
     }
 }
 
-impl fmt::Display for parser::ParseError {
+impl fmt::Display for crate::ParseError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}: ", self._description())?;
 
         match *self {
-            parser::ParseError::InvalidCharacter {
+            crate::ParseError::InvalidCharacter {
                 expected,
                 found,
                 index,
             } => {
                 write!(f, "expected {}, found {} at {}", expected, found, index)
             }
-            parser::ParseError::InvalidGroupCount {
+            crate::ParseError::InvalidGroupCount {
                 ref expected,
                 found,
             } => write!(f, "expected {}, found {}", expected, found),
-            parser::ParseError::InvalidGroupLength {
+            crate::ParseError::InvalidGroupLength {
                 ref expected,
                 found,
                 group,
@@ -55,7 +48,7 @@ impl fmt::Display for parser::ParseError {
                 "expected {}, found {} in group {}",
                 expected, found, group,
             ),
-            parser::ParseError::InvalidLength {
+            crate::ParseError::InvalidLength {
                 ref expected,
                 found,
             } => write!(f, "expected {}, found {}", expected, found),

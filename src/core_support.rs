@@ -9,7 +9,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::parser;
+use uuid_parser as parser;
 use crate::prelude::*;
 use core::{fmt, str};
 

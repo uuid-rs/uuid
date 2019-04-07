@@ -1,0 +1,24 @@
+[package]
+description = "Helper macros for UUIDs."
+edition = "2018"
+license = "Apache-2.0 OR MIT"
+homepage = "https://github.com/uuid-rs/uuid"
+name = "uuid-macros"
+repository = "https://github.com/uuid-rs/uuid"
+version = "0.1.0"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro-hack = "0.5.4"
+proc-macro2 = "0.4.27"
+quote = "0.6.11"
+
+[dependencies.syn]
+version = "0.15.30"
+features = ["full"]
+
+[dependencies.uuid-parser]
+version = "0.1"
+path = "../uuid-parser"

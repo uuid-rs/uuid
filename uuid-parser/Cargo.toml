@@ -1,0 +1,14 @@
+[package]
+description = "UUID parsing constructs and utilities."
+edition = "2018"
+license = "Apache-2.0 OR MIT"
+homepage = "https://github.com/uuid-rs/uuid"
+name = "uuid-parser"
+repository = "https://github.com/uuid-rs/uuid"
+version = "0.1.0"
+
+[dependencies]
+
+[features]
+default = ["std"]
+std = []

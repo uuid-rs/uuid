@@ -9,10 +9,9 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::parser;
 use std::error;
 
-impl error::Error for parser::ParseError {
+impl error::Error for crate::ParseError {
     fn description(&self) -> &str {
         self._description()
     }
