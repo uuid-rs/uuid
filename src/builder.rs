@@ -71,7 +71,7 @@ impl Builder {
     ///
     /// let uuid = Builder::from_bytes(bytes);
     /// ```
-    pub fn from_bytes(b: Bytes) -> Self {
+    pub const fn from_bytes(b: Bytes) -> Self {
         Builder(crate::Uuid::from_bytes(b))
     }
 
@@ -186,7 +186,7 @@ impl Builder {
     ///     "00000000-0000-0000-0000-000000000000"
     /// );
     /// ```
-    pub fn nil() -> Self {
+    pub const fn nil() -> Self {
         Builder(crate::Uuid::nil())
     }
 
