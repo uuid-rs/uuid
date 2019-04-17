@@ -115,7 +115,6 @@
 //! [`wasm-bindgen`]: https://github.com/rustwasm/wasm-bindgen
 
 #![cfg_attr(not(feature = "std"), no_std)]
-#![cfg_attr(feature = "const_fn", feature(const_fn))]
 #![deny(
     missing_copy_implementations,
     missing_debug_implementations,
@@ -603,7 +602,7 @@ impl Uuid {
     /// details.
     ///
     /// * [Version Reference](http://tools.ietf.org/html/rfc4122#section-4.1.3)
-    pub fn get_version_num(&self) -> usize {
+    pub const fn get_version_num(&self) -> usize {
         (self.as_bytes()[6] >> 4) as usize
     }
 
@@ -932,7 +931,7 @@ impl Uuid {
     ///     "urn:uuid:00000000-0000-0000-0000-000000000000"
     /// );
     /// ```
-    pub fn encode_buffer() -> [u8; adapter::Urn::LENGTH] {
+    pub const fn encode_buffer() -> [u8; adapter::Urn::LENGTH] {
         [0; adapter::Urn::LENGTH]
     }
 }
