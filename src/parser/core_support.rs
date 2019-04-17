@@ -39,8 +39,23 @@ impl fmt::Display for parser::ParseError {
                 expected,
                 found,
                 index,
+                urn,
             } => {
-                write!(f, "expected {}, found {} at {}", expected, found, index)
+                let urn_str = match urn {
+                    parser::UrnPrefix::None => "",
+                    parser::UrnPrefix::Optional => {
+                        " an optional prefix of `urn:uuid:` followed by"
+                    }
+                    parser::UrnPrefix::Required => {
+                        " a prefix of `urn:uuid` followed by"
+                    }
+                };
+
+                write!(
+                    f,
+                    "expected{} {}, found {} at {}",
+                    urn_str, expected, found, index
+                )
             }
             parser::ParseError::InvalidGroupCount {
                 ref expected,

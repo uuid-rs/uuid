@@ -33,6 +33,17 @@ pub enum Expected {
     },
 }
 
+/// Urn prefix value.
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum UrnPrefix {
+    /// No `urn:uuid:` prefix should be provided.
+    None,
+    /// The `urn:uuid:` prefix should optionally provided.
+    Optional,
+    /// The `urn:uuid:` prefix is required.
+    Required,
+}
+
 /// An error that can occur while parsing a [`Uuid`] string.
 ///
 /// [`Uuid`]: ../struct.Uuid.html
@@ -48,6 +59,12 @@ pub enum ParseError {
         found: char,
         /// The invalid character position.
         index: usize,
+        /// Indicates the [`Uuid`] starts with `urn:uuid:`.
+        ///
+        /// This is a special case for [`Urn`] adapter parsing.
+        ///
+        /// [`Uuid`]: ../Uuid.html
+        urn: UrnPrefix,
     },
     /// Invalid number of segments in the [`Uuid`] string.
     ///
