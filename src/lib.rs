@@ -841,6 +841,7 @@ impl Uuid {
                             expected: "0123456789abcdefABCDEF-",
                             found: input[i_char..].chars().next().unwrap(),
                             index: i_char,
+                            urn: parser::UrnPrefix::Optional,
                         });
                     }
                 }
@@ -875,6 +876,7 @@ impl Uuid {
                             expected: "0123456789abcdefABCDEF-",
                             found: input[i_char..].chars().next().unwrap(),
                             index: i_char,
+                            urn: parser::UrnPrefix::Optional,
                         });
                     }
                 }
@@ -1066,6 +1068,7 @@ mod tests {
                 expected: EXPECTED_CHARS,
                 found: 'G',
                 index: 20,
+                urn: parser::UrnPrefix::Optional,
             })
         );
 
@@ -1107,6 +1110,7 @@ mod tests {
                 expected: EXPECTED_CHARS,
                 found: 'X',
                 index: 18,
+                urn: parser::UrnPrefix::Optional,
             })
         );
 
@@ -1159,6 +1163,7 @@ mod tests {
                 expected: EXPECTED_CHARS,
                 found: '%',
                 index: 15,
+                urn: parser::UrnPrefix::Optional,
             })
         );
 
@@ -1212,6 +1217,7 @@ mod tests {
                 expected: EXPECTED_CHARS,
                 found: 'X',
                 index: 6,
+                urn: parser::UrnPrefix::Optional,
             })
         );
         assert_eq!(
