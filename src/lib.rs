@@ -559,17 +559,6 @@ impl Uuid {
         uuid
     }
 
-    /// Specifies the variant of the UUID structure
-    fn set_variant(&mut self, v: Variant) {
-        // Octet 8 contains the variant in the most significant 3 bits
-        self.0[8] = match v {
-            Variant::NCS => self.as_bytes()[8] & 0x7f, // b0xx...
-            Variant::RFC4122 => (self.as_bytes()[8] & 0x3f) | 0x80, // b10x...
-            Variant::Microsoft => (self.as_bytes()[8] & 0x1f) | 0xc0, // b110...
-            Variant::Future => (self.as_bytes()[8] & 0x1f) | 0xe0, // b111...
-        }
-    }
-
     /// Returns the variant of the `Uuid` structure.
     ///
     /// This determines the interpretation of the structure of the UUID.
@@ -584,11 +573,6 @@ impl Uuid {
             x if x & 0xe0 == 0xe0 => Some(Variant::Future),
             _ => None,
         }
-    }
-
-    /// Specifies the version number of the `Uuid`.
-    fn set_version(&mut self, v: Version) {
-        self.0[6] = (self.as_bytes()[6] & 0xF) | ((v as u8) << 4);
     }
 
     /// Returns the version number of the `Uuid`.
