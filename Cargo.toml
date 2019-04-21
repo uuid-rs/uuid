@@ -5,6 +5,12 @@ authors = [
     "Dylan DPC<dylan.dpc@gmail.com>",
     "Hunar Roop Kahlon<hunar.roop@gmail.com>"
 ]
+categories = [
+    "data-structures",
+    "no-std",
+    "parser-implementations",
+    "wasm"
+]
 description = "A library to generate and parse UUIDs."
 documentation = "https://docs.rs/uuid"
 edition = "2018"
@@ -13,6 +19,11 @@ exclude = [
     ".travis.yml",
     "appveyor.yml",
     "bors.toml"
+]
+keywords = [
+    "guid",
+    "unique",
+    "uuid"
 ]
 license = "Apache-2.0 OR MIT"
 homepage = "https://github.com/uuid-rs/uuid"
