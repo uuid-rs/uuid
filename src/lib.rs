@@ -940,7 +940,6 @@ mod tests {
             Uuid::new_v3(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
 
         assert_eq!(uuid.get_version().unwrap(), Version::Md5);
-        println!("pass1");
         assert_eq!(uuid.get_version_num(), 3);
     }
 
