@@ -169,7 +169,7 @@ impl Builder {
         d4: &[u8],
     ) -> Result<Self, crate::BytesError> {
         crate::Uuid::from_fields(d1, d2, d3, d4).map(|uuid| {
-            let bytes = uuid.as_bytes().to_owned();
+            let bytes = *uuid.as_bytes();
 
             Builder::from_bytes(bytes)
         })
