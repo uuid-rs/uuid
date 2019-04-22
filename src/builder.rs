@@ -191,7 +191,7 @@ impl Builder {
     /// );
     /// ```
     pub const fn nil() -> Self {
-        Builder(crate::Bytes::default())
+        Builder([0; 16])
     }
 
     /// Specifies the variant of the internal [`Uuid`].
