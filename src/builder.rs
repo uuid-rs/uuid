@@ -210,7 +210,7 @@ impl Builder {
 
     /// Specifies the version number of the internal [`Uuid`].
     pub fn set_version(&mut self, v: crate::Version) -> &mut Self {
-        self.0[6] = (self.0[6] & 0xf0) | ((v as u8) << 4);
+        self.0[6] = (self.0[6] & 0x0f) | ((v as u8) << 4);
 
         self
     }
