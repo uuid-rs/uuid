@@ -26,11 +26,16 @@ impl Uuid {
         context.consume(namespace.as_bytes());
         context.consume(name);
 
-        let mut uuid = Uuid::from_bytes(context.compute().into());
+        let computed = context.compute();
+        let bytes = computed.into();
 
-        uuid.set_variant(Variant::RFC4122);
-        uuid.set_version(Version::Md5);
-        uuid
+        let mut builder = crate::builder::Builder::from_bytes(bytes);
+
+        builder
+            .set_variant(Variant::RFC4122)
+            .set_version(Version::Md5);
+
+        builder.build()
     }
 }
 

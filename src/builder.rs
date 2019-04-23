@@ -36,7 +36,7 @@ use crate::prelude::*;
 /// ```
 #[allow(missing_copy_implementations)]
 #[derive(Debug)]
-pub struct Builder(crate::Uuid);
+pub struct Builder(crate::Bytes);
 
 impl Builder {
     /// Creates a `Builder` using the supplied big-endian bytes.
@@ -72,7 +72,7 @@ impl Builder {
     /// let uuid = Builder::from_bytes(bytes);
     /// ```
     pub const fn from_bytes(b: Bytes) -> Self {
-        Builder(crate::Uuid::from_bytes(b))
+        Builder(b)
     }
 
     /// Creates a `Builder` using the supplied big-endian bytes.
@@ -168,7 +168,11 @@ impl Builder {
         d3: u16,
         d4: &[u8],
     ) -> Result<Self, crate::BytesError> {
-        crate::Uuid::from_fields(d1, d2, d3, d4).map(Builder)
+        crate::Uuid::from_fields(d1, d2, d3, d4).map(|uuid| {
+            let bytes = *uuid.as_bytes();
+
+            Builder::from_bytes(bytes)
+        })
     }
 
     /// Creates a `Builder` with an initial [`Uuid::nil`]
@@ -187,18 +191,27 @@ impl Builder {
     /// );
     /// ```
     pub const fn nil() -> Self {
-        Builder(crate::Uuid::nil())
+        Builder([0; 16])
     }
 
     /// Specifies the variant of the internal [`Uuid`].
     pub fn set_variant(&mut self, v: crate::Variant) -> &mut Self {
-        self.0.set_variant(v);
+        let byte = self.0[8];
+
+        self.0[8] = match v {
+            crate::Variant::NCS => byte & 0x7f,
+            crate::Variant::RFC4122 => (byte & 0x3f) | 0x80,
+            crate::Variant::Microsoft => (byte & 0x1f) | 0xc0,
+            crate::Variant::Future => (byte & 0x1f) | 0xe0,
+        };
+
         self
     }
 
     /// Specifies the version number of the internal [`Uuid`].
     pub fn set_version(&mut self, v: crate::Version) -> &mut Self {
-        self.0.set_version(v);
+        self.0[6] = (self.0[6] & 0x0f) | ((v as u8) << 4);
+
         self
     }
 
@@ -218,6 +231,8 @@ impl Builder {
     /// );
     /// ```
     pub fn build(&mut self) -> Uuid {
-        self.0
+        let uuid = crate::Uuid::from_bytes(self.0);
+
+        uuid
     }
 }
