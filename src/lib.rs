@@ -675,8 +675,10 @@ impl Uuid {
     }
 
     /// Returns an Optional Tuple of (u64, u16) representing the timestamp and
-    /// counter portion of a V1 UUID.  If the supplied UUID is not V1, this
-    /// will return None
+    /// counter portion of a V1 UUID. The timestamp represents the number of
+    /// 100 nanosecond intervals since midnight 15 October 1582 UTC.
+    ///
+    /// If the supplied UUID is not V1, this will return None.
     pub fn to_timestamp(&self) -> Option<(u64, u16)> {
         if self
             .get_version()
