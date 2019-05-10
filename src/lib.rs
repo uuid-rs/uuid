@@ -135,6 +135,8 @@ pub mod v1;
 
 pub use crate::builder::Builder;
 
+#[cfg(all(feature = "chrono", feature = "v1"))]
+mod chrono_support;
 mod core_support;
 #[cfg(feature = "serde")]
 mod serde_support;
