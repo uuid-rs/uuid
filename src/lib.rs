@@ -144,7 +144,6 @@ mod slog_support;
 mod std_support;
 #[cfg(test)]
 mod test_util;
-mod u128_support;
 #[cfg(all(
     feature = "v3",
     any(
