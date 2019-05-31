@@ -89,7 +89,7 @@ version = "1.0"
 version = "1.0.56"
 
 [features]
-default = ["std", "v1", "v3", "v4", "v5", "serde"]
+default = ["std"]
 guid = ["winapi"]
 std = []
 stdweb = [ "rand/stdweb" ]

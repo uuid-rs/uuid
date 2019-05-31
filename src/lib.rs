@@ -451,35 +451,6 @@ impl Uuid {
         &self.0
     }
 
-    /// Returns an Optional Tuple of (u64, u16) representing the timestamp and
-    /// counter portion of a V1 UUID. The timestamp represents the number of
-    /// 100 nanosecond intervals since midnight 15 October 1582 UTC.
-    ///
-    /// If the supplied UUID is not V1, this will return None.
-    pub fn to_timestamp(&self) -> Option<(u64, u16)> {
-        if self
-            .get_version()
-            .map(|v| v != Version::Mac)
-            .unwrap_or(true)
-        {
-            return None;
-        }
-
-        let ts: u64 = u64::from(self.as_bytes()[6] & 0x0F) << 56
-            | u64::from(self.as_bytes()[7]) << 48
-            | u64::from(self.as_bytes()[4]) << 40
-            | u64::from(self.as_bytes()[5]) << 32
-            | u64::from(self.as_bytes()[0]) << 24
-            | u64::from(self.as_bytes()[1]) << 16
-            | u64::from(self.as_bytes()[2]) << 8
-            | u64::from(self.as_bytes()[3]);
-
-        let count: u16 = u16::from(self.as_bytes()[8] & 0x3F) << 8
-            | u16::from(self.as_bytes()[9]);
-
-        Some((ts, count))
-    }
-
     /// Tests if the UUID is nil
     pub fn is_nil(&self) -> bool {
         self.as_bytes().iter().all(|&b| b == 0)
