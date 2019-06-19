@@ -889,7 +889,7 @@ impl Uuid {
     }
 }
 
-impl Default for Uuuid {
+impl Default for Uuid {
     fn default() -> Self {
         Uuid::nil()
     }
