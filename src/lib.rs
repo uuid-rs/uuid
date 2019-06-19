@@ -889,6 +889,12 @@ impl Uuid {
     }
 }
 
+impl Default for Uuuid {
+    fn default() -> Self {
+        Uuid::nil()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     extern crate std;
@@ -1423,5 +1429,11 @@ mod tests {
 
         assert!(set.contains(&id1));
         assert!(!set.contains(&id2));
+    }
+    
+    #[test]
+    fn test_default() {
+        let u: Uuid = Default::default();
+        assert_eq(u, Uuid::nil()
     }
 }
