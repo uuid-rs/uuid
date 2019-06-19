@@ -1434,6 +1434,6 @@ mod tests {
     #[test]
     fn test_default() {
         let u: Uuid = Default::default();
-        assert_eq(u, Uuid::nil()
+        assert_eq!(u, Uuid::nil());
     }
 }
