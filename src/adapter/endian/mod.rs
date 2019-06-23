@@ -3,6 +3,8 @@
 //! [`Uuid`]: ../../struct.Uuid.html
 use crate::prelude::*;
 
+mod core_support;
+
 /// Represents a [`Uuid`] in **big** endian.
 ///
 /// [`Uuid`]: ../../struct.Uuid.html
