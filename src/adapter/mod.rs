@@ -16,6 +16,7 @@
 use crate::prelude::*;
 use core::str;
 
+pub mod endian;
 mod core_support;
 
 #[cfg(feature = "serde")]
