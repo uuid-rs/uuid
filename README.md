@@ -3,7 +3,7 @@ uuid
 
 [![Latest Version](https://img.shields.io/crates/v/uuid.svg)](https://crates.io/crates/uuid)
 [![Join the chat at https://gitter.im/uuid-rs/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/uuid-rs/Lobby?utm_source=badge&utm_medium=badge&utm_content=badge)
-![Minimum rustc version](https://img.shields.io/badge/rustc-1.22.0+-yellow.svg)
+![Minimum rustc version](https://img.shields.io/badge/rustc-1.31.0+-yellow.svg)
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/uuid-rs/uuid?branch=master&svg=true)](https://ci.appveyor.com/project/uuid-rs/uuid/branch/master)
 [![Build Status](https://travis-ci.org/uuid-rs/uuid.svg?branch=master)](https://travis-ci.org/uuid-rs/uuid)
 [![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/uuid-rs/uuid.svg)](https://isitmaintained.com/project/uuid-rs/uuid "Average time to resolve an issue")
@@ -90,7 +90,7 @@ fn main() {
 
 To create a new random (V4) UUID and print it out in hexadecimal form:
 
-```ignore,rust
+```rust
 // Note that this requires the `v4` feature enabled in the uuid crate.
 
 use uuid::Uuid;
