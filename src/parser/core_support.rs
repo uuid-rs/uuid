@@ -21,7 +21,9 @@ impl From<parser::ParseError> for crate::Error {
 impl<'a> fmt::Display for parser::ExpectedLength {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            parser::ExpectedLength::Any(crits) => write!(f, "one of {:?}", crits),
+            parser::ExpectedLength::Any(crits) => {
+                write!(f, "one of {:?}", crits)
+            }
             parser::ExpectedLength::Exact(crit) => write!(f, "{}", crit),
             parser::ExpectedLength::Range { min, max } => {
                 write!(f, "{}..{} inclusive", min, max)
