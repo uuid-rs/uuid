@@ -716,7 +716,7 @@ impl Uuid {
             &[adapter::Hyphenated::LENGTH, adapter::Simple::LENGTH],
         ) {
             return Err(parser::ParseError::InvalidLength {
-                expected: parser::Expected::Any(&[
+                expected: parser::ExpectedLength::Any(&[
                     adapter::Hyphenated::LENGTH,
                     adapter::Simple::LENGTH,
                 ]),
@@ -734,7 +734,7 @@ impl Uuid {
             if digit as usize >= adapter::Simple::LENGTH && group != 4 {
                 if group == 0 {
                     return Err(parser::ParseError::InvalidLength {
-                        expected: parser::Expected::Any(&[
+                        expected: parser::ExpectedLength::Any(&[
                             adapter::Hyphenated::LENGTH,
                             adapter::Simple::LENGTH,
                         ]),
@@ -743,7 +743,7 @@ impl Uuid {
                 }
 
                 return Err(parser::ParseError::InvalidGroupCount {
-                    expected: parser::Expected::Any(&[1, 5]),
+                    expected: parser::ExpectedLength::Any(&[1, 5]),
                     found: group + 1,
                 });
             }
@@ -774,7 +774,7 @@ impl Uuid {
 
                             return Err(
                                 parser::ParseError::InvalidGroupLength {
-                                    expected: parser::Expected::Exact(
+                                    expected: parser::ExpectedLength::Exact(
                                         parser::GROUP_LENS[group],
                                     ),
                                     found: found as usize,
@@ -815,7 +815,7 @@ impl Uuid {
                         };
 
                         return Err(parser::ParseError::InvalidGroupLength {
-                            expected: parser::Expected::Exact(
+                            expected: parser::ExpectedLength::Exact(
                                 parser::GROUP_LENS[group],
                             ),
                             found: found as usize,
@@ -842,7 +842,7 @@ impl Uuid {
         //       ParseError
         if parser::ACC_GROUP_LENS[4] as u8 != digit {
             return Err(parser::ParseError::InvalidGroupLength {
-                expected: parser::Expected::Exact(parser::GROUP_LENS[4]),
+                expected: parser::ExpectedLength::Exact(parser::GROUP_LENS[4]),
                 found: (digit as usize - parser::ACC_GROUP_LENS[3]),
                 group,
             });
@@ -969,14 +969,14 @@ mod tests {
         use crate::adapter;
         use crate::parser;
 
-        const EXPECTED_UUID_LENGTHS: parser::Expected =
-            parser::Expected::Any(&[
+        const EXPECTED_UUID_LENGTHS: parser::ExpectedLength =
+            parser::ExpectedLength::Any(&[
                 adapter::Hyphenated::LENGTH,
                 adapter::Simple::LENGTH,
             ]);
 
-        const EXPECTED_GROUP_COUNTS: parser::Expected =
-            parser::Expected::Any(&[1, 5]);
+        const EXPECTED_GROUP_COUNTS: parser::ExpectedLength =
+            parser::ExpectedLength::Any(&[1, 5]);
 
         const EXPECTED_CHARS: &'static str = "0123456789abcdefABCDEF-";
 
@@ -1068,7 +1068,7 @@ mod tests {
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB-24fa-eB6BFF32-BF39FA1E4"),
             Err(parser::ParseError::InvalidGroupLength {
-                expected: parser::Expected::Exact(4),
+                expected: parser::ExpectedLength::Exact(4),
                 found: 3,
                 group: 1,
             })
@@ -1078,7 +1078,7 @@ mod tests {
         assert_eq!(
             Uuid::parse_str("01020304-1112-2122-3132-41424344"),
             Err(parser::ParseError::InvalidGroupLength {
-                expected: parser::Expected::Exact(12),
+                expected: parser::ExpectedLength::Exact(12),
                 found: 8,
                 group: 4,
             })
@@ -1174,7 +1174,7 @@ mod tests {
         assert_eq!(
             Uuid::parse_str("67e550-4105b1426f9247bb680e5fe0c"),
             Err(parser::ParseError::InvalidGroupLength {
-                expected: parser::Expected::Exact(8),
+                expected: parser::ExpectedLength::Exact(8),
                 found: 6,
                 group: 0,
             })
@@ -1182,7 +1182,7 @@ mod tests {
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF1-02BF39FA1E4"),
             Err(parser::ParseError::InvalidGroupLength {
-                expected: parser::Expected::Exact(4),
+                expected: parser::ExpectedLength::Exact(4),
                 found: 5,
                 group: 3,
             })
