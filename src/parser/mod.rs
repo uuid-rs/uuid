@@ -17,9 +17,9 @@ mod core_support;
 #[cfg(feature = "std")]
 mod std_support;
 
-/// The expected value.
+/// The expected length.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub enum Expected {
+pub enum ExpectedLength {
     /// Expected any one of the given values.
     Any(&'static [usize]),
     /// Expected the given value.
@@ -74,7 +74,7 @@ pub enum ParseError {
         // TODO: explain multiple segment count.
         // BODY: Parsers can expect a range of Uuid segment count.
         //       This needs to be expanded on.
-        expected: Expected,
+        expected: ExpectedLength,
         /// The number of segments found.
         found: usize,
     },
@@ -83,7 +83,7 @@ pub enum ParseError {
     /// [`Uuid`]: ../struct.Uuid.html
     InvalidGroupLength {
         /// The expected length of the segment.
-        expected: Expected,
+        expected: ExpectedLength,
         /// The length of segment found.
         found: usize,
         /// The segment with invalid length.
@@ -97,7 +97,7 @@ pub enum ParseError {
         // TODO: explain multiple lengths.
         // BODY: Parsers can expect a range of Uuid lenghts.
         //       This needs to be expanded on.
-        expected: Expected,
+        expected: ExpectedLength,
         /// The invalid length found.
         found: usize,
     },
