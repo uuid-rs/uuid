@@ -468,6 +468,50 @@ impl Uuid {
         ]))
     }
 
+    /// Creates a `Uuid` from a 128bit value in big-endian order.
+    pub const fn from_u128(v: u128) -> Self {
+        Uuid::from_bytes([
+            (v >> 120) as u8,
+            (v >> 112) as u8,
+            (v >> 104) as u8,
+            (v >> 96) as u8,
+            (v >> 88) as u8,
+            (v >> 80) as u8,
+            (v >> 72) as u8,
+            (v >> 64) as u8,
+            (v >> 56) as u8,
+            (v >> 48) as u8,
+            (v >> 40) as u8,
+            (v >> 32) as u8,
+            (v >> 24) as u8,
+            (v >> 16) as u8,
+            (v >> 8) as u8,
+            v as u8,
+        ])
+    }
+
+    /// Creates a `Uuid` from a 128bit value in little-endian order.
+    pub const fn from_u128_le(v: u128) -> Self {
+        Uuid::from_bytes([
+            v as u8,
+            (v >> 8) as u8,
+            (v >> 16) as u8,
+            (v >> 24) as u8,
+            (v >> 32) as u8,
+            (v >> 40) as u8,
+            (v >> 48) as u8,
+            (v >> 56) as u8,
+            (v >> 64) as u8,
+            (v >> 72) as u8,
+            (v >> 80) as u8,
+            (v >> 88) as u8,
+            (v >> 96) as u8,
+            (v >> 104) as u8,
+            (v >> 112) as u8,
+            (v >> 120) as u8,
+        ])
+    }
+
     /// Creates a `Uuid` using the supplied big-endian bytes.
     ///
     /// # Errors
@@ -663,6 +707,46 @@ impl Uuid {
         let d4: &[u8; 8] =
             unsafe { &*(self.as_bytes()[8..16].as_ptr() as *const [u8; 8]) };
         (d1, d2, d3, d4)
+    }
+
+    /// Returns a 128bit big-endian value containing the UUID data.
+    pub fn as_u128(&self) -> u128 {
+        u128::from(self.as_bytes()[0]) << 120
+            | u128::from(self.as_bytes()[1]) << 112
+            | u128::from(self.as_bytes()[2]) << 104
+            | u128::from(self.as_bytes()[3]) << 96
+            | u128::from(self.as_bytes()[4]) << 88
+            | u128::from(self.as_bytes()[5]) << 80
+            | u128::from(self.as_bytes()[6]) << 72
+            | u128::from(self.as_bytes()[7]) << 64
+            | u128::from(self.as_bytes()[8]) << 56
+            | u128::from(self.as_bytes()[9]) << 48
+            | u128::from(self.as_bytes()[10]) << 40
+            | u128::from(self.as_bytes()[11]) << 32
+            | u128::from(self.as_bytes()[12]) << 24
+            | u128::from(self.as_bytes()[13]) << 16
+            | u128::from(self.as_bytes()[14]) << 8
+            | u128::from(self.as_bytes()[15])
+    }
+
+    /// Returns a 128bit little-endian value containing the UUID data.
+    pub fn to_u128_le(&self) -> u128 {
+        u128::from(self.as_bytes()[0])
+            | u128::from(self.as_bytes()[1]) << 8
+            | u128::from(self.as_bytes()[2]) << 16
+            | u128::from(self.as_bytes()[3]) << 24
+            | u128::from(self.as_bytes()[4]) << 32
+            | u128::from(self.as_bytes()[5]) << 40
+            | u128::from(self.as_bytes()[6]) << 48
+            | u128::from(self.as_bytes()[7]) << 56
+            | u128::from(self.as_bytes()[8]) << 64
+            | u128::from(self.as_bytes()[9]) << 72
+            | u128::from(self.as_bytes()[10]) << 80
+            | u128::from(self.as_bytes()[11]) << 88
+            | u128::from(self.as_bytes()[12]) << 96
+            | u128::from(self.as_bytes()[13]) << 104
+            | u128::from(self.as_bytes()[14]) << 112
+            | u128::from(self.as_bytes()[15]) << 120
     }
 
     /// Returns an array of 16 octets containing the UUID data.
@@ -1361,6 +1445,58 @@ mod tests {
         assert_eq!(d2_in, d2_out.swap_bytes());
         assert_eq!(d3_in, d3_out.swap_bytes());
         assert_eq!(d4_in, d4_out);
+    }
+
+    #[test]
+    fn test_from_u128() {
+        let v_in: u128 = 0xa1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8;
+
+        let u = Uuid::from_u128(v_in);
+
+        let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
+        let result = u.to_simple().to_string();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_from_u128_le() {
+        let v_in: u128 = 0xd8d7d6d5d4d3d2d1c2c1b2b1a4a3a2a1;
+
+        let u = Uuid::from_u128_le(v_in);
+
+        let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
+        let result = u.to_simple().to_string();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn test_u128_roundtrip() {
+        let v_in: u128 = 0xa1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8;
+
+        let u = Uuid::from_u128(v_in);
+        let v_out = u.as_u128();
+
+        assert_eq!(v_in, v_out);
+    }
+
+    #[test]
+    fn test_u128_le_roundtrip() {
+        let v_in: u128 = 0xd8d7d6d5d4d3d2d1c2c1b2b1a4a3a2a1;
+
+        let u = Uuid::from_u128_le(v_in);
+        let v_out = u.to_u128_le();
+
+        assert_eq!(v_in, v_out);
+    }
+
+    #[test]
+    fn test_u128_le_is_actually_le() {
+        let v_in: u128 = 0xa1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8;
+
+        let u = Uuid::from_u128(v_in);
+        let v_out = u.to_u128_le();
+
+        assert_eq!(v_in, v_out.swap_bytes());
     }
 
     #[test]

@@ -126,7 +126,7 @@ impl Builder {
         Ok(Self::from_bytes(bytes))
     }
 
-    /// Creates a `Builder` from four field values.
+    /// Creates a `Builder` from four big-endian field values.
     ///
     /// # Errors
     ///
@@ -173,6 +173,11 @@ impl Builder {
 
             Builder::from_bytes(bytes)
         })
+    }
+
+    /// Creates a `Builder` from a big-endian 128bit value.
+    pub fn from_u128(v: u128) -> Self {
+        Builder::from_bytes(*crate::Uuid::from_u128(v).as_bytes())
     }
 
     /// Creates a `Builder` with an initial [`Uuid::nil`]
