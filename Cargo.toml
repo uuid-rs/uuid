@@ -54,11 +54,6 @@ status = "actively-developed"
 [badges.travis-ci]
 repository = "uuid-rs/uuid"
 
-[dependencies.byteorder]
-default-features = false
-features = ["i128"]
-version = "1"
-
 [dependencies.md5]
 optional = true
 version = "0.6"
