@@ -48,5 +48,5 @@ mod std_support {
 
     use crate::std::error;
 
-    impl error::Error for Error { }
+    impl error::Error for Error {}
 }

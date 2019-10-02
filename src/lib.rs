@@ -115,10 +115,7 @@
 //! [`wasm-bindgen`]: https://github.com/rustwasm/wasm-bindgen
 
 #![no_std]
-#![deny(
-    missing_debug_implementations,
-    missing_docs
-)]
+#![deny(missing_debug_implementations, missing_docs)]
 #![doc(
     html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
     html_favicon_url = "https://www.rust-lang.org/favicon.ico",
@@ -133,10 +130,10 @@ extern crate std;
 #[macro_use]
 extern crate core as std;
 
-mod error;
-mod prelude;
 mod builder;
+mod error;
 mod parser;
+mod prelude;
 
 pub mod adapter;
 #[cfg(feature = "v1")]
@@ -186,10 +183,7 @@ mod winapi_support;
 
 use crate::std::{fmt, str};
 
-pub use crate::{
-    error::Error,
-    builder::Builder,
-};
+pub use crate::{builder::Builder, error::Error};
 
 /// A 128-bit (16 byte) buffer containing the ID.
 pub type Bytes = [u8; 16];
@@ -541,9 +535,9 @@ impl Default for Uuid {
 #[cfg(test)]
 mod tests {
     use crate::{
+        prelude::*,
         std::string::{String, ToString},
         test_util,
-        prelude::*,
     };
 
     macro_rules! check {

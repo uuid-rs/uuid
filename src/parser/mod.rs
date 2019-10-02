@@ -121,15 +121,13 @@ impl Uuid {
                                 digit
                             };
 
-                            Err(
-                                Error::InvalidGroupLength {
-                                    expected: error::ExpectedLength::Exact(
-                                        GROUP_LENS[group],
-                                    ),
-                                    found: found as usize,
-                                    group,
-                                },
-                            )?;
+                            Err(Error::InvalidGroupLength {
+                                expected: error::ExpectedLength::Exact(
+                                    GROUP_LENS[group],
+                                ),
+                                found: found as usize,
+                                group,
+                            })?;
                         }
                         // Next group, decrement digit, it is incremented again
                         // at the bottom.
@@ -204,11 +202,7 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        std::string::ToString,
-        adapter,
-        test_util
-    };
+    use crate::{adapter, std::string::ToString, test_util};
 
     #[test]
     fn test_parse_uuid_v4() {
@@ -241,7 +235,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E45").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E45")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidLength {
                 expected: EXPECTED_UUID_LENGTHS,
                 found: 37,
@@ -249,7 +244,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("F9168C5E-CEB2-4faa-BBF-329BF39FA1E4").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("F9168C5E-CEB2-4faa-BBF-329BF39FA1E4")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidLength {
                 expected: EXPECTED_UUID_LENGTHS,
                 found: 35
@@ -257,7 +253,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidCharacter {
                 expected: EXPECTED_CHARS,
                 found: 'G',
@@ -267,7 +264,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("F9168C5E-CEB2F4faaFB6BFF329BF39FA1E4").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("F9168C5E-CEB2F4faaFB6BFF329BF39FA1E4")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidGroupCount {
                 expected: EXPECTED_GROUP_COUNTS,
                 found: 2
@@ -275,7 +273,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("F9168C5E-CEB2-4faaFB6BFF329BF39FA1E4").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("F9168C5E-CEB2-4faaFB6BFF329BF39FA1E4")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidGroupCount {
                 expected: EXPECTED_GROUP_COUNTS,
                 found: 3,
@@ -283,7 +282,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidGroupCount {
                 expected: EXPECTED_GROUP_COUNTS,
                 found: 4,
@@ -291,7 +291,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("F9168C5E-CEB2-4faa").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("F9168C5E-CEB2-4faa")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidLength {
                 expected: EXPECTED_UUID_LENGTHS,
                 found: 18,
@@ -299,7 +300,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("F9168C5E-CEB2-4faaXB6BFF329BF39FA1E4").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("F9168C5E-CEB2-4faaXB6BFF329BF39FA1E4")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidCharacter {
                 expected: EXPECTED_CHARS,
                 found: 'X',
@@ -309,7 +311,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("F9168C5E-CEB-24fa-eB6BFF32-BF39FA1E4").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("F9168C5E-CEB-24fa-eB6BFF32-BF39FA1E4")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidGroupLength {
                 expected: error::ExpectedLength::Exact(4),
                 found: 3,
@@ -319,7 +322,8 @@ mod tests {
         // (group, found, expecting)
         //
         assert_eq!(
-            Uuid::parse_str("01020304-1112-2122-3132-41424344").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("01020304-1112-2122-3132-41424344")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidGroupLength {
                 expected: error::ExpectedLength::Exact(12),
                 found: 8,
@@ -328,7 +332,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidLength {
                 expected: EXPECTED_UUID_LENGTHS,
                 found: 31,
@@ -336,7 +341,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c88").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c88")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidLength {
                 expected: EXPECTED_UUID_LENGTHS,
                 found: 33,
@@ -344,7 +350,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("67e5504410b1426f9247bb680e5fe0cg8").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("67e5504410b1426f9247bb680e5fe0cg8")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidLength {
                 expected: EXPECTED_UUID_LENGTHS,
                 found: 33,
@@ -352,7 +359,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("67e5504410b1426%9247bb680e5fe0c8").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("67e5504410b1426%9247bb680e5fe0c8")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidCharacter {
                 expected: EXPECTED_CHARS,
                 found: '%',
@@ -362,7 +370,8 @@ mod tests {
         );
 
         assert_eq!(
-            Uuid::parse_str("231231212212423424324323477343246663").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("231231212212423424324323477343246663")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidLength {
                 expected: EXPECTED_UUID_LENGTHS,
                 found: 36,
@@ -399,14 +408,16 @@ mod tests {
 
         // Test error reporting
         assert_eq!(
-            Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidLength {
                 expected: EXPECTED_UUID_LENGTHS,
                 found: 31,
             })
         );
         assert_eq!(
-            Uuid::parse_str("67e550X410b1426f9247bb680e5fe0cd").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("67e550X410b1426f9247bb680e5fe0cd")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidCharacter {
                 expected: EXPECTED_CHARS,
                 found: 'X',
@@ -415,7 +426,8 @@ mod tests {
             })
         );
         assert_eq!(
-            Uuid::parse_str("67e550-4105b1426f9247bb680e5fe0c").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("67e550-4105b1426f9247bb680e5fe0c")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidGroupLength {
                 expected: error::ExpectedLength::Exact(8),
                 found: 6,
@@ -423,7 +435,8 @@ mod tests {
             })
         );
         assert_eq!(
-            Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF1-02BF39FA1E4").map_err(crate::Error::expect_parser),
+            Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF1-02BF39FA1E4")
+                .map_err(crate::Error::expect_parser),
             Err(Error::InvalidGroupLength {
                 expected: error::ExpectedLength::Exact(4),
                 found: 5,

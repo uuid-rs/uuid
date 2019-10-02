@@ -230,7 +230,7 @@ impl Uuid {
     ///
     /// ```
     /// use uuid::Uuid;
-    /// 
+    ///
     /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76];
     ///
     /// let uuid = Uuid::from_slice(&bytes);

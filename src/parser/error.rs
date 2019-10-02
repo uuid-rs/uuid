@@ -100,9 +100,7 @@ impl Error {
 impl fmt::Display for ExpectedLength {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
-            ExpectedLength::Any(crits) => {
-                write!(f, "one of {:?}", crits)
-            }
+            ExpectedLength::Any(crits) => write!(f, "one of {:?}", crits),
             ExpectedLength::Exact(crit) => write!(f, "{}", crit),
             ExpectedLength::Range { min, max } => {
                 write!(f, "{}..{} inclusive", min, max)
@@ -164,5 +162,5 @@ mod std_support {
     use super::*;
     use crate::std::error;
 
-    impl error::Error for Error { }
+    impl error::Error for Error {}
 }
