@@ -84,7 +84,7 @@ impl Uuid {
         seconds: u64,
         nano_seconds: u32,
         node_id: &[u8],
-    ) -> Result<Self, crate::BytesError>
+    ) -> Result<Self, crate::Error>
     where
         T: ClockSequence,
     {
@@ -92,7 +92,7 @@ impl Uuid {
 
         let len = node_id.len();
         if len != NODE_ID_LEN {
-            return Err(crate::BytesError::new(NODE_ID_LEN, len));
+            Err(crate::builder::Error::new(NODE_ID_LEN, len))?;
         }
 
         let time_low;
