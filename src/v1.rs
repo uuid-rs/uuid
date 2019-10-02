@@ -20,10 +20,10 @@ pub struct Context {
 
 /// Stores the number of nanoseconds from an epoch and a counter for ensuring
 /// V1 ids generated on the same host are unique.
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Timestamp {
     ticks: u64,
-    counter: u16
+    counter: u16,
 }
 
 impl Timestamp {
@@ -41,16 +41,15 @@ impl Timestamp {
     ///
     /// Internally, the timestamp is stored as a `u64`. For this reason, dates prior
     /// to October 1582 are not supported.
-    ///
-    pub fn from_rfc4122(hundred_ns_intervals: u64, counter: u16) -> Self {
-        Timestamp { ticks: hundred_ns_intervals, counter }
+    pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
+        Timestamp { ticks, counter }
     }
 
     /// Construct a `Timestamp` from a unix timestamp and sequence-generating `context`.
     ///
     /// A unix timestamp represents the elapsed time since Jan 1 1970. Libc's `clock_gettime`
     /// and other popular implementations traditionally represent this duration as a
-    /// `timespec`: a struct with `i64` and `u32` fields representing the seconds, and
+    /// `timespec`: a struct with `u64` and `u32` fields representing the seconds, and
     /// "subsecond" or fractional nanoseconds elapsed since the timestamp's second began,
     /// respectively.
     ///
@@ -59,31 +58,40 @@ impl Timestamp {
     /// intervals since 00:00:00.00, 15 Oct 1982 specified by RFC4122 and used internally
     /// by `Timestamp`.
     ///
-    pub fn from_unix<T: ClockSequence>(secs: i64, subsec_nanos: u32, context: &T) -> Self {
-        let counter = context.generate_sequence(secs.abs() as u64, subsec_nanos);
+    /// The function is not guaranteed to produce monotonically increasing
+    /// values however. There is a slight possibility that two successive
+    /// equal time values could be supplied and the sequence counter wraps back
+    /// over to 0.
+    ///
+    /// If uniqueness and monotonicity is required, the user is responsible for
+    /// ensuring that the time value always increases between calls (including
+    /// between restarts of the process and device).
+    pub fn from_unix(context: impl ClockSequence, seconds: u64, subsec_nanos: u32) -> Self {
+        let counter = context.generate_sequence(seconds, subsec_nanos);
         let ticks =
-            (UUID_TICKS_BETWEEN_EPOCHS as i64 + secs * 10_000_000 + ((subsec_nanos / 100) as i64)) as u64; 
+            UUID_TICKS_BETWEEN_EPOCHS + seconds * 10_000_000 + (subsec_nanos as u64 / 100); 
         Timestamp { ticks, counter }
     }
 
     /// Returns the raw RFC4122 timestamp and counter values stored by the `Timestamp`.
+    /// 
     /// The timestamp (the first, `u64` element in the tuple) represents the number of
     /// 100-nanosecond intervals since 00:00:00.00, 15 Oct 1582. The counter is used to
     /// differentiate between ids generated on the same host computer with the same
     /// observed time.
-    ///
-    pub fn to_rfc4122(&self) -> (u64, u16) {
+    pub const fn to_rfc4122(&self) -> (u64, u16) {
         (self.ticks, self.counter)
     }
 
     /// Returns the timestamp converted to the seconds and fractional nanoseconds
-    /// since Jan 1 1970. Internally, the time is stored in 100-nanosecond intervals,
+    /// since Jan 1 1970.
+    /// 
+    /// Internally, the time is stored in 100-nanosecond intervals,
     /// thus the maximum precision represented by the fractional nanoseconds value
     /// is less than its unit size (100 ns vs. 1 ns).
-    /// 
-    pub fn to_unix(&self) -> (i64, u32) {
-        let unix_ticks = (self.ticks - UUID_TICKS_BETWEEN_EPOCHS) as i64;
-        (unix_ticks / 10_000_000, (unix_ticks % 10_000_000).abs() as u32 * 100)
+    pub const fn to_unix(&self) -> (u64, u32) {
+        let unix_ticks = self.ticks - UUID_TICKS_BETWEEN_EPOCHS;
+        (unix_ticks / 10_000_000, (unix_ticks % 10_000_000) as u32 * 100)
     }
 
     /// Returns the timestamp converted into nanoseconds elapsed since Jan 1 1970.
@@ -91,9 +99,8 @@ impl Timestamp {
     /// precision represented is less than the units it is measured in (100 ns vs. 1 ns).
     /// The value returned represents the same duration as `to_unix`; this provides
     /// it in nanosecond units for convenience.
-    /// 
-    pub fn to_unix_nanos(&self) -> i64 {
-        (self.ticks - UUID_TICKS_BETWEEN_EPOCHS) as i64 * 100
+    pub const fn to_unix_nanos(&self) -> u64 {
+        (self.ticks - UUID_TICKS_BETWEEN_EPOCHS) * 100
     }
 }
 
@@ -105,14 +112,18 @@ pub trait ClockSequence {
     fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> u16;
 }
 
+impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T {
+    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> u16 {
+        (**self).generate_sequence(seconds, subsec_nanos)
+    }
+}
+
 impl Uuid {
     /// Create a new [`Uuid`] (version 1) using a time value + sequence +
     /// *NodeId*.
-    ///
-    /// This expects two values representing a monotonically increasing value
-    /// as well as a unique 6 byte NodeId, and an implementation of
-    /// [`ClockSequence`]. This function is only guaranteed to produce
-    /// unique values if the following conditions hold:
+    /// 
+    /// When generating [`Timestamp`]s using a [`ClockSequence`], this function
+    /// is only guaranteed to produce unique values if the following conditions hold:
     ///
     /// 1. The *NodeId* is unique for this process,
     /// 2. The *Context* is shared across all threads which are generating v1
@@ -124,91 +135,50 @@ impl Uuid {
     ///
     /// The NodeID must be exactly 6 bytes long. If the NodeID is not a valid
     /// length this will return a [`ParseError`]`::InvalidLength`.
-    ///
-    /// The function is not guaranteed to produce monotonically increasing
-    /// values however.  There is a slight possibility that two successive
-    /// equal time values could be supplied and the sequence counter wraps back
-    /// over to 0.
-    ///
-    /// If uniqueness and monotonicity is required, the user is responsible for
-    /// ensuring that the time value always increases between calls (including
-    /// between restarts of the process and device).
-    ///
+    /// 
     /// Note that usage of this method requires the `v1` feature of this crate
     /// to be enabled.
     ///
     /// # Examples
     ///
-    /// Basic usage:
+    /// A [`Uuid`] can be created from a unix [`Timestamp`] with a [`ClockSequence`]:
     ///
     /// ```rust
-    /// use uuid::v1::Context;
+    /// use uuid::v1::{Timestamp, Context};
     /// use uuid::Uuid;
     ///
     /// let context = Context::new(42);
-    /// if let Ok(uuid) =
-    ///     Uuid::new_v1(&context, 1497624119, 1234, &[1, 2, 3, 4, 5, 6])
-    /// {
-    ///     assert_eq!(
-    ///         uuid.to_hyphenated().to_string(),
-    ///         "f3b4958c-52a1-11e7-802a-010203040506"
-    ///     )
-    /// } else {
-    ///     panic!()
-    /// }
+    /// let ts = Timestamp::from_unix(&context, 1497624119, 1234);
+    /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]).expect("failed to generate UUID");
+    /// 
+    /// assert_eq!(
+    ///     uuid.to_hyphenated().to_string(),
+    ///     "f3b4958c-52a1-11e7-802a-010203040506"
+    /// );
+    /// ```
+    /// 
+    /// The timestamp can also be created manually as per RFC4122:
+    /// 
+    /// ```
+    /// use uuid::v1::{Timestamp, Context};
+    /// use uuid::Uuid;
+    ///
+    /// let context = Context::new(42);
+    /// let ts = Timestamp::from_rfc4122(1497624119, 0);
+    /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]).expect("failed to generate UUID");
+    /// 
+    /// assert_eq!(
+    ///     uuid.to_hyphenated().to_string(),
+    ///     "5943ee37-0000-1000-8000-010203040506"
+    /// );
     /// ```
     ///
     /// [`ParseError`]: ../enum.ParseError.html
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`ClockSequence`]: struct.ClockSequence.html
     /// [`Context`]: struct.Context.html
-    pub fn new_v1<T>(
-        context: &T,
-        seconds: u64,
-        nano_seconds: u32,
-        node_id: &[u8],
-    ) -> Result<Self, crate::Error>
-    where
-        T: ClockSequence,
-    {
-        const NODE_ID_LEN: usize = 6;
-
-        let len = node_id.len();
-        if len != NODE_ID_LEN {
-            Err(crate::builder::Error::new(NODE_ID_LEN, len))?;
-        }
-
-        let time_low;
-        let time_mid;
-        let time_high_and_version;
-
-        {
-            let timestamp =
-                seconds * 10_000_000 + u64::from(nano_seconds / 100);
-            let uuid_time = timestamp + UUID_TICKS_BETWEEN_EPOCHS;
-
-            time_low = (uuid_time & 0xFFFF_FFFF) as u32;
-            time_mid = ((uuid_time >> 32) & 0xFFFF) as u16;
-            time_high_and_version =
-                (((uuid_time >> 48) & 0x0FFF) as u16) | (1 << 12);
-        }
-
-        let mut d4 = [0; 8];
-
-        {
-            let count = context.generate_sequence(seconds, nano_seconds);
-            d4[0] = (((count & 0x3F00) >> 8) as u8) | 0x80;
-            d4[1] = (count & 0xFF) as u8;
-        }
-
-        d4[2..].copy_from_slice(node_id);
-
-        Uuid::from_fields(time_low, time_mid, time_high_and_version, &d4)
-    }
-
-    /// Construct V1 UUID from a `Timestamp` and `node_id`.
-    pub fn with_timestamp(
-        ts: &Timestamp,
+    pub fn new_v1(
+        ts: Timestamp,
         node_id: &[u8],
     ) -> Result<Self, crate::Error> {
         const NODE_ID_LEN: usize = 6;
@@ -235,7 +205,7 @@ impl Uuid {
         Uuid::from_fields(time_low, time_mid, time_high_and_version, &d4)
     }
 
-    /// Returns an Optional `Timestamp` storing the timestamp and
+    /// Returns an optional `Timestamp` storing the timestamp and
     /// counter portion parsed from a V1 UUID.
     ///
     /// Returns `None` if the supplied UUID is not V1.
@@ -312,7 +282,7 @@ mod tests {
 
         {
             let uuid =
-                Uuid::new_v1(&context, time, time_fraction, &node).unwrap();
+                Uuid::new_v1(Timestamp::from_unix(&context, time, time_fraction), &node).unwrap();
 
             assert_eq!(uuid.get_version(), Some(Version::Mac));
             assert_eq!(uuid.get_variant(), Some(Variant::RFC4122));
@@ -329,7 +299,7 @@ mod tests {
 
         {
             let uuid2 =
-                Uuid::new_v1(&context, time, time_fraction, &node).unwrap();
+                Uuid::new_v1(Timestamp::from_unix(&context, time, time_fraction), &node).unwrap();
 
             assert_eq!(
                 uuid2.to_hyphenated().to_string(),
