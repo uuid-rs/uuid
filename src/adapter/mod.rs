@@ -14,9 +14,7 @@
 //! [`Uuid`]: ../struct.Uuid.html
 
 use crate::prelude::*;
-use core::str;
-
-mod core_support;
+use crate::std::{fmt, str};
 
 #[cfg(feature = "serde")]
 pub mod compact;
@@ -842,6 +840,61 @@ impl<'a> UrnRef<'a> {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, self.0, true, true)
     }
+}
+
+macro_rules! impl_adapter_traits {
+    ($($T:ident<$($a:lifetime),*>),+) => {$(
+        impl<$($a),*> fmt::Display for $T<$($a),*> {
+            #[inline]
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                fmt::LowerHex::fmt(self, f)
+            }
+        }
+
+        impl<$($a),*> fmt::LowerHex for $T<$($a),*> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                // TODO: Self doesn't work https://github.com/rust-lang/rust/issues/52808
+                f.write_str(self.encode_lower(&mut [0; $T::LENGTH]))
+            }
+        }
+
+        impl<$($a),*> fmt::UpperHex for $T<$($a),*> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                // TODO: Self doesn't work https://github.com/rust-lang/rust/issues/52808
+                f.write_str(self.encode_upper(&mut [0; $T::LENGTH]))
+            }
+        }
+
+        impl_adapter_from!($T<$($a),*>);
+    )+}
+}
+
+macro_rules! impl_adapter_from {
+    ($T:ident<>) => {
+        impl From<Uuid> for $T {
+            #[inline]
+            fn from(f: Uuid) -> Self {
+                $T::from_uuid(f)
+            }
+        }
+    };
+    ($T:ident<$a:lifetime>) => {
+        impl<$a> From<&$a Uuid> for $T<$a> {
+            #[inline]
+            fn from(f: &$a Uuid) -> Self {
+                $T::from_uuid_ref(f)
+            }
+        }
+    };
+}
+
+impl_adapter_traits! {
+    Hyphenated<>,
+    HyphenatedRef<'a>,
+    Simple<>,
+    SimpleRef<'a>,
+    Urn<>,
+    UrnRef<'a>
 }
 
 #[cfg(test)]

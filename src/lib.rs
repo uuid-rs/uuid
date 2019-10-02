@@ -114,7 +114,7 @@
 //!
 //! [`wasm-bindgen`]: https://github.com/rustwasm/wasm-bindgen
 
-#![cfg_attr(not(test), no_std)]
+#![no_std]
 #![deny(
     missing_copy_implementations,
     missing_debug_implementations,
@@ -126,10 +126,12 @@
     html_root_url = "https://docs.rs/uuid/0.7.4"
 )]
 
-#[cfg(feature = "std")]
+#[cfg(any(feature = "std", test))]
+#[macro_use]
 extern crate std;
 
-#[cfg(not(feature = "std"))]
+#[cfg(all(not(feature = "std"), not(test)))]
+#[macro_use]
 extern crate core as std;
 
 mod error;
@@ -568,8 +570,11 @@ impl Default for Uuid {
 
 #[cfg(test)]
 mod tests {
-    use super::test_util;
-    use crate::prelude::*;
+    use crate::{
+        std::string::{String, ToString},
+        test_util,
+        prelude::*,
+    };
 
     macro_rules! check {
         ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {

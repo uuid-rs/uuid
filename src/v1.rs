@@ -154,11 +154,14 @@ impl ClockSequence for Context {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
+    use crate::{
+        std::string::ToString,
+    };
+
     #[test]
     fn test_new_v1() {
-        use super::Context;
-        use crate::prelude::*;
-
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
         let node = [1, 2, 3, 4, 5, 6];

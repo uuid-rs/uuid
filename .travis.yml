@@ -38,6 +38,11 @@ matrix:
     - cargo build --target wasm32-unknown-unknown --features "v3 wasm-bindgen"
     - cargo build --target wasm32-unknown-unknown --features "v4 wasm-bindgen"
     - cargo build --target wasm32-unknown-unknown --features "v5 wasm-bindgen"
+  - rust: stable
+    before_script:
+    - rustup target add thumbv6m-none-eabi
+    script:
+    - cargo build --no-default-features --target thumbv6m-none-eabi
   - rust: 1.32.0
     script:
     - cargo test --features "serde std v4"

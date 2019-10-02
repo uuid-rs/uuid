@@ -40,7 +40,9 @@ impl Uuid {
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::*;
+    use super::*;
+
+    use crate::std::string::ToString;
 
     static FIXTURE: &'static [(&'static Uuid, &'static str, &'static str)] = &[
         (

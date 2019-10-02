@@ -1,4 +1,4 @@
-use std::fmt;
+use crate::std::fmt;
 
 /// An error that can occur while parsing a [`Uuid`] string.
 ///

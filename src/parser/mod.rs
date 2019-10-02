@@ -204,7 +204,11 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{adapter, test_util};
+    use crate::{
+        std::string::ToString,
+        adapter,
+        test_util
+    };
 
     #[test]
     fn test_parse_uuid_v4() {
