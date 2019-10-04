@@ -6,7 +6,7 @@ use serde_json;
 extern crate test;
 
 use test::Bencher;
-use uuid::prelude::*;
+use uuid::Uuid;
 
 #[bench]
 fn bench_json_encode(b: &mut Bencher) {

@@ -3,7 +3,7 @@
 extern crate test;
 
 use test::Bencher;
-use uuid::prelude::*;
+use uuid::Uuid;
 
 #[bench]
 fn bench_parse_valid_strings(b: &mut Bencher) {

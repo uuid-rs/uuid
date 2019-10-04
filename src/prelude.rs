@@ -19,12 +19,6 @@
 //! extern crate uuid;
 //! ```
 //!
-//! and the following in every module:
-//!
-//! ```rust
-//! use uuid::prelude::*;
-//! ```
-//!
 //! # Prelude Contents
 //!
 //! Currently the prelude reexports the following:

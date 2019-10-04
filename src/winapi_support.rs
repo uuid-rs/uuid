@@ -6,7 +6,7 @@ impl Uuid {
     /// Attempts to create a [`Uuid`] from a little endian winapi `GUID`
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    pub fn from_guid(guid: guiddef::GUID) -> Result<Uuid, crate::BytesError> {
+    pub fn from_guid(guid: guiddef::GUID) -> Result<Uuid, crate::Error> {
         Uuid::from_fields_le(
             guid.Data1 as u32,
             guid.Data2 as u16,
@@ -33,7 +33,9 @@ impl Uuid {
 #[cfg(feature = "guid")]
 #[cfg(test)]
 mod tests {
-    use crate::prelude::*;
+    use super::*;
+
+    use crate::std::string::ToString;
     use winapi::shared::guiddef;
 
     #[test]
