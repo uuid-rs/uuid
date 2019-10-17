@@ -119,7 +119,7 @@
 #![doc(
     html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
     html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-    html_root_url = "https://docs.rs/uuid/0.7.4"
+    html_root_url = "https://docs.rs/uuid/0.8.0"
 )]
 
 #[cfg(any(feature = "std", test))]
@@ -398,7 +398,22 @@ impl Uuid {
         (d1, d2, d3, d4)
     }
 
-    /// Returns a 128bit big-endian value containing the UUID data.
+    /// Returns a 128bit value containing the UUID data.
+    ///
+    /// The bytes in the UUID will be packed into a `u128`, like the `as_bytes`
+    /// method.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
+    /// assert_eq!(
+    ///     uuid.as_u128(),
+    ///     0x936DA01F9ABD4D9D80C702AF85C822A8,
+    /// )
+    /// ```
     pub fn as_u128(&self) -> u128 {
         u128::from(self.as_bytes()[0]) << 120
             | u128::from(self.as_bytes()[1]) << 112
@@ -419,6 +434,24 @@ impl Uuid {
     }
 
     /// Returns a 128bit little-endian value containing the UUID data.
+    ///
+    /// The bytes in the UUID will be reversed and packed into a `u128`.
+    /// Note that this will produce a different result than `to_fields_le`,
+    /// because the entire UUID is reversed, rather than reversing the
+    /// individual fields in-place.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
+    ///
+    /// assert_eq!(
+    ///     uuid.to_u128_le(),
+    ///     0xA822C885AF02C7809D4DBD9A1FA06D93,
+    /// )
+    /// ```
     pub fn to_u128_le(&self) -> u128 {
         u128::from(self.as_bytes()[0])
             | u128::from(self.as_bytes()[1]) << 8

@@ -66,24 +66,13 @@ pub(crate) enum ExpectedLength {
     Any(&'static [usize]),
     /// Expected the given value.
     Exact(usize),
-    /// Expected any values in the given range.
-    Range {
-        /// The minimum expected value.
-        min: usize,
-        /// The maximum expected value.
-        max: usize,
-    },
 }
 
 /// Urn prefix value.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub(crate) enum UrnPrefix {
-    /// No `urn:uuid:` prefix should be provided.
-    None,
     /// The `urn:uuid:` prefix should optionally provided.
     Optional,
-    /// The `urn:uuid:` prefix is required.
-    Required,
 }
 
 impl Error {
@@ -102,9 +91,6 @@ impl fmt::Display for ExpectedLength {
         match *self {
             ExpectedLength::Any(crits) => write!(f, "one of {:?}", crits),
             ExpectedLength::Exact(crit) => write!(f, "{}", crit),
-            ExpectedLength::Range { min, max } => {
-                write!(f, "{}..{} inclusive", min, max)
-            }
         }
     }
 }
@@ -121,12 +107,8 @@ impl fmt::Display for Error {
                 urn,
             } => {
                 let urn_str = match urn {
-                    UrnPrefix::None => "",
                     UrnPrefix::Optional => {
                         " an optional prefix of `urn:uuid:` followed by"
-                    }
-                    UrnPrefix::Required => {
-                        " a prefix of `urn:uuid` followed by"
                     }
                 };
 
