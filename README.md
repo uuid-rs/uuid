@@ -57,21 +57,21 @@ By default, `uuid` can be depended on with:
 
 ```toml
 [dependencies]
-uuid = "0.8.0"
+uuid = "0.8"
 ```
 
 To activate various features, use syntax like:
 
 ```toml
 [dependencies]
-uuid = { version = "0.8.0", features = ["serde", "v4"] }
+uuid = { version = "0.8", features = ["serde", "v4"] }
 ```
 
 You can disable default features with:
 
 ```toml
 [dependencies]
-uuid = { version = "0.8.0", default-features = false }
+uuid = { version = "0.8", default-features = false }
 ```
 
 ## Examples
