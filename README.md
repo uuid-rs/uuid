@@ -57,21 +57,21 @@ By default, `uuid` can be depended on with:
 
 ```toml
 [dependencies]
-uuid = "0.7"
+uuid = "0.8"
 ```
 
 To activate various features, use syntax like:
 
 ```toml
 [dependencies]
-uuid = { version = "0.7", features = ["serde", "v4"] }
+uuid = { version = "0.8", features = ["serde", "v4"] }
 ```
 
 You can disable default features with:
 
 ```toml
 [dependencies]
-uuid = { version = "0.7", default-features = false }
+uuid = { version = "0.8", default-features = false }
 ```
 
 ## Examples
@@ -116,7 +116,7 @@ Examples of string representations:
 
 [`wasm-bindgen`]: https://github.com/rustwasm/wasm-bindgen
 
-[`Uuid`]: https://docs.rs/uuid/0.7.4/uuid/struct.Uuid.html
+[`Uuid`]: https://docs.rs/uuid/0.8.0/uuid/struct.Uuid.html
 
 ---
 # License
