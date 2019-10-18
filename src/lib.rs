@@ -28,48 +28,48 @@
 //! # Dependencies
 //!
 //! By default, this crate depends on nothing but `std` and cannot generate
-//! [`Uuid`]s. You need to enable the following Cargo features to enable
+//! UUIDs. You need to enable the following Cargo features to enable
 //! various pieces of functionality:
 //!
-//! * `v1` - adds the `Uuid::new_v1` function and the ability to create a V1
-//!   using an implementation of `uuid::v1::ClockSequence` (usually
-//! `uuid::v1::Context`) and a timestamp from `time::timespec`.
-//! * `v3` - adds the `Uuid::new_v3` function and the ability to create a V3
+//! * `v1` - adds the [`Uuid::new_v1`] function and the ability to create a V1
+//!   using an implementation of [`v1::ClockSequence`] (usually
+//! [`v1::Context`]) and a timestamp from `time::timespec`.
+//! * `v3` - adds the [`Uuid::new_v3`] function and the ability to create a V3
 //!   UUID based on the MD5 hash of some data.
-//! * `v4` - adds the `Uuid::new_v4` function and the ability to randomly
-//!   generate a `Uuid`.
-//! * `v5` - adds the `Uuid::new_v5` function and the ability to create a V5
+//! * `v4` - adds the [`Uuid::new_v4`] function and the ability to randomly
+//!   generate a UUID.
+//! * `v5` - adds the [`Uuid::new_v5`] function and the ability to create a V5
 //!   UUID based on the SHA1 hash of some data.
-//! * `serde` - adds the ability to serialize and deserialize a `Uuid` using the
+//! * `serde` - adds the ability to serialize and deserialize a UUID using the
 //!   `serde` crate.
 //!
 //! You need to enable one of the following Cargo features together with
 //! `v3`, `v4` or `v5` feature if you're targeting `wasm32` architecture:
 //!
 //! * `stdweb` - enables support for `OsRng` on `wasm32-unknown-unknown` via
-//!   `stdweb` combined with `cargo-web`
-//! * `wasm-bindgen` - `wasm-bindgen` enables support for `OsRng` on
-//!   `wasm32-unknown-unknown` via [`wasm-bindgen`]
+//!   [`stdweb`] combined with [`cargo-web`]
+//! * `wasm-bindgen` - enables support for `OsRng` on `wasm32-unknown-unknown`
+//!   via [`wasm-bindgen`]
 //!
 //! By default, `uuid` can be depended on with:
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = "0.7"
+//! uuid = "0.8"
 //! ```
 //!
 //! To activate various features, use syntax like:
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = { version = "0.7", features = ["serde", "v4"] }
+//! uuid = { version = "0.8", features = ["serde", "v4"] }
 //! ```
 //!
 //! You can disable default features with:
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = { version = "0.7", default-features = false }
+//! uuid = { version = "0.8", default-features = false }
 //! ```
 //!
 //! # Examples
@@ -109,10 +109,21 @@
 //!
 //! # References
 //!
-//! * [Wikipedia: Universally Unique Identifier](     http://en.wikipedia.org/wiki/Universally_unique_identifier)
-//! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](     http://tools.ietf.org/html/rfc4122)
+//! * [Wikipedia: Universally Unique
+//!   Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
+//! * [RFC4122: A Universally Unique IDentifier (UUID) URN
+//!   Namespace](http://tools.ietf.org/html/rfc4122)
 //!
-//! [`wasm-bindgen`]: https://github.com/rustwasm/wasm-bindgen
+//! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+//! [`cargo-web`]: https://crates.io/crates/cargo-web
+//! [`stdweb`]: https://crates.io/crates/stdweb
+//! [`Uuid`]: struct.Uuid.html
+//! [`Uuid::new_v1`]: struct.Uuid.html#method.new_v1
+//! [`Uuid::new_v3`]: struct.Uuid.html#method.new_v3
+//! [`Uuid::new_v4`]: struct.Uuid.html#method.new_v4
+//! [`Uuid::new_v5`]: struct.Uuid.html#method.new_v5
+//! [`v1::ClockSequence`]: v1/trait.ClockSequence.html
+//! [`v1::Context`]: v1/struct.Context.html
 
 #![no_std]
 #![deny(missing_debug_implementations, missing_docs)]
@@ -191,32 +202,30 @@ pub type Bytes = [u8; 16];
 /// The version of the UUID, denoting the generating algorithm.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Version {
-    /// Special case for `nil` [`Uuid`].
-    ///
-    /// [`Uuid`]: struct.Uuid.html
+    /// Special case for `nil` UUID.
     Nil = 0,
-    /// Version 1: MAC address
+    /// Version 1: MAC address.
     Mac,
-    /// Version 2: DCE Security
+    /// Version 2: DCE Security.
     Dce,
-    /// Version 3: MD5 hash
+    /// Version 3: MD5 hash.
     Md5,
-    /// Version 4: Random
+    /// Version 4: Random.
     Random,
-    /// Version 5: SHA-1 hash
+    /// Version 5: SHA-1 hash.
     Sha1,
 }
 
 /// The reserved variants of UUIDs.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Variant {
-    /// Reserved by the NCS for backward compatibility
+    /// Reserved by the NCS for backward compatibility.
     NCS = 0,
-    /// As described in the RFC4122 Specification (default)
+    /// As described in the RFC4122 Specification (default).
     RFC4122,
-    /// Reserved by Microsoft for backward compatibility
+    /// Reserved by Microsoft for backward compatibility.
     Microsoft,
-    /// Reserved for future expansion
+    /// Reserved for future expansion.
     Future,
 }
 
@@ -225,39 +234,31 @@ pub enum Variant {
 pub struct Uuid(Bytes);
 
 impl Uuid {
-    /// [`Uuid`] namespace for Domain Name System (DNS).
-    ///
-    /// [`Uuid`]: struct.Uuid.html
+    /// UUID namespace for Domain Name System (DNS).
     pub const NAMESPACE_DNS: Self = Uuid([
         0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0,
         0x4f, 0xd4, 0x30, 0xc8,
     ]);
 
-    /// [`Uuid`] namespace for ISO Object Identifiers (OIDs).
-    ///
-    /// [`Uuid`]: struct.Uuid.html
+    /// UUID namespace for ISO Object Identifiers (OIDs).
     pub const NAMESPACE_OID: Self = Uuid([
         0x6b, 0xa7, 0xb8, 0x12, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0,
         0x4f, 0xd4, 0x30, 0xc8,
     ]);
 
-    /// [`Uuid`] namespace for Uniform Resource Locators (URLs).
-    ///
-    /// [`Uuid`]: struct.Uuid.html
+    /// UUID namespace for Uniform Resource Locators (URLs).
     pub const NAMESPACE_URL: Self = Uuid([
         0x6b, 0xa7, 0xb8, 0x11, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0,
         0x4f, 0xd4, 0x30, 0xc8,
     ]);
 
-    /// [`Uuid`] namespace for X.500 Distinguished Names (DNs).
-    ///
-    /// [`Uuid`]: struct.Uuid.html
+    /// UUID namespace for X.500 Distinguished Names (DNs).
     pub const NAMESPACE_X500: Self = Uuid([
         0x6b, 0xa7, 0xb8, 0x14, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0,
         0x4f, 0xd4, 0x30, 0xc8,
     ]);
 
-    /// Returns the variant of the `Uuid` structure.
+    /// Returns the variant of the UUID structure.
     ///
     /// This determines the interpretation of the structure of the UUID.
     /// Currently only the RFC4122 variant is generated by this module.
@@ -273,7 +274,7 @@ impl Uuid {
         }
     }
 
-    /// Returns the version number of the `Uuid`.
+    /// Returns the version number of the UUID.
     ///
     /// This represents the algorithm used to generate the contents.
     ///
@@ -288,7 +289,7 @@ impl Uuid {
         (self.as_bytes()[6] >> 4) as usize
     }
 
-    /// Returns the version of the `Uuid`.
+    /// Returns the version of the UUID.
     ///
     /// This represents the algorithm used to generate the contents
     pub fn get_version(&self) -> Option<Version> {
@@ -400,8 +401,8 @@ impl Uuid {
 
     /// Returns a 128bit value containing the UUID data.
     ///
-    /// The bytes in the UUID will be packed into a `u128`, like the `as_bytes`
-    /// method.
+    /// The bytes in the UUID will be packed into a `u128`, like the
+    /// [`Uuid::as_bytes`] method.
     ///
     /// # Examples
     ///
@@ -436,9 +437,9 @@ impl Uuid {
     /// Returns a 128bit little-endian value containing the UUID data.
     ///
     /// The bytes in the UUID will be reversed and packed into a `u128`.
-    /// Note that this will produce a different result than `to_fields_le`,
-    /// because the entire UUID is reversed, rather than reversing the
-    /// individual fields in-place.
+    /// Note that this will produce a different result than
+    /// [`Uuid::to_fields_le`], because the entire UUID is reversed, rather
+    /// than reversing the individual fields in-place.
     ///
     /// # Examples
     ///
@@ -472,12 +473,11 @@ impl Uuid {
     }
 
     /// Returns an array of 16 octets containing the UUID data.
-    /// This method wraps [`Uuid::as_bytes`]
     pub const fn as_bytes(&self) -> &Bytes {
         &self.0
     }
 
-    /// Tests if the UUID is nil
+    /// Tests if the UUID is nil.
     pub fn is_nil(&self) -> bool {
         self.as_bytes().iter().all(|&b| b == 0)
     }

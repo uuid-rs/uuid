@@ -9,9 +9,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! Adapters for various formats for [`Uuid`]s
-//!
-//! [`Uuid`]: ../struct.Uuid.html
+//! Adapters for various formats for UUIDs
 
 use crate::prelude::*;
 use crate::std::{fmt, str};
@@ -68,43 +66,39 @@ pub struct Urn(Uuid);
 pub struct UrnRef<'a>(&'a Uuid);
 
 impl Uuid {
-    /// Creates a [`Hyphenated`] instance from a [`Uuid`].
+    /// Get a [`Hyphenated`] formatter.
     ///
-    /// [`Uuid`]: ../struct.Uuid.html
     /// [`Hyphenated`]: adapter/struct.Hyphenated.html
     #[inline]
     pub const fn to_hyphenated(self) -> Hyphenated {
         Hyphenated::from_uuid(self)
     }
 
-    /// Creates a [`HyphenatedRef`] instance from a [`Uuid`] reference.
+    /// Get a borrowed [`HyphenatedRef`] formatter.
     ///
-    /// [`Uuid`]: ../struct.Uuid.html
     /// [`HyphenatedRef`]: adapter/struct.HyphenatedRef.html
     #[inline]
     pub const fn to_hyphenated_ref(&self) -> HyphenatedRef<'_> {
         HyphenatedRef::from_uuid_ref(self)
     }
 
-    /// Creates a [`Simple`] instance from a [`Uuid`].
+    /// Get a [`Simple`] formatter.
     ///
-    /// [`Uuid`]: ../struct.Uuid.html
     /// [`Simple`]: adapter/struct.Simple.html
     #[inline]
     pub const fn to_simple(self) -> Simple {
         Simple::from_uuid(self)
     }
 
-    /// Creates a [`SimpleRef`] instance from a [`Uuid`] reference.
+    /// Get a borrowed [`SimpleRef`] formatter.
     ///
-    /// [`Uuid`]: ../struct.Uuid.html
     /// [`SimpleRef`]: adapter/struct.SimpleRef.html
     #[inline]
     pub const fn to_simple_ref(&self) -> SimpleRef<'_> {
         SimpleRef::from_uuid_ref(self)
     }
 
-    /// Creates a [`Urn`] instance from a [`Uuid`].
+    /// Get a [`Urn`] formatter.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`Urn`]: adapter/struct.Urn.html
@@ -113,7 +107,7 @@ impl Uuid {
         Urn::from_uuid(self)
     }
 
-    /// Creates a [`UrnRef`] instance from a [`Uuid`] reference.
+    /// Get a borrowed [`UrnRef`] formatter.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UrnRef`]: adapter/struct.UrnRef.html

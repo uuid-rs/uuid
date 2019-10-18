@@ -1,5 +1,5 @@
 //! Module for use with `#[serde(with = "...")]` to serialize a [`Uuid`]
-//! as a `[u8; 16]
+//! as a `[u8; 16]`.
 //!
 //! [`Uuid`]: ../../struct.Uuid.html
 
