@@ -12,6 +12,8 @@ jobs:
         run: cargo build --verbose
       - name: Test
         run: cargo build --verbose
+      - name: Install nightly
+        run: rustup install nightly
       - name: Release Build
         run: cargo +nightly build --verbose --release
       - name: Benchmark
