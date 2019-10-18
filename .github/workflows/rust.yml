@@ -13,6 +13,6 @@ jobs:
       - name: Test
         run: cargo build --verbose
       - name: Release Build
-        run: cargo build --verbose --release
+        run: cargo +nightly build --verbose --release
       - name: Benchmark
-        run: cargo bench --verbose
+        run: cargo +nightly bench --verbose
