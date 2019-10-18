@@ -2,7 +2,7 @@ use crate::prelude::*;
 use rand;
 
 impl Uuid {
-    /// Creates a random [`Uuid`].
+    /// Creates a random UUID.
     ///
     /// This uses the [`rand`] crate's default task RNG as the source of random
     /// numbers. If you'd like to use a custom generator, don't use this
@@ -22,7 +22,6 @@ impl Uuid {
     /// ```
     ///
     /// [`rand`]: https://crates.io/crates/rand
-    /// [`Uuid`]: ../struct.Uuid.html
     pub fn new_v4() -> Self {
         use rand::RngCore;
 

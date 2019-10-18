@@ -1,14 +1,7 @@
 use crate::std::fmt;
 use crate::{builder, parser};
 
-/// A general error that can occur when handling [`Uuid`]s.
-///
-/// Although specialized error types exist in the crate,
-/// sometimes where particular error type occurred is hidden
-/// until errors need to be handled. This allows to enumerate
-/// the errors.
-///
-/// [`Uuid`]: struct.Uuid.html
+/// A general error that can occur when working with UUIDs.
 // TODO: improve the doc
 // BODY: This detail should be fine for initial merge
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]

@@ -2,7 +2,7 @@ use crate::prelude::*;
 use md5;
 
 impl Uuid {
-    /// Creates a [`Uuid`] using a name from a namespace, based on the MD5
+    /// Creates a UUID using a name from a namespace, based on the MD5
     /// hash.
     ///
     /// A number of namespaces are available as constants in this crate:
@@ -15,11 +15,10 @@ impl Uuid {
     /// Note that usage of this method requires the `v3` feature of this crate
     /// to be enabled.
     ///
-    /// [`NAMESPACE_DNS`]: ../ns/const.NAMESPACE_DNS.html
-    /// [`NAMESPACE_OID`]: ../ns/const.NAMESPACE_OID.html
-    /// [`NAMESPACE_URL`]: ../ns/const.NAMESPACE_URL.html
-    /// [`NAMESPACE_X500`]: ../ns/const.NAMESPACE_X500.html
-    /// [`Uuid`]: ../struct.Uuid.html
+    /// [`NAMESPACE_DNS`]: ns/const.NAMESPACE_DNS.html
+    /// [`NAMESPACE_OID`]: ns/const.NAMESPACE_OID.html
+    /// [`NAMESPACE_URL`]: ns/const.NAMESPACE_URL.html
+    /// [`NAMESPACE_X500`]: ns/const.NAMESPACE_X500.html
     pub fn new_v3(namespace: &Uuid, name: &[u8]) -> Uuid {
         let mut context = md5::Context::new();
 
