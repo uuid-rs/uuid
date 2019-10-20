@@ -11,11 +11,10 @@ jobs:
       - name: Install Toolchain
         uses: actions-rs/toolchain@v1
         with:
+          components: rustfmt
+          override: true
           profile: minimal
           toolchain: 1.32.0
-          override: true
-      - name: Install `rustfmt`
-        run:  rustup component add rustfmt
       - name: Run `cargo fmt`
         uses: actions-rs/cargo@v1
         with:
