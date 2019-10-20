@@ -15,7 +15,6 @@ matrix:
     - rustup component add rustfmt-preview
     - cargo install cargo-web
     script:
-    - cargo fmt --all -- --check
     - cargo test --features "serde std v1 v3 v4 v5"
     - cargo bench --features "serde std v1 v3 v4 v5"
     - cargo web build --features "v3 stdweb"
