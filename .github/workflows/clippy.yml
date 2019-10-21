@@ -1,0 +1,66 @@
+name: Clippy
+
+on: [push, pull_request]
+
+jobs:
+  Mac:
+   runs-on: macOS-latest
+   steps:
+     - name: Checkout
+       uses: actions/checkout@v1
+     - name: Install Toolchain
+       uses: actions-rs/toolchain@v1
+       with:
+         components: clippy
+         override: true
+         profile: minimal
+         toolchain: 1.32.0
+     - name: Run `cargo clippy`
+       uses: actions-rs/cargo@v1
+       with:
+         command: clippy
+         args: --features "serde slog std v1 v3 v4 v5"
+  Linux:
+   runs-on: ubuntu-latest
+   steps:
+     - name: Checkout
+       uses: actions/checkout@v1
+     - name: Install Toolchain
+       uses: actions-rs/toolchain@v1
+       with:
+         components: clippy
+         override: true
+         profile: minimal
+         toolchain: 1.32.0
+     - name: Run `cargo clippy`
+       uses: actions-rs/cargo@v1
+       with:
+         command: clippy
+         args: --features "serde slog std v1 v3 v4 v5"
+  Windows:
+   runs-on: windows-latest
+   steps:
+     - name: Checkout
+       uses: actions/checkout@v1
+     - name: Install Toolchain
+       uses: actions-rs/toolchain@v1
+       with:
+         components: clippy
+         override: true
+         profile: minimal
+         toolchain: 1.32.0
+     - name: Run `cargo clippy`
+       uses: actions-rs/cargo@v1
+       with:
+         command: clippy
+         args: --features "guid serde slog std v1 v3 v4 v5"
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Build
+      run: cargo build --verbose
+    - name: Run tests
+      run: cargo test --verbose
