@@ -54,13 +54,3 @@ jobs:
        with:
          command: clippy
          args: --features "guid serde slog std v1 v3 v4 v5"
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v1
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
