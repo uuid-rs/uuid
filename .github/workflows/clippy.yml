@@ -3,9 +3,9 @@ name: Clippy
 on: [push, pull_request]
 
 jobs:
-  mac-clippy
-   runs-on: macOS-latest
-   steps:
+  macClippy:
+    runs-on: macOS-latest
+    steps:
      - name: Checkout
        uses: actions/checkout@v1
      - name: Install Toolchain
