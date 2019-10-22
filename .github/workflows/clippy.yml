@@ -3,7 +3,8 @@ name: Clippy
 on: [push, pull_request]
 
 jobs:
-  macClippy:
+  mac-clippy:
+    name: macOS
     runs-on: macOS-latest
     steps:
      - name: Checkout
@@ -21,6 +22,7 @@ jobs:
          command: clippy
          args: --features "serde slog std v1 v3 v4 v5"
   linux-clippy:
+   name: Linux
    runs-on: ubuntu-latest
    steps:
      - name: Checkout
@@ -38,6 +40,7 @@ jobs:
          command: clippy
          args: --features "serde slog std v1 v3 v4 v5"
   windows-clippy:
+   name: Windows
    runs-on: windows-latest
    steps:
      - name: Checkout
