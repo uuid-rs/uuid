@@ -103,7 +103,7 @@ impl Timestamp {
         (
             (self.ticks - UUID_TICKS_BETWEEN_EPOCHS) / 10_000_000,
             ((self.ticks - UUID_TICKS_BETWEEN_EPOCHS) % 10_000_000) as u32
-                * 100
+                * 100,
         )
     }
 
