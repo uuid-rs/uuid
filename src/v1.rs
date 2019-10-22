@@ -102,7 +102,8 @@ impl Timestamp {
     pub const fn to_unix(&self) -> (u64, u32) {
         (
             (self.ticks - UUID_TICKS_BETWEEN_EPOCHS) / 10_000_000,
-            ((self.ticks - UUID_TICKS_BETWEEN_EPOCHS) % 10_000_000) as u32 * 100
+            ((self.ticks - UUID_TICKS_BETWEEN_EPOCHS) % 10_000_000) as u32
+                * 100
         )
     }
 
