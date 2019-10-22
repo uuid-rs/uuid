@@ -53,7 +53,7 @@ jobs:
          profile: minimal
          toolchain: 1.32.0
      - name: Run `cargo clippy`
-       uses: actions-rs/clippy-check@v1
+       uses: actions-rs/cargo@v1
        with:
+         command: clippy
          args: --all-features -- -D warnings
-         token: ${{ secrets.GITHUB_TOKEN }}
