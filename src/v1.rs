@@ -77,7 +77,8 @@ impl Timestamp {
         let counter = context.generate_sequence(seconds, subsec_nanos);
         let ticks = UUID_TICKS_BETWEEN_EPOCHS
             + seconds * 10_000_000
-            + (subsec_nanos as u64 / 100);
+            + u64::from(subsec_nanos) / 100;
+
         Timestamp { ticks, counter }
     }
 
@@ -99,10 +100,10 @@ impl Timestamp {
     /// thus the maximum precision represented by the fractional nanoseconds
     /// value is less than its unit size (100 ns vs. 1 ns).
     pub const fn to_unix(&self) -> (u64, u32) {
-        let unix_ticks = self.ticks - UUID_TICKS_BETWEEN_EPOCHS;
         (
-            unix_ticks / 10_000_000,
-            (unix_ticks % 10_000_000) as u32 * 100,
+            (self.ticks - UUID_TICKS_BETWEEN_EPOCHS) / 10_000_000,
+            ((self.ticks - UUID_TICKS_BETWEEN_EPOCHS) % 10_000_000) as u32
+                * 100,
         )
     }
 

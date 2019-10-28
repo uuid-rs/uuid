@@ -138,6 +138,7 @@ const HYPHEN_POSITIONS: [usize; 4] = [8, 13, 18, 23];
 /// The `start` parameter allows writing a prefix (such as
 /// "urn:uuid:") to the buffer that's included in the final encoded
 /// UUID.
+#[allow(clippy::needless_range_loop)]
 fn encode<'a>(
     full_buffer: &'a mut [u8],
     start: usize,

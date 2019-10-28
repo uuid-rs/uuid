@@ -467,8 +467,6 @@ impl Builder {
     ///
     /// [`Uuid`]: struct.Uuid.html
     pub fn build(&mut self) -> Uuid {
-        let uuid = Uuid::from_bytes(self.0);
-
-        uuid
+        Uuid::from_bytes(self.0)
     }
 }

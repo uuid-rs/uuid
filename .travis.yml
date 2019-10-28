@@ -34,12 +34,10 @@ matrix:
       - cargo web build --features "v5 wasm-bindgen"
   - rust: stable
     env:
-    - LABEL="clippy + wasm"
+    - LABEL="wasm"
     before_script:
-    - rustup component add clippy-preview
     - rustup target add wasm32-unknown-unknown
     script:
-    - cargo clippy --features "v1 v3 v4 v5 slog"
     - cargo build --target wasm32-unknown-unknown --features "v3 wasm-bindgen"
     - cargo build --target wasm32-unknown-unknown --features "v4 wasm-bindgen"
     - cargo build --target wasm32-unknown-unknown --features "v5 wasm-bindgen"
