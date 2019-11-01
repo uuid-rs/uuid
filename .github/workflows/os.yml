@@ -21,7 +21,7 @@ jobs:
           profile: minimal
           toolchain: ${{ matrix.toolchain }}
       - name: Debug Build ( Features ${{ matrix.features }} )
-        uses: actions-rs/cargo
+        uses: actions-rs/cargo@v1
         with:
           command: build --deb
           args: --features ${{ matrix.features }} --verbose
