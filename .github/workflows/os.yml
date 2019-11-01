@@ -6,7 +6,7 @@ jobs:
   job:
     strategy:
       matrix:
-        features: ["", "v1"]
+        features: ["\"\"", "\"v1\""]
         toolchain: [1.32.0, stable, beta, nightly]
         os: [ubuntu-latest, macOS-latest]
     name: ${{ matrix.os }} (${{ matrix.toolchain }}) - Features (${{ matrix.features }})
