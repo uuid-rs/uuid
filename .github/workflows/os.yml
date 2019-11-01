@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   job:
     strategy:
+      max-parallel: 2
       matrix:
         features: ["\"\"", "\"v1\""]
         toolchain: [1.32.0, stable, beta, nightly]
