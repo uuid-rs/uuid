@@ -56,7 +56,7 @@ repository = "uuid-rs/uuid"
 
 [dependencies.md5]
 optional = true
-version = "0.6"
+version = "0.7"
 
 [dependencies.rand]
 optional = true
