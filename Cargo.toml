@@ -54,11 +54,11 @@ status = "actively-developed"
 [badges.travis-ci]
 repository = "uuid-rs/uuid"
 
-[dependencies.md5]
+[dependencies.getrandom]
 optional = true
-version = "0.7"
+version = "0.1"
 
-[dependencies.rand]
+[dependencies.md5]
 optional = true
 version = "0.7"
 
@@ -92,12 +92,12 @@ version = "1.0.56"
 default = ["std"]
 guid = ["winapi"]
 std = []
-stdweb = [ "rand/stdweb" ]
+stdweb = ["getrandom"]
 v1 = []
 v3 = ["md5"]
-v4 = ["rand"]
+v4 = ["getrandom"]
 v5 = ["sha1"]
-wasm-bindgen = ["rand/wasm-bindgen"]
+wasm-bindgen = ["getrandom"]
 
 [target.'cfg(windows)'.dependencies.winapi]
 optional = true
