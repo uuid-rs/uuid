@@ -22,6 +22,7 @@ impl Uuid {
     ///
     /// [`getrandom`]: https://crates.io/crates/getrandom
     /// [`rand`]: https://crates.io/crates/rand
+    // TODO: change signature to support uuid's Error.
     pub fn new_v4() -> Result<Uuid, getrandom::Error> {
         let mut bytes = [0u8; 16];
         getrandom::getrandom(&mut bytes)?;
