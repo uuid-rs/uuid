@@ -1,12 +1,11 @@
 use crate::prelude::*;
-use rand;
 
 impl Uuid {
     /// Creates a random UUID.
     ///
-    /// This uses the [`rand`] crate's default task RNG as the source of random
-    /// numbers. If you'd like to use a custom generator, don't use this
-    /// method: use the `rand::Rand trait`'s `rand()` method instead.
+    /// This uses the [`getrandom`] crate to utilise the operating system's RNG
+    /// as the source of random numbers. If you'd like to use a custom generator,
+    /// don't use this method: use the `rand::Rand trait`'s `rand()` method instead.
     ///
     /// Note that usage of this method requires the `v4` feature of this crate
     /// to be enabled.
@@ -21,19 +20,18 @@ impl Uuid {
     /// let uuid = Uuid::new_v4();
     /// ```
     ///
+    /// [`getrandom`]: https://crates.io/crates/getrandom
     /// [`rand`]: https://crates.io/crates/rand
-    pub fn new_v4() -> Self {
-        use rand::RngCore;
+    // TODO: change signature to support uuid's Error.
+    pub fn new_v4() -> Result<Uuid, getrandom::Error> {
+        let mut bytes = [0u8; 16];
+        getrandom::getrandom(&mut bytes)?;
 
-        let mut rng = rand::thread_rng();
-        let mut bytes = [0; 16];
-
-        rng.fill_bytes(&mut bytes);
-
-        Builder::from_bytes(bytes)
+        let uuid = crate::builder::Builder::from_bytes(bytes)
             .set_variant(Variant::RFC4122)
             .set_version(Version::Random)
-            .build()
+            .build();
+        Ok(uuid)
     }
 }
 
@@ -43,7 +41,7 @@ mod tests {
 
     #[test]
     fn test_new() {
-        let uuid = Uuid::new_v4();
+        let uuid = Uuid::new_v4().unwrap();
 
         assert_eq!(uuid.get_version(), Some(Version::Random));
         assert_eq!(uuid.get_variant(), Some(Variant::RFC4122));
@@ -51,7 +49,7 @@ mod tests {
 
     #[test]
     fn test_get_version() {
-        let uuid = Uuid::new_v4();
+        let uuid = Uuid::new_v4().unwrap();
 
         assert_eq!(uuid.get_version(), Some(Version::Random));
         assert_eq!(uuid.get_version_num(), 4)
