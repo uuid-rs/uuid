@@ -6,13 +6,15 @@ impl Uuid {
     /// Attempts to create a [`Uuid`] from a little endian winapi `GUID`
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    pub fn from_guid(guid: guiddef::GUID) -> Result<Uuid, crate::Error> {
-        Uuid::from_fields_le(
+    pub fn from_guid(guid: guiddef::GUID) -> Self {
+        let Ok(uuid) = Uuid::from_fields_le(
             guid.Data1 as u32,
             guid.Data2 as u16,
             guid.Data3 as u16,
             &(guid.Data4 as [u8; 8]),
-        )
+        );
+
+        uuid
     }
 
     /// Converts a [`Uuid`] into a little endian winapi `GUID`
