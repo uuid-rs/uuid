@@ -3,18 +3,17 @@ use winapi::shared::guiddef;
 
 #[cfg(feature = "guid")]
 impl Uuid {
-    /// Attempts to create a [`Uuid`] from a little endian winapi `GUID`
+    /// Converts a little endian winapi `GUID` into a [`Uuid`]
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     pub fn from_guid(guid: guiddef::GUID) -> Self {
-        let Ok(uuid) = Uuid::from_fields_le(
+        Uuid::from_fields_le(
             guid.Data1 as u32,
             guid.Data2 as u16,
             guid.Data3 as u16,
             &(guid.Data4 as [u8; 8]),
-        );
-
-        uuid
+        ).unwrap() // Note: The result in this particular instance is always Ok, so we can
+                   //       safely unwrap.
     }
 
     /// Converts a [`Uuid`] into a little endian winapi `GUID`
