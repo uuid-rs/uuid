@@ -49,7 +49,7 @@ mod tests {
             Data4: [0x86, 0x47, 0x9d, 0xc5, 0x4e, 0x1e, 0xe1, 0xe8],
         };
 
-        let uuid = Uuid::from_guid(guid).unwrap();
+        let uuid = Uuid::from_guid(guid);
         assert_eq!(
             "9d22354a-2755-304f-8647-9dc54e1ee1e8",
             uuid.to_hyphenated().to_string()
@@ -65,7 +65,7 @@ mod tests {
             Data4: [0x86, 0x47, 0x9d, 0xc5, 0x4e, 0x1e, 0xe1, 0xe8],
         };
 
-        let uuid = Uuid::from_guid(guid_in).unwrap();
+        let uuid = Uuid::from_guid(guid_in);
         let guid_out = uuid.to_guid();
 
         assert_eq!(
