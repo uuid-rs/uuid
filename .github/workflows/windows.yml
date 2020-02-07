@@ -17,5 +17,6 @@ jobs:
           override: true
       - name: Build
         uses: actions-rs/cargo@v1
-        command: build
-        args: --all-features
+        with:
+          command: build
+          args: --all-features
