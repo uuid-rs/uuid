@@ -3,18 +3,19 @@ name: Windows
 on: [push, pull_request]
 
 jobs:
-  name: Windows-x86_64-MSVC
-  runs: windows-latest
-  steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-    - name: Install Toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        target: x86_64-pc-windows-msvc
-        toolchain: nightly
-        override: true
-    - name: Build
-      uses: actions-rs/cargo@v1
-      command: build
-      args: --all-features
+  windows-x86_64-msvc:
+    name: Windows-x86_64-MSVC
+    runs: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Install Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          target: x86_64-pc-windows-msvc
+          toolchain: nightly
+          override: true
+      - name: Build
+        uses: actions-rs/cargo@v1
+        command: build
+        args: --all-features
