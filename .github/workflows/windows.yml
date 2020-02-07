@@ -38,11 +38,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Install Toolchain
-          uses: actions-rs/toolchain@v1
-          with:
-            target: x86_64-pc-windows-gnu
-            toolchain: nightly
-            override: true
+        uses: actions-rs/toolchain@v1
+        with:
+          target: x86_64-pc-windows-gnu
+          toolchain: nightly
+          override: true
       - name: Build
         uses: actions-rs/cargo@v1
         with:
@@ -66,11 +66,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Install Toolchain
-          uses: actions-rs/toolchain@v1
-          with:
-            target: i686-pc-windows-msvc
-            toolchain: nightly
-            override: true
+        uses: actions-rs/toolchain@v1
+        with:
+          target: i686-pc-windows-msvc
+          toolchain: nightly
+          override: true
       - name: Build
         uses: actions-rs/cargo@v1
         with:
@@ -94,11 +94,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Install Toolchain
-          uses: actions-rs/toolchain@v1
-          with:
-            target: i686-pc-windows-gnu
-            toolchain: nightly
-            override: true
+        uses: actions-rs/toolchain@v1
+        with:
+          target: i686-pc-windows-gnu
+          toolchain: nightly
+          override: true
       - name: Build
         uses: actions-rs/cargo@v1
         with:
