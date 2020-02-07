@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   windows-x86_64-msvc:
     name: Windows-x86_64-MSVC
-    runs: windows-latest
+    runs-on: windows-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v1
