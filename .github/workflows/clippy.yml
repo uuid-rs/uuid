@@ -38,6 +38,7 @@ jobs:
         with:
           command: clippy
           args: --features $CLIPPY_UNIX_FEATURES -- -D warnings
+        if: runner.os == 'macOS' || runner.os == 'Linux'
 
     strategy:
       matrix:
