@@ -1,41 +1,45 @@
 name: Clippy
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+
+env:
+  CLIPPY_WINDOWS_FEATURES: "'guid serde slog std v1 v3 v4 v5'"
+  CLIPPY_UNIX_FEATURES: "'serde slog std v1 v3 v4 v5'"
 
 jobs:
-  linux-clippy:
-   name: Linux
-   runs-on: ubuntu-latest
-   steps:
-     - name: Checkout
-       uses: actions/checkout@v1
-     - name: Install Toolchain
-       uses: actions-rs/toolchain@v1
-       with:
-         components: clippy
-         override: true
-         profile: minimal
-         toolchain: 1.32.0
-     - name: Run `cargo clippy`
-       uses: actions-rs/cargo@v1
-       with:
-         command: clippy
-         args: --features "serde slog std v1 v3 v4 v5" -- -D warnings
-  windows-clippy:
-   name: Windows
-   runs-on: windows-latest
-   steps:
-     - name: Checkout
-       uses: actions/checkout@v1
-     - name: Install Toolchain
-       uses: actions-rs/toolchain@v1
-       with:
-         components: clippy
-         override: true
-         profile: minimal
-         toolchain: 1.32.0
-     - name: Run `cargo clippy`
-       uses: actions-rs/cargo@v1
-       with:
-         command: clippy
-         args: --features "guid serde slog std v1 v3 v4 v5" -- -D warnings
+  clippy:
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install Rust Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          components: clippy
+          override: true
+          profile: minimal
+          toolchain: 1.32.0
+
+      - name: Run Clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --features $CLIPPY_WINDOWS_FEATURES -- -D warnings
+        if: runner.os == 'Windows'
+
+      - name: Run Clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --features $CLIPPY_UNIX_FEATURES -- -D warnings
+
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
