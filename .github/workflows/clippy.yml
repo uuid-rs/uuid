@@ -6,10 +6,6 @@ on:
       - 'master'
   pull_request:
 
-env:
-  CLIPPY_WINDOWS_FEATURES: "'guid serde slog std v1 v3 v4 v5'"
-  CLIPPY_UNIX_FEATURES: "'serde slog std v1 v3 v4 v5'"
-
 jobs:
   clippy:
     runs-on: ${{ matrix.os }}
@@ -30,14 +26,14 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features $CLIPPY_WINDOWS_FEATURES -- -D warnings
+          args: --features 'guid serde slog std v1 v3 v4 v5' -- -D warnings
         if: runner.os == 'Windows'
 
       - name: Run Clippy
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features $CLIPPY_UNIX_FEATURES -- -D warnings
+          args: --features 'serde slog std v1 v3 v4 v5' -- -D warnings
         if: runner.os == 'macOS' || runner.os == 'Linux'
 
     strategy:
