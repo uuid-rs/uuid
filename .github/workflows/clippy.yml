@@ -1,5 +1,3 @@
-name: Clippy
-
 on:
   push:
     branches:
@@ -8,6 +6,7 @@ on:
 
 jobs:
   clippy:
+    name: Clippy ( ${{ matrix.os }} )
     runs-on: ${{ matrix.os }}
 
     steps:
