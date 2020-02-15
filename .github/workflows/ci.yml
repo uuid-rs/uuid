@@ -11,16 +11,16 @@ on:
 
 jobs:
   clippy:
-    name: clippy (${{ matrix.os_name }})
+    name: clippy-${{ matrix.os_name }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
           - os: ubuntu-latest
-            os_name: Linux
+            os_name: ubuntu
             features: '"std v1 v3 v4 v5"'
           - os: windows-latest
-            os_name: Windows
+            os_name: windows
             features: '"guid std v1 v3 v4 v5"'
         os:
           - ubuntu-latest
@@ -42,4 +42,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features ${{ matrix.features }}
+          args: --features ${{ matrix.features }} -- -D warnings
