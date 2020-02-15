@@ -41,8 +41,8 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --no-default-features --features ${{ matrix.features }} -- -D
-          warnings
+          args: |
+          --no-default-features --features ${{ matrix.features }} -- -D warnings
   fmt:
     name: fmt
     runs-on: ubuntu-latest
