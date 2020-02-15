@@ -18,7 +18,7 @@ unique 128-bit number, stored as 16 octets. UUIDs are used to  assign
 unique identifiers to entities without requiring a central allocating
 authority.
 
-They are particularly useful in distributed systems, though can be used in
+They are particularly useful in distributed systems, though they can be used in
 disparate areas, such as databases and network protocols.  Typically a UUID
 is displayed in a readable string form as a sequence of hexadecimal digits,
 separated into groups by hyphens.
