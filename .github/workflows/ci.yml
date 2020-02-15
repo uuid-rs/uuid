@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - master
-      - c
   schedule:
     - cron: '00 0 * * *'
 
@@ -13,6 +12,7 @@ jobs:
   clippy:
     name: clippy-${{ matrix.os_name }}
     runs-on: ${{ matrix.os }}
+
     strategy:
       matrix:
         include:
@@ -25,8 +25,8 @@ jobs:
         os:
           - ubuntu-latest
           - windows-latest
-    steps:
 
+    steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
@@ -43,3 +43,25 @@ jobs:
         with:
           command: clippy
           args: --features ${{ matrix.features }} -- -D warnings
+
+  fmt:
+    name: fmt
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Install Rust
+        uses: actions-rs/toolchain
+        with:
+          toolchain: 1.32.0
+          override: true
+          profile: minimal
+          components: rustfmt
+
+      - name: Rustfmt Check
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
