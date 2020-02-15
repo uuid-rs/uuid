@@ -26,7 +26,7 @@ jobs:
           - ubuntu-latest
           - windows-latest
         prefix:
-          - '-no-default-features'
+          - '--no-default-features'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
