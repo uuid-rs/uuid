@@ -43,6 +43,7 @@ jobs:
           command: clippy
           args: |
           --no-default-features --features ${{ matrix.features }} -- -D warnings
+
   fmt:
     name: fmt
     runs-on: ubuntu-latest
