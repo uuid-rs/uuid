@@ -5,24 +5,25 @@ on:
   push:
     branches:
       - master
+      - c
   schedule:
     - cron: '00 0 * * *'
 
 jobs:
   clippy:
-    name: clippy ( ${{ matrix.os_name }} )
+    name: clippy (${{ matrix.os_name }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
-          - os: linux-latest
+          - os: ubuntu-latest
             os_name: Linux
             features: '"std v1 v3 v4 v5"'
           - os: windows-latest
             os_name: Windows
             features: '"guid std v1 v3 v4 v5"'
         os:
-          - linux-latest
+          - ubuntu-latest
           - windows-latest
     steps:
 
