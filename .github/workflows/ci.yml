@@ -25,8 +25,6 @@ jobs:
         os:
           - ubuntu-latest
           - windows-latest
-        prefix:
-          - '--no-default-features'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -43,7 +41,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: ${{ matrix.prefix }} ${{ matrix.features }} -- -D
+          args: --no-default-features --features ${{ matrix.features }} -- -D
           warnings
   fmt:
     name: fmt
@@ -95,7 +93,7 @@ jobs:
               - macOS-latest
               - ubuntu-latest
             features:
-              - '--no-default-features'
+              - '' # --no-default-features (implicit)
               - '--all-features'
         os:
           - macOS-latest
@@ -117,3 +115,9 @@ jobs:
           toolchain: ${{ matrix.toolchain }}
           override: true
           profile: minimal
+
+      - name: Run Build
+        uses: actions-rs/cargo
+        with:
+          command: build
+          args: --no-default-features ${{ matrix.features }}
