@@ -25,7 +25,8 @@ jobs:
         os:
           - ubuntu-latest
           - windows-latest
-
+        prefix:
+          - '-no-default-features'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -42,10 +43,8 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: ${{ env.FEATURE_PREFIX }} ${{ matrix.features }} -- -D
+          args: ${{ matrix.prefix }} ${{ matrix.features }} -- -D
           warnings
-        env:
-          FEATURE_PREFIX: "--no-default-features --features"
   fmt:
     name: fmt
     runs-on: ubuntu-latest
