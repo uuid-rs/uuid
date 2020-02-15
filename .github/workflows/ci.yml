@@ -42,8 +42,10 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: --features ${{ matrix.features }} -- -D warnings
-
+          args: ${{ env.FEATURE_PREFIX }} ${{ matrix.features }} -- -D
+          warnings
+        env:
+          FEATURE_PREFIX: "--no-default-features --features"
   fmt:
     name: fmt
     runs-on: ubuntu-latest
@@ -67,7 +69,8 @@ jobs:
           args: --all -- --check
 
   test:
-    name: test-${{ matrix.target }}-${{ matrix.toolchain }}
+    name: test-${{ matrix.target }}-${{ matrix.toolchain }} (${{ matrix
+    .features }})
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -77,6 +80,24 @@ jobs:
             target: i686-apple-darwin
           - os: macOS-latest
             target: x86_64-apple-darwin
+          - os: ubuntu-latest
+            target: i686-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            target: i686-pc-windows-gnu
+          - os: windows-latest
+            target: i686-pc-windows-msvc
+          - os: windows-latest
+            target: x86_64-pc-windows-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os:
+              - macOS-latest
+              - ubuntu-latest
+            features:
+              - '--no-default-features'
+              - '--all-features'
         os:
           - macOS-latest
           - ubuntu-latest
