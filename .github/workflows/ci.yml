@@ -65,3 +65,35 @@ jobs:
         with:
           command: fmt
           args: --all -- --check
+
+  test:
+    name: test-${{ matrix.target }}-${{ matrix.toolchain }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        include:
+          - os: macOS-latest
+            target: i686-apple-darwin
+          - os: macOS-latest
+            target: x86_64-apple-darwin
+        os:
+          - macOS-latest
+          - ubuntu-latest
+          - windows-latest
+        toolchain:
+          - 1.32.0
+          - stable
+          - beta
+          - nightly
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          override: true
+          profile: minimal
