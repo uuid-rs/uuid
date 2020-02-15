@@ -1,0 +1,44 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: '00 0 * * *'
+
+jobs:
+  clippy:
+    name: clippy ( ${{ matrix.os_name }} )
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: linux-latest
+            os_name: Linux
+            features: '"std v1 v3 v4 v5"'
+          - os: windows-latest
+            os_name: Windows
+            features: '"guid std v1 v3 v4 v5"'
+        os:
+          - linux-latest
+          - windows-latest
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: 1.32.0
+          override: true
+          profile: minimal
+          components: clippy
+
+      - name: Clippy Check
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --features ${{ matrix.features }}
