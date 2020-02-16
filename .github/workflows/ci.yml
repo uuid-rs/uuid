@@ -70,7 +70,7 @@ jobs:
 
   test:
     # @formatter:off
-    name: 'test-${{ matrix.target }}-${{ matrix.toolchain }} (${{ matrix.features }})'
+    name: 'test-${{ matrix.target }}-${{ matrix.toolchain }} (${{ matrix.features_label }})'
     # @formatter:on
     runs-on: '${{ matrix.os }}'
 
@@ -98,7 +98,19 @@ jobs:
             target: x86_64-pc-windows-gnu
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-        
+          # Define features for all targets
+          # @formatter:off
+          - no_default_features: '--no-default-features' # no_std environment
+            features_label: '--no-default-features'
+          - all_features: '--all-features'               # All features enabled
+            features_label: '--all-features'
+          - features: '""'                               # std
+            features_label: 'std'
+          - features: '"serde"'                          # serde + std
+            features_label: 'serde std'
+          - features: '"v1"'                             # std + v1
+            features_label: 'std v1'
+          # @formatter:on
         os:
           - macOS-latest
           - ubuntu-latest
@@ -124,4 +136,4 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --no-default-features ${{ matrix.features }}
+          args: ${{ matrix.no_default_features }} ${{ matrix.all_features }} --features ${{ matrix.features }}
