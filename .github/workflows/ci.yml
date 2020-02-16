@@ -121,7 +121,7 @@ jobs:
           profile: minimal
 
       - name: Run Build
-        uses: actions-rs/cargo
+        uses: actions-rs/cargo@v1
         with:
           command: build
           args: --no-default-features ${{ matrix.features }}
