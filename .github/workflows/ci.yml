@@ -68,9 +68,9 @@ jobs:
           args: --all -- --check
 
   test:
-    name: test-${{ matrix.target }}-${{ matrix.toolchain }} (${{ matrix
-    .features }})
-    runs-on: ${{ matrix.os }}
+    name: 'test-${{ matrix.target }}-${{ matrix.toolchain }} (${{ matrix
+    .features }})'
+    runs-on: '${{ matrix.os }}'
 
     strategy:
       matrix:
