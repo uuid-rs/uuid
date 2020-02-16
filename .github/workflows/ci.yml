@@ -25,6 +25,7 @@ jobs:
         os:
           - ubuntu-latest
           - windows-latest
+
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -41,8 +42,8 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: |
-          --no-default-features --features ${{ matrix.features }} -- -D warnings
+          args: '--no-default-features --features ${{ matrix.features }} --
+          -D warnings'
 
   fmt:
     name: fmt
