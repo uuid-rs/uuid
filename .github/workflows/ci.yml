@@ -42,8 +42,9 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: clippy
-          args: '--no-default-features --features ${{ matrix.features }} --
-          -D warnings'
+          # @formatter:off
+          args: '--no-default-features --features ${{ matrix.features }} -- -D warnings'
+          # @formatter:on
 
   fmt:
     name: fmt
@@ -68,21 +69,27 @@ jobs:
           args: --all -- --check
 
   test:
-    name: 'test-${{ matrix.target }}-${{ matrix.toolchain }} (${{ matrix
-    .features }})'
+    # @formatter:off
+    name: 'test-${{ matrix.target }}-${{ matrix.toolchain }} (${{ matrix.features }})'
+    # @formatter:on
     runs-on: '${{ matrix.os }}'
 
     strategy:
       matrix:
         include:
+          # Define macOS `target`s
           - os: macOS-latest
             target: i686-apple-darwin
           - os: macOS-latest
             target: x86_64-apple-darwin
+
+          # Define Ubuntu `target`s
           - os: ubuntu-latest
             target: i686-unknown-linux-gnu
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
+
+          # Define Windows `target`s
           - os: windows-latest
             target: i686-pc-windows-gnu
           - os: windows-latest
@@ -91,12 +98,7 @@ jobs:
             target: x86_64-pc-windows-gnu
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-          - os:
-              - macOS-latest
-              - ubuntu-latest
-            features:
-              - '' # --no-default-features (implicit)
-              - '--all-features'
+        
         os:
           - macOS-latest
           - ubuntu-latest
