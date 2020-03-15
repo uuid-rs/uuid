@@ -81,10 +81,11 @@ To parse a UUID given in the simple format and print it as a urn:
 ```rust
 use uuid::Uuid;
 
-fn main() {
+fn main() -> Result<(), uuid::Error> {
     let my_uuid =
-        Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
+        Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8")?;
     println!("{}", my_uuid.to_urn());
+    Ok(())
 }
 ```
 
@@ -95,8 +96,8 @@ To create a new random (V4) UUID and print it out in hexadecimal form:
 
 use uuid::Uuid;
 
-fn main() -> Result<(), Box<std::error::Error> {
-    let my_uuid = Uuid::new_v4()?;
+fn main() {
+    let my_uuid = Uuid::new_v4();
     println!("{}", my_uuid);
 }
 ```

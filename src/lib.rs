@@ -79,10 +79,11 @@
 //! ```rust
 //! use uuid::Uuid;
 //!
-//! fn main() {
+//! fn main() -> Result<(), uuid::Error> {
 //!     let my_uuid =
-//!         Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8").unwrap();
+//!         Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8")?;
 //!     println!("{}", my_uuid.to_urn());
+//!     Ok(())
 //! }
 //! ```
 //!
@@ -93,8 +94,8 @@
 //!
 //! use uuid::Uuid;
 //!
-//! fn main() -> Result<(), Box<std::error::Error> {
-//!     let my_uuid = Uuid::new_v4()?;
+//! fn main() {
+//!     let my_uuid = Uuid::new_v4();
 //!     println!("{}", my_uuid);
 //! }
 //! ```
@@ -333,7 +334,7 @@ impl Uuid {
     /// let uuid = Uuid::nil();
     /// assert_eq!(uuid.as_fields(), (0, 0, 0, &[0u8; 8]));
     ///
-    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8")?;
     /// assert_eq!(
     ///     uuid.as_fields(),
     ///     (
@@ -371,7 +372,7 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8")?;
     /// assert_eq!(
     ///     uuid.to_fields_le(),
     ///     (
@@ -409,7 +410,7 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8")?;
     /// assert_eq!(
     ///     uuid.as_u128(),
     ///     0x936DA01F9ABD4D9D80C702AF85C822A8,
@@ -446,7 +447,7 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8")?;
     ///
     /// assert_eq!(
     ///     uuid.to_u128_le(),

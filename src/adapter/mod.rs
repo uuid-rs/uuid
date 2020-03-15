@@ -216,7 +216,7 @@ impl Hyphenated {
     /// ```rust
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8")?;
     ///
     /// // the encoded portion is returned
     /// assert_eq!(
@@ -262,7 +262,7 @@ impl Hyphenated {
     /// ```rust
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8").unwrap();
+    /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8")?;
     ///
     /// // the encoded portion is returned
     /// assert_eq!(
@@ -323,7 +323,7 @@ impl<'a> HyphenatedRef<'a> {
     /// ```rust
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8")?;
     ///
     /// // the encoded portion is returned
     /// assert_eq!(
@@ -373,7 +373,7 @@ impl<'a> HyphenatedRef<'a> {
     /// ```rust
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8").unwrap();
+    /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8");
     ///
     /// // the encoded portion is returned
     /// assert_eq!(
@@ -436,7 +436,7 @@ impl Simple {
     /// ```rust
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8")?;
     ///
     /// // the encoded portion is returned
     /// assert_eq!(
@@ -479,7 +479,7 @@ impl Simple {
     /// ```rust
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8").unwrap();
+    /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8")?;
     ///
     /// // the encoded portion is returned
     /// assert_eq!(
@@ -541,7 +541,7 @@ impl<'a> SimpleRef<'a> {
     /// ```rust
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8")?;
     ///
     /// // the encoded portion is returned
     /// assert_eq!(
@@ -584,7 +584,7 @@ impl<'a> SimpleRef<'a> {
     /// ```rust
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8").unwrap();
+    /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8")?;
     ///
     /// // the encoded portion is returned
     /// assert_eq!(
@@ -647,7 +647,7 @@ impl Urn {
     /// ```rust
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8")?;
     ///
     /// // the encoded portion is returned
     /// assert_eq!(
@@ -697,7 +697,7 @@ impl Urn {
     /// ```rust
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8").unwrap();
+    /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8")?;
     ///
     /// // the encoded portion is returned
     /// assert_eq!(
@@ -761,7 +761,7 @@ impl<'a> UrnRef<'a> {
     /// ```rust
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8").unwrap();
+    /// let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8")?;
     ///
     /// // the encoded portion is returned
     /// assert_eq!(
@@ -811,7 +811,7 @@ impl<'a> UrnRef<'a> {
     /// ```rust
     /// use uuid::Uuid;
     ///
-    /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8").unwrap();
+    /// let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8")?;
     ///
     /// // the encoded portion is returned
     /// assert_eq!(
