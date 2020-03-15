@@ -4,8 +4,9 @@ impl Uuid {
     /// Creates a random UUID.
     ///
     /// This uses the [`getrandom`] crate to utilise the operating system's RNG
-    /// as the source of random numbers. If you'd like to use a custom generator,
-    /// don't use this method: use the `rand::Rand trait`'s `rand()` method instead.
+    /// as the source of random numbers. If you'd like to use a custom
+    /// generator, don't use this method: use the `rand::Rand trait`'s
+    /// `rand()` method instead.
     ///
     /// Note that usage of this method requires the `v4` feature of this crate
     /// to be enabled.

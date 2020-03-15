@@ -13,8 +13,8 @@ impl Uuid {
             guid.Data3 as u16,
             &(guid.Data4 as [u8; 8]),
         )
-        .unwrap() // Note: The result in this particular instance is always Ok, so we can
-                  //       safely unwrap.
+        .unwrap() // Note: The result in this particular instance is always Ok,
+                  // so we can safely unwrap.
     }
 
     /// Converts a [`Uuid`] into a little endian winapi `GUID`

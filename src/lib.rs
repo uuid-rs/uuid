@@ -110,10 +110,8 @@
 //!
 //! # References
 //!
-//! * [Wikipedia: Universally Unique
-//!   Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
-//! * [RFC4122: A Universally Unique IDentifier (UUID) URN
-//!   Namespace](http://tools.ietf.org/html/rfc4122)
+//! * [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
+//! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
 //!
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 //! [`cargo-web`]: https://crates.io/crates/cargo-web
@@ -330,7 +328,7 @@ impl Uuid {
     ///
     /// ```
     /// use uuid::Uuid;
-    /// 
+    ///
     /// fn main() -> Result<(), uuid::Error> {
     ///     let uuid = Uuid::nil();
     ///     assert_eq!(uuid.as_fields(), (0, 0, 0, &[0u8; 8]));
