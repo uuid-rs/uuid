@@ -95,7 +95,7 @@ To create a new random (V4) UUID and print it out in hexadecimal form:
 
 use uuid::Uuid;
 
-fn main() -> Result<(), Box<std::error::Error> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let my_uuid = Uuid::new_v4()?;
     println!("{}", my_uuid);
 }
