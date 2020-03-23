@@ -23,6 +23,7 @@ pub mod compact;
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[repr(transparent)]
 pub struct Hyphenated(Uuid);
 
 /// An adaptor for formatting an [`Uuid`] as a hyphenated string.
@@ -31,6 +32,7 @@ pub struct Hyphenated(Uuid);
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[repr(transparent)]
 pub struct HyphenatedRef<'a>(&'a Uuid);
 
 /// An adaptor for formatting an [`Uuid`] as a simple string.
@@ -39,6 +41,7 @@ pub struct HyphenatedRef<'a>(&'a Uuid);
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[repr(transparent)]
 pub struct Simple(Uuid);
 
 /// An adaptor for formatting an [`Uuid`] as a simple string.
@@ -47,6 +50,7 @@ pub struct Simple(Uuid);
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[repr(transparent)]
 pub struct SimpleRef<'a>(&'a Uuid);
 
 /// An adaptor for formatting an [`Uuid`] as a URN string.
@@ -55,6 +59,7 @@ pub struct SimpleRef<'a>(&'a Uuid);
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[repr(transparent)]
 pub struct Urn(Uuid);
 
 /// An adaptor for formatting an [`Uuid`] as a URN string.
@@ -63,6 +68,7 @@ pub struct Urn(Uuid);
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[repr(transparent)]
 pub struct UrnRef<'a>(&'a Uuid);
 
 impl Uuid {
