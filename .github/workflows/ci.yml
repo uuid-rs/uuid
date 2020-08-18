@@ -19,16 +19,16 @@ jobs:
           rust_target: x86_64-gnu
         include:
         - os: macos-10.15
-          rust_target: x86_64-darwin
+          rust_target: x86_64-apple-darwin
           channel: stable
         - os: macos-10.15
-          rust_target: x86_64-darwin
+          rust_target: x86_64-apple-darwin
           channel: beta
         - os: macos-10.15
-          rust_target: x86_64-darwin
+          rust_target: x86_64-apple-darwin
           channel: nightly
         - os: macos-10.15
-          rust_target: x86_64-darwin
+          rust_target: x86_64-apple-darwin
           channel: 1.32.0
         - os: windows-2019
           rust_target: x86_64-msvc
