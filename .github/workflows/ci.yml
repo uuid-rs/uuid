@@ -32,6 +32,16 @@ jobs:
           channel: 1.32.0
         - os: windows-2019
           rust_target: x86_64-msvc
+          channel: stable
+        - os: windows-2019
+          rust_target: x86_64-msvc
+          channel: beta
+        - os: windows-2019
+          rust_target: x86_64-msvc
+          channel: nightly
+        - os: windows-2019
+          rust_target: x86_64-msvc
+          channel: 1.32.0
         channel:
         - stable
         - beta
