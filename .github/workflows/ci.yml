@@ -33,30 +33,7 @@ jobs:
         - ubuntu-20.04
         rust_target: 
         - x86_64-gnu
-        enabled_feature_guid:
-        - true
-        - false
-        enabled_feature_serde:
-        - true
-        - false
-        enabled_feature_slog:
-        - true
-        - false
-        enabled_feature_std:
-        - true
-        - false
-        enabled_feature_v1:
-        - true
-        - false
-        enabled_feature_v3:
-        - true
-        - false
-        enabled_feature_v4:
-        - true
-        - false
-        enabled_feature_v5:
-        - true
-        - false
+  
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -67,3 +44,113 @@ jobs:
         override: true
         profile: minimal
         toolchain: ${{ matrix.channel }}-${{ matrix.rust_target }}
+
+    - name: Build with --no-default-features 
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --no_default_features
+    - name: Test with --no-default-features 
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --no_default_features
+    
+    - name: Build with --all-features 
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --all-features
+    - name: Test with --all-features 
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --all-features
+    
+    - name: Build with default features 
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+    - name: Test with default features 
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+
+    - name: Build with --no-default-features 
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --no_default_features
+    - name: Test with --no-default-features 
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --no_default_features
+    
+    - name: Build with --features serde
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --features serde
+    - name: Test with --features serde 
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --features serde
+    
+    - name: Build with --features slog
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --features slog
+    - name: Test with --features slog 
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --features slog
+      
+    - name: Build with --features v1
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --features v1
+    - name: Test with --features serde 
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --features v1
+    
+    - name: Build with --features v3
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --features v3
+    - name: Test with --features v3 
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --features v3
+    
+    - name: Build with --features v4
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --features v4
+    - name: Test with --features v4 
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --features v4
+    
+    - name: Build with --features v5
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --features v5
+    - name: Test with --features v5 
+      uses: actions-rs/cargo@v1
+      with:
+        command: test
+        args: --features v5
+
+- cargo test --features "slog"
