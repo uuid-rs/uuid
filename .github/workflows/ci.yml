@@ -152,5 +152,3 @@ jobs:
       with:
         command: test
         args: --features v5
-
-- cargo test --features "slog"
