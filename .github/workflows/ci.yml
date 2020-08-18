@@ -1,0 +1,101 @@
+name: Continuous integration
+
+on:
+  pull_request:
+  push:
+      branches:
+      - master
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  os_tests:
+    name: ${{ matrix.os }} - ${{ matrix.channel }}-${{ matrix.rust_target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        exclude:
+        - os: macos-10.15
+          rust_target: x86_64-gnu
+        include:
+        - enabled_feature_guid: true
+          feature_guid: '--feature "guid"'
+        - enabled_feature_guid: false
+          feature_guid: ''
+        - enabled_feature_serde: true
+          feature_serde: '--feature "serde"'
+        - enabled_feature_serde: false
+          feature_std: ''
+        - enabled_feature_slog: true
+          feature_slog: '--feature "slog"'
+        - enabled_feature_slog: false
+          feature_slog: ''
+        - enabled_feature_std: true
+          feature_std: '--feature "std"'
+        - enabled_feature_std: false
+          feature_std: ''
+        - enabled_feature_v1: true
+          feature_v1: '--feature "v1"'
+        - enabled_feature_v1: false
+          feature_v1: ''
+        - enabled_feature_v3: true
+          feature_v3: '--feature "v3"'
+        - enabled_feature_v3: false
+          feature_v3: ''
+        - enabled_feature_v4: true
+          feature_v4: '--feature "v4"'
+        - enabled_feature_v4: false
+          feature_v4: ''
+        - enabled_feature_v5: true
+          feature_v5: '--feature "v5"'
+        - enabled_feature_v5: false
+          feature_v5: ''
+        - os: macos-10.15
+          rust_target: x86_64-darwin
+        - os: windows-2019
+          rust_target: x86_64-msvc
+        channel:
+        - stable
+        - beta
+        - nightly
+        - 1.32.0
+        os:
+        - macos-10.15
+        - windows-2019
+        - ubuntu-20.04
+        rust_target: 
+        - x86_64-gnu
+        enabled_feature_guid:
+        - true
+        - false
+        enabled_feature_serde:
+        - true
+        - false
+        enabled_feature_slog:
+        - true
+        - false
+        enabled_feature_std:
+        - true
+        - false
+        enabled_feature_v1:
+        - true
+        - false
+        enabled_feature_v3:
+        - true
+        - false
+        enabled_feature_v4:
+        - true
+        - false
+        enabled_feature_v5:
+        - true
+        - false
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust Toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        override: true
+        profile: minimal
+        toolchain: ${{ matrix.channel }}-${{ matrix.rust_target }}
