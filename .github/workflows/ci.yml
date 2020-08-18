@@ -95,17 +95,17 @@ jobs:
       uses: actions-rs/cargo@v1
       with:
         command: test
-
-    - name: Build with --no-default-features 
+    
+    - name: Build with --features guid
       uses: actions-rs/cargo@v1
       with:
         command: build
-        args: --no_default_features
-    - name: Test with --no-default-features 
+        args: --features guid
+    - name: Test with --features guid 
       uses: actions-rs/cargo@v1
       with:
         command: test
-        args: --no_default_features
+        args: --features guid
     
     - name: Build with --features serde
       uses: actions-rs/cargo@v1
