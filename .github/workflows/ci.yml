@@ -17,31 +17,14 @@ jobs:
         exclude:
         - os: macos-10.15
           rust_target: x86_64-gnu
-        include:
         - os: macos-10.15
-          rust_target: x86_64-apple-darwin
-          channel: stable
-        - os: macos-10.15
-          rust_target: x86_64-apple-darwin
-          channel: beta
-        - os: macos-10.15
-          rust_target: x86_64-apple-darwin
-          channel: nightly
-        - os: macos-10.15
-          rust_target: x86_64-apple-darwin
-          channel: 1.32.0
-        - os: windows-2019
           rust_target: x86_64-msvc
-          channel: stable
         - os: windows-2019
+          rust_target: x86_64-apple-darwin
+        - os: ubuntu-20.04
           rust_target: x86_64-msvc
-          channel: beta
-        - os: windows-2019
-          rust_target: x86_64-msvc
-          channel: nightly
-        - os: windows-2019
-          rust_target: x86_64-msvc
-          channel: 1.32.0
+        - os: ubuntu-20.04
+          rust_target: x86_64-apple-darwin
         channel:
         - stable
         - beta
@@ -53,6 +36,8 @@ jobs:
         - ubuntu-20.04
         rust_target: 
         - x86_64-gnu
+        - x86_64-msvc
+        - x86_64-apple-darwin
   
     steps:
     - name: Checkout repository
