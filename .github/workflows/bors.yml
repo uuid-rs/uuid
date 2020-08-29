@@ -40,9 +40,11 @@ jobs:
     
     - name: Checkout new tmp branch from ref
       run:  git checkout -b pr
-
-    - name: Checkout master branch
-      run:  git checkout master --track origin/master
+    
+    - name: Checkout master
+      uses: actions/checkout@v2
+      with:
+        ref: master
 
     - name: Merge tmp branch into master
       run:  git merge pr
