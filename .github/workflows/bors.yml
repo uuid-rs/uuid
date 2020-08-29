@@ -42,7 +42,7 @@ jobs:
       run:  git checkout -b pr
 
     - name: Checkout master branch
-      run:  git checkout master
+      run:  git checkout master --track origin/master
 
     - name: Merge tmp branch into master
       run:  git merge pr
