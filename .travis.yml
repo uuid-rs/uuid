@@ -48,22 +48,12 @@ matrix:
     - rustup target add thumbv6m-none-eabi
     script:
     - cargo build --no-default-features --target thumbv6m-none-eabi
-  - rust: 1.32.0
-    env:
-    - LABEL="msrv"
-    script:
-    - cargo test --features "serde std v4"
-
+    
 notifications:
   email:
     on_success: never
 
 os: linux
-
-rust:
-- stable
-- beta
-- nightly
 
 script:
 - cargo build --no-default-features
