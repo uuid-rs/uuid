@@ -5,7 +5,9 @@ impl Uuid {
     ///
     /// This uses the [`getrandom`] crate to utilise the operating system's RNG
     /// as the source of random numbers. If you'd like to use a custom generator,
-    /// don't use this method: use the `rand::Rand trait`'s `rand()` method instead.
+    /// don't use this method: generate random bytes using your custom generator
+    /// and pass them to the [`uuid::Builder::from_bytes`][from_bytes] function
+    /// instead.
     ///
     /// Note that usage of this method requires the `v4` feature of this crate
     /// to be enabled.
@@ -21,7 +23,7 @@ impl Uuid {
     /// ```
     ///
     /// [`getrandom`]: https://crates.io/crates/getrandom
-    /// [`rand`]: https://crates.io/crates/rand
+    /// [from_bytes]: struct.Builder.html#method.from_bytes
     // TODO: change signature to support uuid's Error.
     pub fn new_v4() -> Result<Uuid, getrandom::Error> {
         let mut bytes = [0u8; 16];

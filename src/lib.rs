@@ -44,7 +44,8 @@
 //!   `serde` crate.
 //!
 //! You need to enable one of the following Cargo features together with
-//! `v3`, `v4` or `v5` feature if you're targeting `wasm32` architecture:
+//! `v3`, `v4` or `v5` feature if you're targeting `wasm32-unknown-unknown`
+//! target:
 //!
 //! * `stdweb` - enables support for `OsRng` on `wasm32-unknown-unknown` via
 //!   [`stdweb`] combined with [`cargo-web`]
@@ -160,6 +161,7 @@ mod test_util;
     feature = "v3",
     any(
         not(target_arch = "wasm32"),
+        target_os = "wasi",
         all(
             target_arch = "wasm32",
             any(feature = "stdweb", feature = "wasm-bindgen")
@@ -171,6 +173,7 @@ mod v3;
     feature = "v4",
     any(
         not(target_arch = "wasm32"),
+        target_os = "wasi",
         all(
             target_arch = "wasm32",
             any(feature = "stdweb", feature = "wasm-bindgen")
@@ -182,6 +185,7 @@ mod v4;
     feature = "v5",
     any(
         not(target_arch = "wasm32"),
+        target_os = "wasi",
         all(
             target_arch = "wasm32",
             any(feature = "stdweb", feature = "wasm-bindgen")
