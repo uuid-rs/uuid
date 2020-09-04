@@ -46,7 +46,7 @@ various pieces of functionality:
   `serde` crate.
 
 You need to enable one of the following Cargo features together with
-`v3`, `v4` or `v5` feature if you're targeting `wasm32` architecture:
+`v3`, `v4` or `v5` feature if you're targeting `wasm32-unknown-unknown` target:
 
 * `stdweb` - enables support for `OsRng` on `wasm32-unknown-unknown` via
   `stdweb` combined with `cargo-web`
