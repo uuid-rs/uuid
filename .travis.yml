@@ -10,9 +10,8 @@ matrix:
     rust: nightly
   - rust: nightly
     env:
-    - LABEL="fmt + cargo-web"
+    - LABEL="cargo-web"
     before_script:
-    - rustup component add rustfmt-preview
     - cargo install cargo-web
     script:
     - cargo test --features "serde std v1 v3 v4 v5"
@@ -48,22 +47,12 @@ matrix:
     - rustup target add thumbv6m-none-eabi
     script:
     - cargo build --no-default-features --target thumbv6m-none-eabi
-  - rust: 1.32.0
-    env:
-    - LABEL="msrv"
-    script:
-    - cargo test --features "serde std v4"
-
+    
 notifications:
   email:
     on_success: never
 
 os: linux
-
-rust:
-- stable
-- beta
-- nightly
 
 script:
 - cargo build --no-default-features
