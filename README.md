@@ -8,6 +8,7 @@ uuid
 [![Build Status](https://travis-ci.org/uuid-rs/uuid.svg?branch=master)](https://travis-ci.org/uuid-rs/uuid)
 [![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/uuid-rs/uuid.svg)](https://isitmaintained.com/project/uuid-rs/uuid "Average time to resolve an issue")
 [![Percentage of issues still open](https://isitmaintained.com/badge/open/uuid-rs/uuid.svg)](https://isitmaintained.com/project/uuid-rs/uuid "Percentage of issues still open")
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fuuid-rs%2Fuuid.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fuuid-rs%2Fuuid?ref=badge_shield)
 
 ---
 
@@ -127,6 +128,9 @@ Licensed under either of
 * MIT license (LICENSE-MIT or https://opensource.org/licenses/MIT)
 
 at your option.
+
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fuuid-rs%2Fuuid.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fuuid-rs%2Fuuid?ref=badge_large)
 
 ## Contribution
 
