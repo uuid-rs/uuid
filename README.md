@@ -46,7 +46,7 @@ various pieces of functionality:
   `serde` crate.
 
 You need to enable one of the following Cargo features together with
-`v3`, `v4` or `v5` feature if you're targeting `wasm32` architecture:
+`v3`, `v4` or `v5` feature if you're targeting `wasm32-unknown-unknown` target:
 
 * `stdweb` - enables support for `OsRng` on `wasm32-unknown-unknown` via
   `stdweb` combined with `cargo-web`
@@ -96,8 +96,8 @@ To create a new random (V4) UUID and print it out in hexadecimal form:
 
 use uuid::Uuid;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let my_uuid = Uuid::new_v4()?;
+fn main() {
+    let my_uuid = Uuid::new_v4();
     println!("{}", my_uuid);
     Ok(())
 }
