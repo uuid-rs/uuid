@@ -3,16 +3,18 @@ use winapi::shared::guiddef;
 
 #[cfg(feature = "guid")]
 impl Uuid {
-    /// Attempts to create a [`Uuid`] from a little endian winapi `GUID`
+    /// Converts a little endian winapi `GUID` into a [`Uuid`]
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    pub fn from_guid(guid: guiddef::GUID) -> Result<Uuid, crate::Error> {
+    pub fn from_guid(guid: guiddef::GUID) -> Self {
         Uuid::from_fields_le(
             guid.Data1 as u32,
             guid.Data2 as u16,
             guid.Data3 as u16,
             &(guid.Data4 as [u8; 8]),
         )
+        .unwrap() // Note: The result in this particular instance is always Ok, so we can
+                  //       safely unwrap.
     }
 
     /// Converts a [`Uuid`] into a little endian winapi `GUID`
@@ -47,7 +49,7 @@ mod tests {
             Data4: [0x86, 0x47, 0x9d, 0xc5, 0x4e, 0x1e, 0xe1, 0xe8],
         };
 
-        let uuid = Uuid::from_guid(guid).unwrap();
+        let uuid = Uuid::from_guid(guid);
         assert_eq!(
             "9d22354a-2755-304f-8647-9dc54e1ee1e8",
             uuid.to_hyphenated().to_string()
@@ -63,7 +65,7 @@ mod tests {
             Data4: [0x86, 0x47, 0x9d, 0xc5, 0x4e, 0x1e, 0xe1, 0xe8],
         };
 
-        let uuid = Uuid::from_guid(guid_in).unwrap();
+        let uuid = Uuid::from_guid(guid_in);
         let guid_out = uuid.to_guid();
 
         assert_eq!(
