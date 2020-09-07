@@ -1,4 +1,5 @@
 status = [
 	"continuous-integration/travis-ci/push",
-	"Tests/OS: windows-2019 - stable-x86_64-gnu (push)"
+	"Tests/OS: windows-2019 - stable-x86_64-gnu (push)",
+	"Tests/OS: windows-2019 - stable-x86_64-msvc"
 ]
