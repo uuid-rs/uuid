@@ -198,7 +198,7 @@ mod winapi_support;
 
 use crate::std::{fmt, str};
 
-pub use crate::{error::Error};
+pub use crate::error::Error;
 
 /// A builder struct for creating a UUID.
 ///
