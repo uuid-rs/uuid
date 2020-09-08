@@ -95,7 +95,7 @@
 //!
 //! use uuid::Uuid;
 //!
-//! fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! fn main() -> Result<(), getrandom::Error> {
 //!     #[cfg(feature = "v4")] {
 //!         let my_uuid = Uuid::new_v4()?;
 //!     }
