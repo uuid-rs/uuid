@@ -28,7 +28,7 @@ impl Uuid {
         let computed = context.compute();
         let bytes = computed.into();
 
-        let mut builder = crate::builder::Builder::from_bytes(bytes);
+        let mut builder = crate::Builder::from_bytes(bytes);
 
         builder
             .set_variant(Variant::RFC4122)
