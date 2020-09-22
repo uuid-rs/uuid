@@ -59,7 +59,7 @@ impl Timestamp {
     /// This constructs a `Timestamp` from the seconds and fractional
     /// nanoseconds of a unix timestamp, converting the duration since 1970
     /// into the number of 100-nanosecond intervals since 00:00:00.00, 15
-    /// Oct 1982 specified by RFC4122 and used internally by `Timestamp`.
+    /// Oct 1582 specified by RFC4122 and used internally by `Timestamp`.
     ///
     /// The function is not guaranteed to produce monotonically increasing
     /// values however. There is a slight possibility that two successive
