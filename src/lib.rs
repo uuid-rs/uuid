@@ -90,14 +90,15 @@
 //!
 //! To create a new random (V4) UUID and print it out in hexadecimal form:
 //!
-//! ```rust
+//! ```ignore,rust
 //! // Note that this requires the `v4` feature enabled in the uuid crate.
 //!
 //! use uuid::Uuid;
 //!
-//! fn main() -> Result<(), getrandom::Error> {
+//! fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     #[cfg(feature = "v4")] {
 //!         let my_uuid = Uuid::new_v4()?;
+//!         println!("{}", my_uuid);
 //!     }
 //!     Ok(())
 //! }
