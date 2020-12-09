@@ -1042,9 +1042,9 @@ impl Uuid {
                 // First digit of the byte.
                 match chr {
                     // Calulate upper half.
-                    b'0'...b'9' => acc = chr - b'0',
-                    b'a'...b'f' => acc = chr - b'a' + 10,
-                    b'A'...b'F' => acc = chr - b'A' + 10,
+                    b'0'..=b'9' => acc = chr - b'0',
+                    b'a'..=b'f' => acc = chr - b'a' + 10,
+                    b'A'..=b'F' => acc = chr - b'A' + 10,
                     // Found a group delimiter
                     b'-' => {
                         if ACC_GROUP_LENS[group] != digit {
@@ -1075,9 +1075,9 @@ impl Uuid {
                 // Second digit of the byte, shift the upper half.
                 acc *= 16;
                 match chr {
-                    b'0'...b'9' => acc += chr - b'0',
-                    b'a'...b'f' => acc += chr - b'a' + 10,
-                    b'A'...b'F' => acc += chr - b'A' + 10,
+                    b'0'..=b'9' => acc += chr - b'0',
+                    b'a'..=b'f' => acc += chr - b'a' + 10,
+                    b'A'..=b'F' => acc += chr - b'A' + 10,
                     b'-' => {
                         // The byte isn't complete yet.
                         let found = if group > 0 {
