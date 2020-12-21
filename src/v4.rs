@@ -24,8 +24,7 @@ impl Uuid {
     ///
     /// [`getrandom`]: https://crates.io/crates/getrandom
     /// [from_bytes]: struct.Builder.html#method.from_bytes
-    // TODO: change signature to support uuid's Error.
-    pub fn new_v4() -> Result<Uuid, getrandom::Error> {
+    pub fn new_v4() -> Result<Uuid, crate::Error> {
         let mut bytes = [0u8; 16];
         getrandom::getrandom(&mut bytes)?;
 
