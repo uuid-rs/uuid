@@ -56,7 +56,7 @@ repository = "uuid-rs/uuid"
 
 [dependencies.getrandom]
 optional = true
-version = "0.1"
+version = "0.2.0"
 
 [dependencies.md5]
 optional = true
@@ -91,12 +91,12 @@ version = "1.0.56"
 default = ["std"]
 guid = ["winapi"]
 std = []
-stdweb = ["getrandom"]
+stdweb = ["getrandom", "getrandom/js"]
 v1 = []
 v3 = ["md5"]
 v4 = ["getrandom"]
 v5 = ["sha1"]
-wasm-bindgen = ["getrandom"]
+wasm-bindgen = ["getrandom", "getrandom/js"]
 
 [target.'cfg(windows)'.dependencies.winapi]
 optional = true
