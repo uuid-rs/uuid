@@ -43,14 +43,11 @@
 //! * `serde` - adds the ability to serialize and deserialize a UUID using the
 //!   `serde` crate.
 //!
-//! You need to enable one of the following Cargo features together with
-//! `v3`, `v4` or `v5` feature if you're targeting `wasm32-unknown-unknown`
-//! target:
+//! For WebAssembly, enable one of the following features depending
+//! on your JavaScript interop toolchain of choice:
 //!
-//! * `stdweb` - enables support for `OsRng` on `wasm32-unknown-unknown` via
-//!   [`stdweb`] combined with [`cargo-web`]
-//! * `wasm-bindgen` - enables support for `OsRng` on `wasm32-unknown-unknown`
-//!   via [`wasm-bindgen`]
+//! * `stdweb` - for [`stdweb`] combined with [`cargo-web`]
+//! * `wasm-bindgen` - for [`wasm-bindgen`]
 //!
 //! By default, `uuid` can be depended on with:
 //!
