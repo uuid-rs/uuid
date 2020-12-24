@@ -54,17 +54,16 @@ status = "actively-developed"
 [badges.travis-ci]
 repository = "uuid-rs/uuid"
 
-[dependencies.md5]
+[dependencies.getrandom]
 optional = true
-version = "0.6"
+version = "0.2.0"
 
-[dependencies.rand]
+[dependencies.md5]
 optional = true
 version = "0.7"
 
 [dependencies.serde]
 default-features = false
-features = [ "serde_derive" ]
 optional = true
 version = "1.0.56"
 
@@ -92,12 +91,12 @@ version = "1.0.56"
 default = ["std"]
 guid = ["winapi"]
 std = []
-stdweb = [ "rand/stdweb" ]
+stdweb = ["getrandom", "getrandom/js"]
 v1 = []
 v3 = ["md5"]
-v4 = ["rand"]
+v4 = ["getrandom"]
 v5 = ["sha1"]
-wasm-bindgen = ["rand/wasm-bindgen"]
+wasm-bindgen = ["getrandom", "getrandom/js"]
 
 [target.'cfg(windows)'.dependencies.winapi]
 optional = true

@@ -1,0 +1,22 @@
+name: Format Check
+
+on: [push, pull_request]
+
+jobs:
+  fmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Install Toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          components: rustfmt
+          override: true
+          profile: minimal
+          toolchain: 1.34.0
+      - name: Run `cargo fmt`
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check

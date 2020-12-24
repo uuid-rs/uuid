@@ -10,12 +10,10 @@ matrix:
     rust: nightly
   - rust: nightly
     env:
-    - LABEL="fmt + cargo-web"
+    - LABEL="cargo-web"
     before_script:
-    - rustup component add rustfmt-preview
     - cargo install cargo-web
     script:
-    - cargo fmt --all -- --check
     - cargo test --features "serde std v1 v3 v4 v5"
     - cargo bench --features "serde std v1 v3 v4 v5"
     - cargo web build --features "v3 stdweb"
@@ -35,12 +33,10 @@ matrix:
       - cargo web build --features "v5 wasm-bindgen"
   - rust: stable
     env:
-    - LABEL="clippy + wasm"
+    - LABEL="wasm"
     before_script:
-    - rustup component add clippy-preview
     - rustup target add wasm32-unknown-unknown
     script:
-    - cargo clippy --features "v1 v3 v4 v5 slog"
     - cargo build --target wasm32-unknown-unknown --features "v3 wasm-bindgen"
     - cargo build --target wasm32-unknown-unknown --features "v4 wasm-bindgen"
     - cargo build --target wasm32-unknown-unknown --features "v5 wasm-bindgen"
@@ -51,22 +47,12 @@ matrix:
     - rustup target add thumbv6m-none-eabi
     script:
     - cargo build --no-default-features --target thumbv6m-none-eabi
-  - rust: 1.32.0
-    env:
-    - LABEL="msrv"
-    script:
-    - cargo test --features "serde std v4"
-
+    
 notifications:
   email:
     on_success: never
 
 os: linux
-
-rust:
-- stable
-- beta
-- nightly
 
 script:
 - cargo build --no-default-features
