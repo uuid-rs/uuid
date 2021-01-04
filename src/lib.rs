@@ -198,7 +198,7 @@ mod v5;
 #[cfg(all(windows, feature = "winapi"))]
 mod winapi_support;
 
-use crate::std::{convert::TryInto, fmt, str};
+use crate::std::{convert, fmt, str};
 
 pub use crate::error::Error;
 
@@ -390,7 +390,8 @@ impl Uuid {
         let d3 =
             u16::from(self.as_bytes()[6]) << 8 | u16::from(self.as_bytes()[7]);
 
-        let d4: &[u8; 8] = self.as_bytes()[8..16].try_into().unwrap();
+        let d4: &[u8; 8] =
+            convert::TryInto::try_into(&self.as_bytes()[8..16]).unwrap();
         (d1, d2, d3, d4)
     }
 
@@ -430,7 +431,8 @@ impl Uuid {
         let d3 =
             u16::from(self.as_bytes()[6]) | u16::from(self.as_bytes()[7]) << 8;
 
-        let d4: &[u8; 8] = self.as_bytes()[8..16].try_into().unwrap();
+        let d4: &[u8; 8] =
+            convert::TryInto::try_into(&self.as_bytes()[8..16]).unwrap();
         (d1, d2, d3, d4)
     }
 
