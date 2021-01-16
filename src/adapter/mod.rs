@@ -12,7 +12,7 @@
 //! Adapters for various formats for UUIDs
 
 use crate::prelude::*;
-use crate::std::{fmt, str};
+use crate::std::{borrow::Borrow, fmt, str};
 
 #[cfg(feature = "serde")]
 pub mod compact;
@@ -291,6 +291,20 @@ impl Hyphenated {
     pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, &self.0, true, true)
     }
+
+    /// Consumes the [`Hyphenated`], returning the underlying [`Uuid`].
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use uuid::Uuid;
+    ///
+    /// let hyphenated = Uuid::nil().to_hyphenated();
+    /// assert_eq!(hyphenated.into_inner(), Uuid::nil());
+    /// ```
+    pub const fn into_inner(self) -> Uuid {
+        self.0
+    }
 }
 
 impl<'a> HyphenatedRef<'a> {
@@ -525,6 +539,20 @@ impl Simple {
     /// */
     pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode(buffer, 0, &self.0, false, true)
+    }
+
+    /// Consumes the [`Simple`], returning the underlying [`Uuid`].
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use uuid::Uuid;
+    ///
+    /// let simple = Uuid::nil().to_simple();
+    /// assert_eq!(simple.into_inner(), Uuid::nil());
+    /// ```
+    pub const fn into_inner(self) -> Uuid {
+        self.0
     }
 }
 
@@ -761,6 +789,20 @@ impl Urn {
         buffer[..9].copy_from_slice(b"urn:uuid:");
         encode(buffer, 9, &self.0, true, true)
     }
+
+    /// Consumes the [`Urn`], returning the underlying [`Uuid`].
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use uuid::Uuid;
+    ///
+    /// let urn = Uuid::nil().to_urn();
+    /// assert_eq!(urn.into_inner(), Uuid::nil());
+    /// ```
+    pub const fn into_inner(self) -> Uuid {
+        self.0
+    }
 }
 
 impl<'a> UrnRef<'a> {
@@ -920,12 +962,54 @@ macro_rules! impl_adapter_from {
                 $T::from_uuid(f)
             }
         }
+
+        impl From<$T> for Uuid {
+            #[inline]
+            fn from(f: $T) -> Self {
+                f.into_inner()
+            }
+        }
+
+        impl AsRef<Uuid> for $T {
+            #[inline]
+            fn as_ref(&self) -> &Uuid {
+                &self.0
+            }
+        }
+
+        impl Borrow<Uuid> for $T {
+            #[inline]
+            fn borrow(&self) -> &Uuid {
+                &self.0
+            }
+        }
     };
     ($T:ident<$a:lifetime>) => {
         impl<$a> From<&$a Uuid> for $T<$a> {
             #[inline]
             fn from(f: &$a Uuid) -> Self {
                 $T::from_uuid_ref(f)
+            }
+        }
+
+        impl<$a> From<$T<$a>> for &$a Uuid {
+            #[inline]
+            fn from(f: $T<$a>) -> &$a Uuid {
+                f.0
+            }
+        }
+
+        impl<$a> AsRef<Uuid> for $T<$a> {
+            #[inline]
+            fn as_ref(&self) -> &$a Uuid {
+                self.0
+            }
+        }
+
+        impl<$a> Borrow<Uuid> for $T<$a> {
+            #[inline]
+            fn borrow(&self) -> &$a Uuid {
+                self.0
             }
         }
     };
@@ -1023,5 +1107,46 @@ mod tests {
     #[should_panic]
     fn urn_ref_too_small() {
         Uuid::nil().to_urn_ref().encode_lower(&mut [0; 44]);
+    }
+
+    #[test]
+    fn hyphenated_to_inner() {
+        let hyphenated = Uuid::nil().to_hyphenated();
+        assert_eq!(Uuid::from(hyphenated), Uuid::nil());
+    }
+
+    #[test]
+    fn hyphenated_ref_to_inner() {
+        let uuid = Uuid::nil();
+        let hyphenated_ref = uuid.to_hyphenated_ref();
+        assert_eq!(<&Uuid>::from(hyphenated_ref), &Uuid::nil());
+    }
+
+    #[test]
+    fn simple_to_inner() {
+        let simple = Uuid::nil().to_simple();
+        assert_eq!(Uuid::from(simple), Uuid::nil());
+    }
+
+    #[test]
+    fn simple_ref_to_inner() {
+        let uuid = Uuid::nil();
+        let simple_ref = uuid.to_simple_ref();
+        assert_eq!(simple_ref.as_ref(), &Uuid::nil());
+    }
+
+    #[test]
+    fn urn_to_inner() {
+        let urn = Uuid::nil().to_urn();
+        assert_eq!(Uuid::from(urn), Uuid::nil());
+    }
+
+    #[test]
+    fn urn_ref_to_inner() {
+        use std::borrow::Borrow;
+        let uuid = Uuid::nil();
+        let urn_ref = uuid.to_urn_ref();
+        let borrowed: &Uuid = urn_ref.borrow();
+        assert_eq!(borrowed, &Uuid::nil());
     }
 }
