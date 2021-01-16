@@ -605,6 +605,13 @@ impl Default for Uuid {
     }
 }
 
+impl AsRef<[u8]> for Uuid {
+    #[inline]
+    fn as_ref(&self) -> &[u8] {
+        &self.0
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{
@@ -1038,9 +1045,12 @@ mod tests {
     fn test_as_bytes() {
         let u = test_util::new();
         let ub = u.as_bytes();
+        let ur = u.as_ref();
 
         assert_eq!(ub.len(), 16);
+        assert_eq!(ur.len(), 16);
         assert!(!ub.iter().all(|&b| b == 0));
+        assert!(!ur.iter().all(|&b| b == 0));
     }
 
     #[test]
