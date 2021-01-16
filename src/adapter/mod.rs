@@ -1001,14 +1001,14 @@ macro_rules! impl_adapter_from {
 
         impl<$a> AsRef<Uuid> for $T<$a> {
             #[inline]
-            fn as_ref(&self) -> &$a Uuid {
+            fn as_ref(&self) -> &Uuid {
                 self.0
             }
         }
 
         impl<$a> Borrow<Uuid> for $T<$a> {
             #[inline]
-            fn borrow(&self) -> &$a Uuid {
+            fn borrow(&self) -> &Uuid {
                 self.0
             }
         }
