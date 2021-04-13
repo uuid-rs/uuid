@@ -512,6 +512,32 @@ impl Uuid {
             | u128::from(self.as_bytes()[15]) << 120
     }
 
+    /// Returns two 64bit values containing the UUID data.
+    ///
+    /// The bytes in the UUID will be split into two `u64`.
+    /// The first u64 represents the 64 most significant bits,
+    /// the second one represents the 64 least significant.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// fn main() -> Result<(), uuid::Error> {
+    ///     let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8")?;
+    ///     assert_eq!(
+    ///         uuid.as_u64_pair(),
+    ///         (0x936DA01F9ABD4D9D,
+    ///         0x80C702AF85C822A8),
+    ///     );
+    ///     Ok(())
+    /// }
+    /// ```
+    pub fn as_u64_pair(&self) -> (u64, u64) {
+        let value = self.as_u128();
+        ((value >> 64) as u64, value as u64)
+    }
+
     /// Returns an array of 16 octets containing the UUID data.
     pub const fn as_bytes(&self) -> &Bytes {
         &self.0
@@ -986,6 +1012,18 @@ mod tests {
     }
 
     #[test]
+    fn test_from_u64_pair() {
+        let high_in: u64 = 0xa1a2a3a4b1b2c1c2;
+        let low_in: u64 = 0xd1d2d3d4d5d6d7d8;
+
+        let u = Uuid::from_u64_pair(high_in, low_in);
+
+        let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
+        let result = u.to_simple().to_string();
+        assert_eq!(result, expected);
+    }
+
+    #[test]
     fn test_u128_roundtrip() {
         let v_in: u128 = 0xa1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8;
 
@@ -1003,6 +1041,18 @@ mod tests {
         let v_out = u.to_u128_le();
 
         assert_eq!(v_in, v_out);
+    }
+
+    #[test]
+    fn test_u64_pair_roundtrip() {
+        let high_in: u64 = 0xa1a2a3a4b1b2c1c2;
+        let low_in: u64 = 0xd1d2d3d4d5d6d7d8;
+
+        let u = Uuid::from_u64_pair(high_in, low_in);
+        let (high_out, low_out) = u.as_u64_pair();
+
+        assert_eq!(high_in, high_out);
+        assert_eq!(low_in, low_out);
     }
 
     #[test]
