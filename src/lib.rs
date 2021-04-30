@@ -156,41 +156,11 @@ mod serde_support;
 mod slog_support;
 #[cfg(test)]
 mod test_util;
-#[cfg(all(
-    feature = "v3",
-    any(
-        not(target_arch = "wasm32"),
-        target_os = "wasi",
-        all(
-            target_arch = "wasm32",
-            any(feature = "stdweb", feature = "wasm-bindgen")
-        )
-    )
-))]
+#[cfg(feature = "v3")]
 mod v3;
-#[cfg(all(
-    feature = "v4",
-    any(
-        not(target_arch = "wasm32"),
-        target_os = "wasi",
-        all(
-            target_arch = "wasm32",
-            any(feature = "stdweb", feature = "wasm-bindgen")
-        )
-    )
-))]
+#[cfg(feature = "v4")]
 mod v4;
-#[cfg(all(
-    feature = "v5",
-    any(
-        not(target_arch = "wasm32"),
-        target_os = "wasi",
-        all(
-            target_arch = "wasm32",
-            any(feature = "stdweb", feature = "wasm-bindgen")
-        )
-    )
-))]
+#[cfg(feature = "v5")]
 mod v5;
 #[cfg(all(windows, feature = "winapi"))]
 mod winapi_support;

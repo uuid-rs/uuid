@@ -59,6 +59,7 @@ optional = true
 version = "0.2.0"
 
 [dependencies.md5]
+default-features = false
 optional = true
 version = "0.7"
 
@@ -68,6 +69,7 @@ optional = true
 version = "1.0.56"
 
 [dependencies.sha1]
+default-features = false
 optional = true
 version = "0.6"
 
