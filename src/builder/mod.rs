@@ -21,7 +21,7 @@ use crate::prelude::*;
 impl Uuid {
     /// The 'nil UUID'.
     ///
-    /// The nil UUID is special form of UUID that is specified to have all
+    /// The nil UUID is a special form of UUID that is specified to have all
     /// 128 bits set to zero, as defined in [IETF RFC 4122 Section 4.1.7][RFC].
     ///
     /// [RFC]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
