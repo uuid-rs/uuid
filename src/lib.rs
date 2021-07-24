@@ -92,12 +92,11 @@
 //!
 //! use uuid::Uuid;
 //!
-//! fn main() -> Result<(), Box<dyn std::error::Error>> {
-//!     #[cfg(feature = "v4")] {
-//!         let my_uuid = Uuid::new_v4()?;
-//!         println!("{}", my_uuid);
-//!     }
-//!     Ok(())
+//! fn main() {
+//! #    #[cfg(feature = "v4")] {
+//!      let my_uuid = Uuid::new_v4();
+//!      println!("{}", my_uuid);
+//! #    }
 //! }
 //! ```
 //!
