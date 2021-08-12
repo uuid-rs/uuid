@@ -20,7 +20,7 @@ impl Serialize for Uuid {
     ) -> Result<S::Ok, S::Error> {
         if serializer.is_human_readable() {
             serializer
-                .serialize_str(&self.to_hyphenated().encode_lower(&mut [0; 36]))
+                .serialize_str(self.to_hyphenated().encode_lower(&mut [0; 36]))
         } else {
             serializer.serialize_bytes(self.as_bytes())
         }

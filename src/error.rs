@@ -7,6 +7,10 @@ use crate::{builder, parser};
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Error(Inner);
 
+pub(crate) fn err<T>(err: impl Into<Error>) -> Result<T, Error> {
+    Err(err.into())
+}
+
 // TODO: write tests for Error
 // BODY: not immediately blocking, but should be covered for 1.0
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]

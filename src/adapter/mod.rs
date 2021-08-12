@@ -816,7 +816,7 @@ impl<'a> UrnRef<'a> {
     /// [`Uuid`]: ../struct.Uuid.html
     /// [`UrnRef`]: struct.UrnRef.html
     pub const fn from_uuid_ref(uuid: &'a Uuid) -> Self {
-        UrnRef(&uuid)
+        UrnRef(uuid)
     }
 
     /// Writes the [`Uuid`] as a lower-case URN string to

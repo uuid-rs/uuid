@@ -64,13 +64,13 @@ impl Uuid {
             len,
             &[adapter::Hyphenated::LENGTH, adapter::Simple::LENGTH],
         ) {
-            Err(Error::InvalidLength {
+            return crate::err(Error::InvalidLength {
                 expected: error::ExpectedLength::Any(&[
                     adapter::Hyphenated::LENGTH,
                     adapter::Simple::LENGTH,
                 ]),
                 found: len,
-            })?;
+            });
         }
 
         // `digit` counts only hexadecimal digits, `i_char` counts all chars.
@@ -82,19 +82,19 @@ impl Uuid {
         for (i_char, chr) in input.bytes().enumerate() {
             if digit as usize >= adapter::Simple::LENGTH && group != 4 {
                 if group == 0 {
-                    Err(Error::InvalidLength {
+                    return crate::err(Error::InvalidLength {
                         expected: error::ExpectedLength::Any(&[
                             adapter::Hyphenated::LENGTH,
                             adapter::Simple::LENGTH,
                         ]),
                         found: len,
-                    })?;
+                    });
                 }
 
-                Err(Error::InvalidGroupCount {
+                return crate::err(Error::InvalidGroupCount {
                     expected: error::ExpectedLength::Any(&[1, 5]),
                     found: group + 1,
-                })?;
+                });
             }
 
             if digit % 2 == 0 {
@@ -121,13 +121,13 @@ impl Uuid {
                                 digit
                             };
 
-                            Err(Error::InvalidGroupLength {
+                            return crate::err(Error::InvalidGroupLength {
                                 expected: error::ExpectedLength::Exact(
                                     GROUP_LENS[group],
                                 ),
                                 found: found as usize,
                                 group,
-                            })?;
+                            });
                         }
                         // Next group, decrement digit, it is incremented again
                         // at the bottom.
@@ -135,12 +135,12 @@ impl Uuid {
                         digit -= 1;
                     }
                     _ => {
-                        Err(Error::InvalidCharacter {
+                        return crate::err(Error::InvalidCharacter {
                             expected: "0123456789abcdefABCDEF-",
                             found: input[i_char..].chars().next().unwrap(),
                             index: i_char,
                             urn: error::UrnPrefix::Optional,
-                        })?;
+                        });
                     }
                 }
             } else {
@@ -161,21 +161,21 @@ impl Uuid {
                             digit
                         };
 
-                        Err(Error::InvalidGroupLength {
+                        return crate::err(Error::InvalidGroupLength {
                             expected: error::ExpectedLength::Exact(
                                 GROUP_LENS[group],
                             ),
                             found: found as usize,
                             group,
-                        })?;
+                        });
                     }
                     _ => {
-                        Err(Error::InvalidCharacter {
+                        return crate::err(Error::InvalidCharacter {
                             expected: "0123456789abcdefABCDEF-",
                             found: input[i_char..].chars().next().unwrap(),
                             index: i_char,
                             urn: error::UrnPrefix::Optional,
-                        })?;
+                        });
                     }
                 }
                 buffer[(digit / 2) as usize] = acc;
@@ -188,11 +188,11 @@ impl Uuid {
         // BODY: this only needed until we switch to
         //       ParseError
         if ACC_GROUP_LENS[4] as u8 != digit {
-            Err(Error::InvalidGroupLength {
+            return crate::err(Error::InvalidGroupLength {
                 expected: error::ExpectedLength::Exact(GROUP_LENS[4]),
                 found: (digit as usize - ACC_GROUP_LENS[3]),
                 group,
-            })?;
+            });
         }
 
         Ok(Uuid::from_bytes(buffer))

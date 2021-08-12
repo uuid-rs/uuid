@@ -78,7 +78,7 @@ impl Uuid {
         let len = d4.len();
 
         if len != D4_LEN {
-            Err(Error::new(D4_LEN, len))?;
+            return crate::err(Error::new(D4_LEN, len));
         }
 
         Ok(Uuid::from_bytes([
@@ -135,7 +135,7 @@ impl Uuid {
         let len = d4.len();
 
         if len != D4_LEN {
-            Err(Error::new(D4_LEN, len))?;
+            return crate::err(Error::new(D4_LEN, len));
         }
 
         Ok(Uuid::from_bytes([
@@ -265,7 +265,7 @@ impl Uuid {
         let len = b.len();
 
         if len != BYTES_LEN {
-            Err(Error::new(BYTES_LEN, len))?;
+            return crate::err(Error::new(BYTES_LEN, len));
         }
 
         let mut bytes: Bytes = [0; 16];
@@ -372,7 +372,7 @@ impl crate::Builder {
         let len = b.len();
 
         if len != BYTES_LEN {
-            Err(Error::new(BYTES_LEN, len))?;
+            return crate::err(Error::new(BYTES_LEN, len));
         }
 
         let mut bytes: crate::Bytes = [0; 16];
