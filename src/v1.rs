@@ -280,9 +280,13 @@ impl ClockSequence for Context {
 mod tests {
     use super::*;
 
+    #[cfg(target_arch = "wasm32")]
+    use wasm_bindgen_test::*;
+
     use crate::std::string::ToString;
 
     #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_new_v1() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
