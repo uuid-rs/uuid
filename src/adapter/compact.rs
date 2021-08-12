@@ -27,7 +27,6 @@ where
 
 #[cfg(test)]
 mod tests {
-
     use serde_test;
 
     #[test]

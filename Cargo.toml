@@ -39,9 +39,6 @@ default-target = "x86_64-pc-windows-msvc"
 [package.metadata.playground]
 features = ["serde", "v1", "v3", "v4", "v5"]
 
-[badges.appveyor]
-repository = "uuid-rs/uuid"
-
 [badges.is-it-maintained-issue-resolution]
 repository = "uuid-rs/uuid"
 
@@ -88,6 +85,13 @@ version = "1.0"
 
 [dev-dependencies.serde_test]
 version = "1.0.56"
+
+[dev-dependencies.wasm-bindgen-lib]
+package = "wasm-bindgen"
+version = "0.2"
+
+[dev-dependencies.wasm-bindgen-test]
+version = "0.3"
 
 [features]
 default = ["std"]

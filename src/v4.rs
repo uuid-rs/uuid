@@ -42,7 +42,11 @@ impl Uuid {
 mod tests {
     use crate::prelude::*;
 
+    #[cfg(target_arch = "wasm32")]
+    use wasm_bindgen_test::*;
+
     #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_new() {
         let uuid = Uuid::new_v4();
 
@@ -51,6 +55,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_get_version() {
         let uuid = Uuid::new_v4();
 
