@@ -32,15 +32,16 @@
 //! [`Variant`]: ../enum.Variant.html
 //! [`Version`]: ../enum.Version.html
 //! [`Builder`]: ../builder/struct.Builder.html
-//!
-#![cfg_attr(feature = "v1",
-doc = "
+#![cfg_attr(
+    feature = "v1",
+    doc = "
 [`uuid::v1`]`::{`[`ClockSequence`],[`Context`]`}`: The types useful for
 handling uuid version 1. Requires feature `v1`.
 
 [`uuid::v1`]: ../v1/index.html
 [`Context`]: ../v1/struct.Context.html
-[`ClockSequence`]: ../v1/trait.ClockSequence.html")]
+[`ClockSequence`]: ../v1/trait.ClockSequence.html"
+)]
 
 pub use super::{Builder, Bytes, Error, Uuid, Variant, Version};
 #[cfg(feature = "v1")]
