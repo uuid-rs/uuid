@@ -108,6 +108,26 @@
 //! * hyphenated: `550e8400-e29b-41d4-a716-446655440000`
 //! * urn: `urn:uuid:F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4`
 //!
+//! # Endianness
+//!
+//! The specification for UUIDs encodes the integer fields that make up the
+//! value in big-endian order. This crate assumes integer inputs are already in
+//! the correct order by default, regardless of the endianness of the
+//! environment. Most methods that accept integers have a `_le` variant (such as
+//! `from_fields_le`) that assumes any integer values will need to have their
+//! bytes flipped, regardless of the endianness of the environment.
+//!
+//! Most users won't need to worry about endianness unless they need to operate
+//! on individual fields (such as when converting between Microsoft GUIDs). The
+//! important things to remember are:
+//!
+//! - The endianness is in terms of the fields of the UUID, not the environment.
+//! - The endianness is assumed to be big-endian when there's no `_le` suffix
+//!   somewhere.
+//! - Byte-flipping in `_le` methods applies to each integer.
+//! - Endianness roundtrips, so if you create a UUID with `from_fields_le`
+//!   you'll get the same values back out with `to_fields_le`.
+//!
 //! # References
 //!
 //! * [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
@@ -304,7 +324,7 @@ impl Uuid {
         }
     }
 
-    /// Returns the four field values of the UUID in big-endian order.
+    /// Returns the four field values of the UUID.
     ///
     /// These values can be passed to the `from_fields()` method to get the
     /// original `Uuid` back.
@@ -366,8 +386,10 @@ impl Uuid {
 
     /// Returns the four field values of the UUID in little-endian order.
     ///
-    /// The bytes in the returned integer fields will
-    /// be converted from big-endian order.
+    /// The bytes in the returned integer fields will be converted from
+    /// big-endian order. This is based on the endianness of the UUID,
+    /// rather than the target environment so bytes will be flipped on both
+    /// big and little endian machines.
     ///
     /// # Examples
     ///
@@ -445,7 +467,11 @@ impl Uuid {
 
     /// Returns a 128bit little-endian value containing the UUID data.
     ///
-    /// The bytes in the UUID will be reversed and packed into a `u128`.
+    /// The bytes in the `u128` will be flipped to convert into big-endian
+    /// order. This is based on the endianness of the UUID, rather than the
+    /// target environment so bytes will be flipped on both big and little
+    /// endian machines.
+    ///
     /// Note that this will produce a different result than
     /// [`Uuid::to_fields_le`], because the entire UUID is reversed, rather
     /// than reversing the individual fields in-place.
