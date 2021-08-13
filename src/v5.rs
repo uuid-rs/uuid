@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use sha1;
+use sha1::{Digest, Sha1};
 
 impl Uuid {
     /// Creates a UUID using a name from a namespace, based on the SHA-1 hash.
@@ -19,12 +19,12 @@ impl Uuid {
     /// [`NAMESPACE_URL`]: struct.Uuid.html#associatedconst.NAMESPACE_URL
     /// [`NAMESPACE_X500`]: struct.Uuid.html#associatedconst.NAMESPACE_X500
     pub fn new_v5(namespace: &Uuid, name: &[u8]) -> Uuid {
-        let mut hash = sha1::Sha1::new();
+        let mut hasher = Sha1::new();
 
-        hash.update(namespace.as_bytes());
-        hash.update(name);
+        hasher.update(namespace.as_bytes());
+        hasher.update(name);
 
-        let buffer = hash.digest().bytes();
+        let buffer = hasher.finalize();
 
         let mut bytes = crate::Bytes::default();
         bytes.copy_from_slice(&buffer[..16]);

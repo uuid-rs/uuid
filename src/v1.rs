@@ -196,7 +196,7 @@ impl Uuid {
 
         let len = node_id.len();
         if len != NODE_ID_LEN {
-            Err(crate::builder::Error::new(NODE_ID_LEN, len))?;
+            return crate::err(crate::builder::Error::new(NODE_ID_LEN, len));
         }
 
         let time_low = (ts.ticks & 0xFFFF_FFFF) as u32;

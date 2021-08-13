@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use md5;
+use md5::{Digest, Md5};
 
 impl Uuid {
     /// Creates a UUID using a name from a namespace, based on the MD5
@@ -20,16 +20,17 @@ impl Uuid {
     /// [`NAMESPACE_URL`]: #associatedconstant.NAMESPACE_URL
     /// [`NAMESPACE_X500`]: #associatedconstant.NAMESPACE_X500
     pub fn new_v3(namespace: &Uuid, name: &[u8]) -> Uuid {
-        let mut context = md5::Context::new();
+        let mut hasher = Md5::new();
 
-        context.consume(namespace.as_bytes());
-        context.consume(name);
+        hasher.update(namespace.as_bytes());
+        hasher.update(name);
 
-        let computed = context.compute();
-        let bytes = computed.into();
+        let buffer = hasher.finalize();
+
+        let mut bytes = crate::Bytes::default();
+        bytes.copy_from_slice(&buffer[..16]);
 
         let mut builder = crate::Builder::from_bytes(bytes);
-
         builder
             .set_variant(Variant::RFC4122)
             .set_version(Version::Md5);

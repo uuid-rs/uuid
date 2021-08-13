@@ -10,7 +10,6 @@
 // except according to those terms.
 
 use crate::prelude::*;
-use slog;
 
 impl slog::Value for Uuid {
     fn serialize(
