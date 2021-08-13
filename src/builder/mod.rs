@@ -44,7 +44,7 @@ impl Uuid {
         Uuid::from_bytes([0; 16])
     }
 
-    /// Creates a UUID from four field values in big-endian order.
+    /// Creates a UUID from four field values.
     ///
     /// # Errors
     ///
@@ -103,8 +103,10 @@ impl Uuid {
 
     /// Creates a UUID from four field values in little-endian order.
     ///
-    /// The bytes in the `d1`, `d2` and `d3` fields will
-    /// be converted into big-endian order.
+    /// The bytes in the `d1`, `d2` and `d3` fields will be flipped to convert
+    /// into big-endian order. This is based on the endianness of the UUID,
+    /// rather than the target environment so bytes will be flipped on both
+    /// big and little endian machines.
     ///
     /// # Examples
     ///
@@ -158,7 +160,7 @@ impl Uuid {
         ]))
     }
 
-    /// Creates a UUID from a 128bit value in big-endian order.
+    /// Creates a UUID from a 128bit value.
     pub const fn from_u128(v: u128) -> Self {
         Uuid::from_bytes([
             (v >> 120) as u8,
@@ -181,6 +183,11 @@ impl Uuid {
     }
 
     /// Creates a UUID from a 128bit value in little-endian order.
+    ///
+    /// The entire value will be flipped to convert into big-endian order.
+    /// This is based on the endianness of the UUID, rather than the target
+    /// environment so bytes will be flipped on both big and little endian
+    /// machines.
     pub const fn from_u128_le(v: u128) -> Self {
         Uuid::from_bytes([
             v as u8,
@@ -202,7 +209,7 @@ impl Uuid {
         ])
     }
 
-    /// Creates a UUID from two 64bit values in big-endian order.
+    /// Creates a UUID from two 64bit values.
     pub const fn from_u64_pair(high_bits: u64, low_bits: u64) -> Self {
         Uuid::from_bytes([
             (high_bits >> 56) as u8,
@@ -224,7 +231,7 @@ impl Uuid {
         ])
     }
 
-    /// Creates a UUID using the supplied big-endian bytes.
+    /// Creates a UUID using the supplied bytes.
     ///
     /// # Errors
     ///
@@ -273,7 +280,7 @@ impl Uuid {
         Ok(Uuid::from_bytes(bytes))
     }
 
-    /// Creates a UUID using the supplied big-endian bytes.
+    /// Creates a UUID using the supplied bytes.
     pub const fn from_bytes(bytes: Bytes) -> Uuid {
         Uuid(bytes)
     }
@@ -298,13 +305,9 @@ impl Uuid {
 ///     .set_version(Version::Random)
 ///     .build();
 /// ```
-// TODO: remove in 1.0.0
-#[allow(dead_code)]
-#[deprecated]
-pub type Builder = crate::Builder;
 
 impl crate::Builder {
-    /// Creates a `Builder` using the supplied big-endian bytes.
+    /// Creates a `Builder` using the supplied bytes.
     ///
     /// # Examples
     ///
@@ -334,7 +337,7 @@ impl crate::Builder {
         Builder(b)
     }
 
-    /// Creates a `Builder` using the supplied big-endian bytes.
+    /// Creates a `Builder` using the supplied bytes.
     ///
     /// # Errors
     ///
@@ -380,7 +383,7 @@ impl crate::Builder {
         Ok(Self::from_bytes(bytes))
     }
 
-    /// Creates a `Builder` from four big-endian field values.
+    /// Creates a `Builder` from four field values.
     ///
     /// # Errors
     ///
@@ -425,7 +428,7 @@ impl crate::Builder {
         })
     }
 
-    /// Creates a `Builder` from a big-endian 128bit value.
+    /// Creates a `Builder` from a 128bit value.
     pub fn from_u128(v: u128) -> Self {
         crate::Builder::from_bytes(*Uuid::from_u128(v).as_bytes())
     }
