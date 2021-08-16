@@ -114,7 +114,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features
+          args: -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features --features "v1 v3 v5 serde"
 
   nodeps:
     name: Build / No deps
