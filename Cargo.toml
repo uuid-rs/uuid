@@ -56,6 +56,7 @@ optional = true
 version = "0.2"
 
 [dependencies.atomic]
+default-features = false
 optional = true
 version = "0.5"
 
