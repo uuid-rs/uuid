@@ -43,12 +43,6 @@
 //! * `serde` - adds the ability to serialize and deserialize a UUID using the
 //!   `serde` crate.
 //!
-//! For WebAssembly, enable one of the following features depending
-//! on your JavaScript interop toolchain of choice:
-//!
-//! * `stdweb` - for [`stdweb`] combined with [`cargo-web`]
-//! * `wasm-bindgen` - for [`wasm-bindgen`]
-//!
 //! By default, `uuid` can be depended on with:
 //!
 //! ```toml
@@ -69,6 +63,35 @@
 //! [dependencies]
 //! uuid = { version = "0.8", default-features = false }
 //! ```
+//!
+//! # Building for other targets
+//!
+//! ## WebAssembly
+//!
+//! For WebAssembly, enable one of the following features depending
+//! on your JavaScript interop toolchain of choice:
+//!
+//! * `stdweb` - for [`stdweb`] combined with [`cargo-web`]
+//! * `wasm-bindgen` - for [`wasm-bindgen`]
+//!
+//! ## Embedded
+//!
+//! For embedded targets without the standard library, you'll need to
+//! disable default features when building `uuid`:
+//!
+//! ```toml
+//! [dependencies]
+//! uuid = { version = "0.8", default-features = false }
+//! ```
+//!
+//! Some additional features are supported in no-std environments:
+//!
+//! * `v1`, `v3`, and `v5`
+//! * `serde`
+//!
+//! If you need to use `v4` in a no-std environment, you'll need to
+//! follow [`getrandom`'s docs] on configuring a source of randomness
+//! on unsupported targets.
 //!
 //! # Examples
 //!
@@ -143,6 +166,7 @@
 //! [`Uuid::new_v5`]: struct.Uuid.html#method.new_v5
 //! [`v1::ClockSequence`]: v1/trait.ClockSequence.html
 //! [`v1::Context`]: v1/struct.Context.html
+//! [`getrandom`'s docs]: https://docs.rs/getrandom
 
 #![no_std]
 #![deny(missing_debug_implementations, missing_docs)]
