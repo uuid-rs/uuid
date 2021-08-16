@@ -3,7 +3,7 @@
 //! Note that you need feature `v1` in order to use these features.
 
 use crate::prelude::*;
-use core::sync::atomic;
+use atomic::Atomic;
 
 /// The number of 100 ns ticks between the UUID epoch
 /// `1582-10-15 00:00:00` and the Unix epoch `1970-01-01 00:00:00`.
@@ -13,7 +13,7 @@ const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 /// process-wide uniqueness.
 #[derive(Debug)]
 pub struct Context {
-    count: atomic::AtomicUsize,
+    count: Atomic<usize>,
 }
 
 /// Stores the number of nanoseconds from an epoch and a counter for ensuring
@@ -265,7 +265,7 @@ impl Context {
     /// process.
     pub const fn new(count: u16) -> Self {
         Self {
-            count: atomic::AtomicUsize::new(count as usize),
+            count: Atomic::new(count as usize),
         }
     }
 }
