@@ -159,10 +159,9 @@ mod test_util;
 #[cfg(all(
     feature = "v3",
     any(
-        not(target_arch = "wasm32"),
-        target_os = "wasi",
+        not(target = "wasm32-unknown-unknown"),
         all(
-            target_arch = "wasm32",
+            target = "wasm32-unknown-unknown",
             any(feature = "stdweb", feature = "wasm-bindgen")
         )
     )
@@ -171,10 +170,9 @@ mod v3;
 #[cfg(all(
     feature = "v4",
     any(
-        not(target_arch = "wasm32"),
-        target_os = "wasi",
+        not(target = "wasm32-unknown-unknown"),
         all(
-            target_arch = "wasm32",
+            target = "wasm32-unknown-unknown",
             any(feature = "stdweb", feature = "wasm-bindgen")
         )
     )
@@ -183,10 +181,9 @@ mod v4;
 #[cfg(all(
     feature = "v5",
     any(
-        not(target_arch = "wasm32"),
-        target_os = "wasi",
+        not(target = "wasm32-unknown-unknown"),
         all(
-            target_arch = "wasm32",
+            target = "wasm32-unknown-unknown",
             any(feature = "stdweb", feature = "wasm-bindgen")
         )
     )
