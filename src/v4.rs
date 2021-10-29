@@ -51,7 +51,7 @@ mod tests {
         let uuid = Uuid::new_v4();
 
         assert_eq!(uuid.get_version(), Some(Version::Random));
-        assert_eq!(uuid.get_variant(), Some(Variant::RFC4122));
+        assert_eq!(uuid.get_variant(), Variant::RFC4122);
     }
 
     #[test]

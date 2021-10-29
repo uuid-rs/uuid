@@ -292,7 +292,7 @@ mod tests {
             );
 
             assert_eq!(uuid.get_version(), Some(Version::Mac));
-            assert_eq!(uuid.get_variant(), Some(Variant::RFC4122));
+            assert_eq!(uuid.get_variant(), Variant::RFC4122);
             assert_eq!(
                 uuid.to_hyphenated().to_string(),
                 "20616934-4ba2-11e7-8000-010203040506"
