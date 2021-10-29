@@ -11,8 +11,10 @@
 
 //! Adapters for various formats for UUIDs
 
-use crate::prelude::*;
-use crate::std::{borrow::Borrow, fmt, str};
+use crate::{
+    std::{borrow::Borrow, fmt, str},
+    Uuid, Variant,
+};
 
 impl std::fmt::Debug for Uuid {
     #[inline]
@@ -1060,7 +1062,7 @@ impl_fmt_traits! {
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::*;
+    use super::*;
 
     #[test]
     fn hyphenated_trailing() {

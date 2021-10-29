@@ -1,4 +1,5 @@
-use crate::prelude::*;
+use crate::Uuid;
+
 use winapi::shared::guiddef;
 
 #[cfg(feature = "guid")]

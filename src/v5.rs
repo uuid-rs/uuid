@@ -1,4 +1,5 @@
-use crate::prelude::*;
+use crate::{Uuid, Variant, Version};
+
 use sha1::{Digest, Sha1};
 
 impl Uuid {

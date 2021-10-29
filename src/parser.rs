@@ -13,7 +13,7 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
-use crate::{fmt, std::str, error::*, Uuid};
+use crate::{error::*, fmt, std::str, Uuid};
 
 impl str::FromStr for Uuid {
     type Err = Error;
@@ -62,7 +62,8 @@ impl Uuid {
                     fmt::Simple::LENGTH,
                 ]),
                 found: len,
-            }.into());
+            }
+            .into());
         }
 
         // `digit` counts only hexadecimal digits, `i_char` counts all chars.
@@ -80,13 +81,15 @@ impl Uuid {
                             fmt::Simple::LENGTH,
                         ]),
                         found: len,
-                    }.into());
+                    }
+                    .into());
                 }
 
                 return Err(ErrorKind::InvalidGroupCount {
                     expected: ExpectedLength::Any(&[1, 5]),
                     found: group + 1,
-                }.into());
+                }
+                .into());
             }
 
             if digit % 2 == 0 {
@@ -113,7 +116,8 @@ impl Uuid {
                                 ),
                                 found: found as usize,
                                 group,
-                            }.into());
+                            }
+                            .into());
                         }
                         // Next group, decrement digit, it is incremented again
                         // at the bottom.
@@ -126,7 +130,8 @@ impl Uuid {
                             found: input[i_char..].chars().next().unwrap(),
                             index: i_char,
                             urn: UrnPrefix::Optional,
-                        }.into());
+                        }
+                        .into());
                     }
                 }
             } else {
@@ -145,12 +150,11 @@ impl Uuid {
                         };
 
                         return Err(ErrorKind::InvalidGroupLength {
-                            expected: ExpectedLength::Exact(
-                                GROUP_LENS[group],
-                            ),
+                            expected: ExpectedLength::Exact(GROUP_LENS[group]),
                             found: found as usize,
                             group,
-                        }.into());
+                        }
+                        .into());
                     }
                     _ => {
                         return Err(ErrorKind::InvalidCharacter {
@@ -158,7 +162,8 @@ impl Uuid {
                             found: input[i_char..].chars().next().unwrap(),
                             index: i_char,
                             urn: UrnPrefix::Optional,
-                        }.into());
+                        }
+                        .into());
                     }
                 }
                 buffer[(digit / 2) as usize] = acc;
@@ -172,7 +177,8 @@ impl Uuid {
                 expected: ExpectedLength::Exact(GROUP_LENS[4]),
                 found: (digit as usize - ACC_GROUP_LENS[3]),
                 group,
-            }.into());
+            }
+            .into());
         }
 
         Ok(Uuid::from_bytes(buffer))
@@ -182,15 +188,14 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{fmt, std::string::ToString, test_util};
+    use crate::{fmt, std::string::ToString, tests::new};
 
     #[test]
     fn test_parse_uuid_v4() {
-        const EXPECTED_UUID_LENGTHS: ExpectedLength =
-            ExpectedLength::Any(&[
-                fmt::Hyphenated::LENGTH,
-                fmt::Simple::LENGTH,
-            ]);
+        const EXPECTED_UUID_LENGTHS: ExpectedLength = ExpectedLength::Any(&[
+            fmt::Hyphenated::LENGTH,
+            fmt::Simple::LENGTH,
+        ]);
 
         const EXPECTED_GROUP_COUNTS: ExpectedLength =
             ExpectedLength::Any(&[1, 5]);
@@ -366,7 +371,7 @@ mod tests {
         );
 
         // Round-trip
-        let uuid_orig = test_util::new();
+        let uuid_orig = new();
         let orig_str = uuid_orig.to_string();
         let uuid_out = Uuid::parse_str(&orig_str).unwrap();
         assert_eq!(uuid_orig, uuid_out);

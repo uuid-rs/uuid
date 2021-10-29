@@ -2,7 +2,8 @@
 //!
 //! Note that you need feature `v1` in order to use these features.
 
-use crate::prelude::*;
+use crate::{Uuid, Version};
+
 use atomic::Atomic;
 
 /// The number of 100 ns ticks between the UUID epoch
@@ -240,8 +241,8 @@ impl Uuid {
                     | (self.as_bytes()[9] as u16);
 
                 Some(Timestamp::from_rfc4122(ticks, counter))
-            },
-            _ => None
+            }
+            _ => None,
         }
     }
 }
@@ -275,7 +276,7 @@ mod tests {
     #[cfg(target_arch = "wasm32")]
     use wasm_bindgen_test::*;
 
-    use crate::std::string::ToString;
+    use crate::{std::string::ToString, Variant};
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]

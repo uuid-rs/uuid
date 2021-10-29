@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{Uuid, Variant, Version};
 
 impl Uuid {
     /// Creates a random UUID.
@@ -40,7 +40,7 @@ impl Uuid {
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::*;
+    use super::*;
 
     #[cfg(target_arch = "wasm32")]
     use wasm_bindgen_test::*;

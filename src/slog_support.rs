@@ -9,7 +9,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::prelude::*;
+use crate::Uuid;
 
 impl slog::Value for Uuid {
     fn serialize(
@@ -24,15 +24,14 @@ impl slog::Value for Uuid {
 
 #[cfg(test)]
 mod tests {
+    use crate::tests::new;
+
+    use slog::{self, crit, Drain};
 
     #[test]
     fn test_slog_kv() {
-        use crate::test_util;
-        use slog;
-        use slog::{crit, Drain};
-
         let root = slog::Logger::root(slog::Discard.fuse(), slog::o!());
-        let u1 = test_util::new();
+        let u1 = new();
         crit!(root, "test"; "u1" => u1);
     }
 }

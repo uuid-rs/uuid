@@ -87,12 +87,17 @@ impl From<ErrorKind> for Error {
 
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}: ", match self.0 {
-            ErrorKind::InvalidCharacter { .. } => "invalid character",
-            ErrorKind::InvalidGroupCount { .. } => "invalid number of groups",
-            ErrorKind::InvalidGroupLength { .. } => "invalid group length",
-            ErrorKind::InvalidLength { .. } => "invalid length",
-        })?;
+        write!(
+            f,
+            "{}: ",
+            match self.0 {
+                ErrorKind::InvalidCharacter { .. } => "invalid character",
+                ErrorKind::InvalidGroupCount { .. } =>
+                    "invalid number of groups",
+                ErrorKind::InvalidGroupLength { .. } => "invalid group length",
+                ErrorKind::InvalidLength { .. } => "invalid length",
+            }
+        )?;
 
         match self.0 {
             ErrorKind::InvalidCharacter {
@@ -139,5 +144,5 @@ mod std_support {
     use super::*;
     use crate::std::error;
 
-    impl error::Error for Error { }
+    impl error::Error for Error {}
 }
