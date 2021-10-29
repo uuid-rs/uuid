@@ -180,7 +180,7 @@ impl Uuid {
     ///
     /// let context = Context::new(42);
     /// let ts = Timestamp::from_rfc4122(1497624119, 0);
-    /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]).expect("failed to generate UUID");
+    /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
     ///
     /// assert_eq!(
     ///     uuid.to_hyphenated().to_string(),
@@ -191,7 +191,7 @@ impl Uuid {
     /// [`Timestamp`]: v1/struct.Timestamp.html
     /// [`ClockSequence`]: v1/struct.ClockSequence.html
     /// [`Context`]: v1/struct.Context.html
-    pub fn new_v1(ts: Timestamp, node_id: &[u8; 6]) -> Self {
+    pub const fn new_v1(ts: Timestamp, node_id: &[u8; 6]) -> Self {
         let time_low = (ts.ticks & 0xFFFF_FFFF) as u32;
         let time_mid = ((ts.ticks >> 32) & 0xFFFF) as u16;
         let time_high_and_version =
@@ -199,12 +199,14 @@ impl Uuid {
 
         let mut d4 = [0; 8];
 
-        {
-            d4[0] = (((ts.counter & 0x3F00) >> 8) as u8) | 0x80;
-            d4[1] = (ts.counter & 0xFF) as u8;
-        }
-
-        d4[2..].copy_from_slice(node_id);
+        d4[0] = (((ts.counter & 0x3F00) >> 8) as u8) | 0x80;
+        d4[1] = (ts.counter & 0xFF) as u8;
+        d4[2] = node_id[0];
+        d4[3] = node_id[1];
+        d4[4] = node_id[2];
+        d4[5] = node_id[3];
+        d4[6] = node_id[4];
+        d4[7] = node_id[5];
 
         Uuid::from_fields(time_low, time_mid, time_high_and_version, &d4)
     }
@@ -287,8 +289,7 @@ mod tests {
             let uuid = Uuid::new_v1(
                 Timestamp::from_unix(&context, time, time_fraction),
                 &node,
-            )
-            .unwrap();
+            );
 
             assert_eq!(uuid.get_version(), Some(Version::Mac));
             assert_eq!(uuid.get_variant(), Some(Variant::RFC4122));
@@ -307,8 +308,7 @@ mod tests {
             let uuid2 = Uuid::new_v1(
                 Timestamp::from_unix(&context, time, time_fraction),
                 &node,
-            )
-            .unwrap();
+            );
 
             assert_eq!(
                 uuid2.to_hyphenated().to_string(),
