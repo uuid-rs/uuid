@@ -13,20 +13,7 @@ pub(crate) fn err<T>(err: impl Into<Error>) -> Result<T, Error> {
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 enum Inner {
-    /// An error occurred while handling [`Uuid`] bytes.
-    ///
-    /// See [`BytesError`]
-    ///
-    /// [`BytesError`]: struct.BytesError.html
-    /// [`Uuid`]: struct.Uuid.html
     Build(builder::Error),
-
-    /// An error occurred while parsing a [`Uuid`] string.
-    ///
-    /// See [`parser::ParseError`]
-    ///
-    /// [`parser::ParseError`]: parser/enum.ParseError.html
-    /// [`Uuid`]: struct.Uuid.html
     Parser(parser::Error),
 }
 

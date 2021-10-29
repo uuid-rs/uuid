@@ -189,7 +189,7 @@ mod error;
 mod parser;
 mod prelude;
 
-pub mod adapter;
+pub mod fmt;
 #[cfg(feature = "v1")]
 pub mod v1;
 
@@ -210,7 +210,7 @@ mod winapi_support;
 
 use crate::{
     error::*,
-    std::{convert, fmt, str},
+    std::convert,
 };
 
 pub use crate::error::Error;
@@ -578,7 +578,7 @@ impl Uuid {
     }
 
     /// A buffer that can be used for `encode_...` calls, that is
-    /// guaranteed to be long enough for any of the adapters.
+    /// guaranteed to be long enough for any of the format format adapters.
     ///
     /// # Examples
     ///
@@ -603,53 +603,8 @@ impl Uuid {
     ///     "urn:uuid:00000000-0000-0000-0000-000000000000"
     /// );
     /// ```
-    pub const fn encode_buffer() -> [u8; adapter::Urn::LENGTH] {
-        [0; adapter::Urn::LENGTH]
-    }
-}
-
-impl fmt::Debug for Uuid {
-    #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::LowerHex::fmt(self, f)
-    }
-}
-
-impl fmt::Display for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::LowerHex::fmt(self, f)
-    }
-}
-
-impl fmt::Display for Variant {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            Variant::NCS => write!(f, "NCS"),
-            Variant::RFC4122 => write!(f, "RFC4122"),
-            Variant::Microsoft => write!(f, "Microsoft"),
-            Variant::Future => write!(f, "Future"),
-        }
-    }
-}
-
-impl fmt::LowerHex for Uuid {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
-    }
-}
-
-impl fmt::UpperHex for Uuid {
-    #[inline]
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::UpperHex::fmt(&self.to_hyphenated_ref(), f)
-    }
-}
-
-impl str::FromStr for Uuid {
-    type Err = Error;
-
-    fn from_str(uuid_str: &str) -> Result<Self, Self::Err> {
-        Uuid::parse_str(uuid_str)
+    pub const fn encode_buffer() -> [u8; fmt::Urn::LENGTH] {
+        [0; fmt::Urn::LENGTH]
     }
 }
 
@@ -712,7 +667,7 @@ mod tests {
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_uuid_display() {
-        use super::fmt::Write;
+        use crate::std::fmt::Write;
 
         let uuid = test_util::new();
         let s = uuid.to_string();
@@ -728,7 +683,7 @@ mod tests {
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_uuid_lowerhex() {
-        use super::fmt::Write;
+        use crate::std::fmt::Write;
 
         let mut buffer = String::new();
         let uuid = test_util::new();
@@ -759,7 +714,7 @@ mod tests {
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_uuid_to_string() {
-        use super::fmt::Write;
+        use crate::std::fmt::Write;
 
         let uuid = test_util::new();
         let s = uuid.to_string();
@@ -775,7 +730,7 @@ mod tests {
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_uuid_upperhex() {
-        use super::fmt::Write;
+        use crate::std::fmt::Write;
 
         let mut buffer = String::new();
         let uuid = test_util::new();

@@ -16,7 +16,15 @@
 pub(crate) mod error;
 pub(crate) use self::error::Error;
 
-use crate::{adapter, Uuid};
+use crate::{fmt, std::str, Uuid};
+
+impl str::FromStr for Uuid {
+    type Err = crate::Error;
+
+    fn from_str(uuid_str: &str) -> Result<Self, Self::Err> {
+        Uuid::parse_str(uuid_str)
+    }
+}
 
 /// Check if the length matches any of the given criteria lengths.
 fn len_matches_any(len: usize, crits: &[usize]) -> bool {
@@ -45,16 +53,16 @@ impl Uuid {
         // Ensure length is valid for any of the supported formats
         let len = input.len();
 
-        if len == adapter::Urn::LENGTH && input.starts_with("urn:uuid:") {
+        if len == fmt::Urn::LENGTH && input.starts_with("urn:uuid:") {
             input = &input[9..];
         } else if !len_matches_any(
             len,
-            &[adapter::Hyphenated::LENGTH, adapter::Simple::LENGTH],
+            &[fmt::Hyphenated::LENGTH, fmt::Simple::LENGTH],
         ) {
             return crate::err(Error::InvalidLength {
                 expected: error::ExpectedLength::Any(&[
-                    adapter::Hyphenated::LENGTH,
-                    adapter::Simple::LENGTH,
+                    fmt::Hyphenated::LENGTH,
+                    fmt::Simple::LENGTH,
                 ]),
                 found: len,
             });
@@ -67,12 +75,12 @@ impl Uuid {
         let mut buffer = [0u8; 16];
 
         for (i_char, chr) in input.bytes().enumerate() {
-            if digit as usize >= adapter::Simple::LENGTH && group != 4 {
+            if digit as usize >= fmt::Simple::LENGTH && group != 4 {
                 if group == 0 {
                     return crate::err(Error::InvalidLength {
                         expected: error::ExpectedLength::Any(&[
-                            adapter::Hyphenated::LENGTH,
-                            adapter::Simple::LENGTH,
+                            fmt::Hyphenated::LENGTH,
+                            fmt::Simple::LENGTH,
                         ]),
                         found: len,
                     });
@@ -189,14 +197,14 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{adapter, std::string::ToString, test_util};
+    use crate::{fmt, std::string::ToString, test_util};
 
     #[test]
     fn test_parse_uuid_v4() {
         const EXPECTED_UUID_LENGTHS: error::ExpectedLength =
             error::ExpectedLength::Any(&[
-                adapter::Hyphenated::LENGTH,
-                adapter::Simple::LENGTH,
+                fmt::Hyphenated::LENGTH,
+                fmt::Simple::LENGTH,
             ]);
 
         const EXPECTED_GROUP_COUNTS: error::ExpectedLength =
