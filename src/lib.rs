@@ -208,10 +208,7 @@ mod v5;
 #[cfg(all(windows, feature = "winapi"))]
 mod winapi_support;
 
-use crate::{
-    error::*,
-    std::convert,
-};
+use crate::std::convert;
 
 pub use crate::error::Error;
 

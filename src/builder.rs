@@ -13,9 +13,7 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
-mod error;
-pub(crate) use self::error::Error;
-
+use crate::error::*;
 use crate::prelude::*;
 
 impl Uuid {
@@ -304,13 +302,12 @@ impl Uuid {
     /// # Ok(())
     /// # }
     /// ```
-    pub fn from_slice(b: &[u8]) -> Result<Uuid, crate::Error> {
-        const BYTES_LEN: usize = 16;
-
-        let len = b.len();
-
-        if len != BYTES_LEN {
-            return crate::err(Error::new(BYTES_LEN, len));
+    pub fn from_slice(b: &[u8]) -> Result<Uuid, Error> {
+        if b.len() != 16 {
+            return Err(ErrorKind::InvalidLength {
+                expected: ExpectedLength::Exact(16),
+                found: b.len(),
+            }.into());
         }
 
         let mut bytes: Bytes = [0; 16];
@@ -407,18 +404,8 @@ impl Builder {
     ///
     /// assert!(builder.is_err());
     /// ```
-    pub fn from_slice(b: &[u8]) -> Result<Self, crate::Error> {
-        const BYTES_LEN: usize = 16;
-
-        let len = b.len();
-
-        if len != BYTES_LEN {
-            return crate::err(Error::new(BYTES_LEN, len));
-        }
-
-        let mut bytes: crate::Bytes = [0; 16];
-        bytes.copy_from_slice(b);
-        Ok(Self::from_bytes(bytes))
+    pub fn from_slice(b: &[u8]) -> Result<Self, Error> {
+        Ok(Builder(*Uuid::from_slice(b)?.as_bytes()))
     }
 
     /// Creates a `Builder` from four field values.
@@ -503,42 +490,33 @@ impl Builder {
     }
 
     /// Specifies the variant of the UUID.
-    pub fn set_variant(&mut self, v: crate::Variant) -> &mut Self {
-        let byte = self.0[8];
-
-        self.0[8] = match v {
-            crate::Variant::NCS => byte & 0x7f,
-            crate::Variant::RFC4122 => (byte & 0x3f) | 0x80,
-            crate::Variant::Microsoft => (byte & 0x1f) | 0xc0,
-            crate::Variant::Future => (byte & 0x1f) | 0xe0,
-        };
-
+    pub fn set_variant(&mut self, v: Variant) -> &mut Self {
+        *self = Builder(self.0).with_variant(v);
         self
     }
 
     /// Specifies the variant of the UUID.
-    pub const fn with_variant(mut self, v: crate::Variant) -> Self {
+    pub const fn with_variant(mut self, v: Variant) -> Self {
         let byte = self.0[8];
 
         self.0[8] = match v {
-            crate::Variant::NCS => byte & 0x7f,
-            crate::Variant::RFC4122 => (byte & 0x3f) | 0x80,
-            crate::Variant::Microsoft => (byte & 0x1f) | 0xc0,
-            crate::Variant::Future => (byte & 0x1f) | 0xe0,
+            Variant::NCS => byte & 0x7f,
+            Variant::RFC4122 => (byte & 0x3f) | 0x80,
+            Variant::Microsoft => (byte & 0x1f) | 0xc0,
+            Variant::Future => (byte & 0x1f) | 0xe0,
         };
 
         self
     }
 
     /// Specifies the version number of the UUID.
-    pub fn set_version(&mut self, v: crate::Version) -> &mut Self {
-        self.0[6] = (self.0[6] & 0x0f) | ((v as u8) << 4);
-
+    pub fn set_version(&mut self, v: Version) -> &mut Self {
+        *self = Builder(self.0).with_version(v);
         self
     }
 
     /// Specifies the version number of the UUID.
-    pub const fn with_version(mut self, v: crate::Version) -> Self {
+    pub const fn with_version(mut self, v: Version) -> Self {
         self.0[6] = (self.0[6] & 0x0f) | ((v as u8) << 4);
 
         self
