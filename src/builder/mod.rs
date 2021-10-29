@@ -46,10 +46,6 @@ impl Uuid {
 
     /// Creates a UUID from four field values.
     ///
-    /// # Errors
-    ///
-    /// This function will return an error if `d4`'s length is not 8 bytes.
-    ///
     /// # Examples
     ///
     /// Basic usage:
@@ -57,31 +53,25 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
+    /// let d1 = 0xAB3F1097u32;
+    /// let d2 = 0x501Eu16;
+    /// let d3 = 0xB736u16;
     /// let d4 = [12, 3, 9, 56, 54, 43, 8, 9];
     ///
-    /// let uuid = Uuid::from_fields(42, 12, 5, &d4);
-    /// let uuid = uuid.map(|uuid| uuid.to_hyphenated().to_string());
+    /// let uuid = Uuid::from_fields(d1, d2, d3, &d4);
     ///
-    /// let expected_uuid =
-    ///     Ok(String::from("0000002a-000c-0005-0c03-0938362b0809"));
-    ///
-    /// assert_eq!(expected_uuid, uuid);
+    /// assert_eq!(
+    ///     uuid.to_hyphenated().to_string(),
+    ///     "ab3f1097-501e-b736-0c03-0938362b0809"
+    /// );
     /// ```
-    pub fn from_fields(
+    pub const fn from_fields(
         d1: u32,
         d2: u16,
         d3: u16,
-        d4: &[u8],
-    ) -> Result<Uuid, crate::Error> {
-        const D4_LEN: usize = 8;
-
-        let len = d4.len();
-
-        if len != D4_LEN {
-            return crate::err(Error::new(D4_LEN, len));
-        }
-
-        Ok(Uuid::from_bytes([
+        d4: &[u8; 8],
+    ) -> Uuid {
+        Uuid::from_bytes([
             (d1 >> 24) as u8,
             (d1 >> 16) as u8,
             (d1 >> 8) as u8,
@@ -98,7 +88,7 @@ impl Uuid {
             d4[5],
             d4[6],
             d4[7],
-        ]))
+        ])
     }
 
     /// Creates a UUID from four field values in little-endian order.
@@ -119,28 +109,19 @@ impl Uuid {
     /// let d4 = [12, 3, 9, 56, 54, 43, 8, 9];
     ///
     /// let uuid = Uuid::from_fields_le(d1, d2, d3, &d4);
-    /// let uuid = uuid.map(|uuid| uuid.to_hyphenated().to_string());
     ///
-    /// let expected_uuid =
-    ///     Ok(String::from("97103fab-1e50-36b7-0c03-0938362b0809"));
-    ///
-    /// assert_eq!(expected_uuid, uuid);
+    /// assert_eq!(
+    ///     uuid.to_hyphenated().to_string(),
+    ///     "97103fab-1e50-36b7-0c03-0938362b0809"
+    /// );
     /// ```
-    pub fn from_fields_le(
+    pub const fn from_fields_le(
         d1: u32,
         d2: u16,
         d3: u16,
         d4: &[u8],
-    ) -> Result<Uuid, crate::Error> {
-        const D4_LEN: usize = 8;
-
-        let len = d4.len();
-
-        if len != D4_LEN {
-            return crate::err(Error::new(D4_LEN, len));
-        }
-
-        Ok(Uuid::from_bytes([
+    ) -> Uuid {
+        Uuid::from_bytes([
             d1 as u8,
             (d1 >> 8) as u8,
             (d1 >> 16) as u8,
@@ -157,10 +138,27 @@ impl Uuid {
             d4[5],
             d4[6],
             d4[7],
-        ]))
+        ])
     }
 
     /// Creates a UUID from a 128bit value.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let v = 0xa1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8u128;
+    ///
+    /// let uuid = Uuid::from_u128(v);
+    ///
+    /// assert_eq!(
+    ///     uuid.to_hyphenated().to_string(),
+    ///     "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8"
+    /// );
+    /// ```
     pub const fn from_u128(v: u128) -> Self {
         Uuid::from_bytes([
             (v >> 120) as u8,
@@ -188,6 +186,23 @@ impl Uuid {
     /// This is based on the endianness of the UUID, rather than the target
     /// environment so bytes will be flipped on both big and little endian
     /// machines.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let v = 0xd8d7d6d5d4d3d2d1c2c1b2b1a4a3a2a1u128;
+    ///
+    /// let uuid = Uuid::from_u128_le(v);
+    ///
+    /// assert_eq!(
+    ///     uuid.to_hyphenated().to_string(),
+    ///     "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8"
+    /// );
+    /// ```
     pub const fn from_u128_le(v: u128) -> Self {
         Uuid::from_bytes([
             v as u8,
@@ -210,6 +225,24 @@ impl Uuid {
     }
 
     /// Creates a UUID from two 64bit values.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// let hi = 0xa1a2a3a4b1b2c1c2u64;
+    /// let lo = 0xd1d2d3d4d5d6d7d8u64;
+    ///
+    /// let uuid = Uuid::from_u64_pair(hi, lo);
+    ///
+    /// assert_eq!(
+    ///     uuid.to_hyphenated().to_string(),
+    ///     "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8"
+    /// );
+    /// ```
     pub const fn from_u64_pair(high_bits: u64, low_bits: u64) -> Self {
         Uuid::from_bytes([
             (high_bits >> 56) as u8,
@@ -242,22 +275,25 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use uuid::Uuid;
     ///
     /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76, 32, 50, 87, 5, 1, 33, 43, 87];
     ///
-    /// let uuid = Uuid::from_slice(&bytes);
-    /// let uuid = uuid.map(|uuid| uuid.to_hyphenated().to_string());
+    /// let uuid = Uuid::from_slice(&bytes)?;
     ///
-    /// let expected_uuid =
-    ///     Ok(String::from("0436430c-2b02-624c-2032-570501212b57"));
-    ///
-    /// assert_eq!(expected_uuid, uuid);
+    /// assert_eq!(
+    ///     uuid.to_hyphenated().to_string(),
+    ///     "0436430c-2b02-624c-2032-570501212b57"
+    /// );
+    /// # Ok(())
+    /// # }
     /// ```
     ///
     /// An incorrect number of bytes:
     ///
     /// ```
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// use uuid::Uuid;
     ///
     /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76];
@@ -265,6 +301,8 @@ impl Uuid {
     /// let uuid = Uuid::from_slice(&bytes);
     ///
     /// assert!(uuid.is_err());
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn from_slice(b: &[u8]) -> Result<Uuid, crate::Error> {
         const BYTES_LEN: usize = 16;
@@ -281,32 +319,32 @@ impl Uuid {
     }
 
     /// Creates a UUID using the supplied bytes.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// use uuid::Uuid;
+    ///
+    /// let bytes = [4, 54, 67, 12, 43, 2, 98, 76, 32, 50, 87, 5, 1, 33, 43, 87];
+    ///
+    /// let uuid = Uuid::from_bytes(bytes);
+    ///
+    /// assert_eq!(
+    ///     uuid.to_hyphenated().to_string(),
+    ///     "0436430c-2b02-624c-2032-570501212b57"
+    /// );
+    /// # Ok(())
+    /// # }
+    /// ```
     pub const fn from_bytes(bytes: Bytes) -> Uuid {
         Uuid(bytes)
     }
 }
 
-/// A builder struct for creating a UUID.
-///
-/// # Examples
-///
-/// Creating a v4 UUID from externally generated bytes:
-///
-/// ```
-/// use uuid::{Builder, Variant, Version};
-///
-/// # let rng = || [
-/// #     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90,
-/// # 145, 63, 62,
-/// # ];
-/// let random_bytes = rng();
-/// let uuid = Builder::from_bytes(random_bytes)
-///     .set_variant(Variant::RFC4122)
-///     .set_version(Version::Random)
-///     .build();
-/// ```
-
-impl crate::Builder {
+impl Builder {
     /// Creates a `Builder` using the supplied bytes.
     ///
     /// # Examples
@@ -385,52 +423,63 @@ impl crate::Builder {
 
     /// Creates a `Builder` from four field values.
     ///
-    /// # Errors
+    /// # Examples
     ///
-    /// This function will return an error if `d4`'s length is not 8 bytes.
+    /// Basic usage:
+    ///
+    /// ```
+    /// let d1 = 0xAB3F1097u32;
+    /// let d2 = 0x501Eu16;
+    /// let d3 = 0xB736u16;
+    /// let d4 = [12, 3, 9, 56, 54, 43, 8, 9];
+    ///
+    /// let uuid = uuid::Builder::from_fields(d1, d2, d3, &d4).into_uuid();
+    ///
+    /// assert_eq!(
+    ///     uuid.to_hyphenated().to_string(),
+    ///     "ab3f1097-501e-b736-0c03-0938362b0809"
+    /// );
+    /// ```
+    pub const fn from_fields(
+        d1: u32,
+        d2: u16,
+        d3: u16,
+        d4: &[u8; 8],
+    ) -> Self {
+        Builder::from_bytes(*Uuid::from_fields(d1, d2, d3, d4).as_bytes())
+    }
+
+    /// Creates a `Builder` from four field values.
     ///
     /// # Examples
     ///
     /// Basic usage:
     ///
     /// ```
+    /// let d1 = 0xAB3F1097u32;
+    /// let d2 = 0x501Eu16;
+    /// let d3 = 0xB736u16;
     /// let d4 = [12, 3, 9, 56, 54, 43, 8, 9];
     ///
-    /// let builder = uuid::Builder::from_fields(42, 12, 5, &d4);
-    /// let uuid =
-    ///     builder.map(|mut builder| builder.build().to_hyphenated().to_string());
+    /// let uuid = uuid::Builder::from_fields_le(d1, d2, d3, &d4).into_uuid();
     ///
-    /// let expected_uuid =
-    ///     Ok(String::from("0000002a-000c-0005-0c03-0938362b0809"));
-    ///
-    /// assert_eq!(expected_uuid, uuid);
+    /// assert_eq!(
+    ///     uuid.to_hyphenated().to_string(),
+    ///     "97103fab-1e50-36b7-0c03-0938362b0809"
+    /// );
     /// ```
-    ///
-    /// An invalid length:
-    ///
-    /// ```
-    /// let d4 = [12];
-    ///
-    /// let builder = uuid::Builder::from_fields(42, 12, 5, &d4);
-    ///
-    /// assert!(builder.is_err());
-    /// ```
-    pub fn from_fields(
+    pub const fn from_fields_le(
         d1: u32,
         d2: u16,
         d3: u16,
-        d4: &[u8],
-    ) -> Result<Self, crate::Error> {
-        Uuid::from_fields(d1, d2, d3, d4).map(|uuid| {
-            let bytes = *uuid.as_bytes();
-
-            crate::Builder::from_bytes(bytes)
-        })
+        d4: &[u8; 8],
+    ) -> Self {
+        Builder::from_bytes(*Uuid::from_fields_le(d1, d2, d3, d4).as_bytes())
     }
 
     /// Creates a `Builder` from a 128bit value.
-    pub fn from_u128(v: u128) -> Self {
-        crate::Builder::from_bytes(*Uuid::from_u128(v).as_bytes())
+    pub const fn from_u128(v: u128) -> Self {
+        Builder::from_bytes(*Uuid::from_u128(v).as_bytes())
     }
 
     /// Creates a `Builder` with an initial [`Uuid::nil`].
@@ -467,8 +516,29 @@ impl crate::Builder {
         self
     }
 
+    /// Specifies the variant of the UUID.
+    pub const fn with_variant(mut self, v: crate::Variant) -> Self {
+        let byte = self.0[8];
+
+        self.0[8] = match v {
+            crate::Variant::NCS => byte & 0x7f,
+            crate::Variant::RFC4122 => (byte & 0x3f) | 0x80,
+            crate::Variant::Microsoft => (byte & 0x1f) | 0xc0,
+            crate::Variant::Future => (byte & 0x1f) | 0xe0,
+        };
+
+        self
+    }
+
     /// Specifies the version number of the UUID.
     pub fn set_version(&mut self, v: crate::Version) -> &mut Self {
+        self.0[6] = (self.0[6] & 0x0f) | ((v as u8) << 4);
+
+        self
+    }
+
+    /// Specifies the version number of the UUID.
+    pub const fn with_version(mut self, v: crate::Version) -> Self {
         self.0[6] = (self.0[6] & 0x0f) | ((v as u8) << 4);
 
         self
@@ -493,6 +563,11 @@ impl crate::Builder {
     ///
     /// [`Uuid`]: struct.Uuid.html
     pub fn build(&mut self) -> Uuid {
+        Uuid::from_bytes(self.0)
+    }
+
+    /// Convert the builder into a [`Uuid`].
+    pub const fn into_uuid(self) -> Uuid {
         Uuid::from_bytes(self.0)
     }
 }

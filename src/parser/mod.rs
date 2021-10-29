@@ -29,19 +29,6 @@ fn len_matches_any(len: usize, crits: &[usize]) -> bool {
     false
 }
 
-/// Check if the length matches any criteria lengths in the given range
-/// (inclusive).
-#[allow(dead_code)]
-fn len_matches_range(len: usize, min: usize, max: usize) -> bool {
-    for crit in min..=max {
-        if len == crit {
-            return true;
-        }
-    }
-
-    false
-}
-
 // Accumulated length of each hyphenated group in hex digits.
 const ACC_GROUP_LENS: [usize; 5] = [8, 12, 16, 20, 32];
 

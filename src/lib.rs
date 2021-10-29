@@ -209,7 +209,7 @@ mod v5;
 mod winapi_support;
 
 use crate::{
-    error::err,
+    error::*,
     std::{convert, fmt, str},
 };
 
@@ -953,7 +953,7 @@ mod tests {
         let d3: u16 = 0xc1c2;
         let d4 = [0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
 
-        let u = Uuid::from_fields(d1, d2, d3, &d4).unwrap();
+        let u = Uuid::from_fields(d1, d2, d3, &d4);
 
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
         let result = u.to_simple().to_string();
@@ -968,7 +968,7 @@ mod tests {
         let d3: u16 = 0xc2c1;
         let d4 = [0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
 
-        let u = Uuid::from_fields_le(d1, d2, d3, &d4).unwrap();
+        let u = Uuid::from_fields_le(d1, d2, d3, &d4);
 
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
         let result = u.to_simple().to_string();
@@ -996,7 +996,7 @@ mod tests {
         let d3_in: u16 = 0xc1c2;
         let d4_in = &[0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
 
-        let u = Uuid::from_fields(d1_in, d2_in, d3_in, d4_in).unwrap();
+        let u = Uuid::from_fields(d1_in, d2_in, d3_in, d4_in);
         let (d1_out, d2_out, d3_out, d4_out) = u.as_fields();
 
         assert_eq!(d1_in, d1_out);
@@ -1013,7 +1013,7 @@ mod tests {
         let d3_in: u16 = 0xc2c1;
         let d4_in = &[0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
 
-        let u = Uuid::from_fields_le(d1_in, d2_in, d3_in, d4_in).unwrap();
+        let u = Uuid::from_fields_le(d1_in, d2_in, d3_in, d4_in);
         let (d1_out, d2_out, d3_out, d4_out) = u.to_fields_le();
 
         assert_eq!(d1_in, d1_out);
@@ -1030,7 +1030,7 @@ mod tests {
         let d3_in: u16 = 0xc1c2;
         let d4_in = &[0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8];
 
-        let u = Uuid::from_fields(d1_in, d2_in, d3_in, d4_in).unwrap();
+        let u = Uuid::from_fields(d1_in, d2_in, d3_in, d4_in);
         let (d1_out, d2_out, d3_out, d4_out) = u.to_fields_le();
 
         assert_eq!(d1_in, d1_out.swap_bytes());

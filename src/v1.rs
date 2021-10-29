@@ -164,7 +164,7 @@ impl Uuid {
     ///
     /// let context = Context::new(42);
     /// let ts = Timestamp::from_unix(&context, 1497624119, 1234);
-    /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]).expect("failed to generate UUID");
+    /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
     ///
     /// assert_eq!(
     ///     uuid.to_hyphenated().to_string(),
@@ -191,14 +191,7 @@ impl Uuid {
     /// [`Timestamp`]: v1/struct.Timestamp.html
     /// [`ClockSequence`]: v1/struct.ClockSequence.html
     /// [`Context`]: v1/struct.Context.html
-    pub fn new_v1(ts: Timestamp, node_id: &[u8]) -> Result<Self, crate::Error> {
-        const NODE_ID_LEN: usize = 6;
-
-        let len = node_id.len();
-        if len != NODE_ID_LEN {
-            return crate::err(crate::builder::Error::new(NODE_ID_LEN, len));
-        }
-
+    pub fn new_v1(ts: Timestamp, node_id: &[u8; 6]) -> Self {
         let time_low = (ts.ticks & 0xFFFF_FFFF) as u32;
         let time_mid = ((ts.ticks >> 32) & 0xFFFF) as u16;
         let time_high_and_version =
@@ -229,28 +222,25 @@ impl Uuid {
     /// value into more commonly-used formats, such as a unix timestamp.
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
-    pub fn to_timestamp(&self) -> Option<Timestamp> {
-        if self
-            .get_version()
-            .map(|v| v != Version::Mac)
-            .unwrap_or(true)
-        {
-            return None;
+    pub const fn to_timestamp(&self) -> Option<Timestamp> {
+        match self.get_version() {
+            Some(Version::Mac) => {
+                let ticks: u64 = ((self.as_bytes()[6] & 0x0F) as u64) << 56
+                    | ((self.as_bytes()[7]) as u64) << 48
+                    | ((self.as_bytes()[4]) as u64) << 40
+                    | ((self.as_bytes()[5]) as u64) << 32
+                    | ((self.as_bytes()[0]) as u64) << 24
+                    | ((self.as_bytes()[1]) as u64) << 16
+                    | ((self.as_bytes()[2]) as u64) << 8
+                    | (self.as_bytes()[3] as u64);
+
+                let counter: u16 = ((self.as_bytes()[8] & 0x3F) as u16) << 8
+                    | (self.as_bytes()[9] as u16);
+
+                Some(Timestamp::from_rfc4122(ticks, counter))
+            },
+            _ => None
         }
-
-        let ticks: u64 = u64::from(self.as_bytes()[6] & 0x0F) << 56
-            | u64::from(self.as_bytes()[7]) << 48
-            | u64::from(self.as_bytes()[4]) << 40
-            | u64::from(self.as_bytes()[5]) << 32
-            | u64::from(self.as_bytes()[0]) << 24
-            | u64::from(self.as_bytes()[1]) << 16
-            | u64::from(self.as_bytes()[2]) << 8
-            | u64::from(self.as_bytes()[3]);
-
-        let counter: u16 = u16::from(self.as_bytes()[8] & 0x3F) << 8
-            | u16::from(self.as_bytes()[9]);
-
-        Some(Timestamp::from_rfc4122(ticks, counter))
     }
 }
 
