@@ -49,10 +49,8 @@ various pieces of functionality:
 You need to enable one of the following Cargo features together with the
 `v4` feature if you're targeting `wasm32-unknown-unknown` target:
 
-* `stdweb` - enables support for `OsRng` on `wasm32-unknown-unknown` via
-  `stdweb` combined with `cargo-web`
-* `wasm-bindgen` - `wasm-bindgen` enables support for `OsRng` on
-  `wasm32-unknown-unknown` via [`wasm-bindgen`]
+* `js` - enables support for randomness on
+  `wasm32-unknown-unknown` via [`getrandom`]
 
 Alternatively, you can provide a custom `getrandom` implementation yourself
 via [`getrandom::register_custom_getrandom`](https://docs.rs/getrandom/0.2.2/getrandom/macro.register_custom_getrandom.html).

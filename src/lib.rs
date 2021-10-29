@@ -68,11 +68,16 @@
 //!
 //! ## WebAssembly
 //!
-//! For WebAssembly, enable one of the following features depending
-//! on your JavaScript interop toolchain of choice:
+//! For WebAssembly, enable the `js` feature along with `v4` for a
+//! source of randomness:
 //!
-//! * `stdweb` - for [`stdweb`] combined with [`cargo-web`]
-//! * `wasm-bindgen` - for [`wasm-bindgen`]
+//! ```toml
+//! [dependencies]
+//! uuid = { version = "0.8", features = ["v4", "js"] }
+//! ```
+//!
+//! You don't need the `js` feature to use `uuid` in WebAssembly if you're
+//! not enabling other features too.
 //!
 //! ## Embedded
 //!
@@ -158,7 +163,6 @@
 //!
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 //! [`cargo-web`]: https://crates.io/crates/cargo-web
-//! [`stdweb`]: https://crates.io/crates/stdweb
 //! [`Uuid`]: struct.Uuid.html
 //! [`Uuid::new_v1`]: struct.Uuid.html#method.new_v1
 //! [`Uuid::new_v3`]: struct.Uuid.html#method.new_v3
