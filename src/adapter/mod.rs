@@ -14,9 +14,6 @@
 use crate::prelude::*;
 use crate::std::{borrow::Borrow, fmt, str};
 
-#[cfg(feature = "serde")]
-pub mod compact;
-
 /// An adaptor for formatting an [`Uuid`] as a hyphenated string.
 ///
 /// Takes an owned instance of the [`Uuid`].

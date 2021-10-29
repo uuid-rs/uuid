@@ -22,7 +22,7 @@ impl Serialize for Uuid {
             serializer
                 .serialize_str(self.to_hyphenated().encode_lower(&mut [0; 36]))
         } else {
-            serializer.serialize_bytes(self.as_bytes())
+            self.as_bytes().serialize(serializer)
         }
     }
 }
@@ -65,27 +65,9 @@ impl<'de> Deserialize<'de> for Uuid {
 
             deserializer.deserialize_str(UuidStringVisitor)
         } else {
-            struct UuidBytesVisitor;
+            let bytes: [u8; 16] = Deserialize::deserialize(deserializer)?;
 
-            impl<'vi> de::Visitor<'vi> for UuidBytesVisitor {
-                type Value = Uuid;
-
-                fn expecting(
-                    &self,
-                    formatter: &mut fmt::Formatter<'_>,
-                ) -> fmt::Result {
-                    write!(formatter, "bytes")
-                }
-
-                fn visit_bytes<E: de::Error>(
-                    self,
-                    value: &[u8],
-                ) -> Result<Uuid, E> {
-                    Uuid::from_slice(value).map_err(de_error)
-                }
-            }
-
-            deserializer.deserialize_bytes(UuidBytesVisitor)
+            Ok(Uuid::from_bytes(bytes))
         }
     }
 }
@@ -107,7 +89,26 @@ mod serde_tests {
     fn test_serialize_compact() {
         let uuid_bytes = b"F9168C5E-CEB2-4F";
         let u = Uuid::from_slice(uuid_bytes).unwrap();
-        serde_test::assert_tokens(&u.compact(), &[Token::Bytes(uuid_bytes)]);
+        serde_test::assert_tokens(&u.compact(), &[
+            serde_test::Token::Tuple { len: 16 },
+            serde_test::Token::U8(uuid_bytes[0]),
+            serde_test::Token::U8(uuid_bytes[1]),
+            serde_test::Token::U8(uuid_bytes[2]),
+            serde_test::Token::U8(uuid_bytes[3]),
+            serde_test::Token::U8(uuid_bytes[4]),
+            serde_test::Token::U8(uuid_bytes[5]),
+            serde_test::Token::U8(uuid_bytes[6]),
+            serde_test::Token::U8(uuid_bytes[7]),
+            serde_test::Token::U8(uuid_bytes[8]),
+            serde_test::Token::U8(uuid_bytes[9]),
+            serde_test::Token::U8(uuid_bytes[10]),
+            serde_test::Token::U8(uuid_bytes[11]),
+            serde_test::Token::U8(uuid_bytes[12]),
+            serde_test::Token::U8(uuid_bytes[13]),
+            serde_test::Token::U8(uuid_bytes[14]),
+            serde_test::Token::U8(uuid_bytes[15]),
+            serde_test::Token::TupleEnd,
+        ]);
     }
 
     #[test]
@@ -119,7 +120,7 @@ mod serde_tests {
 
         serde_test::assert_de_tokens_error::<Compact<Uuid>>(
             &[Token::Bytes(b"hello_world")],
-            "UUID parsing failed: invalid bytes length: expected 16, found 11",
+            "invalid type: byte array, expected an array of length 16",
         );
     }
 }
