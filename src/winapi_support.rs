@@ -1,4 +1,5 @@
-use crate::prelude::*;
+use crate::Uuid;
+
 use winapi::shared::guiddef;
 
 #[cfg(feature = "guid")]
@@ -6,15 +7,13 @@ impl Uuid {
     /// Converts a little endian winapi `GUID` into a [`Uuid`]
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    pub fn from_guid(guid: guiddef::GUID) -> Self {
+    pub const fn from_guid(guid: guiddef::GUID) -> Self {
         Uuid::from_fields_le(
             guid.Data1 as u32,
             guid.Data2 as u16,
             guid.Data3 as u16,
             &(guid.Data4 as [u8; 8]),
         )
-        .unwrap() // Note: The result in this particular instance is always Ok,
-                  // so we can safely unwrap.
     }
 
     /// Converts a [`Uuid`] into a little endian winapi `GUID`

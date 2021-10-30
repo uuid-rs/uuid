@@ -1,4 +1,5 @@
-use crate::prelude::*;
+use crate::{Uuid, Variant, Version};
+
 use md5::{Digest, Md5};
 
 impl Uuid {
@@ -136,8 +137,8 @@ mod tests {
     fn test_new() {
         for &(ref ns, ref name, _) in FIXTURE {
             let uuid = Uuid::new_v3(*ns, name.as_bytes());
-            assert_eq!(uuid.get_version().unwrap(), Version::Md5);
-            assert_eq!(uuid.get_variant().unwrap(), Variant::RFC4122);
+            assert_eq!(uuid.get_version(), Some(Version::Md5));
+            assert_eq!(uuid.get_variant(), Variant::RFC4122);
         }
     }
 

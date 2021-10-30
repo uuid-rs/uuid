@@ -91,9 +91,12 @@ jobs:
 
       - name: Install
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
-      
+
       - name: Default features
-        run: wasm-pack test --node -- --features "wasm-bindgen v1 v3 v4 v5"
+        run: wasm-pack test --node
+
+      - name: Version features
+        run: wasm-pack test --node -- --features "js v1 v3 v4 v5"
 
   embedded:
     name: Build / Embedded

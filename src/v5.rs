@@ -1,4 +1,5 @@
-use crate::prelude::*;
+use crate::{Uuid, Variant, Version};
+
 use sha1::{Digest, Sha1};
 
 impl Uuid {
@@ -156,8 +157,8 @@ mod tests {
         for &(ref ns, ref name, ref u) in FIXTURE {
             let uuid = Uuid::new_v5(*ns, name.as_bytes());
 
-            assert_eq!(uuid.get_variant(), Some(Variant::RFC4122));
             assert_eq!(uuid.get_version(), Some(Version::Sha1));
+            assert_eq!(uuid.get_variant(), Variant::RFC4122);
             assert_eq!(Ok(uuid), u.parse());
         }
     }

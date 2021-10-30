@@ -11,13 +11,49 @@
 
 //! Adapters for various formats for UUIDs
 
-use crate::prelude::*;
-use crate::std::{borrow::Borrow, fmt, str};
+use crate::{
+    std::{borrow::Borrow, fmt, str},
+    Uuid, Variant,
+};
 
-#[cfg(feature = "serde")]
-pub mod compact;
+impl std::fmt::Debug for Uuid {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::LowerHex::fmt(self, f)
+    }
+}
 
-/// An adaptor for formatting an [`Uuid`] as a hyphenated string.
+impl fmt::Display for Uuid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::LowerHex::fmt(self, f)
+    }
+}
+
+impl fmt::Display for Variant {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match *self {
+            Variant::NCS => write!(f, "NCS"),
+            Variant::RFC4122 => write!(f, "RFC4122"),
+            Variant::Microsoft => write!(f, "Microsoft"),
+            Variant::Future => write!(f, "Future"),
+        }
+    }
+}
+
+impl fmt::LowerHex for Uuid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
+    }
+}
+
+impl fmt::UpperHex for Uuid {
+    #[inline]
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::UpperHex::fmt(&self.to_hyphenated_ref(), f)
+    }
+}
+
+/// An adapter for formatting an [`Uuid`] as a hyphenated string.
 ///
 /// Takes an owned instance of the [`Uuid`].
 ///
@@ -25,7 +61,7 @@ pub mod compact;
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Hyphenated(Uuid);
 
-/// An adaptor for formatting an [`Uuid`] as a hyphenated string.
+/// An adapter for formatting an [`Uuid`] as a hyphenated string.
 ///
 /// Takes a reference of the [`Uuid`].
 ///
@@ -33,7 +69,7 @@ pub struct Hyphenated(Uuid);
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct HyphenatedRef<'a>(&'a Uuid);
 
-/// An adaptor for formatting an [`Uuid`] as a simple string.
+/// An adapter for formatting an [`Uuid`] as a simple string.
 ///
 /// Takes an owned instance of the [`Uuid`].
 ///
@@ -41,7 +77,7 @@ pub struct HyphenatedRef<'a>(&'a Uuid);
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Simple(Uuid);
 
-/// An adaptor for formatting an [`Uuid`] as a simple string.
+/// An adapter for formatting an [`Uuid`] as a simple string.
 ///
 /// Takes a reference of the [`Uuid`].
 ///
@@ -49,7 +85,7 @@ pub struct Simple(Uuid);
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct SimpleRef<'a>(&'a Uuid);
 
-/// An adaptor for formatting an [`Uuid`] as a URN string.
+/// An adapter for formatting an [`Uuid`] as a URN string.
 ///
 /// Takes an owned instance of the [`Uuid`].
 ///
@@ -57,7 +93,7 @@ pub struct SimpleRef<'a>(&'a Uuid);
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Urn(Uuid);
 
-/// An adaptor for formatting an [`Uuid`] as a URN string.
+/// An adapter for formatting an [`Uuid`] as a URN string.
 ///
 /// Takes a reference of the [`Uuid`].
 ///
@@ -927,7 +963,7 @@ impl<'a> UrnRef<'a> {
     }
 }
 
-macro_rules! impl_adapter_traits {
+macro_rules! impl_fmt_traits {
     ($($T:ident<$($a:lifetime),*>),+) => {$(
         impl<$($a),*> fmt::Display for $T<$($a),*> {
             #[inline]
@@ -950,11 +986,11 @@ macro_rules! impl_adapter_traits {
             }
         }
 
-        impl_adapter_from!($T<$($a),*>);
+        impl_fmt_from!($T<$($a),*>);
     )+}
 }
 
-macro_rules! impl_adapter_from {
+macro_rules! impl_fmt_from {
     ($T:ident<>) => {
         impl From<Uuid> for $T {
             #[inline]
@@ -1015,7 +1051,7 @@ macro_rules! impl_adapter_from {
     };
 }
 
-impl_adapter_traits! {
+impl_fmt_traits! {
     Hyphenated<>,
     HyphenatedRef<'a>,
     Simple<>,
@@ -1026,7 +1062,7 @@ impl_adapter_traits! {
 
 #[cfg(test)]
 mod tests {
-    use crate::prelude::*;
+    use super::*;
 
     #[test]
     fn hyphenated_trailing() {

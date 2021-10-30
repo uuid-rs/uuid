@@ -2,7 +2,8 @@
 //!
 //! Note that you need feature `v1` in order to use these features.
 
-use crate::prelude::*;
+use crate::{Uuid, Version};
+
 use atomic::Atomic;
 
 /// The number of 100 ns ticks between the UUID epoch
@@ -164,7 +165,7 @@ impl Uuid {
     ///
     /// let context = Context::new(42);
     /// let ts = Timestamp::from_unix(&context, 1497624119, 1234);
-    /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]).expect("failed to generate UUID");
+    /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
     ///
     /// assert_eq!(
     ///     uuid.to_hyphenated().to_string(),
@@ -180,7 +181,7 @@ impl Uuid {
     ///
     /// let context = Context::new(42);
     /// let ts = Timestamp::from_rfc4122(1497624119, 0);
-    /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]).expect("failed to generate UUID");
+    /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
     ///
     /// assert_eq!(
     ///     uuid.to_hyphenated().to_string(),
@@ -191,14 +192,7 @@ impl Uuid {
     /// [`Timestamp`]: v1/struct.Timestamp.html
     /// [`ClockSequence`]: v1/struct.ClockSequence.html
     /// [`Context`]: v1/struct.Context.html
-    pub fn new_v1(ts: Timestamp, node_id: &[u8]) -> Result<Self, crate::Error> {
-        const NODE_ID_LEN: usize = 6;
-
-        let len = node_id.len();
-        if len != NODE_ID_LEN {
-            return crate::err(crate::builder::Error::new(NODE_ID_LEN, len));
-        }
-
+    pub const fn new_v1(ts: Timestamp, node_id: &[u8; 6]) -> Self {
         let time_low = (ts.ticks & 0xFFFF_FFFF) as u32;
         let time_mid = ((ts.ticks >> 32) & 0xFFFF) as u16;
         let time_high_and_version =
@@ -206,12 +200,14 @@ impl Uuid {
 
         let mut d4 = [0; 8];
 
-        {
-            d4[0] = (((ts.counter & 0x3F00) >> 8) as u8) | 0x80;
-            d4[1] = (ts.counter & 0xFF) as u8;
-        }
-
-        d4[2..].copy_from_slice(node_id);
+        d4[0] = (((ts.counter & 0x3F00) >> 8) as u8) | 0x80;
+        d4[1] = (ts.counter & 0xFF) as u8;
+        d4[2] = node_id[0];
+        d4[3] = node_id[1];
+        d4[4] = node_id[2];
+        d4[5] = node_id[3];
+        d4[6] = node_id[4];
+        d4[7] = node_id[5];
 
         Uuid::from_fields(time_low, time_mid, time_high_and_version, &d4)
     }
@@ -229,28 +225,25 @@ impl Uuid {
     /// value into more commonly-used formats, such as a unix timestamp.
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
-    pub fn to_timestamp(&self) -> Option<Timestamp> {
-        if self
-            .get_version()
-            .map(|v| v != Version::Mac)
-            .unwrap_or(true)
-        {
-            return None;
+    pub const fn to_timestamp(&self) -> Option<Timestamp> {
+        match self.get_version() {
+            Some(Version::Mac) => {
+                let ticks: u64 = ((self.as_bytes()[6] & 0x0F) as u64) << 56
+                    | ((self.as_bytes()[7]) as u64) << 48
+                    | ((self.as_bytes()[4]) as u64) << 40
+                    | ((self.as_bytes()[5]) as u64) << 32
+                    | ((self.as_bytes()[0]) as u64) << 24
+                    | ((self.as_bytes()[1]) as u64) << 16
+                    | ((self.as_bytes()[2]) as u64) << 8
+                    | (self.as_bytes()[3] as u64);
+
+                let counter: u16 = ((self.as_bytes()[8] & 0x3F) as u16) << 8
+                    | (self.as_bytes()[9] as u16);
+
+                Some(Timestamp::from_rfc4122(ticks, counter))
+            }
+            _ => None,
         }
-
-        let ticks: u64 = u64::from(self.as_bytes()[6] & 0x0F) << 56
-            | u64::from(self.as_bytes()[7]) << 48
-            | u64::from(self.as_bytes()[4]) << 40
-            | u64::from(self.as_bytes()[5]) << 32
-            | u64::from(self.as_bytes()[0]) << 24
-            | u64::from(self.as_bytes()[1]) << 16
-            | u64::from(self.as_bytes()[2]) << 8
-            | u64::from(self.as_bytes()[3]);
-
-        let counter: u16 = u16::from(self.as_bytes()[8] & 0x3F) << 8
-            | u16::from(self.as_bytes()[9]);
-
-        Some(Timestamp::from_rfc4122(ticks, counter))
     }
 }
 
@@ -283,7 +276,7 @@ mod tests {
     #[cfg(target_arch = "wasm32")]
     use wasm_bindgen_test::*;
 
-    use crate::std::string::ToString;
+    use crate::{std::string::ToString, Variant};
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
@@ -297,11 +290,10 @@ mod tests {
             let uuid = Uuid::new_v1(
                 Timestamp::from_unix(&context, time, time_fraction),
                 &node,
-            )
-            .unwrap();
+            );
 
             assert_eq!(uuid.get_version(), Some(Version::Mac));
-            assert_eq!(uuid.get_variant(), Some(Variant::RFC4122));
+            assert_eq!(uuid.get_variant(), Variant::RFC4122);
             assert_eq!(
                 uuid.to_hyphenated().to_string(),
                 "20616934-4ba2-11e7-8000-010203040506"
@@ -317,8 +309,7 @@ mod tests {
             let uuid2 = Uuid::new_v1(
                 Timestamp::from_unix(&context, time, time_fraction),
                 &node,
-            )
-            .unwrap();
+            );
 
             assert_eq!(
                 uuid2.to_hyphenated().to_string(),
