@@ -61,6 +61,9 @@ v4 = ["getrandom"]
 v5 = ["sha-1"]
 js = ["getrandom", "getrandom/js"]
 
+# Unstable features (these also need RUSTFLAGS="--cfg uuid_unstable" to work)
+zerocopy-unstable = ["zerocopy"]
+
 # Private
 [dependencies.getrandom]
 optional = true
@@ -99,6 +102,11 @@ version = "2"
 [target.'cfg(windows)'.dependencies.winapi]
 optional = true
 version = "0.3"
+
+# Public (unstable): Used in `zerocopy` derive
+[dependencies.zerocopy]
+optional = true
+version = "0.6"
 
 [dev-dependencies.bincode]
 version = "1.0"

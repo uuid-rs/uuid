@@ -12,6 +12,9 @@ jobs:
   os_tests:
     name: "Tests / OS: ${{ matrix.os }} - ${{ matrix.channel }}-${{ matrix.rust_target }}"
     runs-on: ${{ matrix.os }}
+    env:
+      RUSTFLAGS: "--cfg uuid_unstable"
+      RUSTDOCFLAGS: "--cfg uuid_unstable"
     strategy:
       matrix:
         exclude:
@@ -122,6 +125,8 @@ jobs:
   nodeps:
     name: Build / No deps
     runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: "--cfg uuid_unstable"
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
