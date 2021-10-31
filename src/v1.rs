@@ -225,7 +225,7 @@ impl Uuid {
     /// value into more commonly-used formats, such as a unix timestamp.
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
-    pub const fn to_timestamp(&self) -> Option<Timestamp> {
+    pub const fn get_timestamp(&self) -> Option<Timestamp> {
         match self.get_version() {
             Some(Version::Mac) => {
                 let ticks: u64 = ((self.as_bytes()[6] & 0x0F) as u64) << 56
@@ -299,7 +299,7 @@ mod tests {
                 "20616934-4ba2-11e7-8000-010203040506"
             );
 
-            let ts = uuid.to_timestamp().unwrap().to_rfc4122();
+            let ts = uuid.get_timestamp().unwrap().to_rfc4122();
 
             assert_eq!(ts.0 - 0x01B2_1DD2_1381_4000, 14_968_545_358_129_460);
             assert_eq!(ts.1, 0);
@@ -315,7 +315,7 @@ mod tests {
                 uuid2.to_hyphenated().to_string(),
                 "20616934-4ba2-11e7-8001-010203040506"
             );
-            assert_eq!(uuid2.to_timestamp().unwrap().to_rfc4122().1, 1)
+            assert_eq!(uuid2.get_timestamp().unwrap().to_rfc4122().1, 1)
         };
     }
 }
