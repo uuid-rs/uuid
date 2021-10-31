@@ -28,7 +28,7 @@ impl Uuid {
         let mut bytes = [0u8; 16];
         getrandom::getrandom(&mut bytes).unwrap_or_else(|err| {
             // NB: getrandom::Error has no source; this is adequate display
-            panic!("could not retreive random bytes for uuid: {}", err)
+            panic!("could not retrieve random bytes for uuid: {}", err)
         });
 
         crate::Builder::from_bytes(bytes)
