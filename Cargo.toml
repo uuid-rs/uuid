@@ -55,6 +55,7 @@ repository = "uuid-rs/uuid"
 default = ["std"]
 guid = ["winapi"]
 std = []
+macros = ["uuid-macros"]
 v1 = ["atomic"]
 v3 = ["md-5"]
 v4 = ["getrandom"]
@@ -86,6 +87,11 @@ version = "0.9"
 default-features = false
 optional = true
 version = "0.9"
+
+# Public: Re-expored
+[dependencies.uuid-macros]
+path = "macros"
+optional = true
 
 # Public: Used in trait impls on `Uuid`
 [dependencies.serde]
@@ -130,3 +136,8 @@ version = "0.3"
 [target.'cfg(windows)'.dev-dependencies.winapi]
 version = "0.3"
 features = ["combaseapi"]
+
+[workspace]
+members = [
+    "macros"
+]

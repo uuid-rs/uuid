@@ -1,0 +1,9 @@
+[package]
+name = "uuid-macros"
+version = "0.0.0"
+edition = "2018"
+
+[lib]
+proc-macro = true
+
+[dependencies]
