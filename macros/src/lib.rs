@@ -4,12 +4,18 @@ use quote::{quote, quote_spanned};
 use std::fmt;
 use syn::spanned::Spanned;
 
+#[cfg(any(feature = "std", test))]
+#[macro_use]
+extern crate std;
+
+#[cfg(all(not(feature = "std"), not(test)))]
+#[macro_use]
+extern crate core as std;
+
 #[path = "../../shared/error.rs"]
-#[allow(dead_code)]
 mod error;
 
 #[path = "../../shared/parser.rs"]
-#[allow(dead_code)]
 mod parser;
 
 /// Parse [`Uuid`][uuid::Uuid]s from string literals at compile time.

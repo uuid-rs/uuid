@@ -41,7 +41,7 @@ fn bench_valid_short(b: &mut Bencher) {
 
 #[cfg(feature = "macros")]
 mod macro_tests {
-    use uuid_macros::uuid;
+    use uuid::{uuid, Uuid};
     const _: Uuid = uuid!("00000000000000000000000000000000");
     const _: Uuid = uuid!("67e55044-10b1-426f-9247-bb680e5fe0c8");
     const _: Uuid = uuid!("67e55044-10b1-426f-9247-bb680e5fe0c8");
