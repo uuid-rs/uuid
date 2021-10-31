@@ -232,6 +232,10 @@ mod v5;
 #[cfg(all(windows, feature = "winapi"))]
 mod winapi_support;
 
+#[cfg(feature = "macros")]
+#[doc(inline)]
+pub use uuid_macros::*;
+
 use crate::std::convert;
 
 pub use crate::{builder::Builder, error::Error};
