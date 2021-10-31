@@ -64,6 +64,22 @@
 //! uuid = { version = "0.8", default-features = false }
 //! ```
 //!
+//! ## Unstable features
+//!
+//! Some features are unstable. They may be incomplete or depend on other unstable libraries.
+//! These include:
+//!
+//! * `zerocopy-unstable` - adds support for zero-copy deserialization using the `zerocopy` library.
+//!
+//! Unstable features may break between minor releases.
+//!
+//! To allow unstable features, you'll need to enable the Cargo feature as normal, but also pass an additional
+//! flag through your environment to opt-in to unstable `uuid` features:
+//!
+//! ```text
+//! RUSTFLAGS="--cfg uuid_unstable"
+//! ```
+//!
 //! # Building for other targets
 //!
 //! ## WebAssembly
@@ -96,7 +112,7 @@
 //!
 //! If you need to use `v4` in a no-std environment, you'll need to
 //! follow [`getrandom`'s docs] on configuring a source of randomness
-//! on unsupported targets.
+//! on currently unsupported targets.
 //!
 //! # Examples
 //!
@@ -188,6 +204,13 @@ extern crate std;
 #[macro_use]
 extern crate core as std;
 
+// Check that unstable features are accompanied by a the `uuid_unstable` cfg
+#[cfg(all(not(uuid_unstable), feature = "zerocopy-unstable"))]
+compile_error!("The `zerocopy-unstable` feature is unstable and may break between releases. Please also pass `RUSTFLAGS=\"--cfg uuid_unstable\"` to allow it.");
+
+#[cfg(feature = "zerocopy-unstable")]
+use zerocopy::{AsBytes, FromBytes, Unaligned};
+
 mod builder;
 mod error;
 mod parser;
@@ -248,6 +271,7 @@ pub enum Variant {
 
 /// A Universally Unique Identifier (UUID).
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[cfg_attr(feature = "zerocopy-unstable", derive(AsBytes, FromBytes, Unaligned))]
 #[repr(transparent)]
 pub struct Uuid(Bytes);
 

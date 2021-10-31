@@ -76,6 +76,22 @@ You can disable default features with:
 uuid = { version = "0.8", default-features = false }
 ```
 
+### Unstable features
+
+Some features are unstable. They may be incomplete or depend on other unstable libraries.
+These include:
+
+* `zerocopy-unstable` - adds support for zero-copy deserialization using the `zerocopy` library.
+
+Unstable features may break between minor releases.
+
+To allow unstable features, you'll need to enable the Cargo feature as normal, but also pass an additional
+flag through your environment to opt-in to unstable `uuid` features:
+
+```
+RUSTFLAGS="--cfg uuid_unstable"
+```
+
 ## Examples
 
 To parse a UUID given in the simple format and print it as a urn:
