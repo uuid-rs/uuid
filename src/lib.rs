@@ -245,6 +245,7 @@ pub type Bytes = [u8; 16];
 
 /// The version of the UUID, denoting the generating algorithm.
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum Version {
     /// Special case for `nil` UUID.
     Nil = 0,
@@ -262,6 +263,7 @@ pub enum Version {
 
 /// The reserved variants of UUIDs.
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum Variant {
     /// Reserved by the NCS for backward compatibility.
     NCS = 0,
@@ -274,6 +276,8 @@ pub enum Variant {
 }
 
 /// A Universally Unique Identifier (UUID).
+///
+/// This type is always guaranteed to be have the same ABI as a `[u8; 16]`.
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(feature = "zerocopy-unstable", derive(AsBytes, FromBytes, Unaligned))]
 #[repr(transparent)]
@@ -328,24 +332,19 @@ impl Uuid {
     /// Returns the version number of the UUID.
     ///
     /// This represents the algorithm used to generate the contents.
-    ///
-    /// Currently only the Random (V4) algorithm is supported by this
-    /// module.  There are security and privacy implications for using
-    /// older versions - see [Wikipedia: Universally Unique Identifier](
-    /// http://en.wikipedia.org/wiki/Universally_unique_identifier) for
-    /// details.
-    ///
-    /// * [Version Reference](http://tools.ietf.org/html/rfc4122#section-4.1.3)
+    /// This method is the future-proof alternative to [`get_version`].
     pub const fn get_version_num(&self) -> usize {
         (self.as_bytes()[6] >> 4) as usize
     }
 
     /// Returns the version of the UUID.
     ///
-    /// This represents the algorithm used to generate the contents
+    /// This represents the algorithm used to generate the contents.
+    /// If the version field doesn't contain a recognized version then `None`
+    /// is returned. If you're trying to read the version for a future extension
+    /// you can also use [`get_version_num`] to unconditionally return a number.
     pub const fn get_version(&self) -> Option<Version> {
-        let v = self.as_bytes()[6] >> 4;
-        match v {
+        match self.get_version_num() {
             0 if self.is_nil() => Some(Version::Nil),
             1 => Some(Version::Mac),
             2 => Some(Version::Dce),
@@ -576,7 +575,7 @@ impl Uuid {
     }
 
     /// A buffer that can be used for `encode_...` calls, that is
-    /// guaranteed to be long enough for any of the format format adapters.
+    /// guaranteed to be long enough for any of the format adapters.
     ///
     /// # Examples
     ///
