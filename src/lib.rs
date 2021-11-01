@@ -42,9 +42,9 @@
 //!   UUID based on the SHA1 hash of some data.
 //! * `serde` - adds the ability to serialize and deserialize a UUID using the
 //!   `serde` crate.
-//! * `fast-rng` - when combined with `v4` uses a faster algorithm for generating
-//!   random UUIDs. This feature requires more dependencies to compile, but is just
-//!   as suitable for UUIDs as the default algorithm.
+//! * `fast-rng` - when combined with `v4` uses a faster algorithm for
+//!   generating random UUIDs. This feature requires more dependencies to
+//!   compile, but is just as suitable for UUIDs as the default algorithm.
 //!
 //! By default, `uuid` can be depended on with:
 //!
