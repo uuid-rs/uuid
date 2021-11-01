@@ -24,7 +24,7 @@ fn guid_to_uuid() {
         guid_in.Data1,
         guid_in.Data2,
         guid_in.Data3,
-        guid_in.Data4,
+        &guid_in.Data4,
     );
 
     let guid_out = {
@@ -52,15 +52,13 @@ fn guid_to_uuid() {
 #[test]
 #[cfg(windows)]
 fn uuid_from_cocreateguid() {
-    use uuid::Uuid;
-    use winapi::shared::guiddef;
-
-    let mut guid = guiddef::GUID {
-        Data1: Default::default(),
-        Data2: Default::default(),
-        Data3: Default::default(),
-        Data4: Default::default(),
+    use uuid::{Uuid, Variant, Version};
+    use winapi::{
+        shared::guiddef,
+        um::combaseapi::CoCreateGuid,
     };
+
+    let mut guid = guiddef::GUID::default();
 
     unsafe {
         CoCreateGuid(&mut guid as *mut _);

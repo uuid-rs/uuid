@@ -142,7 +142,7 @@ version = "1.0.52"
 
 [target.'cfg(windows)'.dev-dependencies.winapi]
 version = "0.3"
-features = ["combaseapi"]
+features = ["combaseapi", "impl-default"]
 
 [workspace]
 members = [
