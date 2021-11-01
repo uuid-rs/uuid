@@ -65,19 +65,12 @@ impl fmt::Display for Error {
 }
 
 fn build_uuid(input: TokenStream) -> Result<TokenStream, Error> {
-    let literal = match syn::parse::<syn::Lit>(input) {
-        Ok(syn::Lit::Str(literal)) => literal,
+    let string = match syn::parse::<syn::Lit>(input) {
+        Ok(syn::Lit::Str(literal)) => literal.value(),
         _ => return Err(Error::NonStringLiteral),
     };
 
-    // steps:
-    // get Literal
-    // do Literal::subspan
-    // pass that into quote_spanned
-
-    let literal = literal.value();
-
-    let bytes = parser::parse_str(&literal).map_err(Error::UuidParse)?;
+    let bytes = parser::parse_str(&string).map_err(Error::UuidParse)?;
 
     let tokens = bytes
         .iter()
