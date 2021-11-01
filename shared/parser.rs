@@ -34,15 +34,9 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
 
     if len == 45 && input.starts_with("urn:uuid:") {
         input = &input[9..];
-    } else if !len_matches_any(
-        len,
-        &[36, 32],
-    ) {
+    } else if !len_matches_any(len, &[36, 32]) {
         return Err(ErrorKind::InvalidLength {
-            expected: ExpectedLength::Any(&[
-                36,
-                32,
-            ]),
+            expected: ExpectedLength::Any(&[36, 32]),
             found: len,
         }
         .into());
@@ -58,10 +52,7 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
         if digit as usize >= 32 && group != 4 {
             if group == 0 {
                 return Err(ErrorKind::InvalidLength {
-                    expected: ExpectedLength::Any(&[
-                        36,
-                        32,
-                    ]),
+                    expected: ExpectedLength::Any(&[36, 32]),
                     found: len,
                 }
                 .into());
@@ -93,9 +84,7 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
                         };
 
                         return Err(ErrorKind::InvalidGroupLength {
-                            expected: ExpectedLength::Exact(
-                                GROUP_LENS[group],
-                            ),
+                            expected: ExpectedLength::Exact(GROUP_LENS[group]),
                             found: found as usize,
                             group,
                         }
