@@ -43,6 +43,7 @@
 //! * `macros` - adds the `uuid!` macro that can parse UUIDs at compile time.
 //! * `serde` - adds the ability to serialize and deserialize a UUID using the
 //!   `serde` crate.
+//! * `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid`.
 //! * `fast-rng` - when combined with `v4` uses a faster algorithm for
 //!   generating random UUIDs. This feature requires more dependencies to
 //!   compile, but is just as suitable for UUIDs as the default algorithm.
@@ -206,10 +207,8 @@ mod v5;
 
 #[cfg(feature = "rng")]
 mod rng;
-#[cfg(feature = "serde")]
-mod serde_support;
-#[cfg(feature = "slog")]
-mod slog_support;
+
+mod external;
 
 #[cfg(feature = "macros")]
 #[macro_use]

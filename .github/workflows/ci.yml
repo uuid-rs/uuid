@@ -62,7 +62,7 @@ jobs:
       run: cargo test --all-features --examples
 
     - name: Powerset
-      run: cargo hack test --feature-powerset --lib --optional-deps serde --depth 3
+      run: cargo hack test --feature-powerset --lib --optional-deps "serde arbitrary" --depth 3
 
   msrv:
     name: "Tests / MSRV / OS: ${{ matrix.os }}"
