@@ -16,6 +16,17 @@ impl Uuid {
     /// Note that usage of this method requires the `v3` feature of this crate
     /// to be enabled.
     ///
+    /// # Examples
+    ///
+    /// Generating a MD5 DNS UUID for `rust-lang.ord`:
+    ///
+    /// ```
+    /// # use uuid::{Uuid, Version};
+    /// let uuid = Uuid::new_v3(&Uuid::NAMESPACE_DNS, b"rust-lang.org");
+    ///
+    /// assert_eq!(Some(Version::Md5), uuid.get_version());
+    /// ```
+    ///
     /// [`NAMESPACE_DNS`]: #associatedconstant.NAMESPACE_DNS
     /// [`NAMESPACE_OID`]: #associatedconstant.NAMESPACE_OID
     /// [`NAMESPACE_URL`]: #associatedconstant.NAMESPACE_URL

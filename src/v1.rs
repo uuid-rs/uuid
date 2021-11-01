@@ -161,7 +161,7 @@ impl Uuid {
     ///
     /// ```rust
     /// use uuid::v1::{Timestamp, Context};
-    /// use uuid::Uuid;
+    /// # use uuid::Uuid;
     ///
     /// let context = Context::new(42);
     /// let ts = Timestamp::from_unix(&context, 1497624119, 1234);
@@ -177,7 +177,7 @@ impl Uuid {
     ///
     /// ```
     /// use uuid::v1::{Timestamp, Context};
-    /// use uuid::Uuid;
+    /// # use uuid::Uuid;
     ///
     /// let context = Context::new(42);
     /// let ts = Timestamp::from_rfc4122(1497624119, 0);
@@ -303,9 +303,13 @@ mod tests {
         assert_eq!(ts.0 - 0x01B2_1DD2_1381_4000, 14_968_545_358_129_460);
 
         // Ensure parsing the same UUID produces the same timestamp
-        let parsed = Uuid::parse_str("20616934-4ba2-11e7-8000-010203040506").unwrap();
+        let parsed =
+            Uuid::parse_str("20616934-4ba2-11e7-8000-010203040506").unwrap();
 
-        assert_eq!(uuid.get_timestamp().unwrap(), parsed.get_timestamp().unwrap());
+        assert_eq!(
+            uuid.get_timestamp().unwrap(),
+            parsed.get_timestamp().unwrap()
+        );
     }
 
     #[test]

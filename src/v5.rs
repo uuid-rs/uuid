@@ -15,6 +15,17 @@ impl Uuid {
     /// Note that usage of this method requires the `v5` feature of this crate
     /// to be enabled.
     ///
+    /// # Examples
+    ///
+    /// Generating a SHA1 DNS UUID for `rust-lang.ord`:
+    ///
+    /// ```
+    /// # use uuid::{Uuid, Version};
+    /// let uuid = Uuid::new_v5(&Uuid::NAMESPACE_DNS, b"rust-lang.org");
+    ///
+    /// assert_eq!(Some(Version::Sha1), uuid.get_version());
+    /// ```
+    ///
     /// [`NAMESPACE_DNS`]: struct.Uuid.html#associatedconst.NAMESPACE_DNS
     /// [`NAMESPACE_OID`]: struct.Uuid.html#associatedconst.NAMESPACE_OID
     /// [`NAMESPACE_URL`]: struct.Uuid.html#associatedconst.NAMESPACE_URL
