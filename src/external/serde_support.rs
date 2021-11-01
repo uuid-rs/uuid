@@ -11,7 +11,10 @@
 
 use crate::{
     error::*,
-    fmt::{Hyphenated, HyphenatedRef, Simple, SimpleRef, Urn, UrnRef},
+    fmt::{
+        Braced, BracedRef, Hyphenated, HyphenatedRef, Simple, SimpleRef, Urn,
+        UrnRef,
+    },
     std::fmt,
     Uuid,
 };
@@ -82,6 +85,24 @@ impl Serialize for Urn {
 }
 
 impl Serialize for UrnRef<'_> {
+    fn serialize<S: Serializer>(
+        &self,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
+    }
+}
+
+impl Serialize for Braced {
+    fn serialize<S: Serializer>(
+        &self,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
+    }
+}
+
+impl Serialize for BracedRef<'_> {
     fn serialize<S: Serializer>(
         &self,
         serializer: S,
@@ -238,6 +259,13 @@ mod serde_tests {
         let uuid_str = "urn:uuid:f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
         let u = Uuid::parse_str(uuid_str).unwrap();
         serde_test::assert_ser_tokens(&u.to_urn(), &[Token::Str(uuid_str)]);
+    }
+
+    #[test]
+    fn test_serialize_braced() {
+        let uuid_str = "{f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4}";
+        let u = Uuid::parse_str(uuid_str).unwrap();
+        serde_test::assert_ser_tokens(&u.to_braced(), &[Token::Str(uuid_str)]);
     }
 
     #[test]
