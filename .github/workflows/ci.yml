@@ -102,7 +102,7 @@ jobs:
         run: wasm-pack test --node -- --features "js v1 v3 v4 v5"
       
       - name: Fast rng
-        run: wasm-pack test --node -- --features "v4 fast-rng"
+        run: wasm-pack test --node -- --features "js v4 fast-rng"
 
   embedded:
     name: Build / Embedded
