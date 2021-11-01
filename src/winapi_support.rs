@@ -48,7 +48,8 @@ mod tests {
     #[test]
     fn test_parse_guid() {
         // This example GUID is directly from https://docs.microsoft.com/en-us/windows/win32/api/guiddef/ns-guiddef-guid
-        let uuid = Uuid::parse_str("6B29FC40-CA47-1067-B31D-00DD010662DA").unwrap();
+        let uuid =
+            Uuid::parse_str("6B29FC40-CA47-1067-B31D-00DD010662DA").unwrap();
 
         assert_eq!(Variant::RFC4122, uuid.get_variant());
         assert_eq!(Some(Version::Mac), uuid.get_version());
@@ -62,13 +63,13 @@ mod tests {
             Data3: Default::default(),
             Data4: Default::default(),
         };
-    
+
         unsafe {
             CoCreateGuid(&mut guid as *mut _);
         }
-    
+
         let uuid = Uuid::from_guid(guid);
-    
+
         assert_eq!(Variant::RFC4122, uuid.get_variant());
         assert_eq!(Some(Version::Random), uuid.get_version());
     }

@@ -66,15 +66,17 @@
 //!
 //! ## Unstable features
 //!
-//! Some features are unstable. They may be incomplete or depend on other unstable libraries.
-//! These include:
+//! Some features are unstable. They may be incomplete or depend on other
+//! unstable libraries. These include:
 //!
-//! * `zerocopy-unstable` - adds support for zero-copy deserialization using the `zerocopy` library.
+//! * `zerocopy-unstable` - adds support for zero-copy deserialization using the
+//!   `zerocopy` library.
 //!
 //! Unstable features may break between minor releases.
 //!
-//! To allow unstable features, you'll need to enable the Cargo feature as normal, but also pass an additional
-//! flag through your environment to opt-in to unstable `uuid` features:
+//! To allow unstable features, you'll need to enable the Cargo feature as
+//! normal, but also pass an additional flag through your environment to opt-in
+//! to unstable `uuid` features:
 //!
 //! ```text
 //! RUSTFLAGS="--cfg uuid_unstable"
@@ -112,65 +114,37 @@
 //!
 //! If you need to use `v4` in a no-std environment, you'll need to
 //! follow [`getrandom`'s docs] on configuring a source of randomness
-//! on currently unsupported targets.
+//! on currently unsupported targets. Alternatively, you can produce
+//! random bytes yourself and then pass them to [`Builder::from_random_bytes`]
+//! without enabling the `v4` feature.
 //!
 //! # Examples
 //!
 //! To parse a UUID given in the simple format and print it as a urn:
 //!
-//! ```rust
-//! use uuid::Uuid;
+//! ```
+//! # use uuid::Uuid;
+//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
 //!
-//! fn main() -> Result<(), uuid::Error> {
-//!     let my_uuid =
-//!         Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8")?;
-//!     println!("{}", my_uuid.to_urn());
-//!     Ok(())
-//! }
+//! println!("{}", my_uuid.to_urn());
+//! # Ok(())
+//! # }
 //! ```
 //!
 //! To create a new random (V4) UUID and print it out in hexadecimal form:
 //!
-//! ```rust
-//! // Note that this requires the `v4` feature enabled in the uuid crate.
-//!
-//! use uuid::Uuid;
-//!
-//! fn main() {
-//! #    #[cfg(feature = "v4")] {
-//!      let my_uuid = Uuid::new_v4();
-//!      println!("{}", my_uuid)
-//! #    }
-//! }
 //! ```
+//! // Note that this requires the `v4` feature enabled in the uuid crate.
+//! # use uuid::Uuid;
+//! # fn main() {
+//! # #[cfg(feature = "v4")] {
+//! let my_uuid = Uuid::new_v4();
 //!
-//! # Strings
-//!
-//! Examples of string representations:
-//!
-//! * simple: `936DA01F9ABD4d9d80C702AF85C822A8`
-//! * hyphenated: `550e8400-e29b-41d4-a716-446655440000`
-//! * urn: `urn:uuid:F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4`
-//!
-//! # Endianness
-//!
-//! The specification for UUIDs encodes the integer fields that make up the
-//! value in big-endian order. This crate assumes integer inputs are already in
-//! the correct order by default, regardless of the endianness of the
-//! environment. Most methods that accept integers have a `_le` variant (such as
-//! `from_fields_le`) that assumes any integer values will need to have their
-//! bytes flipped, regardless of the endianness of the environment.
-//!
-//! Most users won't need to worry about endianness unless they need to operate
-//! on individual fields (such as when converting between Microsoft GUIDs). The
-//! important things to remember are:
-//!
-//! - The endianness is in terms of the fields of the UUID, not the environment.
-//! - The endianness is assumed to be big-endian when there's no `_le` suffix
-//!   somewhere.
-//! - Byte-flipping in `_le` methods applies to each integer.
-//! - Endianness roundtrips, so if you create a UUID with `from_fields_le`
-//!   you'll get the same values back out with `to_fields_le`.
+//! println!("{}", my_uuid)
+//! # }
+//! # }
+//! ```
 //!
 //! # References
 //!
@@ -247,6 +221,7 @@ pub type Bytes = [u8; 16];
 
 /// The version of the UUID, denoting the generating algorithm.
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum Version {
     /// Special case for `nil` UUID.
     Nil = 0,
@@ -264,6 +239,7 @@ pub enum Version {
 
 /// The reserved variants of UUIDs.
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum Variant {
     /// Reserved by the NCS for backward compatibility.
     NCS = 0,
@@ -276,8 +252,104 @@ pub enum Variant {
 }
 
 /// A Universally Unique Identifier (UUID).
+///
+/// # Examples
+///
+/// To parse a UUID given in the simple format and print it as a urn:
+///
+/// ```
+/// # use uuid::Uuid;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
+///
+/// println!("{}", my_uuid.to_urn());
+/// # Ok(())
+/// # }
+/// ```
+///
+/// To create a new random (V4) UUID and print it out in hexadecimal form:
+///
+/// ```
+/// // Note that this requires the `v4` feature enabled in the uuid crate.
+/// # use uuid::Uuid;
+/// # fn main() {
+/// # #[cfg(feature = "v4")] {
+/// let my_uuid = Uuid::new_v4();
+///
+/// println!("{}", my_uuid)
+/// # }
+/// # }
+/// ```
+///
+/// # Formatting
+///
+/// A UUID can be formatted in one of a few ways:
+///
+/// * [`simple`](#method.to_simple): `a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8`.
+/// * [`hyphenated`](#method.to_hyphenated):
+///   `a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8`.
+/// * [`urn`](#method.to_urn): `urn:uuid:A1A2A3A4-B1B2-C1C2-D1D2-D3D4D5D6D7D8`.
+///
+/// The default representation when formatting a UUID with `Display` is
+/// hyphenated:
+///
+/// ```
+/// # use uuid::Uuid;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
+///
+/// assert_eq!(
+///     "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8",
+///     my_uuid.to_string(),
+/// );
+/// # Ok(())
+/// # }
+/// ```
+///
+/// Other formats can be specified using adapter methods on the UUID:
+///
+/// ```
+/// # use uuid::Uuid;
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
+///
+/// assert_eq!(
+///     "urn:uuid:a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8",
+///     my_uuid.to_urn().to_string(),
+/// );
+/// # Ok(())
+/// # }
+/// ```
+///
+/// # Endianness
+///
+/// The specification for UUIDs encodes the integer fields that make up the
+/// value in big-endian order. This crate assumes integer inputs are already in
+/// the correct order by default, regardless of the endianness of the
+/// environment. Most methods that accept integers have a `_le` variant (such as
+/// `from_fields_le`) that assumes any integer values will need to have their
+/// bytes flipped, regardless of the endianness of the environment.
+///
+/// Most users won't need to worry about endianness unless they need to operate
+/// on individual fields (such as when converting between Microsoft GUIDs). The
+/// important things to remember are:
+///
+/// - The endianness is in terms of the fields of the UUID, not the environment.
+/// - The endianness is assumed to be big-endian when there's no `_le` suffix
+///   somewhere.
+/// - Byte-flipping in `_le` methods applies to each integer.
+/// - Endianness roundtrips, so if you create a UUID with `from_fields_le`
+///   you'll get the same values back out with `to_fields_le`.
+///
+/// # ABI
+///
+/// The `Uuid` type is always guaranteed to be have the same ABI as a `[u8;
+/// 16]`.
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[cfg_attr(feature = "zerocopy-unstable", derive(AsBytes, FromBytes, Unaligned))]
+#[cfg_attr(
+    feature = "zerocopy-unstable",
+    derive(AsBytes, FromBytes, Unaligned)
+)]
 #[repr(transparent)]
 pub struct Uuid(Bytes);
 
@@ -313,7 +385,9 @@ impl Uuid {
     /// Callers should only trust the value returned by this method if they
     /// trust the UUID itself.
     ///
-    /// * [Variant Reference](http://tools.ietf.org/html/rfc4122#section-4.1.1)
+    /// # References
+    ///
+    /// * [Variant in RFC4122](http://tools.ietf.org/html/rfc4122#section-4.1.1)
     pub const fn get_variant(&self) -> Variant {
         match self.as_bytes()[8] {
             x if x & 0x80 == 0x00 => Variant::NCS,
@@ -330,24 +404,28 @@ impl Uuid {
     /// Returns the version number of the UUID.
     ///
     /// This represents the algorithm used to generate the contents.
+    /// This method is the future-proof alternative to [`Uuid::get_version`].
     ///
-    /// Currently only the Random (V4) algorithm is supported by this
-    /// module.  There are security and privacy implications for using
-    /// older versions - see [Wikipedia: Universally Unique Identifier](
-    /// http://en.wikipedia.org/wiki/Universally_unique_identifier) for
-    /// details.
+    /// # References
     ///
-    /// * [Version Reference](http://tools.ietf.org/html/rfc4122#section-4.1.3)
+    /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
     pub const fn get_version_num(&self) -> usize {
         (self.as_bytes()[6] >> 4) as usize
     }
 
     /// Returns the version of the UUID.
     ///
-    /// This represents the algorithm used to generate the contents
+    /// This represents the algorithm used to generate the contents.
+    /// If the version field doesn't contain a recognized version then `None`
+    /// is returned. If you're trying to read the version for a future extension
+    /// you can also use [`Uuid::get_version_num`] to unconditionally return a
+    /// number.
+    ///
+    /// # References
+    ///
+    /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
     pub const fn get_version(&self) -> Option<Version> {
-        let v = self.as_bytes()[6] >> 4;
-        match v {
+        match self.get_version_num() {
             0 if self.is_nil() => Some(Version::Nil),
             1 => Some(Version::Mac),
             2 => Some(Version::Dce),
@@ -381,25 +459,25 @@ impl Uuid {
     /// # Examples
     ///
     /// ```
-    /// use uuid::Uuid;
+    /// # use uuid::Uuid;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let uuid = Uuid::nil();
     ///
-    /// fn main() -> Result<(), uuid::Error> {
-    ///     let uuid = Uuid::nil();
-    ///     assert_eq!(uuid.as_fields(), (0, 0, 0, &[0u8; 8]));
+    /// assert_eq!(uuid.as_fields(), (0, 0, 0, &[0u8; 8]));
     ///
-    ///     let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8")?;
-    ///     assert_eq!(
-    ///         uuid.as_fields(),
-    ///         (
-    ///             0x936DA01F,
-    ///             0x9ABD,
-    ///             0x4D9D,
-    ///             b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"
-    ///         )
-    ///     );
+    /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     ///
-    ///     Ok(())
-    /// }
+    /// assert_eq!(
+    ///     uuid.as_fields(),
+    ///     (
+    ///         0xa1a2a3a4,
+    ///         0xb1b2,
+    ///         0xc1c2,
+    ///         &[0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8],
+    ///     )
+    /// );
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn as_fields(&self) -> (u32, u16, u16, &[u8; 8]) {
         let bytes = self.as_bytes();
@@ -429,19 +507,20 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
-    /// fn main() -> Result<(), uuid::Error> {
-    ///     let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8")?;
-    ///     assert_eq!(
-    ///         uuid.to_fields_le(),
-    ///         (
-    ///             0x1FA06D93,
-    ///             0xBD9A,
-    ///             0x9D4D,
-    ///             b"\x80\xC7\x02\xAF\x85\xC8\x22\xA8"
-    ///         )
-    ///     );
-    ///     Ok(())
-    /// }
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
+    ///
+    /// assert_eq!(
+    ///     uuid.to_fields_le(),
+    ///     (
+    ///         0xa4a3a2a1,
+    ///         0xb2b1,
+    ///         0xc2c1,
+    ///         &[0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8],
+    ///     )
+    /// );
+    /// # Ok(())
+    /// # }
     /// ```
     pub fn to_fields_le(&self) -> (u32, u16, u16, &[u8; 8]) {
         let d1 = (self.as_bytes()[0] as u32)
@@ -466,16 +545,16 @@ impl Uuid {
     /// # Examples
     ///
     /// ```
-    /// use uuid::Uuid;
+    /// # use uuid::Uuid;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     ///
-    /// fn main() -> Result<(), uuid::Error> {
-    ///     let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8")?;
-    ///     assert_eq!(
-    ///         uuid.as_u128(),
-    ///         0x936DA01F9ABD4D9D80C702AF85C822A8,
-    ///     );
-    ///     Ok(())
-    /// }
+    /// assert_eq!(
+    ///     uuid.as_u128(),
+    ///     0xa1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8,
+    /// );
+    /// # Ok(())
+    /// # }
     /// ```
     pub const fn as_u128(&self) -> u128 {
         (self.as_bytes()[0] as u128) << 120
@@ -510,17 +589,16 @@ impl Uuid {
     /// # Examples
     ///
     /// ```
-    /// use uuid::Uuid;
+    /// # use uuid::Uuid;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     ///
-    /// fn main() -> Result<(), uuid::Error> {
-    ///     let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8")?;
-    ///
-    ///     assert_eq!(
-    ///         uuid.to_u128_le(),
-    ///         0xA822C885AF02C7809D4DBD9A1FA06D93,
-    ///     );
-    ///     Ok(())
-    /// }
+    /// assert_eq!(
+    ///     uuid.to_u128_le(),
+    ///     0xd8d7d6d5d4d3d2d1c2c1b2b1a4a3a2a1,
+    /// );
+    /// # Ok(())
+    /// # }
     /// ```
     pub const fn to_u128_le(&self) -> u128 {
         (self.as_bytes()[0] as u128)
@@ -550,17 +628,15 @@ impl Uuid {
     /// # Examples
     ///
     /// ```
-    /// use uuid::Uuid;
-    ///
-    /// fn main() -> Result<(), uuid::Error> {
-    ///     let uuid = Uuid::parse_str("936DA01F-9ABD-4D9D-80C7-02AF85C822A8")?;
-    ///     assert_eq!(
-    ///         uuid.as_u64_pair(),
-    ///         (0x936DA01F9ABD4D9D,
-    ///         0x80C702AF85C822A8),
-    ///     );
-    ///     Ok(())
-    /// }
+    /// # use uuid::Uuid;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
+    /// assert_eq!(
+    ///     uuid.as_u64_pair(),
+    ///     (0xa1a2a3a4b1b2c1c2, 0xd1d2d3d4d5d6d7d8),
+    /// );
+    /// # Ok(())
+    /// # }
     /// ```
     pub const fn as_u64_pair(&self) -> (u64, u64) {
         let value = self.as_u128();
@@ -578,13 +654,12 @@ impl Uuid {
     }
 
     /// A buffer that can be used for `encode_...` calls, that is
-    /// guaranteed to be long enough for any of the format format adapters.
+    /// guaranteed to be long enough for any of the format adapters.
     ///
     /// # Examples
     ///
-    /// ```rust
-    /// use uuid::Uuid;
-    ///
+    /// ```
+    /// # use uuid::Uuid;
     /// let uuid = Uuid::nil();
     ///
     /// assert_eq!(
