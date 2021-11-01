@@ -2,13 +2,8 @@ uuid
 ---------
 
 [![Latest Version](https://img.shields.io/crates/v/uuid.svg)](https://crates.io/crates/uuid)
-[![Join the chat at https://gitter.im/uuid-rs/Lobby](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/uuid-rs/Lobby?utm_source=badge&utm_medium=badge&utm_content=badge)
 ![Minimum rustc version](https://img.shields.io/badge/rustc-1.46.0+-yellow.svg)
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/uuid-rs/uuid?branch=main&svg=true)](https://ci.appveyor.com/project/uuid-rs/uuid/branch/main)
-[![Build Status](https://travis-ci.org/uuid-rs/uuid.svg?branch=main)](https://travis-ci.org/uuid-rs/uuid)
-[![Average time to resolve an issue](https://isitmaintained.com/badge/resolution/uuid-rs/uuid.svg)](https://isitmaintained.com/project/uuid-rs/uuid "Average time to resolve an issue")
-[![Percentage of issues still open](https://isitmaintained.com/badge/open/uuid-rs/uuid.svg)](https://isitmaintained.com/project/uuid-rs/uuid "Percentage of issues still open")
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fuuid-rs%2Fuuid.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fuuid-rs%2Fuuid?ref=badge_shield)
+[![Continuous integration](https://github.com/uuid-rs/uuid/actions/workflows/ci.yml/badge.svg)](https://github.com/uuid-rs/uuid/actions/workflows/ci.yml)
 
 ---
 
@@ -27,6 +22,34 @@ separated into groups by hyphens.
 The uniqueness property is not strictly guaranteed, however for all
 practical purposes, it can be assumed that an unintentional collision would
 be extremely unlikely.
+
+## Getting started
+
+To get started with generating random UUIDs, add this to your `Cargo.toml`:
+
+```toml
+[dependencies.uuid]
+version = "0.8"
+features = ["v4", "fast-rng"]
+```
+
+and then call `Uuid::new_v4` in your code:
+
+```rust
+use uuid::Uuid;
+
+let my_uuid = Uuid::new_v4();
+```
+
+You can also parse UUIDs without needing any crate features:
+
+```rust
+use uuid::{Uuid, Version};
+
+let my_uuid = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8")?;
+
+assert_eq!(Some(Version::Random), my_uuid.get_version());
+```
 
 ## Dependencies
 
@@ -58,27 +81,6 @@ You need to enable one of the following Cargo features together with the
 Alternatively, you can provide a custom `getrandom` implementation yourself
 via [`getrandom::register_custom_getrandom`](https://docs.rs/getrandom/0.2.2/getrandom/macro.register_custom_getrandom.html).
 
-By default, `uuid` can be depended on with:
-
-```toml
-[dependencies]
-uuid = "0.8"
-```
-
-To activate various features, use syntax like:
-
-```toml
-[dependencies]
-uuid = { version = "0.8", features = ["serde", "v4"] }
-```
-
-You can disable default features with:
-
-```toml
-[dependencies]
-uuid = { version = "0.8", default-features = false }
-```
-
 ### Unstable features
 
 Some features are unstable. They may be incomplete or depend on other unstable libraries.
@@ -94,43 +96,6 @@ flag through your environment to opt-in to unstable `uuid` features:
 ```
 RUSTFLAGS="--cfg uuid_unstable"
 ```
-
-## Examples
-
-To parse a UUID given in the simple format and print it as a urn:
-
-```rust
-use uuid::Uuid;
-
-fn main() -> Result<(), uuid::Error> {
-    let my_uuid =
-        Uuid::parse_str("936DA01F9ABD4d9d80C702AF85C822A8")?;
-    println!("{}", my_uuid.to_urn());
-    Ok(())
-}
-```
-
-To create a new random (V4) UUID and print it out in hexadecimal form:
-
-```rust
-// Note that this requires the `v4` feature enabled in the uuid crate.
-
-use uuid::Uuid;
-
-fn main() {
-    let my_uuid = Uuid::new_v4();
-    println!("{}", my_uuid);
-    Ok(())
-}
-```
-
-## Strings
-
-Examples of string representations:
-
-* simple: `936DA01F9ABD4d9d80C702AF85C822A8`
-* hyphenated: `550e8400-e29b-41d4-a716-446655440000`
-* urn: `urn:uuid:F9168C5E-CEB2-4faa-B6BF-329BF39FA1E4`
 
 ## References
 
