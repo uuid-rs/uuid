@@ -9,7 +9,12 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::{error::*, std::fmt, Uuid, fmt::{Hyphenated, HyphenatedRef, Simple, SimpleRef, Urn, UrnRef}};
+use crate::{
+    error::*,
+    fmt::{Hyphenated, HyphenatedRef, Simple, SimpleRef, Urn, UrnRef},
+    std::fmt,
+    Uuid,
+};
 use serde::{
     de::{self, Error as _},
     Deserialize, Deserializer, Serialize, Serializer,
@@ -21,8 +26,10 @@ impl Serialize for Uuid {
         serializer: S,
     ) -> Result<S::Ok, S::Error> {
         if serializer.is_human_readable() {
-            serializer
-                .serialize_str(self.to_hyphenated().encode_lower(&mut Uuid::encode_buffer()))
+            serializer.serialize_str(
+                self.to_hyphenated()
+                    .encode_lower(&mut Uuid::encode_buffer()),
+            )
         } else {
             self.as_bytes().serialize(serializer)
         }
@@ -213,7 +220,10 @@ mod serde_tests {
     fn test_serialize_hyphenated() {
         let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
         let u = Uuid::parse_str(uuid_str).unwrap();
-        serde_test::assert_ser_tokens(&u.to_hyphenated(), &[Token::Str(uuid_str)]);
+        serde_test::assert_ser_tokens(
+            &u.to_hyphenated(),
+            &[Token::Str(uuid_str)],
+        );
     }
 
     #[test]
