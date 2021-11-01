@@ -7,7 +7,8 @@ impl Uuid {
     /// as the source of random numbers. If you'd like to use a custom
     /// generator, don't use this method: generate random bytes using your
     /// custom generator and pass them to the
-    /// [`uuid::Builder::from_random_bytes`][from_random_bytes] function instead.
+    /// [`uuid::Builder::from_random_bytes`][from_random_bytes] function
+    /// instead.
     ///
     /// Note that usage of this method requires the `v4` feature of this crate
     /// to be enabled.

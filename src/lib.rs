@@ -114,7 +114,9 @@
 //!
 //! If you need to use `v4` in a no-std environment, you'll need to
 //! follow [`getrandom`'s docs] on configuring a source of randomness
-//! on currently unsupported targets.
+//! on currently unsupported targets. Alternatively, you can produce
+//! random bytes yourself and then pass them to [`Builder::from_random_bytes`]
+//! without enabling the `v4` feature.
 //!
 //! # Examples
 //!

@@ -127,7 +127,12 @@ impl Uuid {
     ///     uuid.to_hyphenated().to_string(),
     /// );
     /// ```
-    pub const fn from_fields_le(d1: u32, d2: u16, d3: u16, d4: &[u8; 8]) -> Uuid {
+    pub const fn from_fields_le(
+        d1: u32,
+        d2: u16,
+        d3: u16,
+        d4: &[u8; 8],
+    ) -> Uuid {
         Uuid::from_bytes([
             d1 as u8,
             (d1 >> 8) as u8,
