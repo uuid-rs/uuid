@@ -1,5 +1,5 @@
 [package]
-name = "uuid-macros"
+name = "uuid_macro"
 version = "0.0.0"
 edition = "2018"
 

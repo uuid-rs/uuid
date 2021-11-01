@@ -51,6 +51,18 @@ let my_uuid = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8")?;
 assert_eq!(Some(Version::Random), my_uuid.get_version());
 ```
 
+If you add the `macros` feature then you can parse UUIDs at compile time
+instead of at runtime:
+
+```rust
+#[macro_use]
+extern crate uuid;
+
+let my_uuid = uuid!("67e55044-10b1-426f-9247-bb680e5fe0c8")?;
+
+assert_eq!(Some(Version::Random), my_uuid.get_version());
+```
+
 ## Dependencies
 
 By default, this crate depends on nothing but `std` and cannot generate
@@ -66,6 +78,7 @@ various pieces of functionality:
   generate a `Uuid`.
 * `v5` - adds the `Uuid::new_v5` function and the ability to create a V5
   UUID based on the SHA1 hash of some data.
+* `macros` - adds the `uuid!` macro that can parse UUIDs at compile time.
 * `serde` - adds the ability to serialize and deserialize a `Uuid` using the
   `serde` crate.
 * `fast-rng` - when combined with `v4` uses a faster algorithm for generating

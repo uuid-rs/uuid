@@ -40,6 +40,7 @@
 //!   generate a UUID.
 //! * `v5` - adds the [`Uuid::new_v5`] function and the ability to create a V5
 //!   UUID based on the SHA1 hash of some data.
+//! * `macros` - adds the `uuid!` macro that can parse UUIDs at compile time.
 //! * `serde` - adds the ability to serialize and deserialize a UUID using the
 //!   `serde` crate.
 //! * `fast-rng` - when combined with `v4` uses a faster algorithm for
@@ -209,14 +210,12 @@ mod rng;
 mod serde_support;
 #[cfg(feature = "slog")]
 mod slog_support;
-#[cfg(all(windows, feature = "winapi"))]
-mod winapi_support;
 
 #[cfg(feature = "macros")]
 #[macro_use]
 mod macros;
 #[cfg(feature = "macros")]
-pub extern crate uuid_macros;
+pub extern crate uuid_macro;
 
 use crate::std::convert;
 
@@ -936,10 +935,8 @@ mod tests {
         check!(buf, "{:X}", u, 36, |c| c.is_uppercase()
             || c.is_digit(10)
             || c == '-');
-        check!(buf, "{:#x}", u, 32, |c| c.is_lowercase()
-            || c.is_digit(10));
-        check!(buf, "{:#X}", u, 32, |c| c.is_uppercase()
-            || c.is_digit(10));
+        check!(buf, "{:#x}", u, 32, |c| c.is_lowercase() || c.is_digit(10));
+        check!(buf, "{:#X}", u, 32, |c| c.is_uppercase() || c.is_digit(10));
 
         check!(buf, "{:X}", u.to_hyphenated(), 36, |c| c.is_uppercase()
             || c.is_digit(10)
