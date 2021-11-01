@@ -42,6 +42,9 @@
 //!   UUID based on the SHA1 hash of some data.
 //! * `serde` - adds the ability to serialize and deserialize a UUID using the
 //!   `serde` crate.
+//! * `fast-rng` - when combined with `v4` uses a faster algorithm for generating
+//!   random UUIDs. This feature requires more dependencies to compile, but is just
+//!   as suitable for UUIDs as the default algorithm.
 //!
 //! By default, `uuid` can be depended on with:
 //!
@@ -54,7 +57,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = { version = "0.8", features = ["serde", "v4"] }
+//! uuid = { version = "0.8", features = ["serde", "v4", "fast-rng"] }
 //! ```
 //!
 //! You can disable default features with:
@@ -190,19 +193,22 @@ mod error;
 mod parser;
 
 pub mod fmt;
+
 #[cfg(feature = "v1")]
 pub mod v1;
-
-#[cfg(feature = "serde")]
-mod serde_support;
-#[cfg(feature = "slog")]
-mod slog_support;
 #[cfg(feature = "v3")]
 mod v3;
 #[cfg(feature = "v4")]
 mod v4;
 #[cfg(feature = "v5")]
 mod v5;
+
+#[cfg(feature = "rng")]
+mod rng;
+#[cfg(feature = "serde")]
+mod serde_support;
+#[cfg(feature = "slog")]
+mod slog_support;
 #[cfg(all(windows, feature = "winapi"))]
 mod winapi_support;
 

@@ -45,6 +45,9 @@ various pieces of functionality:
   UUID based on the SHA1 hash of some data.
 * `serde` - adds the ability to serialize and deserialize a `Uuid` using the
   `serde` crate.
+* `fast-rng` - when combined with `v4` uses a faster algorithm for generating
+  random UUIDs. This feature requires more dependencies to compile, but is just
+  as suitable for UUIDs as the default algorithm.
 
 You need to enable one of the following Cargo features together with the
 `v4` feature if you're targeting `wasm32-unknown-unknown` target:
