@@ -381,7 +381,9 @@ impl Uuid {
     /// Callers should only trust the value returned by this method if they
     /// trust the UUID itself.
     ///
-    /// * [Variant Reference](http://tools.ietf.org/html/rfc4122#section-4.1.1)
+    /// # References
+    ///
+    /// * [Variant in RFC4122](http://tools.ietf.org/html/rfc4122#section-4.1.1)
     pub const fn get_variant(&self) -> Variant {
         match self.as_bytes()[8] {
             x if x & 0x80 == 0x00 => Variant::NCS,
@@ -399,6 +401,10 @@ impl Uuid {
     ///
     /// This represents the algorithm used to generate the contents.
     /// This method is the future-proof alternative to [`Uuid::get_version`].
+    ///
+    /// # References
+    ///
+    /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
     pub const fn get_version_num(&self) -> usize {
         (self.as_bytes()[6] >> 4) as usize
     }
@@ -410,6 +416,10 @@ impl Uuid {
     /// is returned. If you're trying to read the version for a future extension
     /// you can also use [`Uuid::get_version_num`] to unconditionally return a
     /// number.
+    ///
+    /// # References
+    ///
+    /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
     pub const fn get_version(&self) -> Option<Version> {
         match self.get_version_num() {
             0 if self.is_nil() => Some(Version::Nil),

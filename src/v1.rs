@@ -120,6 +120,10 @@ impl Timestamp {
 }
 
 /// A trait that abstracts over generation of UUID v1 "Clock Sequence" values.
+///
+/// # References
+///
+/// * [Clock Sequence in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.5)
 pub trait ClockSequence {
     /// Return a 16-bit number that will be used as the "clock sequence" in
     /// the UUID. The number must be different if the time has changed since
@@ -165,6 +169,7 @@ impl Uuid {
     ///
     /// let context = Context::new(42);
     /// let ts = Timestamp::from_unix(&context, 1497624119, 1234);
+    ///
     /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
     ///
     /// assert_eq!(
@@ -181,6 +186,7 @@ impl Uuid {
     ///
     /// let context = Context::new(42);
     /// let ts = Timestamp::from_rfc4122(1497624119, 0);
+    ///
     /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
     ///
     /// assert_eq!(
@@ -190,7 +196,7 @@ impl Uuid {
     /// ```
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
-    /// [`ClockSequence`]: v1/struct.ClockSequence.html
+    /// [`ClockSequence`]: v1/trait.ClockSequence.html
     /// [`Context`]: v1/struct.Context.html
     pub const fn new_v1(ts: Timestamp, node_id: &[u8; 6]) -> Self {
         let time_low = (ts.ticks & 0xFFFF_FFFF) as u32;
