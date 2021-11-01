@@ -272,9 +272,11 @@ impl Context {
         }
     }
 
-    /// Creates a thread-safe, internally mutable context that's seeded with a random value.
+    /// Creates a thread-safe, internally mutable context that's seeded with a
+    /// random value.
     ///
-    /// This method requires either the `rng` or `fast-rng` feature to also be enabled.
+    /// This method requires either the `rng` or `fast-rng` feature to also be
+    /// enabled.
     ///
     /// This is a context which can be shared across threads. It maintains an
     /// internal counter that is incremented at every request, the value ends
@@ -292,8 +294,13 @@ impl Context {
 
 impl ClockSequence for Context {
     fn generate_sequence(&self, ts: u64, _: u32) -> u16 {
-        if ts == self.last_ts.swap(ts, atomic::Ordering::AcqRel) {
-            self.count.fetch_add(1, atomic::Ordering::AcqRel)
+        // If the last timestamp we saw is the same or before the current
+        // then increment the counter. This only checks the seconds portion
+        // of the timestamp to avoid needing to convert and synchronize the nanos
+        // That means two timestamps in the same second with different subseconds
+        // will always be considered different and cause the counter to increment
+        if ts <= self.last_ts.swap(ts, atomic::Ordering::AcqRel) {
+            self.count.fetch_add(1, atomic::Ordering::AcqRel).wrapping_add(1)
         } else {
             self.count.load(atomic::Ordering::Acquire)
         }
@@ -356,6 +363,8 @@ mod tests {
             &node,
         );
 
+        let time: u64 = 1_496_854_536;
+
         let uuid2 = Uuid::new_v1(
             Timestamp::from_unix(&context, time, time_fraction),
             &node,
@@ -365,14 +374,19 @@ mod tests {
         assert_eq!(uuid1.get_timestamp().unwrap().to_rfc4122().1, 0);
         assert_eq!(uuid2.get_timestamp().unwrap().to_rfc4122().1, 0);
 
-        let time = 1_496_854_536;
+        let time = 1_496_854_535;
 
         let uuid3 = Uuid::new_v1(
             Timestamp::from_unix(&context, time, time_fraction),
             &node,
         );
+        let uuid4 = Uuid::new_v1(
+            Timestamp::from_unix(&context, time, time_fraction),
+            &node,
+        );
 
-        // Since the timestamp has changed, we do increment the counter
+        // Since the timestamp has gone backwards, we do increment the counter
         assert_eq!(uuid3.get_timestamp().unwrap().to_rfc4122().1, 1);
+        assert_eq!(uuid4.get_timestamp().unwrap().to_rfc4122().1, 2);
     }
 }

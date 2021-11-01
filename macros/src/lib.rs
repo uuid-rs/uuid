@@ -1,3 +1,13 @@
+//! Implementation details for the `uuid!` macro.
+//!
+//! This crate is not meant to be used directly. Instead,
+//! you can use the `macros` feature of `uuid`:
+//!
+//! ```toml
+//! [dependencies.uuid]
+//! features = ["macros"]
+//! ```
+
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 use quote::{quote, quote_spanned};
@@ -19,6 +29,7 @@ mod error;
 mod parser;
 
 #[proc_macro]
+#[doc(hidden)]
 pub fn parse_lit(input: TokenStream) -> TokenStream {
     build_uuid(input.clone()).unwrap_or_else(|e| {
         let msg = e.to_string();

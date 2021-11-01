@@ -33,7 +33,7 @@ repository = "https://github.com/uuid-rs/uuid"
 version = "0.8.1" # remember to update html_root_url in lib.rs
 
 [package.metadata.docs.rs]
-features = [ "guid", "serde", "slog", "v1", "v3", "v4", "v5" ]
+features = [ "serde", "slog", "v1", "v3", "v4", "v5" ]
 default-target = "x86_64-pc-windows-msvc"
 
 [package.metadata.playground]
@@ -54,14 +54,12 @@ repository = "uuid-rs/uuid"
 [features]
 default = ["std"]
 std = []
-macros = ["uuid-macros"]
+macros = ["uuid_macro"]
 
 v1 = ["atomic"]
 v3 = ["md-5"]
 v4 = ["rng"]
 v5 = ["sha-1"]
-
-guid = ["winapi"]
 
 js = ["getrandom", "getrandom/js"]
 
@@ -100,7 +98,7 @@ optional = true
 version = "0.9"
 
 # Public: Re-expored
-[dependencies.uuid-macros]
+[dependencies.uuid_macro]
 path = "macros"
 optional = true
 
@@ -114,11 +112,6 @@ version = "1.0.56"
 [dependencies.slog]
 optional = true
 version = "2"
-
-# Public: Used in `From` impls on `Uuid`
-[target.'cfg(windows)'.dependencies.winapi]
-optional = true
-version = "0.3"
 
 # Public (unstable): Used in `zerocopy` derive
 [dependencies.zerocopy]

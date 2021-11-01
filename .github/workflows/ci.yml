@@ -55,11 +55,14 @@ jobs:
     - name: Install cargo-hack
       run: cargo install cargo-hack
 
-    - name: Powerset
-      run: cargo hack test --feature-powerset --lib --optional-deps serde --depth 3
-
     - name: Docs
       run: cargo test --all-features --doc
+
+    - name: Examples
+      run: cargo test --all-features --examples
+
+    - name: Powerset
+      run: cargo hack test --feature-powerset --lib --optional-deps serde --depth 3
 
   msrv:
     name: "Tests / MSRV / OS: ${{ matrix.os }}"
