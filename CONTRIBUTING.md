@@ -80,15 +80,13 @@ source repository.
 Unless the changes are fairly minor (like documentation changes or tiny
 patches), we require PRs to relevant issues.
 
-Please open PRs against branch:
-* `master` when making non-breaking changes 
-* `breaking` when your changes alter the public API in a breaking manner
+Please open PRs against the `main` branch.
 
 If the pull request is still a work in progress, prepend`[WIP] ` in your 
 title. `WIP bot` will make sure that the PR doesn't accidentally get merged.
 
 > Uuid Project has a minimum rust version policy. Currently `uuid` should 
-compile with atleast `1.22.0`, and is enforced on our CI builds.
+compile with at least `1.22.0`, and is enforced on our CI builds.
 
 When you feel that the PR is ready, please ping one of the maintainers so
 they can review your changes.
@@ -105,7 +103,7 @@ improvements to documentation are always welcome.
 
 We follow the documentation style guidelines as given by [RFC 1574].
 
-[RFC 1574]: https://github.com/rust-lang/rfcs/blob/master/text/1574-more-api-documentation-conventions.md#appendix-a-full-conventions-text
+[RFC 1574]: https://github.com/rust-lang/rfcs/blob/main/text/1574-more-api-documentation-conventions.md#appendix-a-full-conventions-text
 
 # Issue Triage
 [Issue Triage]: #issue-triage
