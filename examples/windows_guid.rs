@@ -53,10 +53,7 @@ fn guid_to_uuid() {
 #[cfg(windows)]
 fn uuid_from_cocreateguid() {
     use uuid::{Uuid, Variant, Version};
-    use winapi::{
-        shared::guiddef,
-        um::combaseapi::CoCreateGuid,
-    };
+    use winapi::{shared::guiddef, um::combaseapi::CoCreateGuid};
 
     let mut guid = guiddef::GUID::default();
 

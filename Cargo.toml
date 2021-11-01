@@ -117,7 +117,6 @@ version = "2"
 [dependencies.arbitrary]
 optional = true
 version = "1"
-features = ["derive"]
 
 # Public (unstable): Used in `zerocopy` derive
 [dependencies.zerocopy]

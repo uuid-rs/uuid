@@ -190,9 +190,6 @@ compile_error!("The `zerocopy-unstable` feature is unstable and may break betwee
 #[cfg(feature = "zerocopy-unstable")]
 use zerocopy::{AsBytes, FromBytes, Unaligned};
 
-#[cfg(feature = "arbitrary")]
-use arbitrary::Arbitrary;
-
 mod builder;
 mod error;
 mod parser;
@@ -210,10 +207,8 @@ mod v5;
 
 #[cfg(feature = "rng")]
 mod rng;
-#[cfg(feature = "serde")]
-mod serde_support;
-#[cfg(feature = "slog")]
-mod slog_support;
+
+mod external;
 
 #[cfg(feature = "macros")]
 #[macro_use]
@@ -359,7 +354,6 @@ pub enum Variant {
     feature = "zerocopy-unstable",
     derive(AsBytes, FromBytes, Unaligned)
 )]
-#[cfg_attr(feature = "arbitrary", derive(Arbitrary))]
 #[repr(transparent)]
 pub struct Uuid(Bytes);
 
