@@ -133,6 +133,9 @@ version = "0.2"
 [dev-dependencies.wasm-bindgen-test]
 version = "0.3"
 
+[dev-dependencies.trybuild]
+version = "1.0.52"
+
 [target.'cfg(windows)'.dev-dependencies.winapi]
 version = "0.3"
 features = ["combaseapi"]

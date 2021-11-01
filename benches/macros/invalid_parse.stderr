@@ -1,0 +1,125 @@
+error: invalid length: expected one of [36, 32], found 0
+ --> benches/macros/invalid_parse.rs:3:23
+  |
+3 | const _: Uuid = uuid!("");
+  |                       ^^
+
+error: invalid length: expected one of [36, 32], found 1
+ --> benches/macros/invalid_parse.rs:4:23
+  |
+4 | const _: Uuid = uuid!("!");
+  |                       ^^^
+
+error: invalid length: expected one of [36, 32], found 37
+ --> benches/macros/invalid_parse.rs:5:23
+  |
+5 | const _: Uuid = uuid!("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E45");
+  |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: invalid length: expected one of [36, 32], found 35
+ --> benches/macros/invalid_parse.rs:6:23
+  |
+6 | const _: Uuid = uuid!("F9168C5E-CEB2-4faa-BBF-329BF39FA1E4");
+  |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: invalid character: expected an optional prefix of `urn:uuid:` followed by 0123456789abcdefABCDEF-, found G at 20
+ --> benches/macros/invalid_parse.rs:7:44
+  |
+7 | const _: Uuid = uuid!("F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4");
+  |                                            ^
+
+error: invalid number of groups: expected one of [1, 5], found 4
+ --> benches/macros/invalid_parse.rs:8:23
+  |
+8 | const _: Uuid = uuid!("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4");
+  |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: invalid length: expected one of [36, 32], found 18
+ --> benches/macros/invalid_parse.rs:9:23
+  |
+9 | const _: Uuid = uuid!("F9168C5E-CEB2-4faa");
+  |                       ^^^^^^^^^^^^^^^^^^^^
+
+error: invalid character: expected an optional prefix of `urn:uuid:` followed by 0123456789abcdefABCDEF-, found X at 18
+  --> benches/macros/invalid_parse.rs:10:42
+   |
+10 | const _: Uuid = uuid!("F9168C5E-CEB2-4faaXB6BFF329BF39FA1E4");
+   |                                          ^
+
+error: invalid group length: expected 4, found 3 in group 1
+  --> benches/macros/invalid_parse.rs:11:33
+   |
+11 | const _: Uuid = uuid!("F9168C5E-CEB-24fa-eB6BFF32-BF39FA1E4");
+   |                                 ^^^
+
+error: invalid group length: expected 12, found 8 in group 4
+  --> benches/macros/invalid_parse.rs:12:48
+   |
+12 | const _: Uuid = uuid!("01020304-1112-2122-3132-41424344");
+   |                                                ^^^^^^^^
+
+error: invalid length: expected one of [36, 32], found 33
+  --> benches/macros/invalid_parse.rs:13:23
+   |
+13 | const _: Uuid = uuid!("67e5504410b1426f9247bb680e5fe0c88");
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: invalid length: expected one of [36, 32], found 33
+  --> benches/macros/invalid_parse.rs:14:23
+   |
+14 | const _: Uuid = uuid!("67e5504410b1426f9247bb680e5fe0cg8");
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: invalid character: expected an optional prefix of `urn:uuid:` followed by 0123456789abcdefABCDEF-, found % at 15
+  --> benches/macros/invalid_parse.rs:15:39
+   |
+15 | const _: Uuid = uuid!("67e5504410b1426%9247bb680e5fe0c8");
+   |                                       ^
+
+error: invalid length: expected one of [36, 32], found 31
+  --> benches/macros/invalid_parse.rs:18:23
+   |
+18 | const _: Uuid = uuid!("67e5504410b1426f9247bb680e5fe0c");
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: invalid character: expected an optional prefix of `urn:uuid:` followed by 0123456789abcdefABCDEF-, found X at 6
+  --> benches/macros/invalid_parse.rs:19:30
+   |
+19 | const _: Uuid = uuid!("67e550X410b1426f9247bb680e5fe0cd");
+   |                              ^
+
+error: invalid group length: expected 8, found 6 in group 0
+  --> benches/macros/invalid_parse.rs:20:24
+   |
+20 | const _: Uuid = uuid!("67e550-4105b1426f9247bb680e5fe0c");
+   |                        ^^^^^^
+
+error: invalid group length: expected 4, found 5 in group 3
+  --> benches/macros/invalid_parse.rs:21:43
+   |
+21 | const _: Uuid = uuid!("F9168C5E-CEB2-4faa-B6BF1-02BF39FA1E4");
+   |                                           ^^^^^
+
+error: invalid length: expected one of [36, 32], found 35
+  --> benches/macros/invalid_parse.rs:24:23
+   |
+24 | const _: Uuid = uuid!("F9168C5E-CEB2-4faa-BBF-329BF39FA1E4");
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: invalid character: expected an optional prefix of `urn:uuid:` followed by 0123456789abcdefABCDEF-, found G at 20
+  --> benches/macros/invalid_parse.rs:25:44
+   |
+25 | const _: Uuid = uuid!("F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4");
+   |                                            ^
+
+error: invalid group length: expected 12, found 8 in group 4
+  --> benches/macros/invalid_parse.rs:26:48
+   |
+26 | const _: Uuid = uuid!("01020304-1112-2122-3132-41424344");
+   |                                                ^^^^^^^^
+
+error: invalid number of groups: expected one of [1, 5], found 4
+  --> benches/macros/invalid_parse.rs:27:23
+   |
+27 | const _: Uuid = uuid!("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4");
+   |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
