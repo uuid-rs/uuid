@@ -233,8 +233,10 @@ mod v5;
 mod winapi_support;
 
 #[cfg(feature = "macros")]
-#[doc(inline)]
-pub use uuid_macros::*;
+#[macro_use]
+mod macros;
+#[cfg(feature = "macros")]
+pub extern crate uuid_macros;
 
 use crate::std::convert;
 
