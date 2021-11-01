@@ -14,12 +14,26 @@ pub(crate) fn bytes() -> [u8; 16] {
 
     #[cfg(feature = "fast-rng")]
     {
-        use rand::RngCore;
-        let mut rng = rand::thread_rng();
+        rand::random()
+    }
+}
 
-        let mut bytes = [0u8; 16];
-        rng.fill_bytes(&mut bytes);
+#[cfg(feature = "v1")]
+pub(crate) fn u16() -> u16 {
+    #[cfg(not(feature = "fast-rng"))]
+    {
+        let mut bytes = [0u8; 2];
 
-        bytes
+        getrandom::getrandom(&mut bytes).unwrap_or_else(|err| {
+            // NB: getrandom::Error has no source; this is adequate display
+            panic!("could not retrieve random bytes for uuid: {}", err)
+        });
+
+        ((bytes[0] as u16) << 8) | (bytes[1] as u16)
+    }
+
+    #[cfg(feature = "fast-rng")]
+    {
+        rand::random()
     }
 }

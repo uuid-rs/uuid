@@ -15,7 +15,8 @@ const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 /// process-wide uniqueness.
 #[derive(Debug)]
 pub struct Context {
-    count: Atomic<usize>,
+    last_ts: Atomic<u64>,
+    count: Atomic<u16>,
 }
 
 /// Stores the number of nanoseconds from an epoch and a counter for ensuring
@@ -162,13 +163,14 @@ impl Uuid {
     /// # Examples
     ///
     /// A UUID can be created from a unix [`Timestamp`] with a
-    /// [`ClockSequence`]:
+    /// [`ClockSequence`]. RFC4122 requires the clock sequence
+    /// is seeded with a random value:
     ///
     /// ```rust
     /// use uuid::v1::{Timestamp, Context};
     /// # use uuid::Uuid;
-    ///
-    /// let context = Context::new(42);
+    /// # fn random_seed() -> u16 { 42 }
+    /// let context = Context::new(random_seed());
     /// let ts = Timestamp::from_unix(&context, 1497624119, 1234);
     ///
     /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
@@ -265,14 +267,36 @@ impl Context {
     /// process.
     pub const fn new(count: u16) -> Self {
         Self {
-            count: Atomic::new(count as usize),
+            last_ts: Atomic::new(0),
+            count: Atomic::new(count),
+        }
+    }
+
+    /// Creates a thread-safe, internally mutable context that's seeded with a random value.
+    ///
+    /// This method requires either the `rng` or `fast-rng` feature to also be enabled.
+    ///
+    /// This is a context which can be shared across threads. It maintains an
+    /// internal counter that is incremented at every request, the value ends
+    /// up in the clock_seq portion of the UUID (the fourth group). This
+    /// will improve the probability that the UUID is unique across the
+    /// process.
+    #[cfg(feature = "rng")]
+    pub fn new_random() -> Self {
+        Self {
+            last_ts: Atomic::new(Default::default()),
+            count: Atomic::new(crate::rng::u16()),
         }
     }
 }
 
 impl ClockSequence for Context {
-    fn generate_sequence(&self, _: u64, _: u32) -> u16 {
-        (self.count.fetch_add(1, atomic::Ordering::SeqCst) & 0xffff) as u16
+    fn generate_sequence(&self, ts: u64, _: u32) -> u16 {
+        if ts == self.last_ts.swap(ts, atomic::Ordering::AcqRel) {
+            self.count.fetch_add(1, atomic::Ordering::AcqRel)
+        } else {
+            self.count.load(atomic::Ordering::Acquire)
+        }
     }
 }
 
@@ -337,7 +361,18 @@ mod tests {
             &node,
         );
 
+        // Since the timestamps are the same, we don't increment the counter
         assert_eq!(uuid1.get_timestamp().unwrap().to_rfc4122().1, 0);
-        assert_eq!(uuid2.get_timestamp().unwrap().to_rfc4122().1, 1);
+        assert_eq!(uuid2.get_timestamp().unwrap().to_rfc4122().1, 0);
+
+        let time = 1_496_854_536;
+
+        let uuid3 = Uuid::new_v1(
+            Timestamp::from_unix(&context, time, time_fraction),
+            &node,
+        );
+
+        // Since the timestamp has changed, we do increment the counter
+        assert_eq!(uuid3.get_timestamp().unwrap().to_rfc4122().1, 1);
     }
 }
