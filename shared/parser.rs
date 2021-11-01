@@ -26,7 +26,7 @@ fn len_matches_any(len: usize, crits: &[usize]) -> bool {
 const ACC_GROUP_LENS: [usize; 5] = [8, 12, 16, 20, 32];
 
 // Length of each hyphenated group in hex digits.
-const GROUP_LENS: [usize; 5] = [8, 4, 4, 4, 12];
+pub(super) const GROUP_LENS: [usize; 5] = [8, 4, 4, 4, 12];
 
 pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
     // Ensure length is valid for any of the supported formats
