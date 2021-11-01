@@ -53,14 +53,20 @@ repository = "uuid-rs/uuid"
 
 [features]
 default = ["std"]
-guid = ["winapi"]
 std = []
 macros = ["uuid-macros"]
+
 v1 = ["atomic"]
 v3 = ["md-5"]
-v4 = ["getrandom"]
+v4 = ["rng"]
 v5 = ["sha-1"]
+
+guid = ["winapi"]
+
 js = ["getrandom", "getrandom/js"]
+
+rng = ["getrandom"]
+fast-rng = ["rng", "rand"]
 
 # Unstable features (these also need RUSTFLAGS="--cfg uuid_unstable" to work)
 zerocopy-unstable = ["zerocopy"]
@@ -69,6 +75,11 @@ zerocopy-unstable = ["zerocopy"]
 [dependencies.getrandom]
 optional = true
 version = "0.2"
+
+# Private
+[dependencies.rand]
+optional = true
+version = "0.8"
 
 # Private
 [dependencies.atomic]
