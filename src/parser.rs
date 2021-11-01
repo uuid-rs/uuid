@@ -13,7 +13,11 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
-use crate::{error::*, std::str, Uuid};
+use crate::{
+    error::*,
+    std::{convert::TryFrom, str},
+    Uuid,
+};
 
 #[path = "../shared/parser.rs"]
 mod imp;
@@ -22,6 +26,14 @@ impl str::FromStr for Uuid {
     type Err = Error;
 
     fn from_str(uuid_str: &str) -> Result<Self, Self::Err> {
+        Uuid::parse_str(uuid_str)
+    }
+}
+
+impl TryFrom<&'_ str> for Uuid {
+    type Error = Error;
+
+    fn try_from(uuid_str: &'_ str) -> Result<Self, Self::Error> {
         Uuid::parse_str(uuid_str)
     }
 }

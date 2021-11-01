@@ -42,14 +42,22 @@ impl fmt::Display for Variant {
 
 impl fmt::LowerHex for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
+        if f.alternate() {
+            fmt::LowerHex::fmt(&self.to_simple_ref(), f)
+        } else {
+            fmt::LowerHex::fmt(&self.to_hyphenated_ref(), f)
+        }
     }
 }
 
 impl fmt::UpperHex for Uuid {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        fmt::UpperHex::fmt(&self.to_hyphenated_ref(), f)
+        if f.alternate() {
+            fmt::UpperHex::fmt(&self.to_simple_ref(), f)
+        } else {
+            fmt::UpperHex::fmt(&self.to_hyphenated_ref(), f)
+        }
     }
 }
 
@@ -974,15 +982,13 @@ macro_rules! impl_fmt_traits {
 
         impl<$($a),*> fmt::LowerHex for $T<$($a),*> {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                // TODO: Self doesn't work https://github.com/rust-lang/rust/issues/52808
-                f.write_str(self.encode_lower(&mut [0; $T::LENGTH]))
+                f.write_str(self.encode_lower(&mut [0; Self::LENGTH]))
             }
         }
 
         impl<$($a),*> fmt::UpperHex for $T<$($a),*> {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                // TODO: Self doesn't work https://github.com/rust-lang/rust/issues/52808
-                f.write_str(self.encode_upper(&mut [0; $T::LENGTH]))
+                f.write_str(self.encode_upper(&mut [0; Self::LENGTH]))
             }
         }
 

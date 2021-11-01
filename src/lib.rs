@@ -42,9 +42,9 @@
 //!   UUID based on the SHA1 hash of some data.
 //! * `serde` - adds the ability to serialize and deserialize a UUID using the
 //!   `serde` crate.
-//! * `fast-rng` - when combined with `v4` uses a faster algorithm for generating
-//!   random UUIDs. This feature requires more dependencies to compile, but is just
-//!   as suitable for UUIDs as the default algorithm.
+//! * `fast-rng` - when combined with `v4` uses a faster algorithm for
+//!   generating random UUIDs. This feature requires more dependencies to
+//!   compile, but is just as suitable for UUIDs as the default algorithm.
 //!
 //! By default, `uuid` can be depended on with:
 //!
@@ -820,19 +820,6 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_uuid_upperhex() {
-        use crate::std::fmt::Write;
-
-        let mut buffer = String::new();
-        let uuid = new();
-
-        check!(buffer, "{:X}", uuid, 36, |c| c.is_uppercase()
-            || c.is_digit(10)
-            || c == '-');
-    }
-
-    #[test]
-    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_nil() {
         let nil = Uuid::nil();
         let not_nil = new();
@@ -936,24 +923,42 @@ mod tests {
             ($buf:ident, $format:expr, $target:expr, $len:expr, $cond:expr) => {
                 $buf.clear();
                 write!($buf, $format, $target).unwrap();
-                assert!(buf.len() == $len);
+                assert_eq!($len, buf.len());
                 assert!($buf.chars().all($cond), "{}", $buf);
             };
         }
 
+        check!(buf, "{:x}", u, 36, |c| c.is_lowercase()
+            || c.is_digit(10)
+            || c == '-');
         check!(buf, "{:X}", u, 36, |c| c.is_uppercase()
             || c.is_digit(10)
             || c == '-');
+        check!(buf, "{:#x}", u, 32, |c| c.is_lowercase()
+            || c.is_digit(10));
+        check!(buf, "{:#X}", u, 32, |c| c.is_uppercase()
+            || c.is_digit(10));
+
         check!(buf, "{:X}", u.to_hyphenated(), 36, |c| c.is_uppercase()
             || c.is_digit(10)
             || c == '-');
         check!(buf, "{:X}", u.to_simple(), 32, |c| c.is_uppercase()
+            || c.is_digit(10));
+        check!(buf, "{:#X}", u.to_hyphenated(), 36, |c| c.is_uppercase()
+            || c.is_digit(10)
+            || c == '-');
+        check!(buf, "{:#X}", u.to_simple(), 32, |c| c.is_uppercase()
             || c.is_digit(10));
 
         check!(buf, "{:x}", u.to_hyphenated(), 36, |c| c.is_lowercase()
             || c.is_digit(10)
             || c == '-');
         check!(buf, "{:x}", u.to_simple(), 32, |c| c.is_lowercase()
+            || c.is_digit(10));
+        check!(buf, "{:#x}", u.to_hyphenated(), 36, |c| c.is_lowercase()
+            || c.is_digit(10)
+            || c == '-');
+        check!(buf, "{:#x}", u.to_simple(), 32, |c| c.is_lowercase()
             || c.is_digit(10));
     }
 
