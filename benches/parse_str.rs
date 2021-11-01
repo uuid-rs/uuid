@@ -48,12 +48,3 @@ fn parse_invalid_group_len(b: &mut Bencher) {
 fn parse_invalid_groups(b: &mut Bencher) {
     b.iter(|| Uuid::parse_str("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4"));
 }
-
-#[cfg(feature = "macros")]
-#[test]
-fn test_valid_macro() {
-    let t = trybuild::TestCases::new();
-    t.pass("benches/macros/valid_parse.rs");
-    t.pass("benches/macros/renamed.rs");
-    t.compile_fail("benches/macros/invalid_parse.rs");
-}
