@@ -15,7 +15,6 @@ const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 /// process-wide uniqueness.
 #[derive(Debug)]
 pub struct Context {
-    last_ts: Atomic<u64>,
     count: Atomic<u16>,
 }
 
@@ -267,7 +266,6 @@ impl Context {
     /// process.
     pub const fn new(count: u16) -> Self {
         Self {
-            last_ts: Atomic::new(0),
             count: Atomic::new(count),
         }
     }
@@ -286,24 +284,19 @@ impl Context {
     #[cfg(feature = "rng")]
     pub fn new_random() -> Self {
         Self {
-            last_ts: Atomic::new(Default::default()),
             count: Atomic::new(crate::rng::u16()),
         }
     }
 }
 
 impl ClockSequence for Context {
-    fn generate_sequence(&self, ts: u64, _: u32) -> u16 {
-        // If the last timestamp we saw is the same or before the current
-        // then increment the counter. This only checks the seconds portion
-        // of the timestamp to avoid needing to convert and synchronize the nanos
-        // That means two timestamps in the same second with different subseconds
-        // will always be considered different and cause the counter to increment
-        if ts <= self.last_ts.swap(ts, atomic::Ordering::AcqRel) {
-            self.count.fetch_add(1, atomic::Ordering::AcqRel).wrapping_add(1)
-        } else {
-            self.count.load(atomic::Ordering::Acquire)
-        }
+    fn generate_sequence(&self, _: u64, _: u32) -> u16 {
+        // RFC4122 reserves 2 bits of the clock sequence so the actual
+        // maximum value is smaller than `u16::MAX`. Since we unconditionally
+        // increment the clock sequence we want to wrap once it becomes larger
+        // than what we can represent in a "u14". Otherwise there'd be patches
+        // where the clock sequence doesn't change regardless of the timestamp
+        self.count.fetch_add(1, atomic::Ordering::AcqRel) % (u16::MAX >> 2)
     }
 }
 
@@ -356,7 +349,9 @@ mod tests {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
         let node = [1, 2, 3, 4, 5, 6];
-        let context = Context::new(0);
+
+        // This context will wrap
+        let context = Context::new((u16::MAX >> 2) - 1);
 
         let uuid1 = Uuid::new_v1(
             Timestamp::from_unix(&context, time, time_fraction),
@@ -370,8 +365,7 @@ mod tests {
             &node,
         );
 
-        // Since the timestamps are the same, we don't increment the counter
-        assert_eq!(uuid1.get_timestamp().unwrap().to_rfc4122().1, 0);
+        assert_eq!(uuid1.get_timestamp().unwrap().to_rfc4122().1, 16382);
         assert_eq!(uuid2.get_timestamp().unwrap().to_rfc4122().1, 0);
 
         let time = 1_496_854_535;
@@ -385,7 +379,6 @@ mod tests {
             &node,
         );
 
-        // Since the timestamp has gone backwards, we do increment the counter
         assert_eq!(uuid3.get_timestamp().unwrap().to_rfc4122().1, 1);
         assert_eq!(uuid4.get_timestamp().unwrap().to_rfc4122().1, 2);
     }

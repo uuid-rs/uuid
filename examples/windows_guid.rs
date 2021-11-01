@@ -66,12 +66,8 @@ fn uuid_from_cocreateguid() {
         CoCreateGuid(&mut guid as *mut _);
     }
 
-    let uuid = Uuid::from_fields(
-        guid.Data1,
-        guid.Data2,
-        guid.Data3,
-        &guid.Data4,
-    );
+    let uuid =
+        Uuid::from_fields(guid.Data1, guid.Data2, guid.Data3, &guid.Data4);
 
     assert_eq!(Variant::RFC4122, uuid.get_variant());
     assert_eq!(Some(Version::Random), uuid.get_version());
