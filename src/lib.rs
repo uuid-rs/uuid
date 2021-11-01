@@ -43,6 +43,7 @@
 //! * `macros` - adds the `uuid!` macro that can parse UUIDs at compile time.
 //! * `serde` - adds the ability to serialize and deserialize a UUID using the
 //!   `serde` crate.
+//! * `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid`.
 //! * `fast-rng` - when combined with `v4` uses a faster algorithm for
 //!   generating random UUIDs. This feature requires more dependencies to
 //!   compile, but is just as suitable for UUIDs as the default algorithm.
@@ -188,6 +189,9 @@ compile_error!("The `zerocopy-unstable` feature is unstable and may break betwee
 
 #[cfg(feature = "zerocopy-unstable")]
 use zerocopy::{AsBytes, FromBytes, Unaligned};
+
+#[cfg(feature = "arbitrary")]
+use arbitrary::Arbitrary;
 
 mod builder;
 mod error;
@@ -355,6 +359,7 @@ pub enum Variant {
     feature = "zerocopy-unstable",
     derive(AsBytes, FromBytes, Unaligned)
 )]
+#[cfg_attr(feature = "arbitrary", derive(Arbitrary))]
 #[repr(transparent)]
 pub struct Uuid(Bytes);
 

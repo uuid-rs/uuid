@@ -97,7 +97,7 @@ default-features = false
 optional = true
 version = "0.9"
 
-# Public: Re-expored
+# Public: Re-exported
 [dependencies.uuid_macro]
 path = "macros"
 optional = true
@@ -112,6 +112,12 @@ version = "1.0.56"
 [dependencies.slog]
 optional = true
 version = "2"
+
+# Public: Used in trait impls on `Uuid`
+[dependencies.arbitrary]
+optional = true
+version = "1"
+features = ["derive"]
 
 # Public (unstable): Used in `zerocopy` derive
 [dependencies.zerocopy]
