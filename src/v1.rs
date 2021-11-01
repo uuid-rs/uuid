@@ -1,6 +1,7 @@
 //! The implementation for Version 1 UUIDs.
 //!
-//! Note that you need feature `v1` in order to use these features.
+//! Note that you need to enable the `v1` Cargo feature
+//! in order to use this module.
 
 use crate::{Uuid, Version};
 
