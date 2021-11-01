@@ -9,7 +9,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::{error::*, std::fmt, Uuid};
+use crate::{error::*, std::fmt, Uuid, fmt::{Hyphenated, HyphenatedRef, Simple, SimpleRef, Urn, UrnRef}};
 use serde::{
     de::{self, Error as _},
     Deserialize, Deserializer, Serialize, Serializer,
@@ -22,10 +22,64 @@ impl Serialize for Uuid {
     ) -> Result<S::Ok, S::Error> {
         if serializer.is_human_readable() {
             serializer
-                .serialize_str(self.to_hyphenated().encode_lower(&mut [0; 36]))
+                .serialize_str(self.to_hyphenated().encode_lower(&mut Uuid::encode_buffer()))
         } else {
             self.as_bytes().serialize(serializer)
         }
+    }
+}
+
+impl Serialize for Hyphenated {
+    fn serialize<S: Serializer>(
+        &self,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
+    }
+}
+
+impl Serialize for HyphenatedRef<'_> {
+    fn serialize<S: Serializer>(
+        &self,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
+    }
+}
+
+impl Serialize for Simple {
+    fn serialize<S: Serializer>(
+        &self,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
+    }
+}
+
+impl Serialize for SimpleRef<'_> {
+    fn serialize<S: Serializer>(
+        &self,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
+    }
+}
+
+impl Serialize for Urn {
+    fn serialize<S: Serializer>(
+        &self,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
+    }
+}
+
+impl Serialize for UrnRef<'_> {
+    fn serialize<S: Serializer>(
+        &self,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
     }
 }
 
@@ -153,6 +207,27 @@ mod serde_tests {
             &u.readable(),
             &[serde_test::Token::Bytes(uuid_bytes)],
         );
+    }
+
+    #[test]
+    fn test_serialize_hyphenated() {
+        let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
+        let u = Uuid::parse_str(uuid_str).unwrap();
+        serde_test::assert_ser_tokens(&u.to_hyphenated(), &[Token::Str(uuid_str)]);
+    }
+
+    #[test]
+    fn test_serialize_simple() {
+        let uuid_str = "f9168c5eceb24faab6bf329bf39fa1e4";
+        let u = Uuid::parse_str(uuid_str).unwrap();
+        serde_test::assert_ser_tokens(&u.to_simple(), &[Token::Str(uuid_str)]);
+    }
+
+    #[test]
+    fn test_serialize_urn() {
+        let uuid_str = "urn:uuid:f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
+        let u = Uuid::parse_str(uuid_str).unwrap();
+        serde_test::assert_ser_tokens(&u.to_urn(), &[Token::Str(uuid_str)]);
     }
 
     #[test]
