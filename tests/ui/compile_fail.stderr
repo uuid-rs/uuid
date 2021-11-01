@@ -1,0 +1,1 @@
+error: couldn't read $DIR/tests/ui/compile_fail: Is a directory (os error 21)
