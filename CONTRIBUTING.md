@@ -12,8 +12,7 @@ Thank you for your interest in contributing to the Uuid Project!
 * [Out-of-tree Contributions](#out-of-tree-contributions)
 * [Helpful Links](#helpful-links)
 
-For any questions, please make a post on [users.rust-lang.org][u-r-l-o], post
-on [uuid-rs mailing list].
+For any questions, please make a post on [Discussions] or [users.rust-lang.org][u-r-l-o].
 
 > All contributors need to follow our [Code of Conduct].
 
@@ -132,6 +131,5 @@ seasoned developers, some useful places to look for information are:
 [RFC 4122]: https://www.ietf.org/rfc/rfc4122.txt
 
 [u-r-l-o]: https://users.rust-lang.org
-[uuid-rs mailing list]: https://uuid-rs.groups.io
-[gitter]: https://gitter.im/uuid-rs/Lobby
+[Discussions]: https://github.com/uuid-rs/uuid/discussions
 [search existing issues]: https://github.com/uuid-rs/uuid/search?q=&type=Issues&utf8=%E2%9C%93
