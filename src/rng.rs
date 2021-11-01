@@ -1,3 +1,4 @@
+#[cfg(feature = "v4")]
 pub(crate) fn bytes() -> [u8; 16] {
     #[cfg(not(feature = "fast-rng"))]
     {
