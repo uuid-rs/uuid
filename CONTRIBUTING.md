@@ -118,6 +118,10 @@ You can follow [this link][lrus] to look for issues like this.
 
 [lrus]: https://github.com/uuid-rs/uuid/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-asc
 
+# Fuzzing
+We use [`cargo fuzz`] to fuzz test various parts of `uuid`. See their guide
+for more details on what fuzzing is and how to run the tests yourself.
+
 # Helpful Links
 [Helpful Links]: #helpful-links
 
@@ -133,3 +137,4 @@ seasoned developers, some useful places to look for information are:
 [u-r-l-o]: https://users.rust-lang.org
 [Discussions]: https://github.com/uuid-rs/uuid/discussions
 [search existing issues]: https://github.com/uuid-rs/uuid/search?q=&type=Issues&utf8=%E2%9C%93
+[`cargo fuzz`]: https://rust-fuzz.github.io/book/cargo-fuzz.html
