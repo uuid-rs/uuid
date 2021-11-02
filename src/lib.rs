@@ -35,8 +35,13 @@
 //! Add the following to your `Cargo.toml`:
 //!
 //! ```toml
-//! [dependencies]
-//! uuid = { version = "0.8", features = ["v4"] }
+//! [dependencies.uuid]
+//! version = "1.0.0-alpha.1"
+//! features = [
+//!     "v4",                # Lets you generate random UUIDs
+//!     "fast-rng",          # Use a faster (but still sufficiently random) RNG
+//!     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
+//! ]
 //! ```
 //!
 //! When you want a UUID, you can generate one:
@@ -50,6 +55,14 @@
 //! let id = Uuid::new_v4();
 //! # }
 //! # }
+//! ```
+//!
+//! If you have a UUID value you can use it inline:
+//!
+//! ```
+//! use uuid::{uuid, Uuid};
+//!
+//! const ID: Uuid = uuid!("67e55044-10b1-426f-9247-bb680e5fe0c8");
 //! ```
 //!
 //! # Dependencies
@@ -83,21 +96,21 @@
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = "0.8"
+//! uuid = "1"
 //! ```
 //!
 //! To activate various features, use syntax like:
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = { version = "0.8", features = ["serde", "v4", "fast-rng"] }
+//! uuid = { version = "1", features = ["serde", "v4", "fast-rng"] }
 //! ```
 //!
 //! You can disable default features with:
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = { version = "0.8", default-features = false }
+//! uuid = { version = "1", default-features = false }
 //! ```
 //!
 //! ## Unstable features
@@ -127,7 +140,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = { version = "0.8", features = ["v4", "js"] }
+//! uuid = { version = "1", features = ["v4", "js"] }
 //! ```
 //!
 //! You don't need the `js` feature to use `uuid` in WebAssembly if you're
@@ -140,7 +153,7 @@
 //!
 //! ```toml
 //! [dependencies]
-//! uuid = { version = "0.8", default-features = false }
+//! uuid = { version = "1", default-features = false }
 //! ```
 //!
 //! Some additional features are supported in no-std environments though:
@@ -203,7 +216,7 @@
 #![doc(
     html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
     html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-    html_root_url = "https://docs.rs/uuid/0.8.1"
+    html_root_url = "https://docs.rs/uuid/1.0.0-alpha.1"
 )]
 
 #[cfg(any(feature = "std", test))]
@@ -246,7 +259,7 @@ mod macros;
 
 #[doc(hidden)]
 #[cfg(feature = "macro-diagnostics")]
-pub extern crate uuid_macro;
+pub extern crate uuid_macro_internal;
 
 use crate::std::convert;
 
