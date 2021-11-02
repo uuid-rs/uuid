@@ -106,6 +106,26 @@ jobs:
       
       - name: Fast rng
         run: wasm-pack test --node -- --features "js v4 fast-rng"
+  
+  mips:
+    name: Tests / MIPS (Big Endian)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+      
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install Cross
+        run: cargo install cross
+
+      - name: Default features
+        run: cross test --target mips-unknown-linux-gnu
 
   embedded:
     name: Build / Embedded
