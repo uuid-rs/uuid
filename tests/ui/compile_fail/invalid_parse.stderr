@@ -70,12 +70,6 @@ error: invalid length: expected one of [36, 32], found 33
 14 | const _: Uuid = uuid!("67e5504410b1426f9247bb680e5fe0cg8");
    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-error: invalid character: expected an optional prefix of `urn:uuid:` followed by 0123456789abcdefABCDEF-, found % at 15
-  --> tests/ui/compile_fail/invalid_parse.rs:15:39
-   |
-15 | const _: Uuid = uuid!("67e5504410b1426%9247bb680e5fe0c8");
-   |                                       ^
-
 error: invalid length: expected one of [36, 32], found 31
   --> tests/ui/compile_fail/invalid_parse.rs:18:23
    |
@@ -88,11 +82,14 @@ error: invalid character: expected an optional prefix of `urn:uuid:` followed by
 19 | const _: Uuid = uuid!("67e550X410b1426f9247bb680e5fe0cd");
    |                              ^
 
-error: invalid group length: expected 8, found 6 in group 0
-  --> tests/ui/compile_fail/invalid_parse.rs:20:24
+error: proc macro panicked
+  --> tests/ui/compile_fail/invalid_parse.rs:20:17
    |
 20 | const _: Uuid = uuid!("67e550-4105b1426f9247bb680e5fe0c");
-   |                        ^^^^^^
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = help: message: attempt to subtract with overflow
+   = note: this error originates in the macro `uuid` (in Nightly builds, run with -Z macro-backtrace for more info)
 
 error: invalid group length: expected 4, found 5 in group 3
   --> tests/ui/compile_fail/invalid_parse.rs:21:43
@@ -123,3 +120,27 @@ error: invalid number of groups: expected one of [1, 5], found 4
    |
 27 | const _: Uuid = uuid!("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4");
    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error: invalid character: expected an optional prefix of `urn:uuid:` followed by 0123456789abcdefABCDEF-, found G at 29
+  --> tests/ui/compile_fail/invalid_parse.rs:28:53
+   |
+28 | const _: Uuid = uuid!("urn:uuid:F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4");
+   |                                                     ^
+
+error: invalid group length: expected 4, found 5 in group 3
+  --> tests/ui/compile_fail/invalid_parse.rs:29:52
+   |
+29 | const _: Uuid = uuid!("urn:uuid:F9168C5E-CEB2-4faa-B2cBF-32BF39FA1E4");
+   |                                                    ^^^^^
+
+error: invalid group length: expected 4, found 5 in group 3
+  --> tests/ui/compile_fail/invalid_parse.rs:30:44
+   |
+30 | const _: Uuid = uuid!("{F9168C5E-CEB2-4faa-B0a75-32BF39FA1E4}");
+   |                                            ^^^^^
+
+error: invalid character: expected an optional prefix of `urn:uuid:` followed by 0123456789abcdefABCDEF-, found z at 29
+  --> tests/ui/compile_fail/invalid_parse.rs:32:53
+   |
+32 | const _: Uuid = uuid!("{F9168C5E-CEB2-4faa-B6BF-329Bz39FA1E4}");
+   |                                                     ^

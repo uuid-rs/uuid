@@ -42,6 +42,8 @@ pub(crate) enum ErrorKind {
         found: usize,
         /// The segment with invalid length.
         group: usize,
+        /// The index of where the group starts
+        index: usize,
     },
     /// Invalid length of the [`Uuid`] string.
     ///
@@ -126,6 +128,7 @@ impl fmt::Display for Error {
                 ref expected,
                 found,
                 group,
+                ..
             } => write!(
                 f,
                 "expected {}, found {} in group {}",

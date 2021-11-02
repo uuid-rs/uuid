@@ -43,15 +43,11 @@ pub fn parse_lit(input: TokenStream) -> TokenStream {
                 s.subspan(index + 1..=index + 1).unwrap()
             }
             Error::UuidParse(error::Error(
-                error::ErrorKind::InvalidGroupLength { found, group, .. },
+                error::ErrorKind::InvalidGroupLength { found, index, .. },
             )) => {
-                let start =
-                    parser::GROUP_LENS.iter().take(group).sum::<usize>()
-                        + group
-                        + 1;
                 let mut s = proc_macro2::Literal::string("");
                 s.set_span(ts.span());
-                s.subspan(start..start + found).unwrap()
+                s.subspan(index..index + found).unwrap()
             }
             _ => ts.span(),
         };

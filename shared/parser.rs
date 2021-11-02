@@ -26,19 +26,24 @@ fn len_matches_any(len: usize, crits: &[usize]) -> bool {
 const ACC_GROUP_LENS: [usize; 5] = [8, 12, 16, 20, 32];
 
 // Length of each hyphenated group in hex digits.
-pub(super) const GROUP_LENS: [usize; 5] = [8, 4, 4, 4, 12];
+pub const GROUP_LENS: [usize; 5] = [8, 4, 4, 4, 12];
+
+const URN_PREFIX: &str = "urn:uuid:";
 
 pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
     // Ensure length is valid for any of the supported formats
     let len = input.len();
 
+    let mut start = 0;
     // Check for a URN prefixed UUID
-    if len == 45 && input.starts_with("urn:uuid:") {
-        input = &input[9..];
+    if len == 45 && input.starts_with(URN_PREFIX) {
+        input = &input[URN_PREFIX.len()..];
+        start += URN_PREFIX.len();
     }
     // Check for a Microsoft GUID wrapped in {}
     else if len == 38 && input.starts_with("{") && input.ends_with("}") {
         input = &input[1..input.len() - 1];
+        start += 1;
     }
     // In other cases, check for a simple or hyphenated UUID
     else if !len_matches_any(len, &[36, 32]) {
@@ -90,10 +95,13 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
                             digit
                         };
 
+                        let index =
+                            ACC_GROUP_LENS[group - 1] + group + 1 + start;
                         return Err(ErrorKind::InvalidGroupLength {
                             expected: ExpectedLength::Exact(GROUP_LENS[group]),
                             found: found as usize,
                             group,
+                            index,
                         }
                         .into());
                     }
@@ -106,7 +114,7 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
                     return Err(ErrorKind::InvalidCharacter {
                         expected: "0123456789abcdefABCDEF-",
                         found: input[i_char..].chars().next().unwrap(),
-                        index: i_char,
+                        index: i_char + start,
                         urn: UrnPrefix::Optional,
                     }
                     .into());
@@ -127,10 +135,12 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
                         digit
                     };
 
+                    let index = ACC_GROUP_LENS[group - 1] + group + 1 + start;
                     return Err(ErrorKind::InvalidGroupLength {
                         expected: ExpectedLength::Exact(GROUP_LENS[group]),
                         found: found as usize,
                         group,
+                        index,
                     }
                     .into());
                 }
@@ -138,7 +148,7 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
                     return Err(ErrorKind::InvalidCharacter {
                         expected: "0123456789abcdefABCDEF-",
                         found: input[i_char..].chars().next().unwrap(),
-                        index: i_char,
+                        index: i_char + start,
                         urn: UrnPrefix::Optional,
                     }
                     .into());
@@ -151,10 +161,12 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
 
     // Now check the last group.
     if ACC_GROUP_LENS[4] as u8 != digit {
+        let index = ACC_GROUP_LENS[group - 1] + group + 1 + start;
         return Err(ErrorKind::InvalidGroupLength {
             expected: ExpectedLength::Exact(GROUP_LENS[4]),
             found: (digit as usize - ACC_GROUP_LENS[3]),
             group,
+            index,
         }
         .into());
     }
