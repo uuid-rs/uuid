@@ -85,7 +85,7 @@ jobs:
         toolchain: 1.46.0
         override: true
 
-    - name: Default features
+    - name: Version features
       run: cargo test --features "v1 v3 v4 v5 serde"
 
   wasm:
@@ -104,8 +104,28 @@ jobs:
       - name: Version features
         run: wasm-pack test --node -- --features "js v1 v3 v4 v5"
       
-      - name: Fast rng
+      - name: Fast RNG
         run: wasm-pack test --node -- --features "js v4 fast-rng"
+  
+  mips:
+    name: Tests / MIPS (Big Endian)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+      
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+
+      - name: Install Cross
+        run: cargo install cross
+
+      - name: Default features
+        run: cross test --target mips-unknown-linux-gnu
 
   embedded:
     name: Build / Embedded
@@ -122,7 +142,13 @@ jobs:
           target: thumbv6m-none-eabi
           override: true
 
-      - name: Default features
+      - name: No features
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features
+      
+      - name: Version features
         uses: actions-rs/cargo@v1
         with:
           command: build
