@@ -82,14 +82,11 @@ error: invalid character: expected an optional prefix of `urn:uuid:` followed by
 19 | const _: Uuid = uuid!("67e550X410b1426f9247bb680e5fe0cd");
    |                              ^
 
-error: proc macro panicked
-  --> tests/ui/compile_fail/invalid_parse.rs:20:17
+error: invalid group length: expected 8, found 6 in group 0
+  --> tests/ui/compile_fail/invalid_parse.rs:20:24
    |
 20 | const _: Uuid = uuid!("67e550-4105b1426f9247bb680e5fe0c");
-   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = help: message: attempt to subtract with overflow
-   = note: this error originates in the macro `uuid` (in Nightly builds, run with -Z macro-backtrace for more info)
+   |                        ^^^^^^
 
 error: invalid group length: expected 4, found 5 in group 3
   --> tests/ui/compile_fail/invalid_parse.rs:21:43
@@ -144,3 +141,27 @@ error: invalid character: expected an optional prefix of `urn:uuid:` followed by
    |
 32 | const _: Uuid = uuid!("{F9168C5E-CEB2-4faa-B6BF-329Bz39FA1E4}");
    |                                                     ^
+
+error: invalid group length: expected 8, found 6 in group 0
+  --> tests/ui/compile_fail/invalid_parse.rs:35:24
+   |
+35 | const _: Uuid = uuid!("67e550-4105b1426f9247bb680e5fe0c");
+   |                        ^^^^^^
+
+error: invalid character: expected an optional prefix of `urn:uuid:` followed by 0123456789abcdefABCDEF-, found 岡 at 6
+  --> tests/ui/compile_fail/invalid_parse.rs:37:30
+   |
+37 | const _: Uuid = uuid!("504410岡林aab1426f9247bb680e5fe0c8");
+   |                              ^^
+
+error: invalid character: expected an optional prefix of `urn:uuid:` followed by 0123456789abcdefABCDEF-, found 😎 at 6
+  --> tests/ui/compile_fail/invalid_parse.rs:38:30
+   |
+38 | const _: Uuid = uuid!("504410😎👍aab1426f9247bb680e5fe0c8");
+   |                              ^^
+
+error: invalid character: expected an optional prefix of `urn:uuid:` followed by 0123456789abcdefABCDEF-, found 👍 at 20
+  --> tests/ui/compile_fail/invalid_parse.rs:40:44
+   |
+40 | const _: Uuid = uuid!("{F9168C5E-CEB2-4faa-👍5-32BF39FA1E4}");
+   |                                            ^^

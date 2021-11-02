@@ -31,4 +31,12 @@ const _: Uuid = uuid!("{F9168C5E-CEB2-4faa-B0a75-32BF39FA1E4}");
 
 const _: Uuid = uuid!("{F9168C5E-CEB2-4faa-B6BF-329Bz39FA1E4}");
 
+// group 0 has invalid length
+const _: Uuid = uuid!("67e550-4105b1426f9247bb680e5fe0c");
+
+const _: Uuid = uuid!("504410岡林aab1426f9247bb680e5fe0c8");
+const _: Uuid = uuid!("504410😎👍aab1426f9247bb680e5fe0c8");
+
+const _: Uuid = uuid!("{F9168C5E-CEB2-4faa-👍5-32BF39FA1E4}");
+
 fn main() {}

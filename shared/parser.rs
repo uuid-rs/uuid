@@ -36,22 +36,24 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
 
     let mut start = 0;
     // Check for a URN prefixed UUID
-    if len == 45 && input.starts_with(URN_PREFIX) {
-        input = &input[URN_PREFIX.len()..];
-        start += URN_PREFIX.len();
+    if len == 45 {
+        if let Some(stripped) = input.strip_prefix(URN_PREFIX) {
+            input = stripped;
+            start = URN_PREFIX.len();
+        }
     }
     // Check for a Microsoft GUID wrapped in {}
-    else if len == 38 && input.starts_with("{") && input.ends_with("}") {
-        input = &input[1..input.len() - 1];
-        start += 1;
+    else if len == 38 {
+        if let Some(stripped) =
+            input.strip_prefix('{').and_then(|s| s.strip_suffix('}'))
+        {
+            input = stripped;
+            start = 1;
+        }
     }
     // In other cases, check for a simple or hyphenated UUID
     else if !len_matches_any(len, &[36, 32]) {
-        return Err(ErrorKind::InvalidLength {
-            expected: ExpectedLength::Any(&[36, 32]),
-            found: len,
-        }
-        .into());
+        return Err(Error::length(ExpectedLength::Any(&[36, 32]), len));
     }
 
     // `digit` counts only hexadecimal digits, `i_char` counts all chars.
@@ -60,21 +62,17 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
     let mut acc = 0;
     let mut buffer = [0u8; 16];
 
-    for (i_char, chr) in input.bytes().enumerate() {
+    for (i_char, character) in input.char_indices() {
+        let chr = character as u8;
         if digit as usize >= 32 && group != 4 {
             if group == 0 {
-                return Err(ErrorKind::InvalidLength {
-                    expected: ExpectedLength::Any(&[36, 32]),
-                    found: len,
-                }
-                .into());
+                return Err(Error::length(ExpectedLength::Any(&[36, 32]), len));
             }
 
-            return Err(ErrorKind::InvalidGroupCount {
-                expected: ExpectedLength::Any(&[1, 5]),
-                found: group + 1,
-            }
-            .into());
+            return Err(Error::group_count(
+                ExpectedLength::Any(&[1, 5]),
+                group + 1,
+            ));
         }
 
         if digit % 2 == 0 {
@@ -90,20 +88,17 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
                         // Calculate how many digits this group consists of
                         // in the input.
                         let found = if group > 0 {
-                            digit - ACC_GROUP_LENS[group - 1] as u8
+                            digit as usize - ACC_GROUP_LENS[group - 1]
                         } else {
-                            digit
+                            digit as usize
                         };
 
-                        let index =
-                            ACC_GROUP_LENS[group - 1] + group + 1 + start;
-                        return Err(ErrorKind::InvalidGroupLength {
-                            expected: ExpectedLength::Exact(GROUP_LENS[group]),
-                            found: found as usize,
+                        return Err(Error::group_length(
+                            ExpectedLength::Exact(GROUP_LENS[group]),
+                            found,
                             group,
-                            index,
-                        }
-                        .into());
+                            start,
+                        ));
                     }
                     // Next group, decrement digit, it is incremented again
                     // at the bottom.
@@ -111,13 +106,7 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
                     digit -= 1;
                 }
                 _ => {
-                    return Err(ErrorKind::InvalidCharacter {
-                        expected: "0123456789abcdefABCDEF-",
-                        found: input[i_char..].chars().next().unwrap(),
-                        index: i_char + start,
-                        urn: UrnPrefix::Optional,
-                    }
-                    .into());
+                    return Err(Error::character(character, i_char, start));
                 }
             }
         } else {
@@ -135,23 +124,17 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
                         digit
                     };
 
-                    let index = ACC_GROUP_LENS[group - 1] + group + 1 + start;
-                    return Err(ErrorKind::InvalidGroupLength {
-                        expected: ExpectedLength::Exact(GROUP_LENS[group]),
-                        found: found as usize,
+                    return Err(Error::group_length(
+                        ExpectedLength::Exact(GROUP_LENS[group]),
+                        found as usize,
                         group,
-                        index,
-                    }
-                    .into());
+                        start,
+                    ));
                 }
                 _ => {
-                    return Err(ErrorKind::InvalidCharacter {
-                        expected: "0123456789abcdefABCDEF-",
-                        found: input[i_char..].chars().next().unwrap(),
-                        index: i_char + start,
-                        urn: UrnPrefix::Optional,
-                    }
-                    .into());
+                    // let found = input[i_char..].chars().next().unwrap();
+                    // let found = char::from(chr);
+                    return Err(Error::character(character, i_char, start));
                 }
             }
             buffer[(digit / 2) as usize] = acc;
@@ -161,14 +144,12 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
 
     // Now check the last group.
     if ACC_GROUP_LENS[4] as u8 != digit {
-        let index = ACC_GROUP_LENS[group - 1] + group + 1 + start;
-        return Err(ErrorKind::InvalidGroupLength {
-            expected: ExpectedLength::Exact(GROUP_LENS[4]),
-            found: (digit as usize - ACC_GROUP_LENS[3]),
+        return Err(Error::group_length(
+            ExpectedLength::Exact(GROUP_LENS[4]),
+            digit as usize - ACC_GROUP_LENS[3],
             group,
-            index,
-        }
-        .into());
+            start,
+        ));
     }
 
     Ok(buffer)
