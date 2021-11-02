@@ -32,9 +32,16 @@ pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
     // Ensure length is valid for any of the supported formats
     let len = input.len();
 
+    // Check for a URN prefixed UUID
     if len == 45 && input.starts_with("urn:uuid:") {
         input = &input[9..];
-    } else if !len_matches_any(len, &[36, 32]) {
+    }
+    // Check for a Microsoft GUID wrapped in {}
+    else if len == 38 && input.starts_with("{") && input.ends_with("}") {
+        input = &input[1..input.len() - 1];
+    }
+    // In other cases, check for a simple or hyphenated UUID
+    else if !len_matches_any(len, &[36, 32]) {
         return Err(ErrorKind::InvalidLength {
             expected: ExpectedLength::Any(&[36, 32]),
             found: len,
