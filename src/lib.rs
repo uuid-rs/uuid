@@ -290,9 +290,11 @@ pub enum Variant {
 /// A UUID can be formatted in one of a few ways:
 ///
 /// * [`simple`](#method.to_simple): `a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8`.
-/// * [`hyphenated`](#method.hyphenated()):
+/// * [`hyphenated`](#method.hyphenated):
 ///   `a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8`.
 /// * [`urn`](#method.to_urn): `urn:uuid:A1A2A3A4-B1B2-C1C2-D1D2-D3D4D5D6D7D8`.
+/// * [`braced`](#method.braced):
+///   `{a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8}`.
 ///
 /// The default representation when formatting a UUID with `Display` is
 /// hyphenated:
