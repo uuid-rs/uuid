@@ -1,4 +1,4 @@
-use crate::{Uuid, Variant, Version};
+use crate::Uuid;
 
 impl Uuid {
     /// Creates a random UUID.
@@ -27,16 +27,15 @@ impl Uuid {
     /// [`getrandom`]: https://crates.io/crates/getrandom
     /// [from_random_bytes]: struct.Builder.html#method.from_random_bytes
     pub fn new_v4() -> Uuid {
-        crate::Builder::from_bytes(crate::rng::bytes())
-            .set_variant(Variant::RFC4122)
-            .set_version(Version::Random)
-            .build()
+        crate::Builder::from_random_bytes(crate::rng::bytes()).into_uuid()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use crate::{Variant, Version};
 
     #[cfg(target_arch = "wasm32")]
     use wasm_bindgen_test::*;

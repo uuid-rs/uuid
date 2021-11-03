@@ -19,6 +19,7 @@ use crate::{
     Uuid,
 };
 
+#[rustfmt::skip]
 #[path = "../shared/parser.rs"]
 mod imp;
 
@@ -330,7 +331,7 @@ mod tests {
     #[test]
     fn test_roundtrip_hyphenated() {
         let uuid_orig = new();
-        let orig_str = uuid_orig.to_hyphenated().to_string();
+        let orig_str = uuid_orig.hyphenated().to_string();
         let uuid_out = Uuid::parse_str(&orig_str).unwrap();
         assert_eq!(uuid_orig, uuid_out);
     }
@@ -338,7 +339,7 @@ mod tests {
     #[test]
     fn test_roundtrip_simple() {
         let uuid_orig = new();
-        let orig_str = uuid_orig.to_simple().to_string();
+        let orig_str = uuid_orig.simple().to_string();
         let uuid_out = Uuid::parse_str(&orig_str).unwrap();
         assert_eq!(uuid_orig, uuid_out);
     }
@@ -346,7 +347,7 @@ mod tests {
     #[test]
     fn test_roundtrip_urn() {
         let uuid_orig = new();
-        let orig_str = uuid_orig.to_urn().to_string();
+        let orig_str = uuid_orig.urn().to_string();
         let uuid_out = Uuid::parse_str(&orig_str).unwrap();
         assert_eq!(uuid_orig, uuid_out);
     }
@@ -354,7 +355,7 @@ mod tests {
     #[test]
     fn test_roundtrip_braced() {
         let uuid_orig = new();
-        let orig_str = uuid_orig.to_braced().to_string();
+        let orig_str = uuid_orig.braced().to_string();
         let uuid_out = Uuid::parse_str(&orig_str).unwrap();
         assert_eq!(uuid_orig, uuid_out);
     }

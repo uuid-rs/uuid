@@ -1,3 +1,4 @@
+#[rustfmt::skip]
 #[path = "../shared/error.rs"]
 mod imp;
 
