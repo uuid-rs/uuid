@@ -132,7 +132,7 @@
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
 //!
-//! println!("{}", my_uuid.to_urn());
+//! println!("{}", my_uuid.urn());
 //! # Ok(())
 //! # }
 //! ```
@@ -266,7 +266,7 @@ pub enum Variant {
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
 ///
-/// println!("{}", my_uuid.to_urn());
+/// println!("{}", my_uuid.urn());
 /// # Ok(())
 /// # }
 /// ```
@@ -290,9 +290,11 @@ pub enum Variant {
 /// A UUID can be formatted in one of a few ways:
 ///
 /// * [`simple`](#method.to_simple): `a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8`.
-/// * [`hyphenated`](#method.to_hyphenated):
+/// * [`hyphenated`](#method.hyphenated):
 ///   `a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8`.
 /// * [`urn`](#method.to_urn): `urn:uuid:A1A2A3A4-B1B2-C1C2-D1D2-D3D4D5D6D7D8`.
+/// * [`braced`](#method.braced):
+///   `{a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8}`.
 ///
 /// The default representation when formatting a UUID with `Display` is
 /// hyphenated:
@@ -319,7 +321,7 @@ pub enum Variant {
 ///
 /// assert_eq!(
 ///     "urn:uuid:a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8",
-///     my_uuid.to_urn().to_string(),
+///     my_uuid.urn().to_string(),
 /// );
 /// # Ok(())
 /// # }
@@ -389,6 +391,20 @@ impl Uuid {
     /// Callers should only trust the value returned by this method if they
     /// trust the UUID itself.
     ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use uuid::{Uuid, Variant};
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
+    ///
+    /// assert_eq!(Variant::RFC4122, my_uuid.get_variant());
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
     /// # References
     ///
     /// * [Variant in RFC4122](http://tools.ietf.org/html/rfc4122#section-4.1.1)
@@ -410,6 +426,20 @@ impl Uuid {
     /// This represents the algorithm used to generate the contents.
     /// This method is the future-proof alternative to [`Uuid::get_version`].
     ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use uuid::Uuid;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
+    ///
+    /// assert_eq!(3, my_uuid.get_version_num());
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
     /// # References
     ///
     /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
@@ -424,6 +454,20 @@ impl Uuid {
     /// is returned. If you're trying to read the version for a future extension
     /// you can also use [`Uuid::get_version_num`] to unconditionally return a
     /// number.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use uuid::{Uuid, Version};
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
+    ///
+    /// assert_eq!(Some(Version::Md5), my_uuid.get_version());
+    /// # Ok(())
+    /// # }
+    /// ```
     ///
     /// # References
     ///
@@ -667,18 +711,18 @@ impl Uuid {
     /// let uuid = Uuid::nil();
     ///
     /// assert_eq!(
-    ///     uuid.to_simple().encode_lower(&mut Uuid::encode_buffer()),
+    ///     uuid.simple().encode_lower(&mut Uuid::encode_buffer()),
     ///     "00000000000000000000000000000000"
     /// );
     ///
     /// assert_eq!(
-    ///     uuid.to_hyphenated()
+    ///     uuid.hyphenated()
     ///         .encode_lower(&mut Uuid::encode_buffer()),
     ///     "00000000-0000-0000-0000-000000000000"
     /// );
     ///
     /// assert_eq!(
-    ///     uuid.to_urn().encode_lower(&mut Uuid::encode_buffer()),
+    ///     uuid.urn().encode_lower(&mut Uuid::encode_buffer()),
     ///     "urn:uuid:00000000-0000-0000-0000-000000000000"
     /// );
     /// ```
@@ -764,7 +808,7 @@ mod tests {
         let s = uuid.to_string();
         let mut buffer = String::new();
 
-        assert_eq!(s, uuid.to_hyphenated().to_string());
+        assert_eq!(s, uuid.hyphenated().to_string());
 
         check!(buffer, "{}", uuid, 36, |c| c.is_lowercase()
             || c.is_digit(10)
@@ -840,19 +884,19 @@ mod tests {
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_predefined_namespaces() {
         assert_eq!(
-            Uuid::NAMESPACE_DNS.to_hyphenated().to_string(),
+            Uuid::NAMESPACE_DNS.hyphenated().to_string(),
             "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
         );
         assert_eq!(
-            Uuid::NAMESPACE_URL.to_hyphenated().to_string(),
+            Uuid::NAMESPACE_URL.hyphenated().to_string(),
             "6ba7b811-9dad-11d1-80b4-00c04fd430c8"
         );
         assert_eq!(
-            Uuid::NAMESPACE_OID.to_hyphenated().to_string(),
+            Uuid::NAMESPACE_OID.hyphenated().to_string(),
             "6ba7b812-9dad-11d1-80b4-00c04fd430c8"
         );
         assert_eq!(
-            Uuid::NAMESPACE_X500.to_hyphenated().to_string(),
+            Uuid::NAMESPACE_X500.hyphenated().to_string(),
             "6ba7b814-9dad-11d1-80b4-00c04fd430c8"
         );
     }
@@ -895,7 +939,7 @@ mod tests {
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_to_simple_string() {
         let uuid1 = new();
-        let s = uuid1.to_simple().to_string();
+        let s = uuid1.simple().to_string();
 
         assert_eq!(s.len(), 32);
         assert!(s.chars().all(|c| c.is_digit(16)));
@@ -903,9 +947,9 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_to_hyphenated_string() {
+    fn test_hyphenated_string() {
         let uuid1 = new();
-        let s = uuid1.to_hyphenated().to_string();
+        let s = uuid1.hyphenated().to_string();
 
         assert!(s.len() == 36);
         assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
@@ -937,26 +981,26 @@ mod tests {
         check!(buf, "{:#x}", u, 32, |c| c.is_lowercase() || c.is_digit(10));
         check!(buf, "{:#X}", u, 32, |c| c.is_uppercase() || c.is_digit(10));
 
-        check!(buf, "{:X}", u.to_hyphenated(), 36, |c| c.is_uppercase()
+        check!(buf, "{:X}", u.hyphenated(), 36, |c| c.is_uppercase()
             || c.is_digit(10)
             || c == '-');
-        check!(buf, "{:X}", u.to_simple(), 32, |c| c.is_uppercase()
+        check!(buf, "{:X}", u.simple(), 32, |c| c.is_uppercase()
             || c.is_digit(10));
-        check!(buf, "{:#X}", u.to_hyphenated(), 36, |c| c.is_uppercase()
+        check!(buf, "{:#X}", u.hyphenated(), 36, |c| c.is_uppercase()
             || c.is_digit(10)
             || c == '-');
-        check!(buf, "{:#X}", u.to_simple(), 32, |c| c.is_uppercase()
+        check!(buf, "{:#X}", u.simple(), 32, |c| c.is_uppercase()
             || c.is_digit(10));
 
-        check!(buf, "{:x}", u.to_hyphenated(), 36, |c| c.is_lowercase()
+        check!(buf, "{:x}", u.hyphenated(), 36, |c| c.is_lowercase()
             || c.is_digit(10)
             || c == '-');
-        check!(buf, "{:x}", u.to_simple(), 32, |c| c.is_lowercase()
+        check!(buf, "{:x}", u.simple(), 32, |c| c.is_lowercase()
             || c.is_digit(10));
-        check!(buf, "{:#x}", u.to_hyphenated(), 36, |c| c.is_lowercase()
+        check!(buf, "{:#x}", u.hyphenated(), 36, |c| c.is_lowercase()
             || c.is_digit(10)
             || c == '-');
-        check!(buf, "{:#x}", u.to_simple(), 32, |c| c.is_lowercase()
+        check!(buf, "{:#x}", u.simple(), 32, |c| c.is_lowercase()
             || c.is_digit(10));
     }
 
@@ -964,7 +1008,7 @@ mod tests {
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_to_urn_string() {
         let uuid1 = new();
-        let ss = uuid1.to_urn().to_string();
+        let ss = uuid1.urn().to_string();
         let s = &ss[9..];
 
         assert!(ss.starts_with("urn:uuid:"));
@@ -977,8 +1021,8 @@ mod tests {
     fn test_to_simple_string_matching() {
         let uuid1 = new();
 
-        let hs = uuid1.to_hyphenated().to_string();
-        let ss = uuid1.to_simple().to_string();
+        let hs = uuid1.hyphenated().to_string();
+        let ss = uuid1.simple().to_string();
 
         let hsn = hs.chars().filter(|&c| c != '-').collect::<String>();
 
@@ -990,7 +1034,7 @@ mod tests {
     fn test_string_roundtrip() {
         let uuid = new();
 
-        let hs = uuid.to_hyphenated().to_string();
+        let hs = uuid.hyphenated().to_string();
         let uuid_hs = Uuid::parse_str(&hs).unwrap();
         assert_eq!(uuid_hs, uuid);
 
@@ -1010,7 +1054,7 @@ mod tests {
         let u = Uuid::from_fields(d1, d2, d3, &d4);
 
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
-        let result = u.to_simple().to_string();
+        let result = u.simple().to_string();
         assert_eq!(result, expected);
     }
 
@@ -1025,7 +1069,7 @@ mod tests {
         let u = Uuid::from_fields_le(d1, d2, d3, &d4);
 
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
-        let result = u.to_simple().to_string();
+        let result = u.simple().to_string();
         assert_eq!(result, expected);
     }
 
@@ -1101,7 +1145,7 @@ mod tests {
         let u = Uuid::from_u128(v_in);
 
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
-        let result = u.to_simple().to_string();
+        let result = u.simple().to_string();
         assert_eq!(result, expected);
     }
 
@@ -1113,7 +1157,7 @@ mod tests {
         let u = Uuid::from_u128_le(v_in);
 
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
-        let result = u.to_simple().to_string();
+        let result = u.simple().to_string();
         assert_eq!(result, expected);
     }
 
@@ -1126,7 +1170,7 @@ mod tests {
         let u = Uuid::from_u64_pair(high_in, low_in);
 
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
-        let result = u.to_simple().to_string();
+        let result = u.simple().to_string();
         assert_eq!(result, expected);
     }
 
@@ -1187,7 +1231,7 @@ mod tests {
         let u = Uuid::from_slice(&b).unwrap();
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
 
-        assert_eq!(u.to_simple().to_string(), expected);
+        assert_eq!(u.simple().to_string(), expected);
     }
 
     #[test]
@@ -1201,7 +1245,7 @@ mod tests {
         let u = Uuid::from_bytes(b);
         let expected = "a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8";
 
-        assert_eq!(u.to_simple().to_string(), expected);
+        assert_eq!(u.simple().to_string(), expected);
     }
 
     #[test]

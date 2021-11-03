@@ -46,7 +46,7 @@ impl Uuid {
             .set_variant(Variant::RFC4122)
             .set_version(Version::Sha1);
 
-        builder.build()
+        builder.into_uuid()
     }
 }
 
@@ -158,7 +158,7 @@ mod tests {
         for &(ref ns, ref name, ref expected) in FIXTURE {
             let uuid = Uuid::new_v5(*ns, name.as_bytes());
 
-            assert_eq!(uuid.to_hyphenated().to_string(), *expected)
+            assert_eq!(uuid.hyphenated().to_string(), *expected)
         }
     }
 

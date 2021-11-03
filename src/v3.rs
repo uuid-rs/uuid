@@ -47,7 +47,7 @@ impl Uuid {
             .set_variant(Variant::RFC4122)
             .set_version(Version::Md5);
 
-        builder.build()
+        builder.into_uuid()
     }
 }
 
@@ -155,10 +155,10 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_to_hyphenated_string() {
+    fn test_hyphenated_string() {
         for &(ref ns, ref name, ref expected) in FIXTURE {
             let uuid = Uuid::new_v3(*ns, name.as_bytes());
-            assert_eq!(uuid.to_hyphenated().to_string(), *expected);
+            assert_eq!(uuid.hyphenated().to_string(), *expected);
         }
     }
 }

@@ -175,7 +175,7 @@ impl Uuid {
     /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
     ///
     /// assert_eq!(
-    ///     uuid.to_hyphenated().to_string(),
+    ///     uuid.hyphenated().to_string(),
     ///     "f3b4958c-52a1-11e7-802a-010203040506"
     /// );
     /// ```
@@ -192,7 +192,7 @@ impl Uuid {
     /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
     ///
     /// assert_eq!(
-    ///     uuid.to_hyphenated().to_string(),
+    ///     uuid.hyphenated().to_string(),
     ///     "5943ee37-0000-1000-8000-010203040506"
     /// );
     /// ```
@@ -325,7 +325,7 @@ mod tests {
         assert_eq!(uuid.get_version(), Some(Version::Mac));
         assert_eq!(uuid.get_variant(), Variant::RFC4122);
         assert_eq!(
-            uuid.to_hyphenated().to_string(),
+            uuid.hyphenated().to_string(),
             "20616934-4ba2-11e7-8000-010203040506"
         );
 
