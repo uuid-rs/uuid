@@ -36,22 +36,26 @@ pub fn parse_lit(input: TokenStream) -> TokenStream {
         let ts = TokenStream2::from(input);
         let span = match e {
             Error::UuidParse(error::Error(
-                error::ErrorKind::InvalidCharacter { index, .. },
+                error::ErrorKind::InvalidCharacter { found, index, .. },
             )) => {
+                // Hack to find the byte width of the char
+                // so we can set the span accordingly.
+                let mut bytes = found as u32;
+                let mut width = 0;
+                while bytes != 0 {
+                    bytes >>= 4;
+                    width += 1;
+                }
                 let mut s = proc_macro2::Literal::string("");
                 s.set_span(ts.span());
-                s.subspan(index + 1..=index + 1).unwrap()
+                s.subspan(index + 1..index + width).unwrap()
             }
             Error::UuidParse(error::Error(
-                error::ErrorKind::InvalidGroupLength { found, group, .. },
+                error::ErrorKind::InvalidGroupLength { found, index, .. },
             )) => {
-                let start =
-                    parser::GROUP_LENS.iter().take(group).sum::<usize>()
-                        + group
-                        + 1;
                 let mut s = proc_macro2::Literal::string("");
                 s.set_span(ts.span());
-                s.subspan(start..start + found).unwrap()
+                s.subspan(index..index + found).unwrap()
             }
             _ => ts.span(),
         };

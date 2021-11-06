@@ -42,6 +42,8 @@ pub(crate) enum ErrorKind {
         found: usize,
         /// The segment with invalid length.
         group: usize,
+        /// The index of where the group starts
+        index: usize,
     },
     /// Invalid length of the [`Uuid`] string.
     ///
@@ -76,6 +78,39 @@ impl fmt::Display for ExpectedLength {
             ExpectedLength::Any(crits) => write!(f, "one of {:?}", crits),
             ExpectedLength::Exact(crit) => write!(f, "{}", crit),
         }
+    }
+}
+
+impl Error {
+    pub(crate) fn character(found: char, index: usize, offset: usize) -> Self {
+        Error(ErrorKind::InvalidCharacter {
+            expected: "0123456789abcdefABCDEF-",
+            found,
+            index: index + offset,
+            urn: UrnPrefix::Optional,
+        })
+    }
+
+    pub(crate) fn group_count(expected: ExpectedLength, found: usize) -> Self {
+        Error(ErrorKind::InvalidGroupCount { expected, found })
+    }
+
+    pub(crate) fn group_length(
+        expected: ExpectedLength,
+        found: usize,
+        group: usize,
+        offset: usize,
+    ) -> Self {
+        Error(ErrorKind::InvalidGroupLength {
+            expected,
+            found,
+            group,
+            index: [1, 10, 15, 20, 25][group] + offset,
+        })
+    }
+
+    pub(crate) fn length(expected: ExpectedLength, found: usize) -> Self {
+        Error(ErrorKind::InvalidLength { expected, found })
     }
 }
 
@@ -126,6 +161,7 @@ impl fmt::Display for Error {
                 ref expected,
                 found,
                 group,
+                ..
             } => write!(
                 f,
                 "expected {}, found {} in group {}",

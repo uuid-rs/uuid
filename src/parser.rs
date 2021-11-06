@@ -210,9 +210,19 @@ mod tests {
 
         assert_eq!(
             Uuid::parse_str("{F9168C5E-CEB2-4faa9B6BFF329BF39FA1E41"),
+            Err(Error(ErrorKind::InvalidCharacter {
+                expected: EXPECTED_CHARS,
+                found: '{',
+                index: 0,
+                urn: UrnPrefix::Optional,
+            }))
+        );
+
+        assert_eq!(
+            Uuid::parse_str("{F9168C5E-CEB2-4faa9B6BFF329BF39FA1E41}"),
             Err(Error(ErrorKind::InvalidLength {
                 expected: ExpectedLength::Any(&[36, 32]),
-                found: 38
+                found: 39
             }))
         );
 
@@ -222,6 +232,7 @@ mod tests {
                 expected: ExpectedLength::Exact(4),
                 found: 3,
                 group: 1,
+                index: 10,
             }))
         );
         // (group, found, expecting)
@@ -232,6 +243,7 @@ mod tests {
                 expected: ExpectedLength::Exact(12),
                 found: 8,
                 group: 4,
+                index: 25,
             }))
         );
 
@@ -308,6 +320,7 @@ mod tests {
                 expected: ExpectedLength::Exact(8),
                 found: 6,
                 group: 0,
+                index: 1,
             }))
         );
         assert_eq!(
@@ -316,6 +329,7 @@ mod tests {
                 expected: ExpectedLength::Exact(4),
                 found: 5,
                 group: 3,
+                index: 20,
             }))
         );
     }
