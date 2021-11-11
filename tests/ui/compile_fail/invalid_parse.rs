@@ -39,4 +39,7 @@ const _: Uuid = uuid!("504410😎👍aab1426f9247bb680e5fe0c8");
 
 const _: Uuid = uuid!("{F9168C5E-CEB2-4faa-👍5-32BF39FA1E4}");
 
+const _: Uuid = uuid!("F916");
+const _: Uuid = uuid!("F916x");
+
 fn main() {}

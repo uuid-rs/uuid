@@ -34,31 +34,32 @@ pub fn parse_lit(input: TokenStream) -> TokenStream {
     build_uuid(input.clone()).unwrap_or_else(|e| {
         let msg = e.to_string();
         let ts = TokenStream2::from(input);
-        let span = match e {
-            Error::UuidParse(error::Error(
-                error::ErrorKind::InvalidCharacter { found, index, .. },
-            )) => {
-                // Hack to find the byte width of the char
-                // so we can set the span accordingly.
-                let mut bytes = found as u32;
-                let mut width = 0;
-                while bytes != 0 {
-                    bytes >>= 4;
-                    width += 1;
+        let span =
+            match e {
+                Error::UuidParse(error::Error(error::ErrorKind::Char {
+                    character,
+                    index,
+                })) => {
+                    let mut bytes = character as u32;
+                    let mut width = 0;
+                    while bytes != 0 {
+                        bytes >>= 4;
+                        width += 1;
+                    }
+                    let mut s = proc_macro2::Literal::string("");
+                    s.set_span(ts.span());
+                    s.subspan(index..index + width - 1)
                 }
-                let mut s = proc_macro2::Literal::string("");
-                s.set_span(ts.span());
-                s.subspan(index + 1..index + width).unwrap()
+                Error::UuidParse(error::Error(
+                    error::ErrorKind::GroupLength { index, len, .. },
+                )) => {
+                    let mut s = proc_macro2::Literal::string("");
+                    s.set_span(ts.span());
+                    s.subspan(index..index + len)
+                }
+                _ => None,
             }
-            Error::UuidParse(error::Error(
-                error::ErrorKind::InvalidGroupLength { found, index, .. },
-            )) => {
-                let mut s = proc_macro2::Literal::string("");
-                s.set_span(ts.span());
-                s.subspan(index..index + found).unwrap()
-            }
-            _ => ts.span(),
-        };
+            .unwrap_or_else(|| ts.span());
         TokenStream::from(quote_spanned! {span=>
             compile_error!(#msg)
         })
@@ -85,7 +86,8 @@ fn build_uuid(input: TokenStream) -> Result<TokenStream, Error> {
         _ => return Err(Error::NonStringLiteral),
     };
 
-    let bytes = parser::parse_str(&string).map_err(Error::UuidParse)?;
+    let bytes = parser::try_parse(&string)
+        .map_err(|e| Error::UuidParse(e.into_err()))?;
 
     let tokens = bytes
         .iter()

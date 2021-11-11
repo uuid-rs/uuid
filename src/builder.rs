@@ -304,11 +304,7 @@ impl Uuid {
     /// ```
     pub fn from_slice(b: &[u8]) -> Result<Uuid, Error> {
         if b.len() != 16 {
-            return Err(ErrorKind::InvalidLength {
-                expected: ExpectedLength::Exact(16),
-                found: b.len(),
-            }
-            .into());
+            return Err(Error(ErrorKind::SimpleLength { len: b.len() * 2 }));
         }
 
         let mut bytes: Bytes = [0; 16];
@@ -349,11 +345,7 @@ impl Uuid {
     /// ```
     pub fn from_slice_le(b: &[u8]) -> Result<Uuid, Error> {
         if b.len() != 16 {
-            return Err(ErrorKind::InvalidLength {
-                expected: ExpectedLength::Exact(16),
-                found: b.len(),
-            }
-            .into());
+            return Err(Error(ErrorKind::SimpleLength { len: b.len() * 2 }));
         }
 
         let mut bytes: Bytes = [0; 16];
