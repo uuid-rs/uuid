@@ -9,148 +9,91 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use crate::{error::*, std::str};
+use crate::error::InvalidUuid;
 
-/// Check if the length matches any of the given criteria lengths.
-fn len_matches_any(len: usize, crits: &[usize]) -> bool {
-    for crit in crits {
-        if len == *crit {
-            return true;
-        }
-    }
-
-    false
-}
-
-// Accumulated length of each hyphenated group in hex digits.
-const ACC_GROUP_LENS: [usize; 5] = [8, 12, 16, 20, 32];
-
-// Length of each hyphenated group in hex digits.
-pub const GROUP_LENS: [usize; 5] = [8, 4, 4, 4, 12];
-
-const URN_PREFIX: &str = "urn:uuid:";
-
-pub fn parse_str(mut input: &str) -> Result<[u8; 16], Error> {
-    // Ensure length is valid for any of the supported formats
-    let len = input.len();
-
-    let mut start = 0;
-    // Check for a URN prefixed UUID
-    if len == 45 {
-        if let Some(stripped) = input.strip_prefix(URN_PREFIX) {
-            input = stripped;
-            start = URN_PREFIX.len();
-        }
-    }
-    // Check for a Microsoft GUID wrapped in {}
-    else if len == 38 {
-        if let Some(stripped) =
-            input.strip_prefix('{').and_then(|s| s.strip_suffix('}'))
-        {
-            input = stripped;
-            start = 1;
-        }
-    }
-    // In other cases, check for a simple or hyphenated UUID
-    else if !len_matches_any(len, &[36, 32]) {
-        return Err(Error::length(ExpectedLength::Any(&[36, 32]), len));
-    }
-
-    // `digit` counts only hexadecimal digits, `i_char` counts all chars.
-    let mut digit = 0;
-    let mut group = 0;
-    let mut acc = 0;
-    let mut buffer = [0u8; 16];
-
-    for (i_char, character) in input.char_indices() {
-        let chr = character as u8;
-        if digit as usize >= 32 && group != 4 {
-            if group == 0 {
-                return Err(Error::length(ExpectedLength::Any(&[36, 32]), len));
-            }
-
-            return Err(Error::group_count(
-                ExpectedLength::Any(&[1, 5]),
-                group + 1,
-            ));
-        }
-
-        if digit % 2 == 0 {
-            // First digit of the byte.
-            match chr {
-                // Calculate upper half.
-                b'0'..=b'9' => acc = chr - b'0',
-                b'a'..=b'f' => acc = chr - b'a' + 10,
-                b'A'..=b'F' => acc = chr - b'A' + 10,
-                // Found a group delimiter
-                b'-' => {
-                    if ACC_GROUP_LENS[group] as u8 != digit {
-                        // Calculate how many digits this group consists of
-                        // in the input.
-                        let found = if group > 0 {
-                            digit as usize - ACC_GROUP_LENS[group - 1]
-                        } else {
-                            digit as usize
-                        };
-
-                        return Err(Error::group_length(
-                            ExpectedLength::Exact(GROUP_LENS[group]),
-                            found,
-                            group,
-                            start,
-                        ));
-                    }
-                    // Next group, decrement digit, it is incremented again
-                    // at the bottom.
-                    group += 1;
-                    digit -= 1;
-                }
-                _ => {
-                    return Err(Error::character(character, i_char, start));
-                }
+pub const fn try_parse(input: &str) -> Result<[u8; 16], InvalidUuid> {
+    const fn parse_blocks<'a>(
+        s: &'a [u8],
+        hyphenated: bool,
+    ) -> Option<[u8; 16]> {
+        let block_table = if hyphenated {
+            match (s[8], s[13], s[18], s[23]) {
+                (b'-', b'-', b'-', b'-') => [0, 4, 9, 14, 19, 24, 28, 32],
+                _ => return None,
             }
         } else {
-            // Second digit of the byte, shift the upper half.
-            acc *= 16;
-            match chr {
-                b'0'..=b'9' => acc += chr - b'0',
-                b'a'..=b'f' => acc += chr - b'a' + 10,
-                b'A'..=b'F' => acc += chr - b'A' + 10,
-                b'-' => {
-                    // The byte isn't complete yet.
-                    let found = if group > 0 {
-                        digit - ACC_GROUP_LENS[group - 1] as u8
-                    } else {
-                        digit
-                    };
+            [0, 4, 8, 12, 16, 20, 24, 28]
+        };
 
-                    return Err(Error::group_length(
-                        ExpectedLength::Exact(GROUP_LENS[group]),
-                        found as usize,
-                        group,
-                        start,
-                    ));
-                }
-                _ => {
-                    // let found = input[i_char..].chars().next().unwrap();
-                    // let found = char::from(chr);
-                    return Err(Error::character(character, i_char, start));
-                }
+        let mut buf = [0; 16];
+        let mut j = 0;
+        while j < 8 {
+            let i = block_table[j];
+            // Check 4 bytes at a time
+            let h1 = HEX_TABLE[s[i] as usize];
+            let h2 = HEX_TABLE[s[i + 1] as usize];
+            let h3 = HEX_TABLE[s[i + 2] as usize];
+            let h4 = HEX_TABLE[s[i + 3] as usize];
+            // If any of the bytes aren't valid, they will be 0xff, making this
+            // fail
+            if h1 | h2 | h3 | h4 == 0xff {
+                return None;
             }
-            buffer[(digit / 2) as usize] = acc;
+            buf[j * 2] = SHL4_TABLE[h1 as usize] | h2;
+            buf[j * 2 + 1] = SHL4_TABLE[h3 as usize] | h4;
+            j += 1;
         }
-        digit += 1;
+        Some(buf)
     }
 
-    // Now check the last group.
-    if ACC_GROUP_LENS[4] as u8 != digit {
-        return Err(Error::group_length(
-            ExpectedLength::Exact(GROUP_LENS[4]),
-            digit as usize - ACC_GROUP_LENS[3],
-            group,
-            start,
-        ));
+    let b = input.as_bytes();
+    let maybe_parsed = match (b.len(), b) {
+        (32, s) => parse_blocks(s, false),
+        (36, s)
+        | (38, [b'{', s @ .., b'}'])
+        | (
+            45,
+            [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..],
+        ) => parse_blocks(s, true),
+        _ => None,
+    };
+    match maybe_parsed {
+        Some(b) => Ok(b),
+        None => Err(InvalidUuid(input)),
     }
-
-    Ok(buffer)
 }
+
+type Table = [u8; 256];
+
+const fn generate_lookup_table() -> Table {
+    let mut buf = [0u8; 256];
+    let mut i = 0u8;
+    loop {
+        buf[i as usize] = match i {
+            b'0'..=b'9' => i - b'0',
+            b'a'..=b'f' => i - b'a' + 10,
+            b'A'..=b'F' => i - b'A' + 10,
+            _ => 0xff,
+        };
+        if i == 255 {
+            return buf;
+        }
+        i += 1
+    }
+}
+
+const HEX_TABLE: Table = generate_lookup_table();
+
+const fn generate_shl4_table() -> Table {
+    let mut buf = [0u8; 256];
+    let mut i = 0u8;
+    loop {
+        buf[i as usize] = i.wrapping_shl(4);
+        if i == 255 {
+            return buf;
+        }
+        i += 1;
+    }
+}
+
+const SHL4_TABLE: Table = generate_shl4_table();

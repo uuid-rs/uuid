@@ -9,168 +9,134 @@ pub(crate) enum ErrorKind {
     /// Invalid character in the [`Uuid`] string.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    InvalidCharacter {
-        /// The expected characters.
-        expected: &'static str,
-        /// The invalid character found.
-        found: char,
-        /// The invalid character position.
-        index: usize,
-        /// Indicates the [`Uuid`] starts with `urn:uuid:`.
-        ///
-        /// This is a special case for [`Urn`] adapter parsing.
-        ///
-        /// [`Uuid`]: ../Uuid.html
-        urn: UrnPrefix,
-    },
-    /// Invalid number of segments in the [`Uuid`] string.
+    Char { character: char, index: usize },
+    /// A simple [`Uuid`] didn't contain 32 characters.
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    InvalidGroupCount {
-        /// The expected number of segments.
-        expected: ExpectedLength,
-        /// The number of segments found.
-        found: usize,
-    },
-    /// Invalid length of a segment in a [`Uuid`] string.
+    SimpleLength { len: usize },
+    /// A hyphenated [`Uuid`] didn't contain 5 groups
     ///
     /// [`Uuid`]: ../struct.Uuid.html
-    InvalidGroupLength {
-        /// The expected length of the segment.
-        expected: ExpectedLength,
-        /// The length of segment found.
-        found: usize,
-        /// The segment with invalid length.
+    GroupCount { count: usize },
+    /// A hyphenated [`Uuid`] had a group that wasn't the right length
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    GroupLength {
         group: usize,
-        /// The index of where the group starts
+        len: usize,
         index: usize,
     },
-    /// Invalid length of the [`Uuid`] string.
-    ///
-    /// [`Uuid`]: ../struct.Uuid.html
-    InvalidLength {
-        /// The expected length(s).
-        expected: ExpectedLength,
-        /// The invalid length found.
-        found: usize,
-    },
 }
 
-/// The expected length.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub(crate) enum ExpectedLength {
-    /// Expected any one of the given values.
-    Any(&'static [usize]),
-    /// Expected the given value.
-    Exact(usize),
-}
+/// A string that is guaranteed to fail to parse to a [`Uuid`].
+///
+/// This type acts as a lightweight error indicator, suggesting
+/// that the string cannot be parsed but offering no error
+/// details. To get details, use `InvalidUuid::into_err`.
+///
+/// [`Uuid`]: ../struct.Uuid.html
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct InvalidUuid<'a>(pub(crate) &'a str);
 
-/// Urn prefix value.
-#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub(crate) enum UrnPrefix {
-    /// The `urn:uuid:` prefix should optionally provided.
-    Optional,
-}
+impl<'a> InvalidUuid<'a> {
+    /// Converts the lightweight error type into detailed diagnostics.
+    pub fn into_err(self) -> Error {
+        let (s, offset, simple) = match self.0.as_bytes() {
+            [b'{', s @ .., b'}'] => (s, 1, false),
+            [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..] => {
+                (s, "urn:uuid:".len(), false)
+            }
+            s => (s, 0, true),
+        };
 
-impl fmt::Display for ExpectedLength {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match *self {
-            ExpectedLength::Any(crits) => write!(f, "one of {:?}", crits),
-            ExpectedLength::Exact(crit) => write!(f, "{}", crit),
+        let mut hyphen_count = 0;
+        let mut group_bounds = [0; 4];
+        // SAFETY: the byte array came from a valid utf8 string,
+        // and is aligned along char boundries.
+        let string = unsafe { std::str::from_utf8_unchecked(s) };
+        for (index, character) in string.char_indices() {
+            let byte = character as u8;
+            if character as u32 - byte as u32 > 0 {
+                // Multibyte char
+                return Error(ErrorKind::Char {
+                    character,
+                    index: index + offset + 1,
+                });
+            } else if byte == b'-' {
+                // While we search, also count group breaks
+                if hyphen_count < 4 {
+                    group_bounds[hyphen_count] = index;
+                }
+                hyphen_count += 1;
+            } else if !matches!(byte, b'0'..=b'9' | b'a'..=b'f' | b'A'..=b'F') {
+                // Non-hex char
+                return Error(ErrorKind::Char {
+                    character: byte as char,
+                    index: index + offset + 1,
+                });
+            }
+        }
+
+        if hyphen_count == 0 && simple {
+            // This means that we tried and failed to parse a simple uuid.
+            // Since we verified that all the characters are valid, this means
+            // that it MUST have an invalid length.
+            Error(ErrorKind::SimpleLength { len: s.len() })
+        } else if hyphen_count != 4 {
+            // We tried to parse a hyphenated variant, but there weren't
+            // 5 groups (4 hyphen splits).
+            Error(ErrorKind::GroupCount {
+                count: hyphen_count + 1,
+            })
+        } else {
+            // There are 5 groups, one of them has an incorrect length
+            const BLOCK_STARTS: [usize; 5] = [0, 9, 14, 19, 24];
+            for i in 0..4 {
+                if group_bounds[i] != BLOCK_STARTS[i + 1] - 1 {
+                    return Error(ErrorKind::GroupLength {
+                        group: i,
+                        len: group_bounds[i] - BLOCK_STARTS[i],
+                        index: offset + BLOCK_STARTS[i] + 1,
+                    });
+                }
+            }
+
+            // The last group must be too long
+            Error(ErrorKind::GroupLength {
+                group: 4,
+                len: s.len() - BLOCK_STARTS[4],
+                index: offset + BLOCK_STARTS[4] + 1,
+            })
         }
     }
 }
 
-impl Error {
-    pub(crate) fn character(found: char, index: usize, offset: usize) -> Self {
-        Error(ErrorKind::InvalidCharacter {
-            expected: "0123456789abcdefABCDEF-",
-            found,
-            index: index + offset,
-            urn: UrnPrefix::Optional,
-        })
-    }
-
-    pub(crate) fn group_count(expected: ExpectedLength, found: usize) -> Self {
-        Error(ErrorKind::InvalidGroupCount { expected, found })
-    }
-
-    pub(crate) fn group_length(
-        expected: ExpectedLength,
-        found: usize,
-        group: usize,
-        offset: usize,
-    ) -> Self {
-        Error(ErrorKind::InvalidGroupLength {
-            expected,
-            found,
-            group,
-            index: [1, 10, 15, 20, 25][group] + offset,
-        })
-    }
-
-    pub(crate) fn length(expected: ExpectedLength, found: usize) -> Self {
-        Error(ErrorKind::InvalidLength { expected, found })
-    }
-}
-
-impl From<ErrorKind> for Error {
-    fn from(kind: ErrorKind) -> Self {
-        Error(kind)
-    }
-}
-
 impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "{}: ",
-            match self.0 {
-                ErrorKind::InvalidCharacter { .. } => "invalid character",
-                ErrorKind::InvalidGroupCount { .. } =>
-                    "invalid number of groups",
-                ErrorKind::InvalidGroupLength { .. } => "invalid group length",
-                ErrorKind::InvalidLength { .. } => "invalid length",
-            }
-        )?;
-
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
-            ErrorKind::InvalidCharacter {
-                expected,
-                found,
-                index,
-                urn,
+            ErrorKind::Char {
+                character, index, ..
             } => {
-                let urn_str = match urn {
-                    UrnPrefix::Optional => {
-                        " an optional prefix of `urn:uuid:` followed by"
-                    }
-                };
-
+                write!(f, "invalid character: expected an optional prefix of `urn:uuid:` followed by [0-9a-zA-Z], found `{}` at {}", character, index)
+            }
+            ErrorKind::SimpleLength { len } => {
                 write!(
                     f,
-                    "expected{} {}, found {} at {}",
-                    urn_str, expected, found, index
+                    "invalid length: expected length 32 for simple format, found {}",
+                    len
                 )
             }
-            ErrorKind::InvalidGroupCount {
-                ref expected,
-                found,
-            } => write!(f, "expected {}, found {}", expected, found),
-            ErrorKind::InvalidGroupLength {
-                ref expected,
-                found,
-                group,
-                ..
-            } => write!(
-                f,
-                "expected {}, found {} in group {}",
-                expected, found, group,
-            ),
-            ErrorKind::InvalidLength {
-                ref expected,
-                found,
-            } => write!(f, "expected {}, found {}", expected, found),
+            ErrorKind::GroupCount { count } => {
+                write!(f, "invalid group count: expected 5, found {}", count)
+            }
+            ErrorKind::GroupLength { group, len, .. } => {
+                let expected = [8, 4, 4, 4, 12][group];
+                write!(
+                    f,
+                    "invalid group length in group {}: expected {}, found {}",
+                    group, expected, len
+                )
+            }
         }
     }
 }
