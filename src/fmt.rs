@@ -12,7 +12,7 @@
 //! Adapters for various formats for UUIDs
 
 use crate::{
-    std::{borrow::Borrow, fmt, str},
+    std::{borrow::Borrow, fmt, str, ptr},
     Uuid, Variant,
 };
 
@@ -227,12 +227,14 @@ fn encode_simple<'b>(
     buffer: &'b mut [u8],
     upper: bool,
 ) -> &'b mut str {
-    const LEN: usize = 32;
-    let buf = &mut buffer[..LEN];
+    let buf = &mut buffer[..Simple::LENGTH];
+    let dst = buf.as_mut_ptr();
+
+    // SAFETY: `buf` is guaranteed to be at least `LEN` bytes
+    // SAFETY: The encoded buffer is ASCII encoded
     unsafe {
-        let dst = buf.as_mut_ptr();
-        core::ptr::write(dst.cast(), format_simple(src, upper));
-        core::str::from_utf8_unchecked_mut(buf) // SAFETY: ascii encoding
+        ptr::write(dst.cast(), format_simple(src, upper));
+        str::from_utf8_unchecked_mut(buf)
     }
 }
 
@@ -242,12 +244,14 @@ fn encode_hyphenated<'b>(
     buffer: &'b mut [u8],
     upper: bool,
 ) -> &'b mut str {
-    const LEN: usize = 36;
-    let buf = &mut buffer[..LEN];
+    let buf = &mut buffer[..Hyphenated::LENGTH];
+    let dst = buf.as_mut_ptr();
+
+    // SAFETY: `buf` is guaranteed to be at least `LEN` bytes
+    // SAFETY: The encoded buffer is ASCII encoded
     unsafe {
-        let dst = buf.as_mut_ptr();
-        core::ptr::write(dst.cast(), format_hyphenated(src, upper));
-        core::str::from_utf8_unchecked_mut(buf) // SAFETY: ascii encoding
+        ptr::write(dst.cast(), format_hyphenated(src, upper));
+        str::from_utf8_unchecked_mut(buf)
     }
 }
 
@@ -257,14 +261,17 @@ fn encode_braced<'b>(
     buffer: &'b mut [u8],
     upper: bool,
 ) -> &'b mut str {
-    const LEN: usize = 38;
-    let buf = &mut buffer[..LEN];
+    let buf = &mut buffer[..Braced::LENGTH];
     buf[0] = b'{';
-    buf[LEN - 1] = b'}';
+    buf[Braced::LENGTH - 1] = b'}';
+
+    // SAFETY: `buf` is guaranteed to be at least `LEN` bytes
+    // SAFETY: The encoded buffer is ASCII encoded
     unsafe {
         let dst = buf.as_mut_ptr().add(1);
-        core::ptr::write(dst.cast(), format_hyphenated(src, upper));
-        core::str::from_utf8_unchecked_mut(buf) // SAFETY: ascii encoding
+
+        ptr::write(dst.cast(), format_hyphenated(src, upper));
+        str::from_utf8_unchecked_mut(buf)
     }
 }
 
@@ -274,13 +281,16 @@ fn encode_urn<'b>(
     buffer: &'b mut [u8],
     upper: bool,
 ) -> &'b mut str {
-    const LEN: usize = 45;
-    let buf = &mut buffer[..LEN];
+    let buf = &mut buffer[..Urn::LENGTH];
     buf[..9].copy_from_slice(b"urn:uuid:");
+
+    // SAFETY: `buf` is guaranteed to be at least `LEN` bytes
+    // SAFETY: The encoded buffer is ASCII encoded
     unsafe {
         let dst = buf.as_mut_ptr().add(9);
-        core::ptr::write(dst.cast(), format_hyphenated(src, upper));
-        core::str::from_utf8_unchecked_mut(buf) // SAFETY: ascii encoding
+
+        ptr::write(dst.cast(), format_hyphenated(src, upper));
+        str::from_utf8_unchecked_mut(buf)
     }
 }
 
