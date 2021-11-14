@@ -112,9 +112,7 @@ impl Uuid {
     #[inline]
     pub fn as_hyphenated(&self) -> &Hyphenated {
         // SAFETY: `Uuid` and `Hyphenated` have the same ABI
-        unsafe {
-            &*(self as *const Uuid as *const Hyphenated)
-        }
+        unsafe { &*(self as *const Uuid as *const Hyphenated) }
     }
 
     /// Get a [`Simple`] formatter.
@@ -131,9 +129,7 @@ impl Uuid {
     #[inline]
     pub fn as_simple(&self) -> &Simple {
         // SAFETY: `Uuid` and `Simple` have the same ABI
-        unsafe {
-            &*(self as *const Uuid as *const Simple)
-        }
+        unsafe { &*(self as *const Uuid as *const Simple) }
     }
 
     /// Get a [`Urn`] formatter.
@@ -152,9 +148,7 @@ impl Uuid {
     #[inline]
     pub fn as_urn(&self) -> &Urn {
         // SAFETY: `Uuid` and `Urn` have the same ABI
-        unsafe {
-            &*(self as *const Uuid as *const Urn)
-        }
+        unsafe { &*(self as *const Uuid as *const Urn) }
     }
 
     /// Get a [`Braced`] formatter.
@@ -173,9 +167,7 @@ impl Uuid {
     #[inline]
     pub fn as_braced(&self) -> &Braced {
         // SAFETY: `Uuid` and `Braced` have the same ABI
-        unsafe {
-            &*(self as *const Uuid as *const Braced)
-        }
+        unsafe { &*(self as *const Uuid as *const Braced) }
     }
 }
 
@@ -187,58 +179,109 @@ const LOWER: [u8; 16] = [
     b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'a', b'b',
     b'c', b'd', b'e', b'f',
 ];
-/// The segments of a UUID's [u8; 16] corresponding to each group.
-const BYTE_POSITIONS: [usize; 6] = [0, 4, 6, 8, 10, 16];
-/// The locations that hyphens are written into the buffer, after each
-/// group.
-const HYPHEN_POSITIONS: [usize; 4] = [8, 13, 18, 23];
 
-/// Encodes the `uuid` possibly with hyphens, and possibly in upper
-/// case, to full_buffer[start..] and returns the str sliced from
-/// full_buffer[..start + encoded_length].
-///
-/// The `start` parameter allows writing a prefix (such as
-/// "urn:uuid:") to the buffer that's included in the final encoded
-/// UUID.
-#[allow(clippy::needless_range_loop)]
-fn encode<'a>(
-    full_buffer: &'a mut [u8],
-    start: usize,
-    trailing: usize,
-    uuid: &Uuid,
-    hyphens: bool,
-    upper: bool,
-) -> &'a mut str {
-    let len = if hyphens { 36 } else { 32 };
-
-    {
-        let buffer = &mut full_buffer[start..start + len];
-        let bytes = uuid.as_bytes();
-
-        let hex = if upper { &UPPER } else { &LOWER };
-
-        for group in 0..5 {
-            // If we're writing hyphens, we need to shift the output
-            // location along by how many of them have been written
-            // before this point. That's exactly the (0-indexed) group
-            // number.
-            let hyphens_before = if hyphens { group } else { 0 };
-            for idx in BYTE_POSITIONS[group]..BYTE_POSITIONS[group + 1] {
-                let b = bytes[idx];
-                let out_idx = hyphens_before + 2 * idx;
-
-                buffer[out_idx] = hex[(b >> 4) as usize];
-                buffer[out_idx + 1] = hex[(b & 0b1111) as usize];
-            }
-
-            if group != 4 && hyphens {
-                buffer[HYPHEN_POSITIONS[group]] = b'-';
-            }
-        }
+#[inline]
+const fn format_simple(src: &[u8; 16], upper: bool) -> [u8; 32] {
+    let lut = if upper { &UPPER } else { &LOWER };
+    let mut dst = [0; 32];
+    let mut i = 0;
+    while i < 16 {
+        let x = src[i];
+        dst[i * 2] = lut[(x >> 4) as usize];
+        dst[i * 2 + 1] = lut[(x & 0x0f) as usize];
+        i += 1;
     }
+    dst
+}
 
-    str::from_utf8_mut(&mut full_buffer[..start + len + trailing])
-        .expect("found non-ASCII output characters while encoding a UUID")
+#[inline]
+const fn format_hyphenated(src: &[u8; 16], upper: bool) -> [u8; 36] {
+    let lut = if upper { &UPPER } else { &LOWER };
+    let groups = [(0, 8), (9, 13), (14, 18), (19, 23), (24, 36)];
+    let mut dst = [0; 36];
+
+    let mut group_idx = 0;
+    let mut i = 0;
+    while group_idx < 5 {
+        let (start, end) = groups[group_idx];
+        let mut j = start;
+        while j < end {
+            let x = src[i];
+            i += 1;
+
+            dst[j] = lut[(x >> 4) as usize];
+            dst[j + 1] = lut[(x & 0x0f) as usize];
+            j += 2;
+        }
+        if group_idx < 4 {
+            dst[end] = b'-';
+        }
+        group_idx += 1;
+    }
+    dst
+}
+
+#[inline]
+fn encode_simple<'b>(
+    src: &[u8; 16],
+    buffer: &'b mut [u8],
+    upper: bool,
+) -> &'b mut str {
+    const LEN: usize = 32;
+    let buf = &mut buffer[..LEN];
+    unsafe {
+        let dst = buf.as_mut_ptr();
+        core::ptr::write(dst.cast(), format_simple(src, upper));
+        core::str::from_utf8_unchecked_mut(buf) // SAFETY: ascii encoding
+    }
+}
+
+#[inline]
+fn encode_hyphenated<'b>(
+    src: &[u8; 16],
+    buffer: &'b mut [u8],
+    upper: bool,
+) -> &'b mut str {
+    const LEN: usize = 36;
+    let buf = &mut buffer[..LEN];
+    unsafe {
+        let dst = buf.as_mut_ptr();
+        core::ptr::write(dst.cast(), format_hyphenated(src, upper));
+        core::str::from_utf8_unchecked_mut(buf) // SAFETY: ascii encoding
+    }
+}
+
+#[inline]
+fn encode_braced<'b>(
+    src: &[u8; 16],
+    buffer: &'b mut [u8],
+    upper: bool,
+) -> &'b mut str {
+    const LEN: usize = 38;
+    let buf = &mut buffer[..LEN];
+    buf[0] = b'{';
+    buf[LEN - 1] = b'}';
+    unsafe {
+        let dst = buf.as_mut_ptr().add(1);
+        core::ptr::write(dst.cast(), format_hyphenated(src, upper));
+        core::str::from_utf8_unchecked_mut(buf) // SAFETY: ascii encoding
+    }
+}
+
+#[inline]
+fn encode_urn<'b>(
+    src: &[u8; 16],
+    buffer: &'b mut [u8],
+    upper: bool,
+) -> &'b mut str {
+    const LEN: usize = 45;
+    let buf = &mut buffer[..LEN];
+    buf[..9].copy_from_slice(b"urn:uuid:");
+    unsafe {
+        let dst = buf.as_mut_ptr().add(9);
+        core::ptr::write(dst.cast(), format_hyphenated(src, upper));
+        core::str::from_utf8_unchecked_mut(buf) // SAFETY: ascii encoding
+    }
 }
 
 impl Hyphenated {
@@ -301,8 +344,9 @@ impl Hyphenated {
     /// }
     /// ```
     /// */
+    #[inline]
     pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
-        encode(buffer, 0, 0, &self.0, true, false)
+        encode_hyphenated(self.0.as_bytes(), buffer, false)
     }
 
     /// Writes the [`Uuid`] as an upper-case hyphenated string to
@@ -351,8 +395,9 @@ impl Hyphenated {
     /// }
     /// ```
     /// */
+    #[inline]
     pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
-        encode(buffer, 0, 0, &self.0, true, true)
+        encode_hyphenated(self.0.as_bytes(), buffer, true)
     }
 
     /// Get a reference to the underlying [`Uuid`].
@@ -444,10 +489,9 @@ impl Braced {
     /// }
     /// ```
     /// */
+    #[inline]
     pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
-        buffer[0] = b'{';
-        buffer[37] = b'}';
-        encode(buffer, 1, 1, &self.0, true, false)
+        encode_braced(self.0.as_bytes(), buffer, false)
     }
 
     /// Writes the [`Uuid`] as an upper-case hyphenated string surrounded by
@@ -496,10 +540,9 @@ impl Braced {
     /// }
     /// ```
     /// */
+    #[inline]
     pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
-        buffer[0] = b'{';
-        buffer[37] = b'}';
-        encode(buffer, 1, 1, &self.0, true, true)
+        encode_braced(self.0.as_bytes(), buffer, true)
     }
 
     /// Get a reference to the underlying [`Uuid`].
@@ -592,8 +635,9 @@ impl Simple {
     /// }
     /// ```
     /// */
+    #[inline]
     pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
-        encode(buffer, 0, 0, &self.0, false, false)
+        encode_simple(self.0.as_bytes(), buffer, false)
     }
 
     /// Writes the [`Uuid`] as an upper-case simple string to `buffer`,
@@ -639,8 +683,9 @@ impl Simple {
     /// }
     /// ```
     /// */
+    #[inline]
     pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
-        encode(buffer, 0, 0, &self.0, false, true)
+        encode_simple(self.0.as_bytes(), buffer, true)
     }
 
     /// Get a reference to the underlying [`Uuid`].
@@ -735,9 +780,9 @@ impl Urn {
     /// }
     /// ```
     /// */
+    #[inline]
     pub fn encode_lower<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
-        buffer[..9].copy_from_slice(b"urn:uuid:");
-        encode(buffer, 9, 0, &self.0, true, false)
+        encode_urn(self.0.as_bytes(), buffer, false)
     }
 
     /// Writes the [`Uuid`] as an upper-case URN string to
@@ -788,9 +833,9 @@ impl Urn {
     /// }
     /// ```
     /// */
+    #[inline]
     pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
-        buffer[..9].copy_from_slice(b"urn:uuid:");
-        encode(buffer, 9, 0, &self.0, true, true)
+        encode_urn(self.0.as_bytes(), buffer, true)
     }
 
     /// Get a reference to the underlying [`Uuid`].
