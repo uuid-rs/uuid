@@ -67,6 +67,7 @@ impl Uuid {
     }
 
     /// Intended to replace `Uuid::parse_str`
+    #[inline]
     pub const fn try_parse(input: &str) -> Result<Uuid, InvalidUuid> {
         match imp::try_parse(input) {
             Ok(bytes) => Ok(Uuid::from_bytes(bytes)),
