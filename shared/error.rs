@@ -14,6 +14,9 @@ pub(crate) enum ErrorKind {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     SimpleLength { len: usize },
+    /// A byte array didn't contain 16 bytes
+    #[allow(dead_code)]
+    ByteLength { len: usize },
     /// A hyphenated [`Uuid`] didn't contain 5 groups
     ///
     /// [`Uuid`]: ../struct.Uuid.html
@@ -26,6 +29,9 @@ pub(crate) enum ErrorKind {
         len: usize,
         index: usize,
     },
+    /// Some other error occurred.
+    #[allow(dead_code)]
+    Other,
 }
 
 /// A string that is guaranteed to fail to parse to a [`Uuid`].
@@ -126,6 +132,9 @@ impl fmt::Display for Error {
                     len
                 )
             }
+            ErrorKind::ByteLength { len } => {
+                write!(f, "invalid length: expected 16 bytes, found {}", len)
+            }
             ErrorKind::GroupCount { count } => {
                 write!(f, "invalid group count: expected 5, found {}", count)
             }
@@ -137,6 +146,7 @@ impl fmt::Display for Error {
                     group, expected, len
                 )
             }
+            ErrorKind::Other => write!(f, "failed to parse a UUID"),
         }
     }
 }

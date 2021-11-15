@@ -308,7 +308,7 @@ impl Uuid {
     /// ```
     pub fn from_slice(b: &[u8]) -> Result<Uuid, Error> {
         if b.len() != 16 {
-            return Err(Error(ErrorKind::SimpleLength { len: b.len() * 2 }));
+            return Err(Error(ErrorKind::ByteLength { len: b.len() }));
         }
 
         let mut bytes: Bytes = [0; 16];
@@ -349,7 +349,7 @@ impl Uuid {
     /// ```
     pub fn from_slice_le(b: &[u8]) -> Result<Uuid, Error> {
         if b.len() != 16 {
-            return Err(Error(ErrorKind::SimpleLength { len: b.len() * 2 }));
+            return Err(Error(ErrorKind::ByteLength { len: b.len() }));
         }
 
         let mut bytes: Bytes = [0; 16];
@@ -452,9 +452,7 @@ impl Uuid {
     /// ```
     pub fn from_bytes_ref(bytes: &Bytes) -> &Uuid {
         // SAFETY: `Bytes` and `Uuid` have the same ABI
-        unsafe {
-            &*(bytes as *const Bytes as *const Uuid)
-        }
+        unsafe { &*(bytes as *const Bytes as *const Uuid) }
     }
 }
 
