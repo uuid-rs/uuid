@@ -38,7 +38,8 @@ pub const fn try_parse(input: &str) -> Result<[u8; 16], InvalidUuid> {
 
 #[inline]
 const fn parse_simple(s: &[u8]) -> Result<[u8; 16], ()> {
-    // Should be optimized away as redundant
+    // This length check here removes all other bounds
+    // checks in this function
     if s.len() != 32 {
         return Err(());
     }
@@ -69,10 +70,20 @@ const fn parse_simple(s: &[u8]) -> Result<[u8; 16], ()> {
 
 #[inline]
 const fn parse_hyphenated(s: &[u8]) -> Result<[u8; 16], ()> {
-    // Should be optimized away as redundant
+    // This length check here removes all other bounds
+    // checks in this function
     if s.len() != 36 {
         return Err(());
     }
+
+    // We look at two hex-encoded values (4 chars) at a time because
+    // that's the size of the smallest group in a hyphenated UUID.
+    // The indexes we're interested in are:
+    // 
+    // uuid     : 936da01f-9abd-4d9d-80c7-02af85c822a8
+    //            |   |   ||   ||   ||   ||   |   |
+    // hyphens  : |   |   8|  13|  18|  23|   |   |
+    // positions: 0   4    9   14   19   24  28  32
 
     // First, ensure the hyphens appear in the right places
     match [s[8], s[13], s[18], s[23]] {
@@ -80,13 +91,6 @@ const fn parse_hyphenated(s: &[u8]) -> Result<[u8; 16], ()> {
         _ => return Err(()),
     }
 
-    // We look at two hex-encoded values (4 chars) at a time because
-    // that's the size of the smallest group in a hyphenated UUID:
-    // 
-    // uuid     : 936da01f-9abd-4d9d-80c7-02af85c822a8
-    //            |   |   ||   ||   ||   ||   |   |
-    // hyphens  : |   |   8|  13|  18|  23|   |   |
-    // positions: 0   4    9   14   19   24  28  32
     let positions: [u8; 8] = [0, 4, 9, 14, 19, 24, 28, 32];
     let mut buf: [u8; 16] = [0; 16];
     let mut j = 0;
