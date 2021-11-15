@@ -51,9 +51,11 @@ impl<'a> InvalidUuid<'a> {
 
         let mut hyphen_count = 0;
         let mut group_bounds = [0; 4];
+
         // SAFETY: the byte array came from a valid utf8 string,
         // and is aligned along char boundries.
         let string = unsafe { std::str::from_utf8_unchecked(s) };
+
         for (index, character) in string.char_indices() {
             let byte = character as u8;
             if character as u32 - byte as u32 > 0 {
