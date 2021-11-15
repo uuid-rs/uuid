@@ -1,6 +1,6 @@
 #[cfg(feature = "arbitrary")]
-mod arbitrary_support;
+pub(crate) mod arbitrary_support;
 #[cfg(feature = "serde")]
-mod serde_support;
+pub(crate) mod serde_support;
 #[cfg(feature = "slog")]
-mod slog_support;
+pub(crate) mod slog_support;
