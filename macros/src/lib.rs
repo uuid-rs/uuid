@@ -1,11 +1,11 @@
 //! Implementation details for the `uuid!` macro.
 //!
 //! This crate is not meant to be used directly. Instead,
-//! you can use the `macros` feature of `uuid`:
+//! you can use the `macro-diagnostics` feature of `uuid`:
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! features = ["macros"]
+//! features = ["macro-diagnostics"]
 //! ```
 
 use proc_macro::TokenStream;

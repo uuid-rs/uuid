@@ -1,7 +1,7 @@
 macro_rules! define_uuid_macro {
     {$(#[$doc:meta])*} => {
         $(#[$doc])*
-        #[cfg(feature = "macros")]
+        #[cfg(feature = "macro-diagnostics")]
         #[macro_export]
         macro_rules! uuid {
             ($uuid:literal) => {{
@@ -10,7 +10,7 @@ macro_rules! define_uuid_macro {
         }
 
         $(#[$doc])*
-        #[cfg(not(feature = "macros"))]
+        #[cfg(not(feature = "macro-diagnostics"))]
         #[macro_export]
         macro_rules! uuid {
             ($uuid:literal) => {{
@@ -20,7 +20,7 @@ macro_rules! define_uuid_macro {
                         // here triggers const_err
                         // const_panic requires 1.57
                         #[allow(unconditional_panic)]
-                        let _ = ["invalid uuid representation"][1]; 
+                        let _ = ["invalid uuid representation"][1];
 
                         loop {} // -> never type
                     }
@@ -31,7 +31,7 @@ macro_rules! define_uuid_macro {
     }
 }
 
-define_uuid_macro!{
+define_uuid_macro! {
 /// Parse [`Uuid`][uuid::Uuid]s from string literals at compile time.
 ///
 /// ## Usage
@@ -67,8 +67,8 @@ define_uuid_macro!{
 /// let uuid: Uuid = uuid!("F9168C5E-ZEB2-4FAA-B6BF-329BF39FA1E4");
 /// ```
 ///
-/// Enable the feature `macros` to see the error messages below.
-/// 
+/// Enable the feature `macro-diagnostics` to see the error messages below.
+///
 /// Provides the following compilation error:
 ///
 /// ```txt

@@ -70,7 +70,7 @@
 //!
 //! Other crate features can also be useful beyond the version support:
 //!
-//! * `macros` - adds the `uuid!` macro that can parse UUIDs from string literals at compile time.
+//! * `macro-diagnostics` - enhances the diagnostics of `uuid!` macro.
 //! * `serde` - adds the ability to serialize and deserialize a UUID using
 //!   `serde`.
 //! * `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid` for
@@ -243,8 +243,9 @@ mod external;
 
 #[macro_use]
 mod macros;
+
 #[doc(hidden)]
-#[cfg(feature = "macros")]
+#[cfg(feature = "macro-diagnostics")]
 pub extern crate uuid_macro;
 
 use crate::std::convert;

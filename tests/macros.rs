@@ -1,4 +1,4 @@
-#[cfg(feature = "macros")]
+#[cfg(feature = "macro-diagnostics")]
 #[test]
 fn ui() {
     let t = trybuild::TestCases::new();

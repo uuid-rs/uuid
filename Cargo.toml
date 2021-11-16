@@ -54,7 +54,7 @@ repository = "uuid-rs/uuid"
 [features]
 default = ["std"]
 std = []
-macros = ["uuid_macro"]
+macro-diagnostics = ["uuid_macro"]
 
 v1 = ["atomic"]
 v3 = ["md-5"]
