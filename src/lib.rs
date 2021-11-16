@@ -241,7 +241,6 @@ mod rng;
 
 mod external;
 
-#[cfg(feature = "macros")]
 #[macro_use]
 mod macros;
 #[doc(hidden)]
