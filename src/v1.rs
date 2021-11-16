@@ -166,7 +166,7 @@ impl Uuid {
     /// is seeded with a random value:
     ///
     /// ```rust
-    /// use uuid::v1::{Timestamp, Context};
+    /// # use uuid::v1::{Timestamp, Context};
     /// # use uuid::Uuid;
     /// # fn random_seed() -> u16 { 42 }
     /// let context = Context::new(random_seed());
@@ -183,9 +183,8 @@ impl Uuid {
     /// The timestamp can also be created manually as per RFC4122:
     ///
     /// ```
-    /// use uuid::v1::{Timestamp, Context};
+    /// # use uuid::v1::{Timestamp, Context};
     /// # use uuid::Uuid;
-    ///
     /// let context = Context::new(42);
     /// let ts = Timestamp::from_rfc4122(1497624119, 0);
     ///

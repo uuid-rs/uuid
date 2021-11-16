@@ -9,10 +9,10 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! Adapters for various formats for UUIDs
+//! Adapters for alternative string formats.
 
 use crate::{
-    std::{borrow::Borrow, fmt, str, ptr},
+    std::{borrow::Borrow, fmt, ptr, str},
     Uuid, Variant,
 };
 
@@ -61,36 +61,32 @@ impl fmt::UpperHex for Uuid {
     }
 }
 
-/// An adapter for formatting an [`Uuid`] as a hyphenated string.
-///
-/// Takes an owned instance of the [`Uuid`].
+/// Format a [`Uuid`] as a hyphenated string, like
+/// `67e55044-10b1-426f-9247-bb680e5fe0c8`.
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(transparent)]
 pub struct Hyphenated(Uuid);
 
-/// An adapter for formatting an [`Uuid`] as a simple string.
-///
-/// Takes an owned instance of the [`Uuid`].
+/// Format a [`Uuid`] as a simple string, like
+/// `67e5504410b1426f9247bb680e5fe0c8`.
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(transparent)]
 pub struct Simple(Uuid);
 
-/// An adapter for formatting an [`Uuid`] as a URN string.
-///
-/// Takes an owned instance of the [`Uuid`].
+/// Format a [`Uuid`] as a URN string, like
+/// `urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8`.
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(transparent)]
 pub struct Urn(Uuid);
 
-/// An adapter for formatting an [`Uuid`] as a braced hyphenated string.
-///
-/// Takes an owned instance of the [`Uuid`].
+/// Format a [`Uuid`] as a braced hyphenated string, like
+/// `{67e55044-10b1-426f-9247-bb680e5fe0c8}`.
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]

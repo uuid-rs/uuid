@@ -208,12 +208,12 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::Uuid;
-    /// let v = 0xd8d7d6d5d4d3d2d1c2c1b2b1a4a3a2a1u128;
+    /// let v = 0xa1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8u128;
     ///
     /// let uuid = Uuid::from_u128_le(v);
     ///
     /// assert_eq!(
-    ///     "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8",
+    ///     "d8d7d6d5-d4d3-d2d1-c2c1-b2b1a4a3a2a1",
     ///     uuid.hyphenated().to_string(),
     /// );
     /// ```
@@ -690,12 +690,12 @@ impl Builder {
     ///
     /// ```
     /// # use uuid::Builder;
-    /// let v = 0xd8d7d6d5d4d3d2d1c2c1b2b1a4a3a2a1u128;
+    /// let v = 0xa1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8u128;
     ///
     /// let uuid = Builder::from_u128_le(v).into_uuid();
     ///
     /// assert_eq!(
-    ///     "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8",
+    ///     "d8d7d6d5-d4d3-d2d1-c2c1-b2b1a4a3a2a1",
     ///     uuid.hyphenated().to_string(),
     /// );
     /// ```
