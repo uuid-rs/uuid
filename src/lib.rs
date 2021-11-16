@@ -70,7 +70,7 @@
 //!
 //! Other crate features can also be useful beyond the version support:
 //!
-//! * `macros` - adds the `uuid!` macro that can parse UUIDs at compile time.
+//! * `macros` - adds the `uuid!` macro that can parse UUIDs from string literals at compile time.
 //! * `serde` - adds the ability to serialize and deserialize a UUID using
 //!   `serde`.
 //! * `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid` for
