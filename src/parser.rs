@@ -66,12 +66,35 @@ impl Uuid {
             .map_err(InvalidUuid::into_err)
     }
 
-    /// Intended to replace `Uuid::parse_str`
+    /// Parses a `Uuid` from a string of hexadecimal digits with optional
+    /// hyphens.
+    ///
+    /// This function is similar to [`parse_str`], in fact `parse_str` shares
+    /// the same underlying parser. The difference is that if `try_parse`
+    /// fails, it won't generate very useful error messages. The `parse_str`
+    /// function will eventually be deprecated in favor or `try_parse`.
+    ///
+    /// # Examples
+    ///
+    /// Parse a hyphenated UUID:
+    ///
+    /// ```
+    /// # use uuid::{Uuid, Version, Variant};
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let uuid = Uuid::try_parse("550e8400-e29b-41d4-a716-446655440000")?;
+    ///
+    /// assert_eq!(Some(Version::Random), uuid.get_version());
+    /// assert_eq!(Variant::RFC4122, uuid.get_variant());
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// [`parse_str`]: #method.parse_str
     #[inline]
-    pub const fn try_parse(input: &str) -> Result<Uuid, InvalidUuid> {
+    pub const fn try_parse(input: &str) -> Result<Uuid, Error> {
         match imp::try_parse(input) {
             Ok(bytes) => Ok(Uuid::from_bytes(bytes)),
-            Err(e) => Err(e),
+            Err(_) => Err(Error(ErrorKind::Other)),
         }
     }
 }
