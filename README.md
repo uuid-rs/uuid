@@ -51,8 +51,10 @@ let my_uuid = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8")?;
 assert_eq!(Some(Version::Random), my_uuid.get_version());
 ```
 
-If you add the `macros` feature then you can parse UUIDs at compile time
-instead of at runtime:
+You can parse UUIDs at compile time instead of at runtime.
+
+If you add the `macro-diagnostics` feature then you can see much better 
+error messages.
 
 ```rust
 #[macro_use]
@@ -78,7 +80,7 @@ various pieces of functionality:
   generate a `Uuid`.
 * `v5` - adds the `Uuid::new_v5` function and the ability to create a V5
   UUID based on the SHA1 hash of some data.
-* `macros` - adds the `uuid!` macro that can parse UUIDs at compile time.
+* `macro-diagnostics` - enhances the diagnostics of `uuid!` macro.
 * `serde` - adds the ability to serialize and deserialize a `Uuid` using the
   `serde` crate.
 * `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid`.

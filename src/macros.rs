@@ -1,3 +1,37 @@
+macro_rules! define_uuid_macro {
+    {$(#[$doc:meta])*} => {
+        $(#[$doc])*
+        #[cfg(feature = "macro-diagnostics")]
+        #[macro_export]
+        macro_rules! uuid {
+            ($uuid:literal) => {{
+                $crate::Uuid::from_bytes($crate::uuid_macro::parse_lit!($uuid))
+            }};
+        }
+
+        $(#[$doc])*
+        #[cfg(not(feature = "macro-diagnostics"))]
+        #[macro_export]
+        macro_rules! uuid {
+            ($uuid:literal) => {{
+                const OUTPUT: $crate::Uuid = match $crate::Uuid::try_parse($uuid) {
+                    Ok(u) => u,
+                    Err(_) => {
+                        // here triggers const_err
+                        // const_panic requires 1.57
+                        #[allow(unconditional_panic)]
+                        let _ = ["invalid uuid representation"][1];
+
+                        loop {} // -> never type
+                    }
+                };
+                OUTPUT
+            }};
+        }
+    }
+}
+
+define_uuid_macro! {
 /// Parse [`Uuid`][uuid::Uuid]s from string literals at compile time.
 ///
 /// ## Usage
@@ -33,6 +67,8 @@
 /// let uuid: Uuid = uuid!("F9168C5E-ZEB2-4FAA-B6BF-329BF39FA1E4");
 /// ```
 ///
+/// Enable the feature `macro-diagnostics` to see the error messages below.
+///
 /// Provides the following compilation error:
 ///
 /// ```txt
@@ -60,9 +96,4 @@
 /// ```
 ///
 /// [uuid::Uuid]: https://docs.rs/uuid/*/uuid/struct.Uuid.html
-#[macro_export]
-macro_rules! uuid {
-    ($uuid:tt) => {{
-        $crate::Uuid::from_bytes($crate::uuid_macro::parse_lit!($uuid))
-    }};
 }
