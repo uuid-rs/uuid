@@ -9,11 +9,17 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! Generate and parse UUIDs.
+//! Generate and parse universally unique identifiers (UUIDs).
 //!
-//! A UUID is a unique 128-bit number, stored as 16 octets. UUIDs are used to
-//! assign unique identifiers to entities without requiring a central allocating
-//! authority.
+//! Here's an example of a UUID:
+//!
+//! ```text
+//! 67e55044-10b1-426f-9247-bb680e5fe0c8
+//! ```
+//!
+//! A UUID is a unique 128-bit value, stored as 16 octets, and regularly formatted
+//! as a hex string in five groups. UUIDs are used to assign unique identifiers to
+//! entities without requiring a central allocating authority.
 //!
 //! They are particularly useful in distributed systems, though can be used in
 //! disparate areas, such as databases and network protocols.  Typically a UUID
@@ -23,6 +29,28 @@
 //! The uniqueness property is not strictly guaranteed, however for all
 //! practical purposes, it can be assumed that an unintentional collision would
 //! be extremely unlikely.
+//!
+//! # Getting started
+//!
+//! Add the following to your `Cargo.toml`:
+//!
+//! ```toml
+//! [dependencies]
+//! uuid = { version = "0.8", features = ["v4"] }
+//! ```
+//!
+//! When you want a UUID, you can generate one:
+//!
+//! ```
+//! # fn main() {
+//! # #[cfg(feature = "v4")]
+//! # {
+//! use uuid::Uuid;
+//!
+//! let id = Uuid::new_v4();
+//! # }
+//! # }
+//! ```
 //!
 //! # Dependencies
 //!
