@@ -79,7 +79,7 @@ const fn parse_hyphenated(s: &[u8]) -> Result<[u8; 16], ()> {
     // We look at two hex-encoded values (4 chars) at a time because
     // that's the size of the smallest group in a hyphenated UUID.
     // The indexes we're interested in are:
-    // 
+    //
     // uuid     : 936da01f-9abd-4d9d-80c7-02af85c822a8
     //            |   |   ||   ||   ||   ||   |   |
     // hyphens  : |   |   8|  13|  18|  23|   |   |

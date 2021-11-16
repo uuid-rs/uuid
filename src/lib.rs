@@ -9,12 +9,17 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-//! Generate and parse UUIDs.
+//! Generate and parse universally unique identifiers (UUIDs).
 //!
-//! Provides support for Universally Unique Identifiers (UUIDs). A UUID is a
-//! unique 128-bit number, stored as 16 octets. UUIDs are used to  assign
-//! unique identifiers to entities without requiring a central allocating
-//! authority.
+//! Here's an example of a UUID:
+//!
+//! ```text
+//! 67e55044-10b1-426f-9247-bb680e5fe0c8
+//! ```
+//!
+//! A UUID is a unique 128-bit value, stored as 16 octets, and regularly formatted
+//! as a hex string in five groups. UUIDs are used to assign unique identifiers to
+//! entities without requiring a central allocating authority.
 //!
 //! They are particularly useful in distributed systems, though can be used in
 //! disparate areas, such as databases and network protocols.  Typically a UUID
@@ -25,25 +30,51 @@
 //! practical purposes, it can be assumed that an unintentional collision would
 //! be extremely unlikely.
 //!
+//! # Getting started
+//!
+//! Add the following to your `Cargo.toml`:
+//!
+//! ```toml
+//! [dependencies]
+//! uuid = { version = "0.8", features = ["v4"] }
+//! ```
+//!
+//! When you want a UUID, you can generate one:
+//!
+//! ```
+//! # fn main() {
+//! # #[cfg(feature = "v4")]
+//! # {
+//! use uuid::Uuid;
+//!
+//! let id = Uuid::new_v4();
+//! # }
+//! # }
+//! ```
+//!
 //! # Dependencies
 //!
-//! By default, this crate depends on nothing but `std` and cannot generate
-//! UUIDs. You need to enable the following Cargo features to enable
-//! various pieces of functionality:
+//! By default, this crate depends on nothing but `std` and can parse and format
+//! UUIDs, but cannot generate them. You need to enable the following Cargo
+//! features to enable various pieces of functionality:
 //!
 //! * `v1` - adds the [`Uuid::new_v1`] function and the ability to create a V1
-//!   using an implementation of [`v1::ClockSequence`] (usually
-//! [`v1::Context`]) and a timestamp from `time::timespec`.
+//!   UUID using an implementation of [`v1::ClockSequence`] (usually
+//! [`v1::Context`]) and a UNIX timestamp.
 //! * `v3` - adds the [`Uuid::new_v3`] function and the ability to create a V3
 //!   UUID based on the MD5 hash of some data.
 //! * `v4` - adds the [`Uuid::new_v4`] function and the ability to randomly
 //!   generate a UUID.
 //! * `v5` - adds the [`Uuid::new_v5`] function and the ability to create a V5
 //!   UUID based on the SHA1 hash of some data.
-//! * `macros` - adds the `uuid!` macro that can parse UUIDs at compile time.
-//! * `serde` - adds the ability to serialize and deserialize a UUID using the
-//!   `serde` crate.
-//! * `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid`.
+//!
+//! Other crate features can also be useful beyond the version support:
+//!
+//! * `macros` - adds the `uuid!` macro that can parse UUIDs from string literals at compile time.
+//! * `serde` - adds the ability to serialize and deserialize a UUID using
+//!   `serde`.
+//! * `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid` for
+//!   fuzzing.
 //! * `fast-rng` - when combined with `v4` uses a faster algorithm for
 //!   generating random UUIDs. This feature requires more dependencies to
 //!   compile, but is just as suitable for UUIDs as the default algorithm.
@@ -100,7 +131,7 @@
 //! ```
 //!
 //! You don't need the `js` feature to use `uuid` in WebAssembly if you're
-//! not enabling other features too.
+//! not also enabling `v4`.
 //!
 //! ## Embedded
 //!
@@ -112,7 +143,7 @@
 //! uuid = { version = "0.8", default-features = false }
 //! ```
 //!
-//! Some additional features are supported in no-std environments:
+//! Some additional features are supported in no-std environments though:
 //!
 //! * `v1`, `v3`, and `v5`
 //! * `serde`
@@ -213,6 +244,7 @@ mod external;
 #[cfg(feature = "macros")]
 #[macro_use]
 mod macros;
+#[doc(hidden)]
 #[cfg(feature = "macros")]
 pub extern crate uuid_macro;
 
@@ -746,7 +778,7 @@ impl AsRef<[u8]> for Uuid {
 
 #[cfg(feature = "serde")]
 pub mod serde {
-    //! Adapters for `serde`.
+    //! Adapters for alternative `serde` formats.
     //!
     //! This module contains adapters you can use with [`#[serde(with)]`](https://serde.rs/field-attrs.html#with)
     //! to change the way a [`Uuid`](../struct.Uuid.html) is serialized
