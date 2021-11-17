@@ -1,7 +1,18 @@
 [package]
-name = "uuid_macro"
-version = "0.0.0"
+name = "uuid-macro-internal"
+version = "1.0.0-alpha.1"
 edition = "2018"
+authors = [
+    "QnnOkabayashi"
+]
+categories = [
+    "data-structures",
+    "no-std",
+    "parser-implementations",
+    "wasm"
+]
+description = "Private implementation details of the uuid! macro."
+documentation = "https://docs.rs/uuid"
 
 [lib]
 proc-macro = true

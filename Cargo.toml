@@ -30,11 +30,10 @@ homepage = "https://github.com/uuid-rs/uuid"
 name = "uuid"
 readme = "README.md"
 repository = "https://github.com/uuid-rs/uuid"
-version = "0.8.1" # remember to update html_root_url in lib.rs
+version = "1.0.0-alpha.1" # remember to update html_root_url in lib.rs
 
 [package.metadata.docs.rs]
-features = [ "serde", "slog", "v1", "v3", "v4", "v5" ]
-default-target = "x86_64-pc-windows-msvc"
+features = ["serde", "arbitrary", "slog", "v1", "v3", "v4", "v5"]
 
 [package.metadata.playground]
 features = ["serde", "v1", "v3", "v4", "v5"]
@@ -54,7 +53,7 @@ repository = "uuid-rs/uuid"
 [features]
 default = ["std"]
 std = []
-macro-diagnostics = ["uuid_macro"]
+macro-diagnostics = ["uuid-macro-internal"]
 
 v1 = ["atomic"]
 v3 = ["md-5"]
@@ -98,7 +97,7 @@ optional = true
 version = "0.9"
 
 # Public: Re-exported
-[dependencies.uuid_macro]
+[dependencies.uuid-macro-internal]
 path = "macros"
 optional = true
 

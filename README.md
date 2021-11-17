@@ -29,7 +29,7 @@ To get started with generating random UUIDs, add this to your `Cargo.toml`:
 
 ```toml
 [dependencies.uuid]
-version = "0.8"
+version = "1"
 features = ["v4", "fast-rng"]
 ```
 
@@ -113,6 +113,11 @@ flag through your environment to opt-in to unstable `uuid` features:
 RUSTFLAGS="--cfg uuid_unstable"
 ```
 
+## Minimum Supported Rust Version (MSRV)
+
+The minimum supported Rust version for `uuid` is documented in
+CI. It may be bumped in minor releases as necessary.
+
 ## References
 
 * [Wikipedia: Universally Unique Identifier](     http://en.wikipedia.org/wiki/Universally_unique_identifier)
@@ -120,7 +125,7 @@ RUSTFLAGS="--cfg uuid_unstable"
 
 [`wasm-bindgen`]: https://github.com/rustwasm/wasm-bindgen
 
-[`Uuid`]: https://docs.rs/uuid/0.8.1/uuid/struct.Uuid.html
+[`Uuid`]: https://docs.rs/uuid/1.0.0-alpha.1/uuid/struct.Uuid.html
 
 ---
 # License
