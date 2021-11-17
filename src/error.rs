@@ -15,7 +15,6 @@ pub(crate) enum ErrorKind {
     /// [`Uuid`]: ../struct.Uuid.html
     SimpleLength { len: usize },
     /// A byte array didn't contain 16 bytes
-    #[allow(dead_code)]
     ByteLength { len: usize },
     /// A hyphenated [`Uuid`] didn't contain 5 groups
     ///
@@ -30,7 +29,6 @@ pub(crate) enum ErrorKind {
         index: usize,
     },
     /// Some other error occurred.
-    #[allow(dead_code)]
     Other,
 }
 
