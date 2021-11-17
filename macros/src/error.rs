@@ -142,11 +142,3 @@ impl fmt::Display for Error {
         }
     }
 }
-
-#[cfg(feature = "std")]
-mod std_support {
-    use super::*;
-    use crate::std::error;
-
-    impl error::Error for Error {}
-}
