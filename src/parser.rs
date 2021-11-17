@@ -86,7 +86,6 @@ impl Uuid {
     /// ```
     ///
     /// [`parse_str`]: #method.parse_str
-    #[inline]
     pub const fn try_parse(input: &str) -> Result<Uuid, Error> {
         match try_parse(input) {
             Ok(bytes) => Ok(Uuid::from_bytes(bytes)),
@@ -95,8 +94,7 @@ impl Uuid {
     }
 }
 
-#[inline]
-pub const fn try_parse(input: &str) -> Result<[u8; 16], InvalidUuid> {
+const fn try_parse(input: &str) -> Result<[u8; 16], InvalidUuid> {
     let result = match (input.len(), input.as_bytes()) {
         // Inputs of 32 bytes must be a non-hyphenated UUID
         (32, s) => parse_simple(s),
