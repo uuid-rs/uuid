@@ -1,4 +1,4 @@
-use crate::std::fmt;
+use std::fmt;
 
 /// A general error that can occur when working with UUIDs.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
