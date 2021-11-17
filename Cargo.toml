@@ -98,6 +98,7 @@ version = "0.9"
 
 # Public: Re-exported
 [dependencies.uuid-macro-internal]
+version = "1.0.0-alpha.1"
 path = "macros"
 optional = true
 
