@@ -14,18 +14,7 @@ use quote::{quote, quote_spanned};
 use std::fmt;
 use syn::spanned::Spanned;
 
-#[cfg(any(feature = "std", test))]
-#[macro_use]
-extern crate std;
-
-#[cfg(all(not(feature = "std"), not(test)))]
-#[macro_use]
-extern crate core as std;
-
-#[path = "../../shared/error.rs"]
 mod error;
-
-#[path = "../../shared/parser.rs"]
 mod parser;
 
 #[proc_macro]
