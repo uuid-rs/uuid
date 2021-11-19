@@ -57,7 +57,7 @@
 //! # }
 //! ```
 //!
-//! If you have a UUID value you can use it inline:
+//! If you have a UUID value, you can use its string literal form inline:
 //!
 //! ```
 //! use uuid::{uuid, Uuid};

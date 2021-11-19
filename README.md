@@ -45,7 +45,7 @@ use uuid::Uuid;
 let id = Uuid::new_v4();
 ```
 
-If you have a UUID value you can use it inline:
+If you have a UUID value, you can use its string literal form inline:
 
 ```rust
 use uuid::{uuid, Uuid};
@@ -66,53 +66,7 @@ assert_eq!(Some(Version::Random), my_uuid.get_version());
 If you'd like to parse UUIDs _really_ fast, check out the [`uuid-simd`](https://github.com/nugine/uuid-simd)
 library.
 
-## Dependencies
-
-By default, this crate depends on nothing but `std` and cannot generate
-[`Uuid`]s. You need to enable the following Cargo features to enable
-various pieces of functionality:
-
-* `v1` - adds the `Uuid::new_v1` function and the ability to create a V1
-  using an implementation of `uuid::v1::ClockSequence` (usually
-`uuid::v1::Context`) and a timestamp from `time::timespec`.
-* `v3` - adds the `Uuid::new_v3` function and the ability to create a V3
-  UUID based on the MD5 hash of some data.
-* `v4` - adds the `Uuid::new_v4` function and the ability to randomly
-  generate a `Uuid`.
-* `v5` - adds the `Uuid::new_v5` function and the ability to create a V5
-  UUID based on the SHA1 hash of some data.
-* `macro-diagnostics` - enhances the diagnostics of `uuid!` macro.
-* `serde` - adds the ability to serialize and deserialize a `Uuid` using the
-  `serde` crate.
-* `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid`.
-* `fast-rng` - when combined with `v4` uses a faster algorithm for generating
-  random UUIDs. This feature requires more dependencies to compile, but is just
-  as suitable for UUIDs as the default algorithm.
-
-You need to enable one of the following Cargo features together with the
-`v4` feature if you're targeting `wasm32-unknown-unknown` target:
-
-* `js` - enables support for randomness on
-  `wasm32-unknown-unknown` via [`getrandom`]
-
-Alternatively, you can provide a custom `getrandom` implementation yourself
-via [`getrandom::register_custom_getrandom`](https://docs.rs/getrandom/0.2.2/getrandom/macro.register_custom_getrandom.html).
-
-### Unstable features
-
-Some features are unstable. They may be incomplete or depend on other unstable libraries.
-These include:
-
-* `zerocopy-unstable` - adds support for zero-copy deserialization using the `zerocopy` library.
-
-Unstable features may break between minor releases.
-
-To allow unstable features, you'll need to enable the Cargo feature as normal, but also pass an additional
-flag through your environment to opt-in to unstable `uuid` features:
-
-```
-RUSTFLAGS="--cfg uuid_unstable"
-```
+For more details on using `uuid`, [see the library documentation](https://docs.rs/uuid/1.0.0-alpha.1/uuid).
 
 ## Minimum Supported Rust Version (MSRV)
 
@@ -121,12 +75,9 @@ CI. It may be bumped in minor releases as necessary.
 
 ## References
 
-* [Wikipedia: Universally Unique Identifier](     http://en.wikipedia.org/wiki/Universally_unique_identifier)
-* [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](     http://tools.ietf.org/html/rfc4122)
-
-[`wasm-bindgen`]: https://github.com/rustwasm/wasm-bindgen
-
-[`Uuid`]: https://docs.rs/uuid/1.0.0-alpha.1/uuid/struct.Uuid.html
+* [`uuid` library docs](https://docs.rs/uuid/1.0.0-alpha.1/uuid).
+* [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier).
+* [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122).
 
 ---
 # License
