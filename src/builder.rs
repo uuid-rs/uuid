@@ -454,6 +454,10 @@ impl Uuid {
         // SAFETY: `Bytes` and `Uuid` have the same ABI
         unsafe { &*(bytes as *const Bytes as *const Uuid) }
     }
+
+    // NOTE: There is no `from_u128_ref` because in little-endian
+    // environments the value isn't properly encoded. Callers would
+    // need to use `.to_be()` themselves.
 }
 
 impl Builder {

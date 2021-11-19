@@ -1,20 +1,20 @@
-uuid
----------
+# `uuid`
 
 [![Latest Version](https://img.shields.io/crates/v/uuid.svg)](https://crates.io/crates/uuid)
 ![Minimum rustc version](https://img.shields.io/badge/rustc-1.46.0+-yellow.svg)
 [![Continuous integration](https://github.com/uuid-rs/uuid/actions/workflows/ci.yml/badge.svg)](https://github.com/uuid-rs/uuid/actions/workflows/ci.yml)
 
----
+Here's an example of a UUID:
 
-Generate and parse UUIDs.
+```text
+67e55044-10b1-426f-9247-bb680e5fe0c8
+```
 
-Provides support for Universally Unique Identifiers (UUIDs). A UUID is a
-unique 128-bit number, stored as 16 octets. UUIDs are used to  assign
-unique identifiers to entities without requiring a central allocating
-authority.
+A UUID is a unique 128-bit value, stored as 16 octets, and regularly
+formatted as a hex string in five groups. UUIDs are used to assign unique
+identifiers to entities without requiring a central allocating authority.
 
-They are particularly useful in distributed systems, though they can be used in
+They are particularly useful in distributed systems, though can be used in
 disparate areas, such as databases and network protocols.  Typically a UUID
 is displayed in a readable string form as a sequence of hexadecimal digits,
 separated into groups by hyphens.
@@ -25,20 +25,32 @@ be extremely unlikely.
 
 ## Getting started
 
-To get started with generating random UUIDs, add this to your `Cargo.toml`:
+Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies.uuid]
-version = "1"
-features = ["v4", "fast-rng"]
+version = "1.0.0-alpha.1"
+features = [
+    "v4",                # Lets you generate random UUIDs
+    "fast-rng",          # Use a faster (but still sufficiently random) RNG
+    "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
+]
 ```
 
-and then call `Uuid::new_v4` in your code:
+When you want a UUID, you can generate one:
 
 ```rust
 use uuid::Uuid;
 
-let my_uuid = Uuid::new_v4();
+let id = Uuid::new_v4();
+```
+
+If you have a UUID value you can use it inline:
+
+```rust
+use uuid::{uuid, Uuid};
+
+const ID: Uuid = uuid!("67e55044-10b1-426f-9247-bb680e5fe0c8");
 ```
 
 You can also parse UUIDs without needing any crate features:
@@ -51,19 +63,8 @@ let my_uuid = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8")?;
 assert_eq!(Some(Version::Random), my_uuid.get_version());
 ```
 
-You can parse UUIDs at compile time instead of at runtime.
-
-If you add the `macro-diagnostics` feature then you can see much better 
-error messages.
-
-```rust
-#[macro_use]
-extern crate uuid;
-
-let my_uuid = uuid!("67e55044-10b1-426f-9247-bb680e5fe0c8")?;
-
-assert_eq!(Some(Version::Random), my_uuid.get_version());
-```
+If you'd like to parse UUIDs _really_ fast, check out the [`uuid-simd`](https://github.com/nugine/uuid-simd)
+library.
 
 ## Dependencies
 
