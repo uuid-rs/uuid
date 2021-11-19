@@ -232,8 +232,8 @@ impl Uuid {
     /// value into more commonly-used formats, such as a unix timestamp.
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
-    pub const fn get_timestamp(&self) -> Option<Timestamp> {
-        match self.get_version() {
+    pub const fn timestamp(&self) -> Option<Timestamp> {
+        match self.version() {
             Some(Version::Mac) => {
                 let ticks: u64 = ((self.as_bytes()[6] & 0x0F) as u64) << 56
                     | ((self.as_bytes()[7]) as u64) << 48
@@ -321,14 +321,14 @@ mod tests {
             &node,
         );
 
-        assert_eq!(uuid.get_version(), Some(Version::Mac));
-        assert_eq!(uuid.get_variant(), Variant::RFC4122);
+        assert_eq!(uuid.version(), Some(Version::Mac));
+        assert_eq!(uuid.variant(), Variant::RFC4122);
         assert_eq!(
             uuid.hyphenated().to_string(),
             "20616934-4ba2-11e7-8000-010203040506"
         );
 
-        let ts = uuid.get_timestamp().unwrap().to_rfc4122();
+        let ts = uuid.timestamp().unwrap().to_rfc4122();
 
         assert_eq!(ts.0 - 0x01B2_1DD2_1381_4000, 14_968_545_358_129_460);
 
@@ -336,10 +336,7 @@ mod tests {
         let parsed =
             Uuid::parse_str("20616934-4ba2-11e7-8000-010203040506").unwrap();
 
-        assert_eq!(
-            uuid.get_timestamp().unwrap(),
-            parsed.get_timestamp().unwrap()
-        );
+        assert_eq!(uuid.timestamp().unwrap(), parsed.timestamp().unwrap());
     }
 
     #[test]
@@ -364,8 +361,8 @@ mod tests {
             &node,
         );
 
-        assert_eq!(uuid1.get_timestamp().unwrap().to_rfc4122().1, 16382);
-        assert_eq!(uuid2.get_timestamp().unwrap().to_rfc4122().1, 0);
+        assert_eq!(uuid1.timestamp().unwrap().to_rfc4122().1, 16382);
+        assert_eq!(uuid2.timestamp().unwrap().to_rfc4122().1, 0);
 
         let time = 1_496_854_535;
 
@@ -378,7 +375,7 @@ mod tests {
             &node,
         );
 
-        assert_eq!(uuid3.get_timestamp().unwrap().to_rfc4122().1, 1);
-        assert_eq!(uuid4.get_timestamp().unwrap().to_rfc4122().1, 2);
+        assert_eq!(uuid3.timestamp().unwrap().to_rfc4122().1, 1);
+        assert_eq!(uuid4.timestamp().unwrap().to_rfc4122().1, 2);
     }
 }

@@ -35,8 +35,8 @@ use crate::{error::*, Bytes, Uuid, Variant, Version};
 ///
 /// let uuid = Builder::from_random_bytes(random_bytes).into_uuid();
 ///
-/// assert_eq!(Some(Version::Random), uuid.get_version());
-/// assert_eq!(Variant::RFC4122, uuid.get_variant());
+/// assert_eq!(Some(Version::Random), uuid.version());
+/// assert_eq!(Variant::RFC4122, uuid.variant());
 /// ```
 #[allow(missing_copy_implementations)]
 #[derive(Debug)]
@@ -535,8 +535,8 @@ impl Builder {
     /// let random_bytes = rng();
     /// let uuid = Builder::from_random_bytes(random_bytes).into_uuid();
     ///
-    /// assert_eq!(Some(Version::Random), uuid.get_version());
-    /// assert_eq!(Variant::RFC4122, uuid.get_variant());
+    /// assert_eq!(Some(Version::Random), uuid.version());
+    /// assert_eq!(Variant::RFC4122, uuid.variant());
     /// ```
     pub const fn from_random_bytes(b: Bytes) -> Self {
         Builder(Uuid::from_bytes(b))

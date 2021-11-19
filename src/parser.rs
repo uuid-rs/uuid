@@ -51,8 +51,8 @@ impl Uuid {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let uuid = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000")?;
     ///
-    /// assert_eq!(Some(Version::Random), uuid.get_version());
-    /// assert_eq!(Variant::RFC4122, uuid.get_variant());
+    /// assert_eq!(Some(Version::Random), uuid.version());
+    /// assert_eq!(Variant::RFC4122, uuid.variant());
     /// # Ok(())
     /// # }
     /// ```
@@ -79,8 +79,8 @@ impl Uuid {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let uuid = Uuid::try_parse("550e8400-e29b-41d4-a716-446655440000")?;
     ///
-    /// assert_eq!(Some(Version::Random), uuid.get_version());
-    /// assert_eq!(Variant::RFC4122, uuid.get_variant());
+    /// assert_eq!(Some(Version::Random), uuid.version());
+    /// assert_eq!(Variant::RFC4122, uuid.variant());
     /// # Ok(())
     /// # }
     /// ```

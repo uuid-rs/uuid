@@ -438,7 +438,7 @@ impl Uuid {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
     ///
-    /// assert_eq!(Variant::RFC4122, my_uuid.get_variant());
+    /// assert_eq!(Variant::RFC4122, my_uuid.variant());
     /// # Ok(())
     /// # }
     /// ```
@@ -446,7 +446,7 @@ impl Uuid {
     /// # References
     ///
     /// * [Variant in RFC4122](http://tools.ietf.org/html/rfc4122#section-4.1.1)
-    pub const fn get_variant(&self) -> Variant {
+    pub const fn variant(&self) -> Variant {
         match self.as_bytes()[8] {
             x if x & 0x80 == 0x00 => Variant::NCS,
             x if x & 0xc0 == 0x80 => Variant::RFC4122,
@@ -462,7 +462,7 @@ impl Uuid {
     /// Returns the version number of the UUID.
     ///
     /// This represents the algorithm used to generate the value.
-    /// This method is the future-proof alternative to [`Uuid::get_version`].
+    /// This method is the future-proof alternative to [`Uuid::version`].
     ///
     /// # Examples
     ///
@@ -473,7 +473,7 @@ impl Uuid {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
     ///
-    /// assert_eq!(3, my_uuid.get_version_num());
+    /// assert_eq!(3, my_uuid.version_num());
     /// # Ok(())
     /// # }
     /// ```
@@ -481,7 +481,7 @@ impl Uuid {
     /// # References
     ///
     /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
-    pub const fn get_version_num(&self) -> usize {
+    pub const fn version_num(&self) -> usize {
         (self.as_bytes()[6] >> 4) as usize
     }
 
@@ -490,7 +490,7 @@ impl Uuid {
     /// This represents the algorithm used to generate the value.
     /// If the version field doesn't contain a recognized version then `None`
     /// is returned. If you're trying to read the version for a future extension
-    /// you can also use [`Uuid::get_version_num`] to unconditionally return a
+    /// you can also use [`Uuid::version_num`] to unconditionally return a
     /// number. Future extensions may start to return `Some` once they're standardized
     /// and supported.
     ///
@@ -503,7 +503,7 @@ impl Uuid {
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
     ///
-    /// assert_eq!(Some(Version::Md5), my_uuid.get_version());
+    /// assert_eq!(Some(Version::Md5), my_uuid.version());
     /// # Ok(())
     /// # }
     /// ```
@@ -511,8 +511,8 @@ impl Uuid {
     /// # References
     ///
     /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
-    pub const fn get_version(&self) -> Option<Version> {
-        match self.get_version_num() {
+    pub const fn version(&self) -> Option<Version> {
+        match self.version_num() {
             0 if self.is_nil() => Some(Version::Nil),
             1 => Some(Version::Mac),
             2 => Some(Version::Dce),
@@ -945,13 +945,13 @@ mod tests {
             4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87,
         ]);
 
-        assert_eq!(from_bytes.get_version(), None);
+        assert_eq!(from_bytes.version(), None);
 
         assert!(nil.is_nil());
         assert!(!not_nil.is_nil());
 
-        assert_eq!(nil.get_version(), Some(Version::Nil));
-        assert_eq!(not_nil.get_version(), Some(Version::Random))
+        assert_eq!(nil.version(), Some(Version::Nil));
+        assert_eq!(not_nil.version(), Some(Version::Random))
     }
 
     #[test]
@@ -982,8 +982,8 @@ mod tests {
         let uuid =
             Uuid::new_v3(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
 
-        assert_eq!(uuid.get_version().unwrap(), Version::Md5);
-        assert_eq!(uuid.get_version_num(), 3);
+        assert_eq!(uuid.version().unwrap(), Version::Md5);
+        assert_eq!(uuid.version_num(), 3);
     }
 
     #[test]
@@ -1001,12 +1001,12 @@ mod tests {
         let uuid6 =
             Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
 
-        assert_eq!(uuid1.get_variant(), Variant::RFC4122);
-        assert_eq!(uuid2.get_variant(), Variant::RFC4122);
-        assert_eq!(uuid3.get_variant(), Variant::RFC4122);
-        assert_eq!(uuid4.get_variant(), Variant::Microsoft);
-        assert_eq!(uuid5.get_variant(), Variant::Microsoft);
-        assert_eq!(uuid6.get_variant(), Variant::NCS);
+        assert_eq!(uuid1.variant(), Variant::RFC4122);
+        assert_eq!(uuid2.variant(), Variant::RFC4122);
+        assert_eq!(uuid3.variant(), Variant::RFC4122);
+        assert_eq!(uuid4.variant(), Variant::Microsoft);
+        assert_eq!(uuid5.variant(), Variant::Microsoft);
+        assert_eq!(uuid6.variant(), Variant::NCS);
     }
 
     #[test]

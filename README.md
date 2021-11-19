@@ -60,7 +60,7 @@ use uuid::{Uuid, Version};
 
 let my_uuid = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8")?;
 
-assert_eq!(Some(Version::Random), my_uuid.get_version());
+assert_eq!(Some(Version::Random), my_uuid.version());
 ```
 
 If you'd like to parse UUIDs _really_ fast, check out the [`uuid-simd`](https://github.com/nugine/uuid-simd)

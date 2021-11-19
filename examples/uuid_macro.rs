@@ -13,7 +13,7 @@ fn parse_uuid_at_compile_time() {
 
     let uuid = uuid!("67e55044-10b1-426f-9247-bb680e5fe0c8");
 
-    assert_eq!(Some(uuid::Version::Random), uuid.get_version());
+    assert_eq!(Some(uuid::Version::Random), uuid.version());
 }
 
 fn main() {}

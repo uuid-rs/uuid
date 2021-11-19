@@ -9,7 +9,7 @@ fn generate_random_uuid() {
 
     let uuid = Uuid::new_v4();
 
-    assert_eq!(Some(uuid::Version::Random), uuid.get_version());
+    assert_eq!(Some(uuid::Version::Random), uuid.version());
 }
 
 fn main() {}

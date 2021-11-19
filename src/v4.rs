@@ -21,7 +21,7 @@ impl Uuid {
     /// # use uuid::{Uuid, Version};
     /// let uuid = Uuid::new_v4();
     ///
-    /// assert_eq!(Some(Version::Random), uuid.get_version());
+    /// assert_eq!(Some(Version::Random), uuid.version());
     /// ```
     ///
     /// [`getrandom`]: https://crates.io/crates/getrandom
@@ -45,8 +45,8 @@ mod tests {
     fn test_new() {
         let uuid = Uuid::new_v4();
 
-        assert_eq!(uuid.get_version(), Some(Version::Random));
-        assert_eq!(uuid.get_variant(), Variant::RFC4122);
+        assert_eq!(uuid.version(), Some(Version::Random));
+        assert_eq!(uuid.variant(), Variant::RFC4122);
     }
 
     #[test]
@@ -54,7 +54,7 @@ mod tests {
     fn test_get_version() {
         let uuid = Uuid::new_v4();
 
-        assert_eq!(uuid.get_version(), Some(Version::Random));
-        assert_eq!(uuid.get_version_num(), 4)
+        assert_eq!(uuid.version(), Some(Version::Random));
+        assert_eq!(uuid.version_num(), 4)
     }
 }

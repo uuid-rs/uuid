@@ -23,7 +23,7 @@ impl Uuid {
     /// # use uuid::{Uuid, Version};
     /// let uuid = Uuid::new_v5(&Uuid::NAMESPACE_DNS, b"rust-lang.org");
     ///
-    /// assert_eq!(Some(Version::Sha1), uuid.get_version());
+    /// assert_eq!(Some(Version::Sha1), uuid.version());
     /// ```
     ///
     /// [`NAMESPACE_DNS`]: struct.Uuid.html#associatedconst.NAMESPACE_DNS
@@ -148,8 +148,8 @@ mod tests {
         let uuid =
             Uuid::new_v5(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
 
-        assert_eq!(uuid.get_version(), Some(Version::Sha1));
-        assert_eq!(uuid.get_version_num(), 5);
+        assert_eq!(uuid.version(), Some(Version::Sha1));
+        assert_eq!(uuid.version_num(), 5);
     }
 
     #[test]
@@ -168,8 +168,8 @@ mod tests {
         for &(ref ns, ref name, ref u) in FIXTURE {
             let uuid = Uuid::new_v5(*ns, name.as_bytes());
 
-            assert_eq!(uuid.get_version(), Some(Version::Sha1));
-            assert_eq!(uuid.get_variant(), Variant::RFC4122);
+            assert_eq!(uuid.version(), Some(Version::Sha1));
+            assert_eq!(uuid.variant(), Variant::RFC4122);
             assert_eq!(Ok(uuid), u.parse());
         }
     }

@@ -27,8 +27,8 @@ mod tests {
 
         let uuid = Uuid::arbitrary(&mut bytes).unwrap();
 
-        assert_eq!(Some(Version::Random), uuid.get_version());
-        assert_eq!(Variant::RFC4122, uuid.get_variant());
+        assert_eq!(Some(Version::Random), uuid.version());
+        assert_eq!(Variant::RFC4122, uuid.variant());
     }
 
     #[test]
