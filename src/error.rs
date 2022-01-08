@@ -28,6 +28,8 @@ pub(crate) enum ErrorKind {
         len: usize,
         index: usize,
     },
+    /// The input was not a valid UTF8 string
+    InvalidUTF8,
     /// Some other error occurred.
     Other,
 }
@@ -40,12 +42,18 @@ pub(crate) enum ErrorKind {
 ///
 /// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub struct InvalidUuid<'a>(pub(crate) &'a str);
+pub struct InvalidUuid<'a>(pub(crate) &'a [u8]);
 
 impl<'a> InvalidUuid<'a> {
     /// Converts the lightweight error type into detailed diagnostics.
     pub fn into_err(self) -> Error {
-        let (s, offset, simple) = match self.0.as_bytes() {
+        // Check whether or not the input was ever actually a valid UTF8 string
+        let input_str = match std::str::from_utf8(self.0) {
+            Ok(s) => s,
+            Err(_) => return Error(ErrorKind::InvalidUTF8),
+        };
+
+        let (uuid_str, offset, simple) = match input_str.as_bytes() {
             [b'{', s @ .., b'}'] => (s, 1, false),
             [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..] => {
                 (s, "urn:uuid:".len(), false)
@@ -57,10 +65,10 @@ impl<'a> InvalidUuid<'a> {
         let mut group_bounds = [0; 4];
 
         // SAFETY: the byte array came from a valid utf8 string,
-        // and is aligned along char boundries.
-        let string = unsafe { std::str::from_utf8_unchecked(s) };
+        // and is aligned along char boundaries.
+        let uuid_str = unsafe { std::str::from_utf8_unchecked(uuid_str) };
 
-        for (index, character) in string.char_indices() {
+        for (index, character) in uuid_str.char_indices() {
             let byte = character as u8;
             if character as u32 - byte as u32 > 0 {
                 // Multibyte char
@@ -87,7 +95,9 @@ impl<'a> InvalidUuid<'a> {
             // This means that we tried and failed to parse a simple uuid.
             // Since we verified that all the characters are valid, this means
             // that it MUST have an invalid length.
-            Error(ErrorKind::SimpleLength { len: s.len() })
+            Error(ErrorKind::SimpleLength {
+                len: input_str.len(),
+            })
         } else if hyphen_count != 4 {
             // We tried to parse a hyphenated variant, but there weren't
             // 5 groups (4 hyphen splits).
@@ -110,7 +120,7 @@ impl<'a> InvalidUuid<'a> {
             // The last group must be too long
             Error(ErrorKind::GroupLength {
                 group: 4,
-                len: s.len() - BLOCK_STARTS[4],
+                len: input_str.len() - BLOCK_STARTS[4],
                 index: offset + BLOCK_STARTS[4] + 1,
             })
         }
@@ -146,6 +156,7 @@ impl fmt::Display for Error {
                     group, expected, len
                 )
             }
+            ErrorKind::InvalidUTF8 => write!(f, "non-UTF8 input"),
             ErrorKind::Other => write!(f, "failed to parse a UUID"),
         }
     }
