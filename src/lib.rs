@@ -491,8 +491,8 @@ impl Uuid {
     /// If the version field doesn't contain a recognized version then `None`
     /// is returned. If you're trying to read the version for a future extension
     /// you can also use [`Uuid::get_version_num`] to unconditionally return a
-    /// number. Future extensions may start to return `Some` once they're standardized
-    /// and supported.
+    /// number. Future extensions may start to return `Some` once they're
+    /// standardized and supported.
     ///
     /// # Examples
     ///
@@ -525,8 +525,8 @@ impl Uuid {
 
     /// Returns the four field values of the UUID.
     ///
-    /// These values can be passed to the [`Uuid::from_fields`] method to get the
-    /// original `Uuid` back.
+    /// These values can be passed to the [`Uuid::from_fields`] method to get
+    /// the original `Uuid` back.
     ///
     /// * The first field value represents the first group of (eight) hex
     ///   digits, taken as a big-endian `u32` value.  For V1 UUIDs, this field
