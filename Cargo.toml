@@ -88,7 +88,7 @@ version = "0.5"
 [dependencies.md-5]
 default-features = false
 optional = true
-version = "0.9"
+version = "0.10"
 
 # Private
 [dependencies.sha-1]
