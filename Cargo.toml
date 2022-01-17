@@ -94,7 +94,7 @@ version = "0.10"
 [dependencies.sha-1]
 default-features = false
 optional = true
-version = "0.9"
+version = "0.10"
 
 # Public: Re-exported
 [dependencies.uuid-macro-internal]
