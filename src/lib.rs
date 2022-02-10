@@ -771,7 +771,7 @@ impl Uuid {
     ///     0xc1, 0xc2,
     ///     0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
     /// ];
-    /// let uuid = Uuid::from_bytes(bytes.clone());
+    /// let uuid = Uuid::from_bytes(bytes);
     /// assert_eq!(bytes, uuid.into_bytes());
     /// ```
     pub const fn into_bytes(self) -> Bytes {
