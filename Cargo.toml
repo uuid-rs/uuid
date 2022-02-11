@@ -145,6 +145,9 @@ version = "0.3"
 [dev-dependencies.trybuild]
 version = "1.0.52"
 
+[dev-dependencies.rustversion]
+version = "1"
+
 [target.'cfg(windows)'.dev-dependencies.winapi]
 version = "0.3"
 features = ["combaseapi", "impl-default"]
