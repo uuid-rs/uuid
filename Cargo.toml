@@ -58,7 +58,7 @@ macro-diagnostics = ["uuid-macro-internal"]
 v1 = ["atomic"]
 v3 = ["md-5"]
 v4 = ["rng"]
-v5 = ["sha-1"]
+v5 = ["sha1"]
 
 js = ["getrandom", "getrandom/js"]
 
