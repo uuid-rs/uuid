@@ -544,6 +544,20 @@ impl Builder {
             .with_version(Version::Random)
     }
 
+    /// Creates a `Builder` using the supplied MD5 hashed bytes.
+    pub const fn from_md5_bytes(b: Bytes) -> Self {
+        Builder(Uuid::from_bytes(b))
+            .with_variant(Variant::RFC4122)
+            .with_version(Version::Md5)
+    }
+
+    /// Creates a `Builder` using the supplied SHA1 hashed bytes.
+    pub const fn from_sha1_bytes(b: Bytes) -> Self {
+        Builder(Uuid::from_bytes(b))
+            .with_variant(Variant::RFC4122)
+            .with_version(Version::Sha1)
+    }
+
     /// Creates a `Builder` using the supplied bytes.
     ///
     /// # Errors

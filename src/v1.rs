@@ -5,7 +5,7 @@
 
 use crate::{Uuid, Version};
 
-use atomic::Atomic;
+use private_atomic::Atomic;
 
 /// The number of 100 ns ticks between the UUID epoch
 /// `1582-10-15 00:00:00` and the Unix epoch `1970-01-01 00:00:00`.

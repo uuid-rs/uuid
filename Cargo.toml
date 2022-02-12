@@ -53,54 +53,20 @@ repository = "uuid-rs/uuid"
 [features]
 default = ["std"]
 std = []
-macro-diagnostics = ["uuid-macro-internal"]
+macro-diagnostics = ["private_uuid-macro-internal"]
 
-v1 = ["atomic"]
-v3 = ["md-5"]
+v1 = ["private_atomic"]
+v3 = ["md5"]
 v4 = ["rng"]
-v5 = ["sha-1"]
+v5 = ["sha1"]
 
-js = ["getrandom", "getrandom/js"]
+js = ["private_getrandom", "private_getrandom/js"]
 
-rng = ["getrandom"]
-fast-rng = ["rng", "rand"]
+rng = ["private_getrandom"]
+fast-rng = ["rng", "private_rand"]
 
-# Unstable features (these also need RUSTFLAGS="--cfg uuid_unstable" to work)
-zerocopy-unstable = ["zerocopy"]
-
-# Private
-[dependencies.getrandom]
-optional = true
-version = "0.2"
-
-# Private
-[dependencies.rand]
-optional = true
-version = "0.8"
-
-# Private
-[dependencies.atomic]
-default-features = false
-optional = true
-version = "0.5"
-
-# Private
-[dependencies.md-5]
-default-features = false
-optional = true
-version = "0.10"
-
-# Private
-[dependencies.sha-1]
-default-features = false
-optional = true
-version = "0.9"
-
-# Public: Re-exported
-[dependencies.uuid-macro-internal]
-version = "1.0.0-alpha.1"
-path = "macros"
-optional = true
+sha1 = ["private_sha1"]
+md5 = ["private_md-5"]
 
 # Public: Used in trait impls on `Uuid`
 [dependencies.serde]
@@ -119,9 +85,64 @@ optional = true
 version = "1"
 
 # Public (unstable): Used in `zerocopy` derive
+# Unstable: also need RUSTFLAGS="--cfg uuid_unstable" to work
+# This feature may break between releases, or be removed entirely before
+# stabilization. 
+# See: https://github.com/uuid-rs/uuid/issues/588
 [dependencies.zerocopy]
 optional = true
 version = "0.6"
+
+# Private
+# Don't depend on this optional feature directly: it may change at any time
+# use the `rng` feature instead
+[dependencies.private_getrandom]
+package = "getrandom"
+optional = true
+version = "0.2"
+
+# Private
+# Don't depend on this optional feature directly: it may change at any time
+# use the `fast-rng` feature instead
+[dependencies.private_rand]
+package = "rand"
+optional = true
+version = "0.8"
+
+# Private
+# Don't depend on this optional feature directly: it may change at any time
+# Use the `md5` feature instead
+[dependencies.private_md-5]
+package = "md-5"
+default-features = false
+optional = true
+version = "0.10"
+
+# Private
+# Don't depend on this optional feature directly: it may change at any time
+# Use the `sha1` feature instead
+[dependencies.private_sha1]
+package = "sha1"
+default-features = false
+optional = true
+version = "0.10"
+
+# Public: Re-exported
+# Don't depend on this optional feature directly: it may change at any time
+# Use the `macro-diagnostics` feature instead
+[dependencies.private_uuid-macro-internal]
+package = "uuid-macro-internal"
+version = "1.0.0-alpha.1"
+path = "macros"
+optional = true
+
+# Private
+# Don't depend on this optional feature directly: it may change at any time
+[dependencies.private_atomic]
+package = "atomic"
+default-features = false
+optional = true
+version = "0.5"
 
 [dev-dependencies.bincode]
 version = "1.0"
