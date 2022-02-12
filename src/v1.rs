@@ -5,7 +5,7 @@
 
 use crate::{Uuid, Version};
 
-use private_atomic::Atomic;
+use private_atomic::{Atomic, Ordering};
 
 /// The number of 100 ns ticks between the UUID epoch
 /// `1582-10-15 00:00:00` and the Unix epoch `1970-01-01 00:00:00`.
@@ -295,7 +295,7 @@ impl ClockSequence for Context {
         // increment the clock sequence we want to wrap once it becomes larger
         // than what we can represent in a "u14". Otherwise there'd be patches
         // where the clock sequence doesn't change regardless of the timestamp
-        self.count.fetch_add(1, atomic::Ordering::AcqRel) % (u16::MAX >> 2)
+        self.count.fetch_add(1, Ordering::AcqRel) % (u16::MAX >> 2)
     }
 }
 
