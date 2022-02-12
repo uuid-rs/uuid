@@ -247,7 +247,7 @@ mod macros;
 
 #[doc(hidden)]
 #[cfg(feature = "macro-diagnostics")]
-pub extern crate internal_uuid_macro_internal;
+pub extern crate private_uuid_macro_internal;
 
 use crate::std::convert;
 
