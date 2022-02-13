@@ -97,7 +97,7 @@
 //! Some features are unstable. They may be incomplete or depend on other
 //! unstable libraries. These include:
 //!
-//! * `zerocopy-unstable` - adds support for zero-copy deserialization using the
+//! * `zerocopy` - adds support for zero-copy deserialization using the
 //!   `zerocopy` library.
 //!
 //! Unstable features may break between minor releases.
@@ -212,10 +212,10 @@ extern crate std;
 extern crate core as std;
 
 // Check that unstable features are accompanied by a the `uuid_unstable` cfg
-#[cfg(all(not(uuid_unstable), feature = "zerocopy-unstable"))]
-compile_error!("The `zerocopy-unstable` feature is unstable and may break between releases. Please also pass `RUSTFLAGS=\"--cfg uuid_unstable\"` to allow it.");
+#[cfg(all(not(uuid_unstable), feature = "zerocopy"))]
+compile_error!("The `zerocopy` feature is unstable and may break between releases. Please also pass `RUSTFLAGS=\"--cfg uuid_unstable\"` to allow it.");
 
-#[cfg(feature = "zerocopy-unstable")]
+#[cfg(feature = "zerocopy")]
 use zerocopy::{AsBytes, FromBytes, Unaligned};
 
 mod builder;
@@ -235,6 +235,10 @@ mod v5;
 
 #[cfg(feature = "rng")]
 mod rng;
+#[cfg(feature = "md5")]
+mod md5;
+#[cfg(feature = "sha1")]
+mod sha1;
 
 mod external;
 
@@ -243,7 +247,7 @@ mod macros;
 
 #[doc(hidden)]
 #[cfg(feature = "macro-diagnostics")]
-pub extern crate uuid_macro_internal;
+pub extern crate private_uuid_macro_internal;
 
 use crate::std::convert;
 
@@ -392,7 +396,7 @@ pub enum Variant {
 /// The `Uuid` type is always guaranteed to be have the same ABI as [`Bytes`].
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(
-    feature = "zerocopy-unstable",
+    feature = "zerocopy",
     derive(AsBytes, FromBytes, Unaligned)
 )]
 #[repr(transparent)]

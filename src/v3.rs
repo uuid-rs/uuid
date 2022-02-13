@@ -1,6 +1,4 @@
-use crate::{Uuid, Variant, Version};
-
-use md5::{Digest, Md5};
+use crate::Uuid;
 
 impl Uuid {
     /// Creates a UUID using a name from a namespace, based on the MD5
@@ -32,22 +30,7 @@ impl Uuid {
     /// [`NAMESPACE_URL`]: #associatedconstant.NAMESPACE_URL
     /// [`NAMESPACE_X500`]: #associatedconstant.NAMESPACE_X500
     pub fn new_v3(namespace: &Uuid, name: &[u8]) -> Uuid {
-        let mut hasher = Md5::new();
-
-        hasher.update(namespace.as_bytes());
-        hasher.update(name);
-
-        let buffer = hasher.finalize();
-
-        let mut bytes = crate::Bytes::default();
-        bytes.copy_from_slice(&buffer[..16]);
-
-        let mut builder = crate::Builder::from_bytes(bytes);
-        builder
-            .set_variant(Variant::RFC4122)
-            .set_version(Version::Md5);
-
-        builder.into_uuid()
+        crate::Builder::from_md5_bytes(crate::md5::hash(namespace.as_bytes(), name)).into_uuid()
     }
 }
 
@@ -58,7 +41,10 @@ mod tests {
     #[cfg(target_arch = "wasm32")]
     use wasm_bindgen_test::*;
 
-    use crate::std::string::ToString;
+    use crate::{
+        Variant, Version,
+        std::string::ToString,
+    };
 
     static FIXTURE: &'static [(&'static Uuid, &'static str, &'static str)] = &[
         (
