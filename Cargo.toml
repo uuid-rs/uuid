@@ -65,7 +65,7 @@ js = ["private_getrandom", "private_getrandom/js"]
 rng = ["private_getrandom"]
 fast-rng = ["rng", "private_rand"]
 
-sha1 = ["private_sha1"]
+sha1 = ["private_sha1_smol"]
 md5 = ["private_md-5"]
 
 # Public: Used in trait impls on `Uuid`
@@ -121,11 +121,11 @@ version = "0.10"
 # Private
 # Don't depend on this optional feature directly: it may change at any time
 # Use the `sha1` feature instead
-[dependencies.private_sha1]
-package = "sha1"
+[dependencies.private_sha1_smol]
+package = "sha1_smol"
 default-features = false
 optional = true
-version = "0.10"
+version = "1"
 
 # Public: Re-exported
 # Don't depend on this optional feature directly: it may change at any time
