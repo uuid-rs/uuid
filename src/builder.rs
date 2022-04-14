@@ -754,7 +754,7 @@ impl Builder {
             Variant::NCS => byte & 0x7f,
             Variant::RFC4122 => (byte & 0x3f) | 0x80,
             Variant::Microsoft => (byte & 0x1f) | 0xc0,
-            Variant::Future => (byte & 0x1f) | 0xe0,
+            Variant::Future => byte | 0xe0,
         };
 
         self
