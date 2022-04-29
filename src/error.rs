@@ -127,6 +127,7 @@ impl<'a> InvalidUuid<'a> {
     }
 }
 
+// NOTE: This impl is part of the public API. Breaking changes to it should be carefully considered
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self.0 {
