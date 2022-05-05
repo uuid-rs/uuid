@@ -782,6 +782,38 @@ impl Uuid {
         self.0
     }
 
+    /// Returns the bytes of the UUID in little-endian order.
+    ///
+    /// The bytes will be flipped to convert into little-endian order. This is
+    /// based on the endianness of the UUID, rather than the target environment
+    /// so bytes will be flipped on both big and little endian machines.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use uuid::Uuid;
+    ///
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
+    ///
+    /// assert_eq!(
+    ///     uuid.to_bytes_le(),
+    ///     ([
+    ///         0xa4, 0xa3, 0xa2, 0xa1, 0xb2, 0xb1, 0xc2, 0xc1, 0xd1, 0xd2,
+    ///         0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8
+    ///     ])
+    /// );
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub const fn to_bytes_le(&self) -> Bytes {
+        [
+            self.0[3], self.0[2], self.0[1], self.0[0], self.0[5], self.0[4],
+            self.0[7], self.0[6], self.0[8], self.0[9], self.0[10], self.0[11],
+            self.0[12], self.0[13], self.0[14], self.0[15],
+        ]
+    }
+
     /// Tests if the UUID is nil.
     pub const fn is_nil(&self) -> bool {
         self.as_u128() == 0
