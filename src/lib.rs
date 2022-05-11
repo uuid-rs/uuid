@@ -1407,6 +1407,23 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    fn test_bytes_le_roundtrip() {
+        let b = [
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
+            0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
+        ];
+
+        let u1 = Uuid::from_bytes(b);
+
+        let b_le = u1.to_bytes_le();
+
+        let u2 = Uuid::from_bytes_le(b_le);
+
+        assert_eq!(u1, u2);
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_iterbytes_impl_for_uuid() {
         let mut set = std::collections::HashSet::new();
         let id1 = new();
