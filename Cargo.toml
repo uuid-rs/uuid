@@ -15,10 +15,7 @@ description = "A library to generate and parse UUIDs."
 documentation = "https://docs.rs/uuid"
 edition = "2018"
 exclude = [
-    ".github/**",
-    ".travis.yml",
-    "appveyor.yml",
-    "bors.toml"
+    ".github/**"
 ]
 keywords = [
     "guid",
@@ -30,7 +27,7 @@ homepage = "https://github.com/uuid-rs/uuid"
 name = "uuid"
 readme = "README.md"
 repository = "https://github.com/uuid-rs/uuid"
-version = "1.0.0" # remember to update html_root_url in lib.rs
+version = "1.1.0" # remember to update html_root_url in lib.rs
 
 [package.metadata.docs.rs]
 features = ["serde", "arbitrary", "slog", "v1", "v3", "v4", "v5"]
@@ -132,7 +129,7 @@ version = "1"
 # Use the `macro-diagnostics` feature instead
 [dependencies.private_uuid-macro-internal]
 package = "uuid-macro-internal"
-version = "1.0.0"
+version = "1.1.0"
 path = "macros"
 optional = true
 
