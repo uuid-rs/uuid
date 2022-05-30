@@ -15,7 +15,7 @@ impl Uuid {
     ///
     /// # Examples
     ///
-    /// Generating a SHA1 DNS UUID for `rust-lang.ord`:
+    /// Generating a SHA1 DNS UUID for `rust-lang.org`:
     ///
     /// ```
     /// # use uuid::{Uuid, Version};

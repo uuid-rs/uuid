@@ -16,7 +16,7 @@ impl Uuid {
     ///
     /// # Examples
     ///
-    /// Generating a MD5 DNS UUID for `rust-lang.ord`:
+    /// Generating a MD5 DNS UUID for `rust-lang.org`:
     ///
     /// ```
     /// # use uuid::{Uuid, Version};
