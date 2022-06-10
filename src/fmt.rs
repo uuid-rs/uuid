@@ -63,48 +63,36 @@ impl fmt::UpperHex for Uuid {
 
 /// Format a [`Uuid`] as a hyphenated string, like
 /// `67e55044-10b1-426f-9247-bb680e5fe0c8`.
-///
-/// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(transparent)]
 pub struct Hyphenated(Uuid);
 
 /// Format a [`Uuid`] as a simple string, like
 /// `67e5504410b1426f9247bb680e5fe0c8`.
-///
-/// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(transparent)]
 pub struct Simple(Uuid);
 
 /// Format a [`Uuid`] as a URN string, like
 /// `urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8`.
-///
-/// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(transparent)]
 pub struct Urn(Uuid);
 
 /// Format a [`Uuid`] as a braced hyphenated string, like
 /// `{67e55044-10b1-426f-9247-bb680e5fe0c8}`.
-///
-/// [`Uuid`]: ../struct.Uuid.html
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(transparent)]
 pub struct Braced(Uuid);
 
 impl Uuid {
     /// Get a [`Hyphenated`] formatter.
-    ///
-    /// [`Hyphenated`]: adapter/struct.Hyphenated.html
     #[inline]
     pub const fn hyphenated(self) -> Hyphenated {
         Hyphenated(self)
     }
 
     /// Get a borrowed [`Hyphenated`] formatter.
-    ///
-    /// [`Hyphenated`]: adapter/struct.Hyphenated.html
     #[inline]
     pub fn as_hyphenated(&self) -> &Hyphenated {
         // SAFETY: `Uuid` and `Hyphenated` have the same ABI
@@ -112,16 +100,12 @@ impl Uuid {
     }
 
     /// Get a [`Simple`] formatter.
-    ///
-    /// [`Simple`]: adapter/struct.Simple.html
     #[inline]
     pub const fn simple(self) -> Simple {
         Simple(self)
     }
 
     /// Get a borrowed [`Simple`] formatter.
-    ///
-    /// [`Simple`]: adapter/struct.Simple.html
     #[inline]
     pub fn as_simple(&self) -> &Simple {
         // SAFETY: `Uuid` and `Simple` have the same ABI
@@ -129,18 +113,12 @@ impl Uuid {
     }
 
     /// Get a [`Urn`] formatter.
-    ///
-    /// [`Uuid`]: ../struct.Uuid.html
-    /// [`Urn`]: adapter/struct.Urn.html
     #[inline]
     pub const fn urn(self) -> Urn {
         Urn(self)
     }
 
     /// Get a borrowed [`Urn`] formatter.
-    ///
-    /// [`Uuid`]: ../struct.Uuid.html
-    /// [`Urn`]: adapter/struct.Urn.html
     #[inline]
     pub fn as_urn(&self) -> &Urn {
         // SAFETY: `Uuid` and `Urn` have the same ABI
@@ -148,18 +126,12 @@ impl Uuid {
     }
 
     /// Get a [`Braced`] formatter.
-    ///
-    /// [`Uuid`]: ../struct.Uuid.html
-    /// [`Braced`]: adapter/struct.Braced.html
     #[inline]
     pub const fn braced(self) -> Braced {
         Braced(self)
     }
 
     /// Get a borrowed [`Braced`] formatter.
-    ///
-    /// [`Uuid`]: ../struct.Uuid.html
-    /// [`Braced`]: adapter/struct.Braced.html
     #[inline]
     pub fn as_braced(&self) -> &Braced {
         // SAFETY: `Uuid` and `Braced` have the same ABI
