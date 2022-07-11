@@ -29,7 +29,11 @@ impl Uuid {
     /// [`NAMESPACE_URL`]: struct.Uuid.html#associatedconst.NAMESPACE_URL
     /// [`NAMESPACE_X500`]: struct.Uuid.html#associatedconst.NAMESPACE_X500
     pub fn new_v5(namespace: &Uuid, name: &[u8]) -> Uuid {
-        crate::Builder::from_sha1_bytes(crate::sha1::hash(namespace.as_bytes(), name)).into_uuid()
+        crate::Builder::from_sha1_bytes(crate::sha1::hash(
+            namespace.as_bytes(),
+            name,
+        ))
+        .into_uuid()
     }
 }
 
@@ -40,10 +44,7 @@ mod tests {
     #[cfg(target_arch = "wasm32")]
     use wasm_bindgen_test::*;
 
-    use crate::{
-        Variant, Version,
-        std::string::ToString,
-    };
+    use crate::{std::string::ToString, Variant, Version};
 
     static FIXTURE: &'static [(&'static Uuid, &'static str, &'static str)] = &[
         (
