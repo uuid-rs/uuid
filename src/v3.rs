@@ -30,11 +30,7 @@ impl Uuid {
     /// [`NAMESPACE_URL`]: #associatedconstant.NAMESPACE_URL
     /// [`NAMESPACE_X500`]: #associatedconstant.NAMESPACE_X500
     pub fn new_v3(namespace: &Uuid, name: &[u8]) -> Uuid {
-        crate::Builder::from_md5_bytes(crate::md5::hash(
-            namespace.as_bytes(),
-            name,
-        ))
-        .into_uuid()
+        crate::Builder::from_md5_bytes(crate::md5::hash(namespace.as_bytes(), name)).into_uuid()
     }
 }
 

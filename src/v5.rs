@@ -29,11 +29,7 @@ impl Uuid {
     /// [`NAMESPACE_URL`]: struct.Uuid.html#associatedconst.NAMESPACE_URL
     /// [`NAMESPACE_X500`]: struct.Uuid.html#associatedconst.NAMESPACE_X500
     pub fn new_v5(namespace: &Uuid, name: &[u8]) -> Uuid {
-        crate::Builder::from_sha1_bytes(crate::sha1::hash(
-            namespace.as_bytes(),
-            name,
-        ))
-        .into_uuid()
+        crate::Builder::from_sha1_bytes(crate::sha1::hash(namespace.as_bytes(), name)).into_uuid()
     }
 }
 
@@ -132,8 +128,7 @@ mod tests {
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_get_version() {
-        let uuid =
-            Uuid::new_v5(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
+        let uuid = Uuid::new_v5(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
 
         assert_eq!(uuid.get_version(), Some(Version::Sha1));
         assert_eq!(uuid.get_version_num(), 5);

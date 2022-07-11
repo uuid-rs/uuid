@@ -402,26 +402,26 @@ pub struct Uuid(Bytes);
 impl Uuid {
     /// UUID namespace for Domain Name System (DNS).
     pub const NAMESPACE_DNS: Self = Uuid([
-        0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0,
-        0x4f, 0xd4, 0x30, 0xc8,
+        0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30,
+        0xc8,
     ]);
 
     /// UUID namespace for ISO Object Identifiers (OIDs).
     pub const NAMESPACE_OID: Self = Uuid([
-        0x6b, 0xa7, 0xb8, 0x12, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0,
-        0x4f, 0xd4, 0x30, 0xc8,
+        0x6b, 0xa7, 0xb8, 0x12, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30,
+        0xc8,
     ]);
 
     /// UUID namespace for Uniform Resource Locators (URLs).
     pub const NAMESPACE_URL: Self = Uuid([
-        0x6b, 0xa7, 0xb8, 0x11, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0,
-        0x4f, 0xd4, 0x30, 0xc8,
+        0x6b, 0xa7, 0xb8, 0x11, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30,
+        0xc8,
     ]);
 
     /// UUID namespace for X.500 Distinguished Names (DNs).
     pub const NAMESPACE_X500: Self = Uuid([
-        0x6b, 0xa7, 0xb8, 0x14, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0,
-        0x4f, 0xd4, 0x30, 0xc8,
+        0x6b, 0xa7, 0xb8, 0x14, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30,
+        0xc8,
     ]);
 
     /// Returns the variant of the UUID structure.
@@ -620,8 +620,7 @@ impl Uuid {
 
         let d3 = (self.as_bytes()[6] as u16) | (self.as_bytes()[7] as u16) << 8;
 
-        let d4: &[u8; 8] =
-            convert::TryInto::try_into(&self.as_bytes()[8..16]).unwrap();
+        let d4: &[u8; 8] = convert::TryInto::try_into(&self.as_bytes()[8..16]).unwrap();
         (d1, d2, d3, d4)
     }
 
@@ -805,9 +804,9 @@ impl Uuid {
     /// ```
     pub const fn to_bytes_le(&self) -> Bytes {
         [
-            self.0[3], self.0[2], self.0[1], self.0[0], self.0[5], self.0[4],
-            self.0[7], self.0[6], self.0[8], self.0[9], self.0[10], self.0[11],
-            self.0[12], self.0[13], self.0[14], self.0[15],
+            self.0[3], self.0[2], self.0[1], self.0[0], self.0[5], self.0[4], self.0[7], self.0[6],
+            self.0[8], self.0[9], self.0[10], self.0[11], self.0[12], self.0[13], self.0[14],
+            self.0[15],
         ]
     }
 
@@ -891,15 +890,15 @@ mod tests {
 
     pub const fn new() -> Uuid {
         Uuid::from_bytes([
-            0xF9, 0x16, 0x8C, 0x5E, 0xCE, 0xB2, 0x4F, 0xAA, 0xB6, 0xBF, 0x32,
-            0x9B, 0xF3, 0x9F, 0xA1, 0xE4,
+            0xF9, 0x16, 0x8C, 0x5E, 0xCE, 0xB2, 0x4F, 0xAA, 0xB6, 0xBF, 0x32, 0x9B, 0xF3, 0x9F,
+            0xA1, 0xE4,
         ])
     }
 
     pub const fn new2() -> Uuid {
         Uuid::from_bytes([
-            0xF9, 0x16, 0x8C, 0x5E, 0xCE, 0xB2, 0x4F, 0xAB, 0xB6, 0xBF, 0x32,
-            0x9B, 0xF3, 0x9F, 0xA1, 0xE4,
+            0xF9, 0x16, 0x8C, 0x5E, 0xCE, 0xB2, 0x4F, 0xAB, 0xB6, 0xBF, 0x32, 0x9B, 0xF3, 0x9F,
+            0xA1, 0xE4,
         ])
     }
 
@@ -993,9 +992,8 @@ mod tests {
     fn test_nil() {
         let nil = Uuid::nil();
         let not_nil = new();
-        let from_bytes = Uuid::from_bytes([
-            4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87,
-        ]);
+        let from_bytes =
+            Uuid::from_bytes([4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87]);
 
         assert_eq!(from_bytes.get_version(), None);
 
@@ -1031,8 +1029,7 @@ mod tests {
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_get_version_v3() {
-        let uuid =
-            Uuid::new_v3(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
+        let uuid = Uuid::new_v3(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
 
         assert_eq!(uuid.get_version().unwrap(), Version::Md5);
         assert_eq!(uuid.get_version_num(), 3);
@@ -1042,16 +1039,11 @@ mod tests {
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_get_variant() {
         let uuid1 = new();
-        let uuid2 =
-            Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
-        let uuid3 =
-            Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").unwrap();
-        let uuid4 =
-            Uuid::parse_str("936DA01F9ABD4d9dC0C702AF85C822A8").unwrap();
-        let uuid5 =
-            Uuid::parse_str("F9168C5E-CEB2-4faa-D6BF-329BF39FA1E4").unwrap();
-        let uuid6 =
-            Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
+        let uuid2 = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
+        let uuid3 = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").unwrap();
+        let uuid4 = Uuid::parse_str("936DA01F9ABD4d9dC0C702AF85C822A8").unwrap();
+        let uuid5 = Uuid::parse_str("F9168C5E-CEB2-4faa-D6BF-329BF39FA1E4").unwrap();
+        let uuid6 = Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
 
         assert_eq!(uuid1.get_variant(), Variant::RFC4122);
         assert_eq!(uuid2.get_variant(), Variant::RFC4122);
@@ -1350,8 +1342,8 @@ mod tests {
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_from_slice() {
         let b = [
-            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
-            0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
+            0xd7, 0xd8,
         ];
 
         let u = Uuid::from_slice(&b).unwrap();
@@ -1364,8 +1356,8 @@ mod tests {
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_from_bytes() {
         let b = [
-            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
-            0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
+            0xd7, 0xd8,
         ];
 
         let u = Uuid::from_bytes(b);
@@ -1391,8 +1383,8 @@ mod tests {
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_bytes_roundtrip() {
         let b_in: crate::Bytes = [
-            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
-            0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
+            0xd7, 0xd8,
         ];
 
         let u = Uuid::from_slice(&b_in).unwrap();
@@ -1406,8 +1398,8 @@ mod tests {
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_bytes_le_roundtrip() {
         let b = [
-            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3,
-            0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
+            0xa1, 0xa2, 0xa3, 0xa4, 0xb1, 0xb2, 0xc1, 0xc2, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6,
+            0xd7, 0xd8,
         ];
 
         let u1 = Uuid::from_bytes(b);
