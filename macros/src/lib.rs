@@ -23,10 +23,7 @@ pub fn parse_lit(input: TokenStream) -> TokenStream {
     build_uuid(input.clone()).unwrap_or_else(|e| {
         let msg = e.to_string();
         let span = match e {
-            Error::UuidParse(
-                lit,
-                error::Error(error::ErrorKind::Char { character, index }),
-            ) => {
+            Error::UuidParse(lit, error::Error(error::ErrorKind::Char { character, index })) => {
                 let mut bytes = character as u32;
                 let mut width = 0;
                 while bytes != 0 {
@@ -39,9 +36,7 @@ pub fn parse_lit(input: TokenStream) -> TokenStream {
             }
             Error::UuidParse(
                 lit,
-                error::Error(error::ErrorKind::GroupLength {
-                    index, len, ..
-                }),
+                error::Error(error::ErrorKind::GroupLength { index, len, .. }),
             ) => {
                 let mut s = proc_macro2::Literal::string("");
                 s.set_span(lit.span());
@@ -77,8 +72,8 @@ fn build_uuid(input: TokenStream) -> Result<TokenStream, Error> {
         _ => return Err(Error::NonStringLiteral),
     };
 
-    let bytes = parser::try_parse(&str_lit.value())
-        .map_err(|e| Error::UuidParse(str_lit, e.into_err()))?;
+    let bytes =
+        parser::try_parse(&str_lit.value()).map_err(|e| Error::UuidParse(str_lit, e.into_err()))?;
 
     let tokens = bytes
         .iter()

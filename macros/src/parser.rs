@@ -22,10 +22,9 @@ pub const fn try_parse(input: &str) -> Result<[u8; 16], InvalidUuid> {
         // - `UUID` for a regular hyphenated UUID
         (36, s)
         | (38, [b'{', s @ .., b'}'])
-        | (
-            45,
-            [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..],
-        ) => parse_hyphenated(s),
+        | (45, [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..]) => {
+            parse_hyphenated(s)
+        }
         // Any other shaped input is immediately invalid
         _ => Err(()),
     };
