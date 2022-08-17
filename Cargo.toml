@@ -13,7 +13,7 @@ categories = [
 ]
 description = "A library to generate and parse UUIDs."
 documentation = "https://docs.rs/uuid"
-edition = "2018"
+edition = "2021"
 exclude = [
     ".github/**"
 ]
@@ -51,12 +51,13 @@ repository = "uuid-rs/uuid"
 default = ["std"]
 std = []
 macro-diagnostics = ["private_uuid-macro-internal"]
-
-v1 = ["private_atomic"]
+v1 = []
 v3 = ["md5"]
 v4 = ["rng"]
 v5 = ["sha1"]
-
+v6 = []
+v7 = ["rng"]
+v8 = []
 js = ["private_getrandom", "private_getrandom/js"]
 
 rng = ["private_getrandom"]
@@ -64,6 +65,9 @@ fast-rng = ["rng", "private_rand"]
 
 sha1 = ["private_sha1_smol"]
 md5 = ["private_md-5"]
+
+[dependencies]
+num-traits = "0.2.15"
 
 # Public: Used in trait impls on `Uuid`
 [dependencies.serde]
@@ -84,7 +88,7 @@ version = "1"
 # Public (unstable): Used in `zerocopy` derive
 # Unstable: also need RUSTFLAGS="--cfg uuid_unstable" to work
 # This feature may break between releases, or be removed entirely before
-# stabilization. 
+# stabilization.
 # See: https://github.com/uuid-rs/uuid/issues/588
 [dependencies.zerocopy]
 optional = true
@@ -132,14 +136,6 @@ package = "uuid-macro-internal"
 version = "1.1.2"
 path = "macros"
 optional = true
-
-# Private
-# Don't depend on this optional feature directly: it may change at any time
-[dependencies.private_atomic]
-package = "atomic"
-default-features = false
-optional = true
-version = "0.5"
 
 [dev-dependencies.bincode]
 version = "1.0"

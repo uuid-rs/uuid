@@ -6,17 +6,13 @@
 use crate::timestamp::{ClockSequence, Timestamp};
 use crate::Uuid;
 
-
-/// The number of 100 ns ticks between the UUID epoch
-/// `1582-10-15 00:00:00` and the Unix epoch `1970-01-01 00:00:00`.
-const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
-
 /// The Context implementation is specific to Uuids v1 and v6
 pub use crate::timestamp::context::Context;
 
 impl Uuid {
-    /// Create a new UUID (version 1) using a time value + sequence +
+    /// Create a new UUID (version 6) using a time value + sequence +
     /// *NodeId*.
+    /// This is similar to UUIDv1, except that it is lexographically sortable by timestamp.
     ///
     /// When generating [`Timestamp`]s using a [`ClockSequence`], this function
     /// is only guaranteed to produce unique values if the following conditions
@@ -32,7 +28,7 @@ impl Uuid {
     ///
     /// The NodeID must be exactly 6 bytes long.
     ///
-    /// Note that usage of this method requires the `v1` feature of this crate
+    /// Note that usage of this method requires the `v6` feature of this crate
     /// to be enabled.
     ///
     /// # Examples
@@ -42,61 +38,54 @@ impl Uuid {
     /// is seeded with a random value:
     ///
     /// ```rust
-    /// # use uuid::{Timestamp, Context};
-    /// # use uuid::Uuid;
+    /// # use uuid::{Uuid, Timestamp, Context};
     /// # fn random_seed() -> u16 { 42 }
     /// let context = Context::new(random_seed());
     /// let ts = Timestamp::from_unix(1497624119, 1234);
     ///
-    /// let uuid = Uuid::new_v1(ts, &context, &[1, 2, 3, 4, 5, 6]);
+    /// let uuid = Uuid::new_v6(ts, &context, &[1, 2, 3, 4, 5, 6]);
     ///
     /// assert_eq!(
     ///     uuid.hyphenated().to_string(),
-    ///     "f3b4958c-52a1-11e7-802a-010203040506"
+    ///     "1e752a1f-3b49-658c-802a-010203040506"
     /// );
     /// ```
     ///
     /// The timestamp can also be created manually as per RFC4122:
     ///
     /// ```
-    /// # use uuid::{Timestamp, Context};
-    /// # use uuid::Uuid;
+    /// # use uuid::{Uuid, Timestamp, Context};
     /// let context = Context::new(42);
-    /// let ts = Timestamp::from_rfc4122(14976234442241191232);
+    /// let ts = Timestamp::from_rfc4122(14976241191231231313);
     ///
-    /// let uuid = Uuid::new_v1(ts, &context, &[1, 2, 3, 4, 5, 6]);
+    /// let uuid = Uuid::new_v6(ts, &context, &[1, 2, 3, 4, 5, 6]);
     ///
     /// assert_eq!(
     ///     uuid.hyphenated().to_string(),
-    ///     "b2c1ad40-45e0-1fd6-802a-010203040506"
+    ///     "fd64c041-1e91-6551-802a-010203040506"
     /// );
     /// ```
+    /// The timestamp can also be created automatically from the current SystemTime
     ///
-    /// The timestamp can also just use the current SystemTime
-    ///
-    /// ```rust
-    /// # use uuid::{Timestamp, Context};
-    /// # use uuid::Uuid;
+    /// # use uuid::{Uuid, Timestamp, Context};
     /// let context = Context::new(42);
-    /// let ts = Timestamp::now();
+    /// let ts = Timestamp::from_rfc4122(14976241191231231313);
     ///
-    /// let _uuid = Uuid::new_v1(ts, &context, &[1, 2, 3, 4, 5, 6]);
-    /// ```
+    /// let uuid = Uuid::new_v6(ts, &context, &[1, 2, 3, 4, 5, 6]);
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
     /// [`ClockSequence`]: v1/trait.ClockSequence.html
     /// [`Context`]: v1/struct.Context.html
-    pub fn new_v1(
+    pub fn new_v6(
         ts: Timestamp,
-        ctx: &impl ClockSequence<Output = u16>,
+        context: impl ClockSequence<Output = u16>,
         node_id: &[u8; 6],
     ) -> Self {
         let ticks = ts.to_rfc4122();
-        let counter = ctx.next(&ts);
-        let time_low = (ticks & 0xFFFF_FFFF) as u32;
-        let time_mid = ((ticks >> 32) & 0xFFFF) as u16;
-        let time_high_and_version =
-            (((ticks >> 48) & 0x0FFF) as u16) | (1 << 12);
+        let counter = context.next(&ts);
+        let time_high = ((ticks >> 28) & 0xFFFF_FFFF) as u32;
+        let time_mid = ((ticks >> 12) & 0xFFFF) as u16;
+        let time_low_and_version = ((ticks & 0x0FFF) as u16) | (0x6 << 12);
 
         let mut d4 = [0; 8];
 
@@ -109,7 +98,7 @@ impl Uuid {
         d4[6] = node_id[4];
         d4[7] = node_id[5];
 
-        Uuid::from_fields(time_low, time_mid, time_high_and_version, &d4)
+        Uuid::from_fields(time_high, time_mid, time_low_and_version, &d4)
     }
 }
 
@@ -124,23 +113,23 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_new_v1() {
+    fn test_new_v6() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
         let node = [1, 2, 3, 4, 5, 6];
         let context = Context::new(0);
 
-        let uuid = Uuid::new_v1(
+        let uuid = Uuid::new_v6(
             Timestamp::from_unix(time, time_fraction),
             &context,
             &node,
         );
 
-        assert_eq!(uuid.get_version(), Some(Version::Mac));
+        assert_eq!(uuid.get_version(), Some(Version::SortMac));
         assert_eq!(uuid.get_variant(), Variant::RFC4122);
         assert_eq!(
             uuid.hyphenated().to_string(),
-            "20616934-4ba2-11e7-8000-010203040506"
+            "1e74ba22-0616-6934-8000-010203040506"
         );
 
         let ts = uuid.get_timestamp().unwrap().0.to_rfc4122();
@@ -148,7 +137,8 @@ mod tests {
         assert_eq!(ts - 0x01B2_1DD2_1381_4000, 14_968_545_358_129_460);
 
         // Ensure parsing the same UUID produces the same timestamp
-        let parsed = Uuid::parse_str("20616934-4ba2-11e7-8000-010203040506").unwrap();
+        let parsed =
+            Uuid::parse_str("1e74ba22-0616-6934-8000-010203040506").unwrap();
 
         assert_eq!(
             uuid.get_timestamp().unwrap(),
@@ -158,7 +148,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_new_v1_context() {
+    fn test_new_v6_context() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
         let node = [1, 2, 3, 4, 5, 6];
@@ -166,7 +156,7 @@ mod tests {
         // This context will wrap
         let context = Context::new((u16::MAX >> 2) - 1);
 
-        let uuid1 = Uuid::new_v1(
+        let uuid1 = Uuid::new_v6(
             Timestamp::from_unix(time, time_fraction),
             &context,
             &node,
@@ -174,7 +164,7 @@ mod tests {
 
         let time: u64 = 1_496_854_536;
 
-        let uuid2 = Uuid::new_v1(
+        let uuid2 = Uuid::new_v6(
             Timestamp::from_unix(time, time_fraction),
             &context,
             &node,
@@ -185,12 +175,12 @@ mod tests {
 
         let time = 1_496_854_535;
 
-        let uuid3 = Uuid::new_v1(
+        let uuid3 = Uuid::new_v6(
             Timestamp::from_unix(time, time_fraction),
             &context,
             &node,
         );
-        let uuid4 = Uuid::new_v1(
+        let uuid4 = Uuid::new_v6(
             Timestamp::from_unix(time, time_fraction),
             &context,
             &node,

@@ -34,8 +34,8 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::{Variant, Version};
+    use std::string::ToString;
 
     #[cfg(target_arch = "wasm32")]
     use wasm_bindgen_test::*;

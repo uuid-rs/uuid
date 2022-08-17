@@ -1,4 +1,4 @@
-#[cfg(feature = "v4")]
+#[cfg(any(feature = "v4", feature = "v7"))]
 pub(crate) fn bytes() -> [u8; 16] {
     #[cfg(not(feature = "fast-rng"))]
     {
@@ -18,7 +18,7 @@ pub(crate) fn bytes() -> [u8; 16] {
     }
 }
 
-#[cfg(feature = "v1")]
+#[cfg(any(feature = "v1", feature = "v7"))]
 pub(crate) fn u16() -> u16 {
     #[cfg(not(feature = "fast-rng"))]
     {

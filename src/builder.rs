@@ -40,7 +40,7 @@ use crate::{error::*, Bytes, Uuid, Variant, Version};
 /// ```
 #[allow(missing_copy_implementations)]
 #[derive(Debug)]
-pub struct Builder(Uuid);
+pub struct Builder(pub Uuid);
 
 impl Uuid {
     /// The 'nil UUID'.
@@ -65,6 +65,30 @@ impl Uuid {
     /// ```
     pub const fn nil() -> Self {
         Uuid::from_bytes([0; 16])
+    }
+
+    /// The 'max UUID'.
+    ///
+    /// The max UUID is a special form of UUID that is specified to have all
+    /// 128 bits set to one, as defined in [IETF RFC 4122 Update Section 5.4][Draft RFC].
+    ///
+    /// [Draft RFC]: https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#page-12
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use uuid::Uuid;
+    /// let uuid = Uuid::max();
+    ///
+    /// assert_eq!(
+    ///     "ffffffff-ffff-ffff-ffff-ffffffffffff",
+    ///     uuid.hyphenated().to_string(),
+    /// );
+    /// ```
+    pub const fn max() -> Self {
+        Uuid::from_bytes([0xFF; 16])
     }
 
     /// Creates a UUID from four field values.

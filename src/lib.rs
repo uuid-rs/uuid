@@ -220,9 +220,15 @@ use zerocopy::{AsBytes, FromBytes, Unaligned};
 
 mod builder;
 mod error;
-mod parser;
-
 pub mod fmt;
+mod parser;
+/// contains the `Timestamp` struct and `ClockSequence` trait
+pub mod timestamp;
+
+pub use timestamp::{ClockSequence, Timestamp};
+
+#[cfg(any(feature = "v1", feature = "v3"))]
+pub use timestamp::context::Context;
 
 #[cfg(feature = "v1")]
 pub mod v1;
@@ -232,6 +238,12 @@ mod v3;
 mod v4;
 #[cfg(feature = "v5")]
 mod v5;
+#[cfg(feature = "v6")]
+mod v6;
+#[cfg(feature = "v7")]
+mod v7;
+#[cfg(feature = "v8")]
+mod v8;
 
 #[cfg(feature = "md5")]
 mod md5;
@@ -280,6 +292,12 @@ pub enum Version {
     Random,
     /// Version 5: SHA-1 hash.
     Sha1,
+    /// Version 6: Sortable MAC/Node-ID
+    SortMac,
+    /// Version 7: Timestamp + Random
+    SortRand,
+    /// Version 8: Custom
+    Custom,
 }
 
 /// The reserved variants of UUIDs.
@@ -520,6 +538,9 @@ impl Uuid {
             3 => Some(Version::Md5),
             4 => Some(Version::Random),
             5 => Some(Version::Sha1),
+            6 => Some(Version::SortMac),
+            7 => Some(Version::SortRand),
+            8 => Some(Version::Custom),
             _ => None,
         }
     }
@@ -842,6 +863,63 @@ impl Uuid {
     /// ```
     pub const fn encode_buffer() -> [u8; fmt::Urn::LENGTH] {
         [0; fmt::Urn::LENGTH]
+    }
+
+    /// If the UUID is the correct version (v1, v6, or v7) this will return
+    /// the timestamp and counter portion parsed from a V1 UUID.
+    ///
+    /// Returns `None` if the supplied UUID is not V1.
+    ///
+    /// The V1 timestamp format defined in RFC4122 specifies a 60-bit
+    /// integer representing the number of 100-nanosecond intervals
+    /// since 00:00:00.00, 15 Oct 1582.
+    ///
+    /// [`Timestamp`] offers several options for converting the raw RFC4122
+    /// value into more commonly-used formats, such as a unix timestamp.
+    ///
+    /// [`Timestamp`]: v1/struct.Timestamp.html
+    pub const fn get_timestamp(
+        &self,
+    ) -> Option<(crate::timestamp::Timestamp, u16)> {
+        match self.get_version() {
+            Some(Version::Mac) => {
+                let ticks: u64 = ((self.as_bytes()[6] & 0x0F) as u64) << 56
+                    | ((self.as_bytes()[7]) as u64) << 48
+                    | ((self.as_bytes()[4]) as u64) << 40
+                    | ((self.as_bytes()[5]) as u64) << 32
+                    | ((self.as_bytes()[0]) as u64) << 24
+                    | ((self.as_bytes()[1]) as u64) << 16
+                    | ((self.as_bytes()[2]) as u64) << 8
+                    | (self.as_bytes()[3] as u64);
+
+                let counter: u16 = ((self.as_bytes()[8] & 0x3F) as u16) << 8
+                    | (self.as_bytes()[9] as u16);
+
+                Some((
+                    crate::timestamp::Timestamp::from_rfc4122(ticks),
+                    counter,
+                ))
+            }
+            Some(Version::SortMac) => {
+                let ticks: u64 = ((self.as_bytes()[0]) as u64) << 52
+                    | ((self.as_bytes()[1]) as u64) << 44
+                    | ((self.as_bytes()[2]) as u64) << 36
+                    | ((self.as_bytes()[3]) as u64) << 28
+                    | ((self.as_bytes()[4]) as u64) << 20
+                    | ((self.as_bytes()[5]) as u64) << 12
+                    | ((self.as_bytes()[6] & 0xF) as u64) << 8
+                    | (self.as_bytes()[7] as u64);
+
+                let counter: u16 = ((self.as_bytes()[8] & 0x3F) as u16) << 8
+                    | (self.as_bytes()[9] as u16);
+
+                Some((
+                    crate::timestamp::Timestamp::from_rfc4122(ticks),
+                    counter,
+                ))
+            }
+            _ => None,
+        }
     }
 }
 
