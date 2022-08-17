@@ -66,9 +66,6 @@ fast-rng = ["rng", "private_rand"]
 sha1 = ["private_sha1_smol"]
 md5 = ["private_md-5"]
 
-[dependencies]
-num-traits = "0.2.15"
-
 # Public: Used in trait impls on `Uuid`
 [dependencies.serde]
 default-features = false
