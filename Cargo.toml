@@ -51,11 +51,11 @@ repository = "uuid-rs/uuid"
 default = ["std"]
 std = []
 macro-diagnostics = ["private_uuid-macro-internal"]
-v1 = []
+v1 = ["private_atomic"]
 v3 = ["md5"]
 v4 = ["rng"]
 v5 = ["sha1"]
-v6 = []
+v6 = ["private_atomic"]
 v7 = ["rng"]
 v8 = []
 js = ["private_getrandom", "private_getrandom/js"]
@@ -133,6 +133,12 @@ package = "uuid-macro-internal"
 version = "1.1.2"
 path = "macros"
 optional = true
+
+[dependencies.private_atomic]
+package = "atomic"
+default-features = false
+optional = true
+version = "0.5"
 
 [dev-dependencies.bincode]
 version = "1.0"

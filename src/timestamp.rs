@@ -112,14 +112,14 @@ impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T {
 }
 
 /// For features v1 and v1, constructs a `Context` struct which implements the `ClockSequence` trait
-#[cfg(any(feature = "v1", feature = "v6", feature = "v7"))]
+#[cfg(any(feature = "v1", feature = "v6"))]
 pub mod context {
-    use std::sync::atomic::{AtomicU16, Ordering};
+    use private_atomic::{Atomic, Ordering};
     /// A thread-safe, stateful context for the v1 generator to help ensure
     /// process-wide uniqueness.
     #[derive(Debug)]
     pub struct Context {
-        count: AtomicU16,
+        count: Atomic<u16>,
     }
 
     impl Context {
@@ -133,7 +133,7 @@ pub mod context {
         /// process.
         pub const fn new(count: u16) -> Self {
             Self {
-                count: AtomicU16::new(count),
+                count: Atomic::<u16>::new(count),
             }
         }
 
@@ -151,7 +151,7 @@ pub mod context {
         #[cfg(feature = "rng")]
         pub fn new_random() -> Self {
             Self {
-                count: AtomicU16::new(crate::rng::u16()),
+                count: Atomic::<u16>::new(crate::rng::u16()),
             }
         }
     }
