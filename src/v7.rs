@@ -6,6 +6,7 @@
 use crate::rng::{bytes, u16};
 use crate::timestamp::Timestamp;
 use crate::{Uuid, Version};
+use core::convert::TryInto;
 
 impl Uuid {
     /// Create a new UUID (version 7) using a time value + random number

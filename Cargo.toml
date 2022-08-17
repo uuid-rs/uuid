@@ -13,7 +13,7 @@ categories = [
 ]
 description = "A library to generate and parse UUIDs."
 documentation = "https://docs.rs/uuid"
-edition = "2021"
+edition = "2018"
 exclude = [
     ".github/**"
 ]
