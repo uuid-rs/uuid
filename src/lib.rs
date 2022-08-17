@@ -227,7 +227,7 @@ pub mod timestamp;
 
 pub use timestamp::{ClockSequence, Timestamp};
 
-#[cfg(any(feature = "v1", feature = "v3"))]
+#[cfg(any(feature = "v1", feature = "v6"))]
 pub use timestamp::context::Context;
 
 #[cfg(feature = "v1")]
