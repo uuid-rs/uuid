@@ -18,9 +18,6 @@ impl Uuid {
     ///
     /// assert_eq!(Some(Version::Custom), uuid.get_version());
     /// ```
-    ///
-    /// [`getrandom`]: https://crates.io/crates/getrandom
-    /// [from_random_bytes]: struct.Builder.html#method.from_random_bytes
     pub fn new_v8(buf: [u8; 16]) -> Uuid {
         Builder(Uuid::from_bytes(buf))
             .with_variant(Variant::RFC4122)
@@ -32,7 +29,6 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::rng::bytes;
     use std::string::ToString;
 
     #[cfg(target_arch = "wasm32")]
@@ -41,10 +37,17 @@ mod tests {
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_new() {
-        let buf = bytes();
+        let buf: [u8; 16] = [
+            0xf, 0xe, 0xd, 0xc, 0xb, 0xa, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3,
+            0x2, 0x1, 0x0,
+        ];
         let uuid = Uuid::new_v8(buf);
         assert_eq!(uuid.get_version(), Some(Version::Custom));
         assert_eq!(uuid.get_variant(), Variant::RFC4122);
-        assert_eq!(uuid.get_version_num(), 8)
+        assert_eq!(uuid.get_version_num(), 8);
+        assert_eq!(
+            uuid.hyphenated().to_string(),
+            "0f0e0d0c-0b0a-8908-8706-050403020100"
+        );
     }
 }
