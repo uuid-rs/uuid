@@ -33,7 +33,7 @@ impl Timestamp {
     /// `u32` fields representing the seconds, and "subsecond" or fractional
     /// nanoseconds elapsed since the timestamp's second began,
     /// respectively.
-    pub fn from_unix(seconds: u64, nanos: u32) -> Self {
+    pub const fn from_unix(seconds: u64, nanos: u32) -> Self {
         Timestamp { seconds, nanos }
     }
 

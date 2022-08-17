@@ -883,17 +883,18 @@ impl Uuid {
     ) -> Option<(crate::timestamp::Timestamp, u16)> {
         match self.get_version() {
             Some(Version::Mac) => {
-                let ticks: u64 = ((self.as_bytes()[6] & 0x0F) as u64) << 56
-                    | ((self.as_bytes()[7]) as u64) << 48
-                    | ((self.as_bytes()[4]) as u64) << 40
-                    | ((self.as_bytes()[5]) as u64) << 32
-                    | ((self.as_bytes()[0]) as u64) << 24
-                    | ((self.as_bytes()[1]) as u64) << 16
-                    | ((self.as_bytes()[2]) as u64) << 8
-                    | (self.as_bytes()[3] as u64);
+                let bytes = self.as_bytes();
+                let ticks: u64 = ((bytes[6] & 0x0F) as u64) << 56
+                    | (bytes[7] as u64) << 48
+                    | (bytes[4] as u64) << 40
+                    | (bytes[5] as u64) << 32
+                    | (bytes[0] as u64) << 24
+                    | (bytes[1] as u64) << 16
+                    | (bytes[2] as u64) << 8
+                    | (bytes[3] as u64);
 
-                let counter: u16 = ((self.as_bytes()[8] & 0x3F) as u16) << 8
-                    | (self.as_bytes()[9] as u16);
+                let counter: u16 =
+                    ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
 
                 Some((
                     crate::timestamp::Timestamp::from_rfc4122(ticks),
@@ -901,21 +902,37 @@ impl Uuid {
                 ))
             }
             Some(Version::SortMac) => {
+                let bytes = self.as_bytes();
                 let ticks: u64 = ((self.as_bytes()[0]) as u64) << 52
-                    | ((self.as_bytes()[1]) as u64) << 44
-                    | ((self.as_bytes()[2]) as u64) << 36
-                    | ((self.as_bytes()[3]) as u64) << 28
-                    | ((self.as_bytes()[4]) as u64) << 20
-                    | ((self.as_bytes()[5]) as u64) << 12
-                    | ((self.as_bytes()[6] & 0xF) as u64) << 8
-                    | (self.as_bytes()[7] as u64);
+                    | (bytes[1] as u64) << 44
+                    | (bytes[2] as u64) << 36
+                    | (bytes[3] as u64) << 28
+                    | (bytes[4] as u64) << 20
+                    | (bytes[5] as u64) << 12
+                    | ((bytes[6] & 0xF) as u64) << 8
+                    | (bytes[7] as u64);
 
-                let counter: u16 = ((self.as_bytes()[8] & 0x3F) as u16) << 8
-                    | (self.as_bytes()[9] as u16);
+                let counter: u16 =
+                    ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
 
                 Some((
                     crate::timestamp::Timestamp::from_rfc4122(ticks),
                     counter,
+                ))
+            }
+            Some(Version::SortRand) => {
+                let bytes = self.as_bytes();
+                let millis: u64 = (bytes[0] as u64) << 40
+                    | (bytes[1] as u64) << 32
+                    | (bytes[2] as u64) << 24
+                    | (bytes[3] as u64) << 16
+                    | (bytes[4] as u64) << 8
+                    | (bytes[5] as u64);
+                let seconds = millis / 1000;
+                let nanos = ((millis % 1000) * 1_000_000) as u32;
+                Some((
+                    crate::timestamp::Timestamp::from_unix(seconds, nanos),
+                    0,
                 ))
             }
             _ => None,
