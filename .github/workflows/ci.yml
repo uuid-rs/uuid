@@ -66,10 +66,10 @@ jobs:
       run: cargo test --all-features --examples
 
     - name: Each version feature
-      run: cargo hack test --each-feature --optional-deps $STABLE_DEP_FEATURES
+      run: cargo hack test --lib --each-feature --optional-deps $STABLE_DEP_FEATURES
     
     - name: All version features
-      run: cargo hack test --features "$VERSION_FEATURES" --each-feature --optional-deps "$STABLE_DEP_FEATURES"
+      run: cargo hack test --lib --features "$VERSION_FEATURES" --each-feature --optional-deps "$STABLE_DEP_FEATURES"
 
   msrv:
     name: "Tests / MSRV / OS: ${{ matrix.os }}"
