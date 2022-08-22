@@ -157,7 +157,7 @@
 //!
 //! ```
 //! # use uuid::Uuid;
-//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! # fn main() -> Result<(), uuid::Error> {
 //! let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
 //!
 //! println!("{}", my_uuid.urn());
@@ -308,7 +308,7 @@ pub enum Variant {
 ///
 /// ```
 /// # use uuid::Uuid;
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), uuid::Error> {
 /// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
 ///
 /// println!("{}", my_uuid.urn());
@@ -345,7 +345,7 @@ pub enum Variant {
 ///
 /// ```
 /// # use uuid::Uuid;
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), uuid::Error> {
 /// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
 ///
 /// assert_eq!(
@@ -360,7 +360,7 @@ pub enum Variant {
 ///
 /// ```
 /// # use uuid::Uuid;
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), uuid::Error> {
 /// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
 ///
 /// assert_eq!(
@@ -436,7 +436,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::{Uuid, Variant};
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
     ///
     /// assert_eq!(Variant::RFC4122, my_uuid.get_variant());
@@ -471,7 +471,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::Uuid;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
     ///
     /// assert_eq!(3, my_uuid.get_version_num());
@@ -501,7 +501,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::{Uuid, Version};
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
     ///
     /// assert_eq!(Some(Version::Md5), my_uuid.get_version());
@@ -548,7 +548,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::Uuid;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let uuid = Uuid::nil();
     ///
     /// assert_eq!(uuid.as_fields(), (0, 0, 0, &[0u8; 8]));
@@ -595,7 +595,7 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     ///
     /// assert_eq!(
@@ -632,7 +632,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::Uuid;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     ///
     /// assert_eq!(
@@ -676,7 +676,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::Uuid;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     ///
     /// assert_eq!(
@@ -715,7 +715,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::Uuid;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     /// assert_eq!(
     ///     uuid.as_u64_pair(),
@@ -789,7 +789,7 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     ///
     /// assert_eq!(
