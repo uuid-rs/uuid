@@ -81,6 +81,11 @@ version = "2"
 optional = true
 version = "1"
 
+# Public: Used in trait impls on `Uuid`
+[dependencies.defmt]
+optional = true
+version = "0.3"
+
 # Public (unstable): Used in `zerocopy` derive
 # Unstable: also need RUSTFLAGS="--cfg uuid_unstable" to work
 # This feature may break between releases, or be removed entirely before

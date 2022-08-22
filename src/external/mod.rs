@@ -4,3 +4,5 @@ pub(crate) mod arbitrary_support;
 pub(crate) mod serde_support;
 #[cfg(feature = "slog")]
 pub(crate) mod slog_support;
+#[cfg(feature = "defmt")]
+pub(crate) mod defmt_support;
