@@ -20,12 +20,7 @@ fn guid_to_uuid() {
         Data4: [0x86, 0x47, 0x9d, 0xc5, 0x4e, 0x1e, 0xe1, 0xe8],
     };
 
-    let uuid = Uuid::from_fields(
-        guid_in.Data1,
-        guid_in.Data2,
-        guid_in.Data3,
-        &guid_in.Data4,
-    );
+    let uuid = Uuid::from_fields(guid_in.Data1, guid_in.Data2, guid_in.Data3, &guid_in.Data4);
 
     let guid_out = {
         let fields = uuid.as_fields();
@@ -66,12 +61,7 @@ fn guid_to_uuid_le_encoded() {
         Data4: [0x86, 0x47, 0x9d, 0xc5, 0x4e, 0x1e, 0xe1, 0xe8],
     };
 
-    let uuid = Uuid::from_fields_le(
-        guid_in.Data1,
-        guid_in.Data2,
-        guid_in.Data3,
-        &guid_in.Data4,
-    );
+    let uuid = Uuid::from_fields_le(guid_in.Data1, guid_in.Data2, guid_in.Data3, &guid_in.Data4);
 
     let guid_out = {
         let fields = uuid.to_fields_le();
@@ -107,8 +97,7 @@ fn uuid_from_cocreateguid() {
         CoCreateGuid(&mut guid as *mut _);
     }
 
-    let uuid =
-        Uuid::from_fields(guid.Data1, guid.Data2, guid.Data3, &guid.Data4);
+    let uuid = Uuid::from_fields(guid.Data1, guid.Data2, guid.Data3, &guid.Data4);
 
     assert_eq!(Variant::RFC4122, uuid.get_variant());
     assert_eq!(Some(Version::Random), uuid.get_version());

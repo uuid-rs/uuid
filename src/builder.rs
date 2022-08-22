@@ -131,12 +131,7 @@ impl Uuid {
     ///     uuid.hyphenated().to_string(),
     /// );
     /// ```
-    pub const fn from_fields_le(
-        d1: u32,
-        d2: u16,
-        d3: u16,
-        d4: &[u8; 8],
-    ) -> Uuid {
+    pub const fn from_fields_le(d1: u32, d2: u16, d3: u16, d4: &[u8; 8]) -> Uuid {
         Uuid::from_bytes([
             d1 as u8,
             (d1 >> 8) as u8,
@@ -415,8 +410,8 @@ impl Uuid {
     /// ```
     pub const fn from_bytes_le(b: Bytes) -> Uuid {
         Uuid([
-            b[3], b[2], b[1], b[0], b[5], b[4], b[7], b[6], b[8], b[9], b[10],
-            b[11], b[12], b[13], b[14], b[15],
+            b[3], b[2], b[1], b[0], b[5], b[4], b[7], b[6], b[8], b[9], b[10], b[11], b[12], b[13],
+            b[14], b[15],
         ])
     }
 
@@ -670,12 +665,7 @@ impl Builder {
     ///     "a4a3a2a1-b2b1-c2c1-d1d2-d3d4d5d6d7d8"
     /// );
     /// ```
-    pub const fn from_fields_le(
-        d1: u32,
-        d2: u16,
-        d3: u16,
-        d4: &[u8; 8],
-    ) -> Self {
+    pub const fn from_fields_le(d1: u32, d2: u16, d3: u16, d4: &[u8; 8]) -> Self {
         Builder(Uuid::from_fields_le(d1, d2, d3, d4))
     }
 
