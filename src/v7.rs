@@ -50,6 +50,9 @@ impl Uuid {
     }
 }
 
+/// Dummy struct and ClockSequence implementation to ease the construction of v7
+/// using a Timestamp
+#[derive(Debug)]
 pub struct NullSequence {}
 
 impl super::ClockSequence for NullSequence {
@@ -73,11 +76,7 @@ mod tests {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
 
-        let uuid = Uuid::new_v7(Timestamp::from_unix(
-            NullSequence {},
-            time,
-            time_fraction,
-        ));
+        let uuid = Uuid::new_v7(Timestamp::from_unix(NullSequence {}, time, time_fraction));
         let uustr = uuid.hyphenated().to_string();
 
         assert_eq!(uuid.get_version(), Some(Version::SortRand));

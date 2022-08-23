@@ -241,7 +241,7 @@ mod v5;
 #[cfg(feature = "v6")]
 mod v6;
 #[cfg(feature = "v7")]
-mod v7;
+pub mod v7;
 #[cfg(feature = "v8")]
 mod v8;
 
@@ -891,8 +891,7 @@ impl Uuid {
                     | (bytes[2] as u64) << 8
                     | (bytes[3] as u64);
 
-                let counter: u16 =
-                    ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
+                let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
 
                 Some(crate::timestamp::Timestamp::from_rfc4122(ticks, counter))
             }
@@ -907,8 +906,7 @@ impl Uuid {
                     | ((bytes[6] & 0xF) as u64) << 8
                     | (bytes[7] as u64);
 
-                let counter: u16 =
-                    ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
+                let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
 
                 Some(crate::timestamp::Timestamp::from_rfc4122(ticks, counter))
             }

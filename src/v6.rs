@@ -54,9 +54,10 @@ impl Uuid {
     /// The timestamp can also be created manually as per RFC4122:
     ///
     /// ```
-    /// # use uuid::{Uuid, Timestamp, Context};
+    /// # use uuid::{Uuid, Timestamp, Context, ClockSequence};
+    /// # fn random_seed() -> u16 { 42 }
     /// let context = Context::new(random_seed());
-    /// let ts = Timestamp::from_rfc4122(14976241191231231313, context.generate_sequence() );
+    /// let ts = Timestamp::from_rfc4122(14976241191231231313, context.generate_sequence(0, 0) );
     ///
     /// let uuid = Uuid::new_v6(ts, &[1, 2, 3, 4, 5, 6]);
     ///
@@ -114,10 +115,7 @@ mod tests {
         let node = [1, 2, 3, 4, 5, 6];
         let context = Context::new(0);
 
-        let uuid = Uuid::new_v6(
-            Timestamp::from_unix(context, time, time_fraction),
-            &node,
-        );
+        let uuid = Uuid::new_v6(Timestamp::from_unix(context, time, time_fraction), &node);
 
         assert_eq!(uuid.get_version(), Some(Version::SortMac));
         assert_eq!(uuid.get_variant(), Variant::RFC4122);
@@ -131,8 +129,7 @@ mod tests {
         assert_eq!(ts.0 - 0x01B2_1DD2_1381_4000, 14_968_545_358_129_460);
 
         // Ensure parsing the same UUID produces the same timestamp
-        let parsed =
-            Uuid::parse_str("1e74ba22-0616-6934-8000-010203040506").unwrap();
+        let parsed = Uuid::parse_str("1e74ba22-0616-6934-8000-010203040506").unwrap();
 
         assert_eq!(
             uuid.get_timestamp().unwrap(),
@@ -150,31 +147,19 @@ mod tests {
         // This context will wrap
         let context = Context::new((u16::MAX >> 2) - 1);
 
-        let uuid1 = Uuid::new_v6(
-            Timestamp::from_unix(&context, time, time_fraction),
-            &node,
-        );
+        let uuid1 = Uuid::new_v6(Timestamp::from_unix(&context, time, time_fraction), &node);
 
         let time: u64 = 1_496_854_536;
 
-        let uuid2 = Uuid::new_v6(
-            Timestamp::from_unix(&context, time, time_fraction),
-            &node,
-        );
+        let uuid2 = Uuid::new_v6(Timestamp::from_unix(&context, time, time_fraction), &node);
 
         assert_eq!(uuid1.get_timestamp().unwrap().to_rfc4122().1, 16382);
         assert_eq!(uuid2.get_timestamp().unwrap().to_rfc4122().1, 0);
 
         let time = 1_496_854_535;
 
-        let uuid3 = Uuid::new_v6(
-            Timestamp::from_unix(&context, time, time_fraction),
-            &node,
-        );
-        let uuid4 = Uuid::new_v6(
-            Timestamp::from_unix(&context, time, time_fraction),
-            &node,
-        );
+        let uuid3 = Uuid::new_v6(Timestamp::from_unix(&context, time, time_fraction), &node);
+        let uuid4 = Uuid::new_v6(Timestamp::from_unix(&context, time, time_fraction), &node);
 
         assert_eq!(uuid3.get_timestamp().unwrap().counter, 1);
         assert_eq!(uuid4.get_timestamp().unwrap().counter, 2);

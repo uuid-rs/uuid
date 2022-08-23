@@ -79,6 +79,9 @@ impl Timestamp {
             nanos: dur.subsec_nanos(),
         }
     }
+
+    /// Construct a `Timestamp` from the current time of day
+    /// according to Rust's SystemTime
     #[cfg(all(feature = "std", any(feature = "v1", feature = "v6")))]
     pub fn now(context: impl ClockSequence<Output = u16>) -> Self {
         let dur = std::time::SystemTime::UNIX_EPOCH

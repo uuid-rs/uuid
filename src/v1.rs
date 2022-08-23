@@ -6,7 +6,6 @@
 use crate::timestamp::Timestamp;
 use crate::Uuid;
 
-
 /// The number of 100 ns ticks between the UUID epoch
 /// `1582-10-15 00:00:00` and the Unix epoch `1970-01-01 00:00:00`.
 const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
@@ -46,9 +45,9 @@ impl Uuid {
     /// # use uuid::Uuid;
     /// # fn random_seed() -> u16 { 42 }
     /// let context = Context::new(random_seed());
-    /// let ts = Timestamp::from_unix(1497624119, 1234);
+    /// let ts = Timestamp::from_unix(&context, 1497624119, 1234);
     ///
-    /// let uuid = Uuid::new_v1(ts, &context, &[1, 2, 3, 4, 5, 6]);
+    /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
     ///
     /// assert_eq!(
     ///     uuid.hyphenated().to_string(),
@@ -59,12 +58,11 @@ impl Uuid {
     /// The timestamp can also be created manually as per RFC4122:
     ///
     /// ```
-    /// # use uuid::{Timestamp, Context};
-    /// # use uuid::Uuid;
+    /// # use uuid::{Uuid, Timestamp, Context, ClockSequence};
     /// let context = Context::new(42);
-    /// let ts = Timestamp::from_rfc4122(14976234442241191232);
+    /// let ts = Timestamp::from_rfc4122(14976234442241191232, context.generate_sequence(0, 0));
     ///
-    /// let uuid = Uuid::new_v1(ts, &context, &[1, 2, 3, 4, 5, 6]);
+    /// let uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
     ///
     /// assert_eq!(
     ///     uuid.hyphenated().to_string(),
@@ -78,9 +76,9 @@ impl Uuid {
     /// # use uuid::{Timestamp, Context};
     /// # use uuid::Uuid;
     /// let context = Context::new(42);
-    /// let ts = Timestamp::now();
+    /// let ts = Timestamp::now(&context);
     ///
-    /// let _uuid = Uuid::new_v1(ts, &context, &[1, 2, 3, 4, 5, 6]);
+    /// let _uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
     /// ```
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
@@ -90,8 +88,7 @@ impl Uuid {
         let (ticks, counter) = ts.to_rfc4122();
         let time_low = (ticks & 0xFFFF_FFFF) as u32;
         let time_mid = ((ticks >> 32) & 0xFFFF) as u16;
-        let time_high_and_version =
-            (((ticks >> 48) & 0x0FFF) as u16) | (1 << 12);
+        let time_high_and_version = (((ticks >> 48) & 0x0FFF) as u16) | (1 << 12);
 
         let mut d4 = [0; 8];
 
@@ -124,10 +121,7 @@ mod tests {
         let node = [1, 2, 3, 4, 5, 6];
         let context = Context::new(0);
 
-        let uuid = Uuid::new_v1(
-            Timestamp::from_unix(&context, time, time_fraction),
-            &node,
-        );
+        let uuid = Uuid::new_v1(Timestamp::from_unix(&context, time, time_fraction), &node);
 
         assert_eq!(uuid.get_version(), Some(Version::Mac));
         assert_eq!(uuid.get_variant(), Variant::RFC4122);
@@ -159,31 +153,19 @@ mod tests {
         // This context will wrap
         let context = Context::new((u16::MAX >> 2) - 1);
 
-        let uuid1 = Uuid::new_v1(
-            Timestamp::from_unix(&context, time, time_fraction),
-            &node,
-        );
+        let uuid1 = Uuid::new_v1(Timestamp::from_unix(&context, time, time_fraction), &node);
 
         let time: u64 = 1_496_854_536;
 
-        let uuid2 = Uuid::new_v1(
-            Timestamp::from_unix(&context, time, time_fraction),
-            &node,
-        );
+        let uuid2 = Uuid::new_v1(Timestamp::from_unix(&context, time, time_fraction), &node);
 
         assert_eq!(uuid1.get_timestamp().unwrap().to_rfc4122().1, 16382);
         assert_eq!(uuid2.get_timestamp().unwrap().to_rfc4122().1, 0);
 
         let time = 1_496_854_535;
 
-        let uuid3 = Uuid::new_v1(
-            Timestamp::from_unix(&context, time, time_fraction),
-            &node,
-        );
-        let uuid4 = Uuid::new_v1(
-            Timestamp::from_unix(&context, time, time_fraction),
-            &node,
-        );
+        let uuid3 = Uuid::new_v1(Timestamp::from_unix(&context, time, time_fraction), &node);
+        let uuid4 = Uuid::new_v1(Timestamp::from_unix(&context, time, time_fraction), &node);
 
         assert_eq!(uuid3.get_timestamp().unwrap().to_rfc4122().1, 1);
         assert_eq!(uuid4.get_timestamp().unwrap().to_rfc4122().1, 2);
