@@ -21,8 +21,8 @@ impl Uuid {
     ///
     /// ```rust
     /// # use uuid::{Uuid, Timestamp};
-    ///
-    /// let ts = Timestamp::from_unix(1497624119, 1234);
+    /// # use uuid::v7::NullSequence;
+    /// let ts = Timestamp::from_unix(NullSequence {}, 1497624119, 1234);
     ///
     /// let uuid = Uuid::new_v7(ts);
     ///
@@ -50,6 +50,15 @@ impl Uuid {
     }
 }
 
+pub struct NullSequence {}
+
+impl super::ClockSequence for NullSequence {
+    type Output = u16;
+    fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
+        0
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -64,7 +73,11 @@ mod tests {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
 
-        let uuid = Uuid::new_v7(Timestamp::from_unix(time, time_fraction));
+        let uuid = Uuid::new_v7(Timestamp::from_unix(
+            NullSequence {},
+            time,
+            time_fraction,
+        ));
         let uustr = uuid.hyphenated().to_string();
 
         assert_eq!(uuid.get_version(), Some(Version::SortRand));

@@ -878,9 +878,7 @@ impl Uuid {
     /// value into more commonly-used formats, such as a unix timestamp.
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
-    pub const fn get_timestamp(
-        &self,
-    ) -> Option<(crate::timestamp::Timestamp, u16)> {
+    pub const fn get_timestamp(&self) -> Option<crate::timestamp::Timestamp> {
         match self.get_version() {
             Some(Version::Mac) => {
                 let bytes = self.as_bytes();
@@ -896,10 +894,7 @@ impl Uuid {
                 let counter: u16 =
                     ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
 
-                Some((
-                    crate::timestamp::Timestamp::from_rfc4122(ticks),
-                    counter,
-                ))
+                Some(crate::timestamp::Timestamp::from_rfc4122(ticks, counter))
             }
             Some(Version::SortMac) => {
                 let bytes = self.as_bytes();
@@ -915,10 +910,7 @@ impl Uuid {
                 let counter: u16 =
                     ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
 
-                Some((
-                    crate::timestamp::Timestamp::from_rfc4122(ticks),
-                    counter,
-                ))
+                Some(crate::timestamp::Timestamp::from_rfc4122(ticks, counter))
             }
             Some(Version::SortRand) => {
                 let bytes = self.as_bytes();
@@ -930,10 +922,18 @@ impl Uuid {
                     | (bytes[5] as u64);
                 let seconds = millis / 1000;
                 let nanos = ((millis % 1000) * 1_000_000) as u32;
-                Some((
-                    crate::timestamp::Timestamp::from_unix(seconds, nanos),
-                    0,
-                ))
+                #[cfg(any(feature = "v1", feature = "v6"))]
+                {
+                    Some(Timestamp {
+                        seconds,
+                        nanos,
+                        counter: 0,
+                    })
+                }
+                #[cfg(not(any(feature = "v1", feature = "v6")))]
+                {
+                    Some(Timestamp { seconds, nanos })
+                }
             }
             _ => None,
         }
