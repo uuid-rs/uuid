@@ -15,13 +15,14 @@ In this new scheme, anything that isn't associated with a UuidVN struct/impl, Uu
 
 The UuidGen and Builder types will incorporate **type-state** methods to safely construct a version-specific Uuid Generator which can generate new Uuids simply by calling `next()`
 
-The motivation for this is three fold:
+The motivation for this is four fold:
 
 1. People rarely want to create 1 uuid, usually it's millions or more.
 2. Presently, through either the Uuid struct or through the Builder, there are a fair amount of machinations required to create a single Uuid. I hope to demonstrate that one can make a generator with the same amount of effort.
 3. Being synchronous, this generator can also implement an `Iterator` interface, which opens up a world of possibilities for "free".
+4. Clock-sequence and rng generation are inherently stateful operations, so some sort of stateful context is needed to create Uuids. Might as well roll everything into a single instance.
 
-The implementation of this would involve quite a few structs, most of which represent a partially constructed, version-specific Uuid generator.
+The implementation of the `UuidGenBuilder` would involve quite a few structs, most of which represent a partially constructed, version-specific Uuid generator.
 e.g.:
 
 ```rust
@@ -52,11 +53,12 @@ e.g.:
 
    // Note that all of these types are for illustration purposes really a user would just do
 
-   let gen = UuidV1GenBuilder::new_v1()
+   let infinite_ids = UuidV1GenBuilder::new_v1()
        .with_seq_source(MySequentialGen {})
        .with_time_source(MyTimeSource {})
        .finish()
 
+   let hundred_ids = infinite_ids.take(100).collect::<Vec<UuidV1>>();
 ```
 
 So there would be probably 4 typestate structs per uuid version, and 8 versions, but they'd be very simple structs, as they'd exist to ensure that only the correct setters could be used.
