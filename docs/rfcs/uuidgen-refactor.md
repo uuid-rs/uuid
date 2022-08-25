@@ -1,8 +1,7 @@
 
 # Uuid API 2.0
 
-
-### UuidGenBuilder and Uuid Version-Specific Refactoring
+## UuidGenBuilder and Uuid Version-Specific Refactoring
 
 The goal of this doc is to lay out a refactored API for a potential Major Version release (read: Not necessarily backwards compatible, though it could be)
 
@@ -10,7 +9,9 @@ The three primary motivations are to create a new concept called UuidGen, which 
 
 In this new scheme, we would eliminate version-specific features.  All versions would be constructable by the API by default.  However, the functionality needed to construct Uuids lives in structs which may be gated by features.  E.g. std, rand, thread-rng, system-rng, atomics, etc.
 
-#### UuidGen / Builder
+In this new scheme, anything that isn't associated with a UuidVN struct/impl, Uuid trait, an implementation of TimeSource or SequenceSource, or a UuidGenBuilder, would be removed (though the existing functionality would roll into the above)
+
+### UuidGen / Builder
 
 The UuidGen and Builder types will incorporate **type-state** methods to safely construct a version-specific Uuid Generator which can generate new Uuids simply by calling `next()`
 
@@ -89,7 +90,7 @@ impl<TS: TimeSource> UuidV6GenBuilderNoSeq<TS> {
 ```
 
 
-#### New Supporting Traits:  TimeSource and SequenceSource
+### New Supporting Traits:  TimeSource and SequenceSource
 
 TimeSource and SequenceSource would be a disaggregation of the current ClockSequence trait
 
@@ -125,9 +126,95 @@ This would work, until it doesn't. In the future when we have more precise clock
 I'm leaning towards the Output associated type, but could be convinced either way.
 
 
-#### Uuid and lower-level functionality
+### Uuid and lower-level functionality
 
 In this new scheme, each Uuid's low-level details would be implemented in their own, versioned struct. The reason for this is that a V7 Uuid is technically a different type than a V1 Uuid, and shouldn't be used interchangibly.
 
 In this new scheme, the Uuid struct would become a trait which all Versioned Structs implement, because even each versioned type is separate, they'd all have functionality in common.
+
+
+### Refactoring Features
+
+As mentioned previously,  any version-specific features would be removed. All Uuids would be contstructable using the toolkit, although the user might have to create their own implementations of the `TimeSource` and `SequenceSource` trait, if there aren't suitable features enabled.
+
+- random : Hopefully we can consolidate all of our rng related dependencies onto `rand` which can optionally leverage getrandom and OS, but also no-std.
+    - thread-rng  (use thread-local state for rng)
+    - !std (if std is disabled, we should disable std in rand and fall back to the correct APIs)
+    - os-rng  (use the OS's rng if present)
+- wasm : We should offer a feature-set capable of running in very limited platforms such as wasm and js
+    - **OPEN QUESTION** Can we support wasm via `rand` or will we need getrandom/js directly?
+        - At first glance, it doesn't look like rand addresses wasm32 etc like getrandom does, but maybe it doesn't need to
+- zerocopy
+- atomic : Would prefer to use std::sync::atomic where possible
+    - !std - The only currently supported target that seems to fail for std::sync::atomic is thumbv6m-none-eabi.
+        It utilizes the horrible spinlookhack for compexchg created by the `atomic` crate. I am tempted to remove the `atomic` dependency and let those users implement `SequenceSource` on their own.
+
+### Repository Shape
+
+The new repository would look something like:
+
+```
+- src/
+   - lib.rs     - contains the TimeSource and SequenceSource traits
+   - uuidgen/
+       - mod.rs
+       - uuidgen.rs - defines the UuidGen struct
+       - builder.rs - defines the UuidGenBuilder struct
+   - uuid/
+      - mod.rs  - contains the Uuid trait
+      - v1.rs   - UuidV1 Struct and Trait Impl
+      - ...
+      - v8.rs
+   - seq/
+      - mod.rs contains (feature gated) impls of the SequenceSource traits
+      - ...
+   - time/
+      - mod.rs
+      - ...
+```
+
+#### API Layer
+
+```mermaid
+classDiagram
+    direction RL
+    SequenceSource ..> TimeSource
+    UuidVN ..> SequenceSource
+    UuidVN ..> TimeSource
+    UuidVN --|> Uuid: impls
+    UuidVNGenM ..>SequenceSource
+    UuidVnGenM ..>TimeSource
+    UuidGenBuilder ..>UuidVNGenM
+    ThreadRngSource --|>SequenceSource: impls
+    SystemTimeSource --|>TimeSource: impls
+    class SequenceSource{
+        <<trait>>
+    }
+    class TimeSource{
+        <<trait>>
+    }
+    class Uuid{
+        <<trait>>
+    }
+    class UuidVN{
+        where N=1..8
+    }
+    class UuidVNGenM{
+        where
+        N=1..8
+        M = typestate constraints
+    }
+    class UuidGenBuilder{
+    }
+    class ThreadRngSource{
+        and many others
+    }
+    class SystemTimeSource{
+        and many others
+    }
+```
+
+From an API layering standpoint,  the lowest level type would be `TimeSource` and `Uuid`, followed by `SequenceSource` which could use TimeSource's output.
+The `UuidVN` structs would sit above, implementing the Uuid trait, and utilize impls of `TimeSource` and `SequenceSource`.
+The specific `UuidVNGenM` impls would sit above,  and then the `UuidGenBuilder` structs would use that.
 
