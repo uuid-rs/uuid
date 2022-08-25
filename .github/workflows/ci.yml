@@ -1,5 +1,9 @@
 name: Continuous integration
 
+env:
+  VERSION_FEATURES: "v1 v3 v4 v5"
+  STABLE_DEP_FEATURES: "serde arbitrary"
+
 on:
   pull_request:
   push:
@@ -61,8 +65,11 @@ jobs:
     - name: Examples
       run: cargo test --all-features --examples
 
-    - name: Powerset
-      run: cargo hack test --feature-powerset --lib --optional-deps "serde arbitrary" --depth 3
+    - name: Each version feature
+      run: cargo hack test --lib --each-feature --optional-deps $STABLE_DEP_FEATURES
+    
+    - name: All version features
+      run: cargo hack test --lib --features "$VERSION_FEATURES" --each-feature --optional-deps "$STABLE_DEP_FEATURES"
 
   msrv:
     name: "Tests / MSRV / OS: ${{ matrix.os }}"
@@ -86,7 +93,7 @@ jobs:
         override: true
 
     - name: Version features
-      run: cargo test --features "v1 v3 v4 v5 serde"
+      run: cargo test --features "$VERSION_FEATURES $STABLE_DEP_FEATURES"
 
   wasm:
     name: Tests / WebAssembly
@@ -102,7 +109,7 @@ jobs:
         run: wasm-pack test --node
 
       - name: Version features
-        run: wasm-pack test --node -- --features "js v1 v3 v4 v5"
+        run: wasm-pack test --node -- --features "$VERION_FEATURES $STABLE_DEP_FEATURES js"
       
       - name: Fast RNG
         run: wasm-pack test --node -- --features "js v4 fast-rng"
@@ -174,4 +181,4 @@ jobs:
         run: cargo install cargo-hack
 
       - name: Powerset
-        run: cargo hack check --feature-powerset -Z avoid-dev-deps
+        run: cargo hack check --each-feature -Z avoid-dev-deps

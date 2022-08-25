@@ -307,7 +307,7 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// # use uuid::Uuid;
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
@@ -348,7 +348,7 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// # use uuid::Uuid;
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
@@ -383,7 +383,7 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// # use uuid::Uuid;
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
@@ -414,7 +414,7 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// # use uuid::Uuid;
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
@@ -446,7 +446,7 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// # use uuid::Uuid;
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
@@ -515,7 +515,7 @@ impl Builder {
     /// Basic usage:
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// # use uuid::{Builder, Uuid};
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
@@ -589,7 +589,7 @@ impl Builder {
     ///
     /// ```
     /// # use uuid::Builder;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
     ///     0xb1, 0xb2,
@@ -624,7 +624,7 @@ impl Builder {
     ///
     /// ```
     /// # use uuid::Builder;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
     ///     0xb1, 0xb2,
