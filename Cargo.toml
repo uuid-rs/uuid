@@ -51,14 +51,15 @@ repository = "uuid-rs/uuid"
 default = ["std"]
 std = []
 macro-diagnostics = ["private_uuid-macro-internal"]
-
-# NOTE: When adding new features, check the `ci.yml` workflow
+# NOTE: When adding new features, check the `ci.yml` workflow                                              ..
 # and include them where necessary (you can follow along with existing features)
 v1 = ["private_atomic"]
 v3 = ["md5"]
 v4 = ["rng"]
 v5 = ["sha1"]
-
+v6 = ["private_atomic"]
+v7 = ["rng"]
+v8 = []
 js = ["private_getrandom", "private_getrandom/js"]
 
 rng = ["private_getrandom"]
@@ -86,7 +87,7 @@ version = "1"
 # Public (unstable): Used in `zerocopy` derive
 # Unstable: also need RUSTFLAGS="--cfg uuid_unstable" to work
 # This feature may break between releases, or be removed entirely before
-# stabilization. 
+# stabilization.
 # See: https://github.com/uuid-rs/uuid/issues/588
 [dependencies.zerocopy]
 optional = true
@@ -135,8 +136,6 @@ version = "1.1.2"
 path = "macros"
 optional = true
 
-# Private
-# Don't depend on this optional feature directly: it may change at any time
 [dependencies.private_atomic]
 package = "atomic"
 default-features = false

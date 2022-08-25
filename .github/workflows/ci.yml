@@ -1,7 +1,7 @@
 name: Continuous integration
 
 env:
-  VERSION_FEATURES: "v1 v3 v4 v5"
+  VERSION_FEATURES: "v1 v3 v4 v5 v6 v7"
   STABLE_DEP_FEATURES: "serde arbitrary"
 
 on:
@@ -39,11 +39,11 @@ jobs:
         os:
         - macos-10.15
         - ubuntu-20.04
-        rust_target: 
+        rust_target:
         - x86_64-gnu
         - x86_64-msvc
         - x86_64-apple-darwin
-  
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -66,7 +66,7 @@ jobs:
 
     - name: Each version feature
       run: cargo hack test --lib --each-feature --optional-deps $STABLE_DEP_FEATURES
-    
+
     - name: All version features
       run: cargo hack test --lib --each-feature --features "$VERSION_FEATURES" --optional-deps "$STABLE_DEP_FEATURES"
 
@@ -108,10 +108,10 @@ jobs:
 
       - name: Version features
         run: wasm-pack test --node -- --features "$VERION_FEATURES $STABLE_DEP_FEATURES js"
-      
+
       - name: Fast RNG
         run: wasm-pack test --node -- --features "js v4 fast-rng"
-  
+
   mips:
     name: Tests / MIPS (Big Endian)
     runs-on: ubuntu-latest
@@ -155,7 +155,7 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features --features "v1 v3 v5 serde"
+          args: -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features --features "v1 v3 v5 v6 v7 serde"
 
   nodeps:
     name: Build / No deps
@@ -180,7 +180,7 @@ jobs:
         run: cargo hack check --each-feature -Z avoid-dev-deps
   win_tests:
     name: "Tests / OS: Windows 2019 - ${{ matrix.channel }}-${{ matrix.rust_target }}"
-    runs-on: windows-2019 
+    runs-on: windows-2019
     env:
       RUSTFLAGS: "--cfg uuid_unstable"
       RUSTDOCFLAGS: "--cfg uuid_unstable"
@@ -192,7 +192,7 @@ jobs:
         - nightly
         os:
         - windows-2019
-        rust_target: 
+        rust_target:
         - x86_64-gnu
         - x86_64-msvc
     steps:
@@ -223,7 +223,7 @@ jobs:
 
   win-msrv:
     name: "Tests / MSRV / OS: Windows 2019"
-    runs-on: windows-2019 
+    runs-on: windows-2019
     steps:
     - name: Checkout sources
       uses: actions/checkout@v2
