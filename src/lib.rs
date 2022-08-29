@@ -211,9 +211,11 @@ extern crate std;
 #[macro_use]
 extern crate core as std;
 
-// Check that unstable features are accompanied by a the `uuid_unstable` cfg
+// Check that unstable features are accompanied by the `uuid_unstable` cfg
 #[cfg(all(not(uuid_unstable), feature = "zerocopy"))]
 compile_error!("The `zerocopy` feature is unstable and may break between releases. Please also pass `RUSTFLAGS=\"--cfg uuid_unstable\"` to allow it.");
+#[cfg(all(not(uuid_unstable), feature = "defmt"))]
+compile_error!("The `defmt` feature is unstable and may break between releases. Please also pass `RUSTFLAGS=\"--cfg uuid_unstable\"` to allow it.");
 
 #[cfg(feature = "zerocopy")]
 use zerocopy::{AsBytes, FromBytes, Unaligned};
