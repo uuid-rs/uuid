@@ -36,13 +36,15 @@ e.g.:
 
    struct MyTime {};
    impl TimeSource for MyTime {
-   	fn next_unix_time() -> (u64, u32) {
+	type Output = (u64, u32);
+   	fn next() -> Self::Output {
 	  ...
 	}
    }
    struct MySequentialGen {};
    impl SequenceSource for MySequentialGen {
-        fn next_u64() -> u64 {
+        type Output = u64;
+        fn next() -> Self::Output {
 	  ...
 	}
    }
@@ -112,10 +114,9 @@ trait TimeSource {
     fn next(&mut self) -> Self::Output;
 }
 
-// Note that SequenceSource is parameterized over TimeSource::Output because some implementations might want to track the previous Clock output to see if it was a duplicate before increasing their counter.
-trait SequenceSource<T: TimeSource> {
+trait SequenceSource {
     type Output;
-    fn next(&mut self, tm: <T as TimeSource>::Output) -> Self::Output;
+    fn next(&mut self, conflict: Option<bool>) -> Self::Output;
 }
 ```
 
