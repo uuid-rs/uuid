@@ -81,7 +81,10 @@ version = "2"
 optional = true
 version = "1"
 
-# Public: Used in trait impls on `Uuid`
+# Public (unstable): Used in trait impls on `Uuid`
+# Unstable: also need RUSTFLAGS="--cfg uuid_unstable" to work
+# This feature may break between releases, or be removed entirely before
+# stabilization.
 [dependencies.defmt]
 optional = true
 version = "0.3"
@@ -89,7 +92,7 @@ version = "0.3"
 # Public (unstable): Used in `zerocopy` derive
 # Unstable: also need RUSTFLAGS="--cfg uuid_unstable" to work
 # This feature may break between releases, or be removed entirely before
-# stabilization. 
+# stabilization.
 # See: https://github.com/uuid-rs/uuid/issues/588
 [dependencies.zerocopy]
 optional = true

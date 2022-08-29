@@ -99,6 +99,7 @@
 //!
 //! * `zerocopy` - adds support for zero-copy deserialization using the
 //!   `zerocopy` library.
+//! * `defmt` - adds support for formatting UUIDs with the [`defmt`] library.
 //!
 //! Unstable features may break between minor releases.
 //!
@@ -194,6 +195,7 @@
 //! [`v1::ClockSequence`]: v1/trait.ClockSequence.html
 //! [`v1::Context`]: v1/struct.Context.html
 //! [`getrandom`'s docs]: https://docs.rs/getrandom
+//! [`defmt`]: https://crates.io/crates/defmt
 
 #![no_std]
 #![deny(missing_debug_implementations, missing_docs)]
