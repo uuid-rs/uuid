@@ -40,7 +40,7 @@ use crate::{error::*, Bytes, Uuid, Variant, Version};
 /// ```
 #[allow(missing_copy_implementations)]
 #[derive(Debug)]
-pub struct Builder(pub Uuid);
+pub struct Builder(Uuid);
 
 impl Uuid {
     /// The 'nil UUID'.
