@@ -69,11 +69,13 @@ impl Timestamp {
 
     /// Construct a `Timestamp` from the current time of day
     /// according to Rust's SystemTime
+    /// NOTE: This function will panic if the current system time is earlier than
+    /// the Unix Epoch of 1970-01-01 00:00:00  So please use caution when time travelling.
     #[cfg(all(feature = "std", not(any(feature = "v1", feature = "v6"))))]
     pub fn now() -> Self {
         let dur = std::time::SystemTime::UNIX_EPOCH
             .elapsed()
-            .expect("Getting elapsed time since UNIX_EPOCH.  If this fails, we've somehow violated causality");
+            .expect("Getting elapsed time since UNIX_EPOCH failed. This is due to a system time that is somehow earlier than Unix Epoch.");
         Timestamp {
             seconds: dur.as_secs(),
             nanos: dur.subsec_nanos(),
