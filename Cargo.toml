@@ -44,9 +44,6 @@ repository = "uuid-rs/uuid"
 [badges.maintenance]
 status = "actively-developed"
 
-[badges.travis-ci]
-repository = "uuid-rs/uuid"
-
 [features]
 default = ["std"]
 std = []
