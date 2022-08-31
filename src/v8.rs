@@ -19,7 +19,7 @@ impl Uuid {
     /// assert_eq!(Some(Version::Custom), uuid.get_version());
     /// ```
     pub fn new_v8(buf: [u8; 16]) -> Uuid {
-        Builder(Uuid::from_bytes(buf))
+        Builder::from_bytes(buf)
             .with_variant(Variant::RFC4122)
             .with_version(Version::Custom)
             .into_uuid()
