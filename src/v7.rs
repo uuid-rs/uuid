@@ -1,6 +1,6 @@
 //! The implementation for Version 1 UUIDs.
 //!
-//! Note that you need to enable the `v1` Cargo feature
+//! Note that you need to enable the `v7` Cargo feature
 //! in order to use this module.
 
 use crate::rng::{bytes, u16};
