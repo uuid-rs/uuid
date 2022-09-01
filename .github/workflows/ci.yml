@@ -1,5 +1,9 @@
 name: Continuous integration
 
+env:
+  VERSION_FEATURES: "v1 v3 v4 v5 v6 v7"
+  STABLE_DEP_FEATURES: "serde arbitrary"
+
 on:
   pull_request:
   push:
@@ -34,13 +38,12 @@ jobs:
         - nightly
         os:
         - macos-10.15
-        - windows-2019
         - ubuntu-20.04
-        rust_target: 
+        rust_target:
         - x86_64-gnu
         - x86_64-msvc
         - x86_64-apple-darwin
-  
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
@@ -61,8 +64,11 @@ jobs:
     - name: Examples
       run: cargo test --all-features --examples
 
-    - name: Powerset
-      run: cargo hack test --feature-powerset --lib --optional-deps "serde arbitrary" --depth 3
+    - name: Each version feature
+      run: cargo hack test --lib --each-feature --optional-deps $STABLE_DEP_FEATURES
+
+    - name: All version features
+      run: cargo hack test --lib --each-feature --features "$VERSION_FEATURES" --optional-deps "$STABLE_DEP_FEATURES"
 
   msrv:
     name: "Tests / MSRV / OS: ${{ matrix.os }}"
@@ -71,7 +77,6 @@ jobs:
       matrix:
         os:
         - macos-10.15
-        - windows-2019
         - ubuntu-20.04
 
     steps:
@@ -86,7 +91,7 @@ jobs:
         override: true
 
     - name: Version features
-      run: cargo test --features "v1 v3 v4 v5 serde"
+      run: cargo test --features "$VERSION_FEATURES $STABLE_DEP_FEATURES"
 
   wasm:
     name: Tests / WebAssembly
@@ -102,18 +107,17 @@ jobs:
         run: wasm-pack test --node
 
       - name: Version features
-        run: wasm-pack test --node -- --features "js v1 v3 v4 v5"
-      
+        run: wasm-pack test --node -- --features "$VERION_FEATURES $STABLE_DEP_FEATURES js"
+
       - name: Fast RNG
         run: wasm-pack test --node -- --features "js v4 fast-rng"
-  
+
   mips:
     name: Tests / MIPS (Big Endian)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
-      
       - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
@@ -147,12 +151,11 @@ jobs:
         with:
           command: build
           args: -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features
-      
       - name: Version features
         uses: actions-rs/cargo@v1
         with:
           command: build
-          args: -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features --features "v1 v3 v5 serde"
+          args: -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features --features "v1 v3 v5 v6 serde"
 
   nodeps:
     name: Build / No deps
@@ -174,4 +177,63 @@ jobs:
         run: cargo install cargo-hack
 
       - name: Powerset
-        run: cargo hack check --feature-powerset -Z avoid-dev-deps
+        run: cargo hack check --each-feature -Z avoid-dev-deps
+  win_tests:
+    name: "Tests / OS: Windows 2019 - ${{ matrix.channel }}-${{ matrix.rust_target }}"
+    runs-on: windows-2019
+    env:
+      RUSTFLAGS: "--cfg uuid_unstable"
+      RUSTDOCFLAGS: "--cfg uuid_unstable"
+    strategy:
+      matrix:
+        channel:
+        - stable
+        - beta
+        - nightly
+        os:
+        - windows-2019
+        rust_target:
+        - x86_64-gnu
+        - x86_64-msvc
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Install Rust Toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        override: true
+        profile: minimal
+        toolchain: ${{ matrix.channel }}-${{ matrix.rust_target }}
+
+    - name: Install cargo-hack
+      run: cargo install cargo-hack
+
+    - name: Docs
+      run: cargo test --all-features --doc
+
+    - name: Examples
+      run: cargo test --all-features --examples
+
+    - name: Each version feature
+      run: cargo hack test --lib --each-feature --optional-deps $env:STABLE_DEP_FEATURES
+
+    - name: All version features
+      run: cargo hack test --lib --each-feature --features "$env:VERSION_FEATURES" --optional-deps "$env:STABLE_DEP_FEATURES"
+
+  win-msrv:
+    name: "Tests / MSRV / OS: Windows 2019"
+    runs-on: windows-2019
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v2
+
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: 1.57.0
+        override: true
+
+    - name: Version features
+      run: cargo test --features "$env:VERSION_FEATURES $env:STABLE_DEP_FEATURES"

@@ -157,7 +157,7 @@
 //!
 //! ```
 //! # use uuid::Uuid;
-//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! # fn main() -> Result<(), uuid::Error> {
 //! let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
 //!
 //! println!("{}", my_uuid.urn());
@@ -220,9 +220,15 @@ use zerocopy::{AsBytes, FromBytes, Unaligned};
 
 mod builder;
 mod error;
-mod parser;
-
 pub mod fmt;
+mod parser;
+/// contains the `Timestamp` struct and `ClockSequence` trait
+pub mod timestamp;
+
+pub use timestamp::{ClockSequence, Timestamp};
+
+#[cfg(any(feature = "v1", feature = "v6"))]
+pub use timestamp::context::Context;
 
 #[cfg(feature = "v1")]
 pub mod v1;
@@ -232,6 +238,12 @@ mod v3;
 mod v4;
 #[cfg(feature = "v5")]
 mod v5;
+#[cfg(feature = "v6")]
+mod v6;
+#[cfg(feature = "v7")]
+pub mod v7;
+#[cfg(feature = "v8")]
+mod v8;
 
 #[cfg(feature = "md5")]
 mod md5;
@@ -280,6 +292,12 @@ pub enum Version {
     Random,
     /// Version 5: SHA-1 hash.
     Sha1,
+    /// Version 6: Sortable MAC/Node-ID
+    SortMac,
+    /// Version 7: Timestamp + Random
+    SortRand,
+    /// Version 8: Custom
+    Custom,
 }
 
 /// The reserved variants of UUIDs.
@@ -308,7 +326,7 @@ pub enum Variant {
 ///
 /// ```
 /// # use uuid::Uuid;
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), uuid::Error> {
 /// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
 ///
 /// println!("{}", my_uuid.urn());
@@ -345,7 +363,7 @@ pub enum Variant {
 ///
 /// ```
 /// # use uuid::Uuid;
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), uuid::Error> {
 /// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
 ///
 /// assert_eq!(
@@ -360,7 +378,7 @@ pub enum Variant {
 ///
 /// ```
 /// # use uuid::Uuid;
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # fn main() -> Result<(), uuid::Error> {
 /// let my_uuid = Uuid::parse_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8")?;
 ///
 /// assert_eq!(
@@ -436,7 +454,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::{Uuid, Variant};
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
     ///
     /// assert_eq!(Variant::RFC4122, my_uuid.get_variant());
@@ -471,7 +489,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::Uuid;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
     ///
     /// assert_eq!(3, my_uuid.get_version_num());
@@ -501,7 +519,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::{Uuid, Version};
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
     ///
     /// assert_eq!(Some(Version::Md5), my_uuid.get_version());
@@ -520,6 +538,9 @@ impl Uuid {
             3 => Some(Version::Md5),
             4 => Some(Version::Random),
             5 => Some(Version::Sha1),
+            6 => Some(Version::SortMac),
+            7 => Some(Version::SortRand),
+            8 => Some(Version::Custom),
             _ => None,
         }
     }
@@ -548,7 +569,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::Uuid;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let uuid = Uuid::nil();
     ///
     /// assert_eq!(uuid.as_fields(), (0, 0, 0, &[0u8; 8]));
@@ -595,7 +616,7 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     ///
     /// assert_eq!(
@@ -632,7 +653,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::Uuid;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     ///
     /// assert_eq!(
@@ -676,7 +697,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::Uuid;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     ///
     /// assert_eq!(
@@ -715,7 +736,7 @@ impl Uuid {
     ///
     /// ```
     /// # use uuid::Uuid;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     /// assert_eq!(
     ///     uuid.as_u64_pair(),
@@ -789,7 +810,7 @@ impl Uuid {
     /// ```
     /// use uuid::Uuid;
     ///
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let uuid = Uuid::parse_str("a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8")?;
     ///
     /// assert_eq!(
@@ -842,6 +863,78 @@ impl Uuid {
     /// ```
     pub const fn encode_buffer() -> [u8; fmt::Urn::LENGTH] {
         [0; fmt::Urn::LENGTH]
+    }
+
+    /// If the UUID is the correct version (v1, v6, or v7) this will return
+    /// the timestamp and counter portion parsed from a V1 UUID.
+    ///
+    /// Returns `None` if the supplied UUID is not V1.
+    ///
+    /// The V1 timestamp format defined in RFC4122 specifies a 60-bit
+    /// integer representing the number of 100-nanosecond intervals
+    /// since 00:00:00.00, 15 Oct 1582.
+    ///
+    /// [`Timestamp`] offers several options for converting the raw RFC4122
+    /// value into more commonly-used formats, such as a unix timestamp.
+    ///
+    /// [`Timestamp`]: v1/struct.Timestamp.html
+    pub const fn get_timestamp(&self) -> Option<crate::timestamp::Timestamp> {
+        match self.get_version() {
+            Some(Version::Mac) => {
+                let bytes = self.as_bytes();
+                let ticks: u64 = ((bytes[6] & 0x0F) as u64) << 56
+                    | (bytes[7] as u64) << 48
+                    | (bytes[4] as u64) << 40
+                    | (bytes[5] as u64) << 32
+                    | (bytes[0] as u64) << 24
+                    | (bytes[1] as u64) << 16
+                    | (bytes[2] as u64) << 8
+                    | (bytes[3] as u64);
+
+                let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
+
+                Some(crate::timestamp::Timestamp::from_rfc4122(ticks, counter))
+            }
+            Some(Version::SortMac) => {
+                let bytes = self.as_bytes();
+                let ticks: u64 = ((self.as_bytes()[0]) as u64) << 52
+                    | (bytes[1] as u64) << 44
+                    | (bytes[2] as u64) << 36
+                    | (bytes[3] as u64) << 28
+                    | (bytes[4] as u64) << 20
+                    | (bytes[5] as u64) << 12
+                    | ((bytes[6] & 0xF) as u64) << 8
+                    | (bytes[7] as u64);
+
+                let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
+
+                Some(crate::timestamp::Timestamp::from_rfc4122(ticks, counter))
+            }
+            Some(Version::SortRand) => {
+                let bytes = self.as_bytes();
+                let millis: u64 = (bytes[0] as u64) << 40
+                    | (bytes[1] as u64) << 32
+                    | (bytes[2] as u64) << 24
+                    | (bytes[3] as u64) << 16
+                    | (bytes[4] as u64) << 8
+                    | (bytes[5] as u64);
+                let seconds = millis / 1000;
+                let nanos = ((millis % 1000) * 1_000_000) as u32;
+                #[cfg(any(feature = "v1", feature = "v6"))]
+                {
+                    Some(Timestamp {
+                        seconds,
+                        nanos,
+                        counter: 0,
+                    })
+                }
+                #[cfg(not(any(feature = "v1", feature = "v6")))]
+                {
+                    Some(Timestamp { seconds, nanos })
+                }
+            }
+            _ => None,
+        }
     }
 }
 

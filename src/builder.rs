@@ -67,6 +67,30 @@ impl Uuid {
         Uuid::from_bytes([0; 16])
     }
 
+    /// The 'max UUID'.
+    ///
+    /// The max UUID is a special form of UUID that is specified to have all
+    /// 128 bits set to one, as defined in [IETF RFC 4122 Update Section 5.4][Draft RFC].
+    ///
+    /// [Draft RFC]: https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#page-12
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// # use uuid::Uuid;
+    /// let uuid = Uuid::max();
+    ///
+    /// assert_eq!(
+    ///     "ffffffff-ffff-ffff-ffff-ffffffffffff",
+    ///     uuid.hyphenated().to_string(),
+    /// );
+    /// ```
+    pub const fn max() -> Self {
+        Uuid::from_bytes([0xFF; 16])
+    }
+
     /// Creates a UUID from four field values.
     ///
     /// # Examples
@@ -283,7 +307,7 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// # use uuid::Uuid;
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
@@ -324,7 +348,7 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// # use uuid::Uuid;
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
@@ -359,7 +383,7 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// # use uuid::Uuid;
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
@@ -390,7 +414,7 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// # use uuid::Uuid;
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
@@ -422,7 +446,7 @@ impl Uuid {
     /// Basic usage:
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// # use uuid::Uuid;
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
@@ -491,7 +515,7 @@ impl Builder {
     /// Basic usage:
     ///
     /// ```
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// # use uuid::{Builder, Uuid};
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
@@ -565,7 +589,7 @@ impl Builder {
     ///
     /// ```
     /// # use uuid::Builder;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
     ///     0xb1, 0xb2,
@@ -600,7 +624,7 @@ impl Builder {
     ///
     /// ```
     /// # use uuid::Builder;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # fn main() -> Result<(), uuid::Error> {
     /// let bytes = [
     ///     0xa1, 0xa2, 0xa3, 0xa4,
     ///     0xb1, 0xb2,
