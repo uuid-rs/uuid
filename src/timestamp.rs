@@ -47,11 +47,7 @@ impl Timestamp {
     /// `u32` fields representing the seconds, and "subsecond" or fractional
     /// nanoseconds elapsed since the timestamp's second began,
     /// respectively.
-    pub fn from_unix(
-        _context: impl ClockSequence<Output = u16>,
-        seconds: u64,
-        nanos: u32,
-    ) -> Self {
+    pub fn from_unix(_context: impl ClockSequence<Output = u16>, seconds: u64, nanos: u32) -> Self {
         #[cfg(any(feature = "v1", feature = "v6"))]
         {
             let counter = _context.generate_sequence(seconds, nanos);
@@ -92,8 +88,7 @@ impl Timestamp {
         Timestamp {
             seconds: dur.as_secs(),
             nanos: dur.subsec_nanos(),
-            counter: context
-                .generate_sequence(dur.as_secs(), dur.subsec_nanos()),
+            counter: context.generate_sequence(dur.as_secs(), dur.subsec_nanos()),
         }
     }
 
@@ -124,10 +119,9 @@ impl Timestamp {
 
     /// internal utility functions for converting between Unix and Uuid-epoch
     /// convert unix-timestamp into rfc4122 ticks
+    #[allow(dead_code)]
     const fn unix_to_rfc4122_ticks(seconds: u64, nanos: u32) -> u64 {
-        let ticks = UUID_TICKS_BETWEEN_EPOCHS
-            + seconds * 10_000_000
-            + nanos as u64 / 100;
+        let ticks = UUID_TICKS_BETWEEN_EPOCHS + seconds * 10_000_000 + nanos as u64 / 100;
 
         ticks
     }
@@ -152,20 +146,12 @@ pub trait ClockSequence {
     /// Return an arbitrary width number that will be used as the "clock sequence" in
     /// the UUID. The number must be different if the time has changed since
     /// the last time a clock sequence was requested.
-    fn generate_sequence(
-        &self,
-        seconds: u64,
-        subsec_nanos: u32,
-    ) -> Self::Output;
+    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output;
 }
 
 impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T {
     type Output = T::Output;
-    fn generate_sequence(
-        &self,
-        seconds: u64,
-        subsec_nanos: u32,
-    ) -> Self::Output {
+    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
         (**self).generate_sequence(seconds, subsec_nanos)
     }
 }
@@ -217,11 +203,7 @@ pub mod context {
 
     impl super::ClockSequence for Context {
         type Output = u16;
-        fn generate_sequence(
-            &self,
-            _seconds: u64,
-            _nanos: u32,
-        ) -> Self::Output {
+        fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
             // RFC4122 reserves 2 bits of the clock sequence so the actual
             // maximum value is smaller than `u16::MAX`. Since we unconditionally
             // increment the clock sequence we want to wrap once it becomes larger
