@@ -220,17 +220,15 @@ use zerocopy::{AsBytes, FromBytes, Unaligned};
 
 mod builder;
 mod error;
-pub mod fmt;
 mod parser;
-/// contains the `Timestamp` struct and `ClockSequence` trait
+
+pub mod fmt;
 pub mod timestamp;
 
-pub use timestamp::{ClockSequence, Timestamp};
-
-#[cfg(any(feature = "v1", feature = "v6"))]
-pub use timestamp::context::Context;
+pub use timestamp::{ClockSequence, Timestamp, context::{Context, NoContext}};
 
 #[cfg(feature = "v1")]
+#[doc(hidden)]
 pub mod v1;
 #[cfg(feature = "v3")]
 mod v3;
@@ -241,7 +239,7 @@ mod v5;
 #[cfg(feature = "v6")]
 mod v6;
 #[cfg(feature = "v7")]
-pub mod v7;
+mod v7;
 #[cfg(feature = "v8")]
 mod v8;
 

@@ -10,7 +10,7 @@ use crate::Uuid;
 /// `1582-10-15 00:00:00` and the Unix epoch `1970-01-01 00:00:00`.
 const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 
-/// The Context implementation is specific to Uuids v1 and v6
+#[deprecated(note = "use `Context` from the crate root")]
 pub use crate::timestamp::context::Context;
 
 impl Uuid {

@@ -1,11 +1,11 @@
-//! The implementation for Version 1 UUIDs.
+//! The implementation for Version 7 UUIDs.
 //!
 //! Note that you need to enable the `v7` Cargo feature
 //! in order to use this module.
 
 use crate::rng::{bytes, u16};
 use crate::timestamp::Timestamp;
-use crate::{Uuid, Version};
+use crate::Uuid;
 use core::convert::TryInto;
 
 impl Uuid {
@@ -22,7 +22,7 @@ impl Uuid {
     /// ```rust
     /// # use uuid::{Uuid, Timestamp};
     /// # use uuid::v7::NullSequence;
-    /// let ts = Timestamp::from_unix(NullSequence {}, 1497624119, 1234);
+    /// let ts = Timestamp::from_unix(NullSequence, 1497624119, 1234);
     ///
     /// let uuid = Uuid::new_v7(ts);
     ///
@@ -47,18 +47,6 @@ impl Uuid {
         rnd[0] = (rnd[0] & 0x3F) | 0x80;
         let buf: [u8; 8] = (&rnd[0..8]).try_into().unwrap();
         Uuid::from_fields(ms_high, ms_low, ver_rand, &buf)
-    }
-}
-
-/// Dummy struct and ClockSequence implementation to ease the construction of v7
-/// using a Timestamp
-#[derive(Debug)]
-pub struct NullSequence {}
-
-impl super::ClockSequence for NullSequence {
-    type Output = u16;
-    fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
-        0
     }
 }
 

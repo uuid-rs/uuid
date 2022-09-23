@@ -1,9 +1,9 @@
-/// Contains the `Timestamp` struct and `ClockSequence` traits
-/// as well as an implementation of ClockSequence for Context (only for features v1 and v6)
+//! Generating UUIDs from timestamps.
 
 /// The number of 100 ns ticks between the UUID epoch
 /// `1582-10-15 00:00:00` and the Unix epoch `1970-01-01 00:00:00`.
 pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
+
 /// Stores the number of seconds since epoch,
 /// as well as the fractional nanoseconds of that second
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -22,20 +22,19 @@ impl Timestamp {
     /// as the number of 100-nanosecond intervals elapsed since 00:00:00.00,
     /// 15 Oct 1582, "the date of the Gregorian reform of the Christian
     /// calendar."
-    pub const fn from_rfc4122(ticks: u64, _counter: u16) -> Self {
-        let (seconds, nanos) = Self::rfc4122_to_unix(ticks);
-
-        #[cfg(any(feature = "v1", feature = "v6"))]
-        {
-            Timestamp {
-                seconds,
-                nanos,
-                counter: _counter,
-            }
-        }
+    pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
         #[cfg(not(any(feature = "v1", feature = "v6")))]
         {
-            Timestamp { seconds, nanos }
+            let _ = counter;
+        }
+
+        let (seconds, nanos) = Self::rfc4122_to_unix(ticks);
+
+        Timestamp {
+            seconds,
+            nanos,
+            #[cfg(any(feature = "v1", feature = "v6"))]
+            counter,
         }
     }
 
@@ -48,50 +47,45 @@ impl Timestamp {
     /// nanoseconds elapsed since the timestamp's second began,
     /// respectively.
     pub fn from_unix(
-        _context: impl ClockSequence<Output = u16>,
+        context: impl ClockSequence<Output = u16>,
         seconds: u64,
         nanos: u32,
     ) -> Self {
+        #[cfg(not(any(feature = "v1", feature = "v6")))]
+        {
+            let _ = context;
+
+            Timestamp { seconds, nanos }
+        }
         #[cfg(any(feature = "v1", feature = "v6"))]
         {
-            let counter = _context.generate_sequence(seconds, nanos);
+            let counter = context.generate_sequence(seconds, nanos);
+
             Timestamp {
                 seconds,
                 nanos,
                 counter,
             }
         }
+    }
+
+    /// Construct a `Timestamp` from the current time of day
+    /// according to Rust's SystemTime.
+    #[cfg(feature = "std")]
+    pub fn now(context: impl ClockSequence<Output = u16>) -> Self {
         #[cfg(not(any(feature = "v1", feature = "v6")))]
         {
-            Timestamp { seconds, nanos }
+            let _ = context;
         }
-    }
 
-    /// Construct a `Timestamp` from the current time of day
-    /// according to Rust's SystemTime
-    /// NOTE: This function will panic if the current system time is earlier than
-    /// the Unix Epoch of 1970-01-01 00:00:00  So please use caution when time travelling.
-    #[cfg(all(feature = "std", not(any(feature = "v1", feature = "v6"))))]
-    pub fn now() -> Self {
         let dur = std::time::SystemTime::UNIX_EPOCH
             .elapsed()
-            .expect("Getting elapsed time since UNIX_EPOCH failed. This is due to a system time that is somehow earlier than Unix Epoch.");
+            .expect("Getting elapsed time since UNIX_EPOCH. If this fails, we've somehow violated causality");
+
         Timestamp {
             seconds: dur.as_secs(),
             nanos: dur.subsec_nanos(),
-        }
-    }
-
-    /// Construct a `Timestamp` from the current time of day
-    /// according to Rust's SystemTime
-    #[cfg(all(feature = "std", any(feature = "v1", feature = "v6")))]
-    pub fn now(context: impl ClockSequence<Output = u16>) -> Self {
-        let dur = std::time::SystemTime::UNIX_EPOCH
-            .elapsed()
-            .expect("Getting elapsed time since UNIX_EPOCH.  If this fails, we've somehow violated causality");
-        Timestamp {
-            seconds: dur.as_secs(),
-            nanos: dur.subsec_nanos(),
+            #[cfg(any(feature = "v1", feature = "v6"))]
             counter: context
                 .generate_sequence(dur.as_secs(), dur.subsec_nanos()),
         }
@@ -116,14 +110,21 @@ impl Timestamp {
         (self.seconds, self.nanos)
     }
 
-    /// Returns the timestamp converted into nanoseconds elapsed since Jan 1
-    /// 1970.
+    #[deprecated(note = "use `to_unix` instead")]
+    #[doc(hidden)]
     pub const fn to_unix_nanos(&self) -> u32 {
+        // NOTE: This method never did what it said on the tin: instead of
+        // converting the timestamp into nanos it simply returned the nanoseconds
+        // part of the timestamp.
+        //
+        // We can't fix the behavior because the return type is too small to fit
+        // a useful value for nanoseconds since the epoch.
         self.nanos
     }
 
     /// internal utility functions for converting between Unix and Uuid-epoch
-    /// convert unix-timestamp into rfc4122 ticks
+    /// convert unix-timestamp into rfc4122 ticks.
+    #[cfg(any(feature = "v1", feature = "v6"))]
     const fn unix_to_rfc4122_ticks(seconds: u64, nanos: u32) -> u64 {
         let ticks = UUID_TICKS_BETWEEN_EPOCHS
             + seconds * 10_000_000
@@ -170,10 +171,24 @@ impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T {
     }
 }
 
-/// For features v1 and v1, constructs a `Context` struct which implements the `ClockSequence` trait
-#[cfg(any(feature = "v1", feature = "v6"))]
+/// For features v1 and v6, constructs a `Context` struct which implements the `ClockSequence` trait.
 pub mod context {
+    use super::ClockSequence;
+
     use private_atomic::{Atomic, Ordering};
+
+    /// A clock sequence that never produces a counter value to deduplicate equal timestamps with.
+    #[derive(Debug, Clone, Copy, Default)]
+    pub struct NoContext;
+
+    impl ClockSequence for NoContext {
+        type Output = u16;
+
+        fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
+            0
+        }
+    }
+
     /// A thread-safe, stateful context for the v1 generator to help ensure
     /// process-wide uniqueness.
     #[derive(Debug)]
@@ -215,8 +230,9 @@ pub mod context {
         }
     }
 
-    impl super::ClockSequence for Context {
+    impl ClockSequence for Context {
         type Output = u16;
+
         fn generate_sequence(
             &self,
             _seconds: u64,

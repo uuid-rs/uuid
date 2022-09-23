@@ -55,7 +55,7 @@ v3 = ["md5"]
 v4 = ["rng"]
 v5 = ["sha1"]
 v6 = ["private_atomic"]
-v7 = ["rng"]
+v7 = ["private_atomic", "rng"]
 v8 = []
 js = ["private_getrandom", "private_getrandom/js"]
 

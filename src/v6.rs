@@ -1,13 +1,10 @@
-//! The implementation for Version 1 UUIDs.
+//! The implementation for Version 6 UUIDs.
 //!
 //! Note that you need to enable the `v6` Cargo feature
 //! in order to use this module.
 
 use crate::timestamp::{ClockSequence, Timestamp};
 use crate::Uuid;
-
-/// The Context implementation is specific to Uuids v1 and v6
-pub use crate::timestamp::context::Context;
 
 impl Uuid {
     /// Create a new UUID (version 6) using a time value + sequence +
