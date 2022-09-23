@@ -164,9 +164,9 @@ version = "1.0.52"
 [dev-dependencies.rustversion]
 version = "1"
 
-[target.'cfg(windows)'.dev-dependencies.winapi]
-version = "0.3"
-features = ["combaseapi", "impl-default"]
+[target.'cfg(windows)'.dev-dependencies.windows-sys]
+version = "0.36.1"
+features = ["Win32_System_Com"]
 
 [workspace]
 members = [
