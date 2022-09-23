@@ -11,9 +11,9 @@
 #[cfg(windows)]
 fn guid_to_uuid() {
     use uuid::Uuid;
-    use windows::core;
+    use windows_sys::core;
 
-    let guid_in = core::GUID{
+    let guid_in = core::GUID {
         data1: 0x4a35229d,
         data2: 0x5527,
         data3: 0x4f30,
@@ -48,7 +48,7 @@ fn guid_to_uuid() {
 #[cfg(windows)]
 fn guid_to_uuid_le_encoded() {
     use uuid::Uuid;
-    use windows::core;
+    use windows_sys::core;
 
     // A GUID might not be encoded directly as a UUID
     // If its fields are stored in little-endian order they might
@@ -89,9 +89,17 @@ fn guid_to_uuid_le_encoded() {
 #[cfg(windows)]
 fn uuid_from_cocreateguid() {
     use uuid::{Uuid, Variant, Version};
-    use windows::Win32::System::Com::CoCreateGuid;
+    use windows_sys::core;
+    use windows_sys::Win32::System::Com::CoCreateGuid;
 
-    let guid = unsafe { CoCreateGuid().expect("Unable to CoCreateGuid") };
+    let mut guid = core::GUID {
+        data1: 0,
+        data2: 0,
+        data3: 0,
+        data4: [0u8; 8],
+    };
+
+    unsafe { CoCreateGuid(&mut guid); }
 
     let uuid = Uuid::from_fields(guid.data1, guid.data2, guid.data3, &guid.data4);
 
