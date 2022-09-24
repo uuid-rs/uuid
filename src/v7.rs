@@ -20,9 +20,8 @@ impl Uuid {
     /// random number. When supplied as such, the data will be
     ///
     /// ```rust
-    /// # use uuid::{Uuid, Timestamp};
-    /// # use uuid::v7::NullSequence;
-    /// let ts = Timestamp::from_unix(NullSequence, 1497624119, 1234);
+    /// # use uuid::{Uuid, Timestamp, NoContext};
+    /// let ts = Timestamp::from_unix(NoContext, 1497624119, 1234);
     ///
     /// let uuid = Uuid::new_v7(ts);
     ///
@@ -53,7 +52,7 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Variant, Version};
+    use crate::{Variant, Version, NoContext};
     use std::string::ToString;
     #[cfg(target_arch = "wasm32")]
     use wasm_bindgen_test::*;
@@ -64,7 +63,7 @@ mod tests {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
 
-        let uuid = Uuid::new_v7(Timestamp::from_unix(NullSequence {}, time, time_fraction));
+        let uuid = Uuid::new_v7(Timestamp::from_unix(NoContext, time, time_fraction));
         let uustr = uuid.hyphenated().to_string();
 
         assert_eq!(uuid.get_version(), Some(Version::SortRand));

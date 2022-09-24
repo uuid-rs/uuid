@@ -72,14 +72,19 @@
 //! features to enable various pieces of functionality:
 //!
 //! * `v1` - adds the [`Uuid::new_v1`] function and the ability to create a V1
-//!   UUID using an implementation of [`v1::ClockSequence`] (usually
-//! [`v1::Context`]) and a UNIX timestamp.
+//!   UUID using a timestamp and monotonic counter.
 //! * `v3` - adds the [`Uuid::new_v3`] function and the ability to create a V3
 //!   UUID based on the MD5 hash of some data.
 //! * `v4` - adds the [`Uuid::new_v4`] function and the ability to randomly
 //!   generate a UUID.
 //! * `v5` - adds the [`Uuid::new_v5`] function and the ability to create a V5
 //!   UUID based on the SHA1 hash of some data.
+//! * `v6` - adds the [`Uuid::new_v6`] function and the ability to create a V6
+//!   UUID using a timestamp and monotonic counter.
+//! * `v7` - adds the [`Uuid::new_v7`] function and the ability to create a V7
+//!   UUID using a timestamp.
+//! * `v8` - adds the [`Uuid::new_v8`] function and the ability to create a V8
+//!   UUID using user-defined data.
 //!
 //! Other crate features can also be useful beyond the version support:
 //!
@@ -142,8 +147,8 @@
 //!
 //! Some additional features are supported in no-std environments:
 //!
-//! * `v1`, `v3`, and `v5`
-//! * `serde`
+//! * `v1`, `v3`, `v5`, `v6`, `v7`, and `v8`.
+//! * `serde`.
 //!
 //! If you need to use `v4` in a no-std environment, you'll need to
 //! follow [`getrandom`'s docs] on configuring a source of randomness
@@ -186,13 +191,6 @@
 //!
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 //! [`cargo-web`]: https://crates.io/crates/cargo-web
-//! [`Uuid`]: struct.Uuid.html
-//! [`Uuid::new_v1`]: struct.Uuid.html#method.new_v1
-//! [`Uuid::new_v3`]: struct.Uuid.html#method.new_v3
-//! [`Uuid::new_v4`]: struct.Uuid.html#method.new_v4
-//! [`Uuid::new_v5`]: struct.Uuid.html#method.new_v5
-//! [`v1::ClockSequence`]: v1/trait.ClockSequence.html
-//! [`v1::Context`]: v1/struct.Context.html
 //! [`getrandom`'s docs]: https://docs.rs/getrandom
 
 #![no_std]
@@ -225,9 +223,13 @@ mod parser;
 pub mod fmt;
 pub mod timestamp;
 
-pub use timestamp::{ClockSequence, Timestamp, context::{Context, NoContext}};
+pub use timestamp::{ClockSequence, Timestamp, context::NoContext};
+
+#[cfg(any(feature = "v1", feature = "v6"))]
+pub use timestamp::Context;
 
 #[cfg(feature = "v1")]
+#[deprecated(note = "use items directly from the crate root")]
 #[doc(hidden)]
 pub mod v1;
 #[cfg(feature = "v3")]

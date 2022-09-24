@@ -142,7 +142,7 @@ impl Timestamp {
     }
 }
 
-/// A trait that abstracts over generation of UUID v1 "Clock Sequence" values.
+/// A trait that abstracts over generation of counter values used in UUID timestamps.
 ///
 /// # References
 ///
@@ -175,6 +175,7 @@ impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T {
 pub mod context {
     use super::ClockSequence;
 
+    #[cfg(any(feature = "v1", feature = "v6"))]
     use private_atomic::{Atomic, Ordering};
 
     /// A clock sequence that never produces a counter value to deduplicate equal timestamps with.
@@ -192,10 +193,12 @@ pub mod context {
     /// A thread-safe, stateful context for the v1 generator to help ensure
     /// process-wide uniqueness.
     #[derive(Debug)]
+    #[cfg(any(feature = "v1", feature = "v6"))]
     pub struct Context {
         count: Atomic<u16>,
     }
 
+    #[cfg(any(feature = "v1", feature = "v6"))]
     impl Context {
         /// Creates a thread-safe, internally mutable context to help ensure
         /// uniqueness.
@@ -230,6 +233,7 @@ pub mod context {
         }
     }
 
+    #[cfg(any(feature = "v1", feature = "v6"))]
     impl ClockSequence for Context {
         type Output = u16;
 

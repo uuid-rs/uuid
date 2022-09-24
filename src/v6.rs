@@ -3,7 +3,7 @@
 //! Note that you need to enable the `v6` Cargo feature
 //! in order to use this module.
 
-use crate::timestamp::{ClockSequence, Timestamp};
+use crate::timestamp::Timestamp;
 use crate::Uuid;
 
 impl Uuid {
@@ -98,7 +98,7 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Variant, Version};
+    use crate::{Variant, Version, Context};
     use std::string::ToString;
 
     #[cfg(target_arch = "wasm32")]

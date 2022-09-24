@@ -48,6 +48,7 @@ status = "actively-developed"
 default = ["std"]
 std = []
 macro-diagnostics = ["private_uuid-macro-internal"]
+
 # NOTE: When adding new features, check the `ci.yml` workflow                                              ..
 # and include them where necessary (you can follow along with existing features)
 v1 = ["private_atomic"]
@@ -57,6 +58,7 @@ v5 = ["sha1"]
 v6 = ["private_atomic"]
 v7 = ["private_atomic", "rng"]
 v8 = []
+
 js = ["private_getrandom", "private_getrandom/js"]
 
 rng = ["private_getrandom"]
