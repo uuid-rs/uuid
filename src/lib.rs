@@ -65,9 +65,13 @@
 //! const ID: Uuid = uuid!("67e55044-10b1-426f-9247-bb680e5fe0c8");
 //! ```
 //!
-//! # Dependencies
+//! # Working with different UUID versions
 //!
-//! By default, this crate depends on nothing but `std` and can parse and format
+//! There are a number of approaches to generating and interpreting UUIDs that are specified
+//! as _versions_ in [RFC4122](http://tools.ietf.org/html/rfc4122). This library supports all of them,
+//! in addition to some newer versions in [a draft RFC](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04).
+//!
+//! By default, this crate depends on nothing but the Rust standard library and can parse and format
 //! UUIDs, but cannot generate them. You need to enable the following Cargo
 //! features to enable various pieces of functionality:
 //!
@@ -86,6 +90,8 @@
 //! * `v8` - adds the [`Uuid::new_v8`] function and the ability to create a V8
 //!   UUID using user-defined data.
 //!
+//! # Other features
+//!
 //! Other crate features can also be useful beyond the version support:
 //!
 //! * `macro-diagnostics` - enhances the diagnostics of `uuid!` macro.
@@ -93,11 +99,11 @@
 //!   `serde`.
 //! * `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid` for
 //!   fuzzing.
-//! * `fast-rng` - when combined with `v4` uses a faster algorithm for
-//!   generating random UUIDs. This feature requires more dependencies to
-//!   compile, but is just as suitable for UUIDs as the default algorithm.
+//! * `fast-rng` - uses a faster algorithm for generating random UUIDs.
+//!   This feature requires more dependencies to compile, but is just as suitable for
+//!   UUIDs as the default algorithm.
 //!
-//! ## Unstable features
+//! # Unstable features
 //!
 //! Some features are unstable. They may be incomplete or depend on other
 //! unstable libraries. These include:
@@ -119,8 +125,7 @@
 //!
 //! ## WebAssembly
 //!
-//! For WebAssembly, enable the `js` feature along with `v4` for a
-//! source of randomness:
+//! For WebAssembly, enable the `js` feature:
 //!
 //! ```toml
 //! [dependencies.uuid]
@@ -130,9 +135,6 @@
 //!     "js",
 //! ]
 //! ```
-//!
-//! You don't need the `js` feature to use `uuid` in WebAssembly if you're
-//! not also enabling `v4`.
 //!
 //! ## Embedded
 //!
@@ -147,10 +149,10 @@
 //!
 //! Some additional features are supported in no-std environments:
 //!
-//! * `v1`, `v3`, `v5`, `v6`, `v7`, and `v8`.
+//! * `v1`, `v3`, `v5`, `v6`, and `v8`.
 //! * `serde`.
 //!
-//! If you need to use `v4` in a no-std environment, you'll need to
+//! If you need to use `v4` or `v7` in a no-std environment, you'll need to
 //! follow [`getrandom`'s docs] on configuring a source of randomness
 //! on currently unsupported targets. Alternatively, you can produce
 //! random bytes yourself and then pass them to [`Builder::from_random_bytes`]
@@ -158,7 +160,7 @@
 //!
 //! # Examples
 //!
-//! To parse a UUID given in the simple format and print it as a urn:
+//! To parse a UUID given in the simple format and print it as a URN:
 //!
 //! ```
 //! # use uuid::Uuid;
@@ -187,7 +189,7 @@
 //! # References
 //!
 //! * [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
-//! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
+//! * [RFC4122: A Universally Unique Identifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
 //!
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 //! [`cargo-web`]: https://crates.io/crates/cargo-web
