@@ -3,16 +3,20 @@
 //! Note that you need to enable the `v7` Cargo feature
 //! in order to use this module.
 
-use crate::rng::{bytes, u16};
+use crate::{Builder, rng};
 use crate::timestamp::Timestamp;
 use crate::Uuid;
 use core::convert::TryInto;
+use core::time::Duration;
 
 impl Uuid {
-    /// Create a new UUID (version 7) using a time value + random number
+    /// Create a new UUID (version 7) using a time value + random number.
     ///
     /// Note that usage of this method requires the `v7` feature of this crate
     /// to be enabled.
+    ///
+    /// This method will use millisecond precision for the timestamp and fill the
+    /// rest with random data.
     ///
     /// # Examples
     ///
@@ -32,20 +36,16 @@ impl Uuid {
     ///
     /// The timestamp can also be created automatically from the current SystemTime
     ///
+    /// ```
     /// let ts = Timestamp::now();
     ///
     /// let uuid = Uuid::new_v7(ts);
-    ///
-    /// [`Timestamp`]: v1/struct.Timestamp.html
+    /// ```
     pub fn new_v7(ts: Timestamp) -> Self {
-        let millis = ts.seconds * 1000 + (ts.nanos as u64) / 1_000_000;
-        let ms_high = ((millis >> 16) & 0xFFFF_FFFF) as u32;
-        let ms_low = (millis & 0xFFFF) as u16;
-        let ver_rand = u16() & 0xFFF | (0x7 << 12);
-        let mut rnd = bytes();
-        rnd[0] = (rnd[0] & 0x3F) | 0x80;
-        let buf: [u8; 8] = (&rnd[0..8]).try_into().unwrap();
-        Uuid::from_fields(ms_high, ms_low, ver_rand, &buf)
+        let duration = Duration::new(ts.seconds, ts.nanos);
+        let buf: &[u8] = &rng::bytes()[0..11];
+
+        Builder::from_timestamp_millis(duration, buf.try_into().unwrap()).into_uuid()
     }
 }
 

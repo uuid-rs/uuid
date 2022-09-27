@@ -4,7 +4,7 @@
 //! in order to use this module.
 
 use crate::timestamp::Timestamp;
-use crate::Uuid;
+use crate::{Builder, Uuid};
 
 impl Uuid {
     /// Create a new UUID (version 6) using a time value + sequence +
@@ -76,22 +76,8 @@ impl Uuid {
     /// [`Context`]: v1/struct.Context.html
     pub fn new_v6(ts: Timestamp, node_id: &[u8; 6]) -> Self {
         let (ticks, counter) = ts.to_rfc4122();
-        let time_high = ((ticks >> 28) & 0xFFFF_FFFF) as u32;
-        let time_mid = ((ticks >> 12) & 0xFFFF) as u16;
-        let time_low_and_version = ((ticks & 0x0FFF) as u16) | (0x6 << 12);
 
-        let mut d4 = [0; 8];
-
-        d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
-        d4[1] = (counter & 0xFF) as u8;
-        d4[2] = node_id[0];
-        d4[3] = node_id[1];
-        d4[4] = node_id[2];
-        d4[5] = node_id[3];
-        d4[6] = node_id[4];
-        d4[7] = node_id[5];
-
-        Uuid::from_fields(time_high, time_mid, time_low_and_version, &d4)
+        Builder::from_sorted_rfc4122_timestamp(ticks, counter, node_id).into_uuid()
     }
 }
 

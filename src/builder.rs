@@ -13,6 +13,8 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
+use core::convert::TryInto;
+use core::time::Duration;
 use crate::{error::*, Bytes, Uuid, Variant, Version};
 
 /// A builder struct for creating a UUID.
@@ -537,7 +539,75 @@ impl Builder {
         Builder(Uuid::from_bytes_le(b))
     }
 
-    /// Creates a `Builder` using the supplied random bytes.
+    /// Creates a `Builder` for a version 1 UUID using the supplied timestamp and node id.
+    pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
+        let time_low = (ticks & 0xFFFF_FFFF) as u32;
+        let time_mid = ((ticks >> 32) & 0xFFFF) as u16;
+        let time_high_and_version = (((ticks >> 48) & 0x0FFF) as u16) | (1 << 12);
+
+        let mut d4 = [0; 8];
+
+        d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
+        d4[1] = (counter & 0xFF) as u8;
+        d4[2] = node_id[0];
+        d4[3] = node_id[1];
+        d4[4] = node_id[2];
+        d4[5] = node_id[3];
+        d4[6] = node_id[4];
+        d4[7] = node_id[5];
+
+        Self::from_fields(time_low, time_mid, time_high_and_version, &d4)
+    }
+
+    /// Creates a `Builder` for a version 6 UUID using the supplied timestamp and node id.
+    pub const fn from_sorted_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
+        let time_high = ((ticks >> 28) & 0xFFFF_FFFF) as u32;
+        let time_mid = ((ticks >> 12) & 0xFFFF) as u16;
+        let time_low_and_version = ((ticks & 0x0FFF) as u16) | (0x6 << 12);
+
+        let mut d4 = [0; 8];
+
+        d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
+        d4[1] = (counter & 0xFF) as u8;
+        d4[2] = node_id[0];
+        d4[3] = node_id[1];
+        d4[4] = node_id[2];
+        d4[5] = node_id[3];
+        d4[6] = node_id[4];
+        d4[7] = node_id[5];
+
+        Self::from_fields(time_high, time_mid, time_low_and_version, &d4)
+    }
+
+    /// Creates a `Builder` for a version 7 UUID using the supplied Unix timestamp in millisecond precision and random data.
+    pub const fn from_timestamp_millis(since_unix_epoch: Duration, random_bytes: &[u8; 11]) -> Self {
+        let millis = since_unix_epoch.as_millis() as u64;
+        let ms_high = ((millis >> 16) & 0xFFFF_FFFF) as u32;
+        let ms_low = (millis & 0xFFFF) as u16;
+
+        let rng_ver = random_bytes[0] as u16 | ((random_bytes[1] as u16) << 8) | (0x7 << 12);
+
+        let mut rng_rest = [0; 8];
+        rng_rest[0] = (random_bytes[2] & 0x3F) | 0x80;
+        rng_rest[1] = random_bytes[3];
+        rng_rest[2] = random_bytes[4];
+        rng_rest[3] = random_bytes[5];
+        rng_rest[4] = random_bytes[6];
+        rng_rest[5] = random_bytes[7];
+        rng_rest[6] = random_bytes[8];
+        rng_rest[7] = random_bytes[9];
+
+        Self::from_fields(ms_high, ms_low, rng_ver, &rng_rest)
+    }
+
+    /// Creates a `Builder` for a version 8 UUID using the supplied user-defined bytes.
+    pub const fn from_custom_bytes(b: Bytes) -> Self {
+        Builder::from_bytes(b)
+            .with_variant(Variant::RFC4122)
+            .with_version(Version::Custom)
+    }
+
+    /// Creates a `Builder` for a version 4 UUID using the supplied random bytes.
     ///
     /// This method can be useful in environments where the `v4` feature isn't
     /// available. This method will take care of setting the appropriate
@@ -563,14 +633,14 @@ impl Builder {
             .with_version(Version::Random)
     }
 
-    /// Creates a `Builder` using the supplied MD5 hashed bytes.
+    /// Creates a `Builder` for a version 3 UUID using the supplied MD5 hashed bytes.
     pub const fn from_md5_bytes(b: Bytes) -> Self {
         Builder(Uuid::from_bytes(b))
             .with_variant(Variant::RFC4122)
             .with_version(Version::Md5)
     }
 
-    /// Creates a `Builder` using the supplied SHA1 hashed bytes.
+    /// Creates a `Builder` for a version 5 UUID using the supplied SHA1 hashed bytes.
     pub const fn from_sha1_bytes(b: Bytes) -> Self {
         Builder(Uuid::from_bytes(b))
             .with_variant(Variant::RFC4122)

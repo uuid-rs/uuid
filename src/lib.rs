@@ -228,7 +228,7 @@ pub mod timestamp;
 pub use timestamp::{ClockSequence, Timestamp, context::NoContext};
 
 #[cfg(any(feature = "v1", feature = "v6"))]
-pub use timestamp::Context;
+pub use timestamp::context::Context;
 
 #[cfg(feature = "v1")]
 #[deprecated(note = "use items directly from the crate root")]
