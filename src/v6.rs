@@ -75,9 +75,7 @@ impl Uuid {
     /// [`ClockSequence`]: v1/trait.ClockSequence.html
     /// [`Context`]: v1/struct.Context.html
     pub fn new_v6(ts: Timestamp, node_id: &[u8; 6]) -> Self {
-        let (ticks, counter) = ts.to_rfc4122();
-
-        Builder::from_sorted_rfc4122_timestamp(ticks, counter, node_id).into_uuid()
+        Builder::from_sorted_rfc4122_timestamp(ts, node_id).into_uuid()
     }
 }
 

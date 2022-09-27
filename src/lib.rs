@@ -80,7 +80,7 @@
 //! * `v3` - adds the [`Uuid::new_v3`] function and the ability to create a V3
 //!   UUID based on the MD5 hash of some data.
 //! * `v4` - adds the [`Uuid::new_v4`] function and the ability to randomly
-//!   generate a UUID.
+//!   generate a V4 UUID.
 //! * `v5` - adds the [`Uuid::new_v5`] function and the ability to create a V5
 //!   UUID based on the SHA1 hash of some data.
 //! * `v6` - adds the [`Uuid::new_v6`] function and the ability to create a V6
@@ -89,6 +89,9 @@
 //!   UUID using a timestamp.
 //! * `v8` - adds the [`Uuid::new_v8`] function and the ability to create a V8
 //!   UUID using user-defined data.
+//!
+//! This library also includes a [`Builder`] type that can be used to help construct UUIDs of any
+//! version without any additional dependencies or features.
 //!
 //! # Other features
 //!
@@ -231,8 +234,9 @@ pub use timestamp::{ClockSequence, Timestamp, context::NoContext};
 pub use timestamp::context::Context;
 
 #[cfg(feature = "v1")]
-#[deprecated(note = "use items directly from the crate root")]
 #[doc(hidden)]
+// Soft-deprecated (Rust doesn't support deprecating re-exports)
+// Use `Context` from the crate root instead
 pub mod v1;
 #[cfg(feature = "v3")]
 mod v3;

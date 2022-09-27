@@ -1,4 +1,4 @@
-use crate::{Builder, Uuid, Variant, Version};
+use crate::{Builder, Uuid};
 
 impl Uuid {
     /// Creates a custom UUID comprised almost entirely of user-supplied bytes
@@ -26,6 +26,7 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{Version, Variant};
     use std::string::ToString;
 
     #[cfg(target_arch = "wasm32")]

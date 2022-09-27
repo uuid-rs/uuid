@@ -6,11 +6,6 @@
 use crate::timestamp::Timestamp;
 use crate::{Builder, Uuid};
 
-/// The number of 100 ns ticks between the UUID epoch
-/// `1582-10-15 00:00:00` and the Unix epoch `1970-01-01 00:00:00`.
-const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
-
-#[deprecated(note = "use `Context` from the crate root")]
 pub use crate::timestamp::context::Context;
 
 impl Uuid {
@@ -85,14 +80,11 @@ impl Uuid {
     /// [`ClockSequence`]: v1/trait.ClockSequence.html
     /// [`Context`]: v1/struct.Context.html
     pub fn new_v1(ts: Timestamp, node_id: &[u8; 6]) -> Self {
-        let (ticks, counter) = ts.to_rfc4122();
-
-        Builder::from_rfc4122_timestamp(ticks, counter, node_id).into_uuid()
+        Builder::from_rfc4122_timestamp(ts, node_id).into_uuid()
     }
 }
 
 #[cfg(test)]
-#[allow(deprecated)]
 mod tests {
     use super::*;
 
@@ -102,7 +94,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_new_v1() {
+    fn test_new() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
         let node = [1, 2, 3, 4, 5, 6];
@@ -132,7 +124,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_new_v1_context() {
+    fn test_new_context() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
         let node = [1, 2, 3, 4, 5, 6];

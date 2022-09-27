@@ -3,14 +3,22 @@
 //! Note that you need to enable the `v7` Cargo feature
 //! in order to use this module.
 
-use crate::{Builder, rng};
-use crate::timestamp::Timestamp;
-use crate::Uuid;
+use crate::{Builder, NoContext, rng, timestamp::Timestamp, Uuid};
 use core::convert::TryInto;
-use core::time::Duration;
 
 impl Uuid {
-    /// Create a new UUID (version 7) using a time value + random number.
+    /// Create a new UUID (version 7) using the current time value and random bytes.
+    ///
+    /// This method is a convenient alternative to [`Uuid::new_v7`] that uses the current system time
+    /// as the source timestamp.
+    #[cfg(feature = "std")]
+    pub fn now_v7() -> Self {
+        Self::new_v7(Timestamp::now(NoContext))
+    }
+
+    /// Create a new UUID (version 7) using a time value and random bytes.
+    ///
+    /// When the `std` feature is enabled, you can also use [`Uuid::now_v7`].
     ///
     /// Note that usage of this method requires the `v7` feature of this crate
     /// to be enabled.
@@ -37,15 +45,15 @@ impl Uuid {
     /// The timestamp can also be created automatically from the current SystemTime
     ///
     /// ```
-    /// let ts = Timestamp::now();
+    /// # use uuid::{Uuid, Timestamp, NoContext};
+    /// let ts = Timestamp::now(NoContext);
     ///
     /// let uuid = Uuid::new_v7(ts);
     /// ```
     pub fn new_v7(ts: Timestamp) -> Self {
-        let duration = Duration::new(ts.seconds, ts.nanos);
         let buf: &[u8] = &rng::bytes()[0..11];
 
-        Builder::from_timestamp_millis(duration, buf.try_into().unwrap()).into_uuid()
+        Builder::from_timestamp_millis(ts, buf.try_into().unwrap()).into_uuid()
     }
 }
 
