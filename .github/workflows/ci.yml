@@ -3,6 +3,7 @@ name: Continuous integration
 env:
   VERSION_FEATURES: "v1 v3 v4 v5 v6 v7"
   STABLE_DEP_FEATURES: "serde arbitrary"
+  ALL_FEATURES: "arbitrary default fast-rng js macro-diagnostics md5 rng serde sha1 slog std v1 v3 v4 v5 v6 v7 v8 zerocopy"
 
 on:
   pull_request:
@@ -59,16 +60,20 @@ jobs:
       run: cargo install cargo-hack
 
     - name: Docs
-      run: cargo test --all-features --doc
+      run: cargo test --features "$ALL_FEATURES" --doc
 
     - name: Examples
-      run: cargo test --all-features --examples
+      run: cargo test --features "$ALL_FEATURES" --examples
 
     - name: Each version feature
-      run: cargo hack test --lib --each-feature --optional-deps $STABLE_DEP_FEATURES
+      run: cargo hack test --lib --each-feature --exclude-features "debugger_visualizer" --optional-deps $STABLE_DEP_FEATURES
 
     - name: All version features
-      run: cargo hack test --lib --each-feature --features "$VERSION_FEATURES" --optional-deps "$STABLE_DEP_FEATURES"
+      run: cargo hack test --lib --each-feature --exclude-features "debugger_visualizer" --features "$VERSION_FEATURES" --optional-deps "$STABLE_DEP_FEATURES"
+
+    - name: Test debugger_visualizer
+      if: matrix.channel == 'nightly' && matrix.target == 'x86_64-msvc'
+      run: cargo test --test debugger_visualizer --features "debugger_visualizer" -- --test-threads=1
 
   msrv:
     name: "Tests / MSRV / OS: ${{ matrix.os }}"
@@ -177,7 +182,8 @@ jobs:
         run: cargo install cargo-hack
 
       - name: Powerset
-        run: cargo hack check --each-feature -Z avoid-dev-deps
+        run: cargo hack check --each-feature --exclude-features "debugger_visualizer" -Z avoid-dev-deps
+
   win_tests:
     name: "Tests / OS: Windows 2019 - ${{ matrix.channel }}-${{ matrix.rust_target }}"
     runs-on: windows-2019
@@ -210,16 +216,20 @@ jobs:
       run: cargo install cargo-hack
 
     - name: Docs
-      run: cargo test --all-features --doc
+      run: cargo test --features "$env:ALL_FEATURES" --doc
 
     - name: Examples
-      run: cargo test --all-features --examples
+      run: cargo test --features "$env:ALL_FEATURES" --examples
 
     - name: Each version feature
-      run: cargo hack test --lib --each-feature --optional-deps $env:STABLE_DEP_FEATURES
+      run: cargo hack test --lib --each-feature --exclude-features "debugger_visualizer" --optional-deps $env:STABLE_DEP_FEATURES
 
     - name: All version features
-      run: cargo hack test --lib --each-feature --features "$env:VERSION_FEATURES" --optional-deps "$env:STABLE_DEP_FEATURES"
+      run: cargo hack test --lib --each-feature --exclude-features "debugger_visualizer" --features "$env:VERSION_FEATURES" --optional-deps "$env:STABLE_DEP_FEATURES"
+
+    - name: Test debugger_visualizer
+      if: matrix.channel == 'nightly' && matrix.target == 'x86_64-msvc'
+      run: cargo test --test debugger_visualizer --features "debugger_visualizer" -- --test-threads=1
 
   win-msrv:
     name: "Tests / MSRV / OS: Windows 2019"

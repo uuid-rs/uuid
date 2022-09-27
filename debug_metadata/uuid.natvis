@@ -1,0 +1,28 @@
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="uuid::Uuid">
+    <!-- Use `&quot;&quot;` to 'stringify' the result of an expression. -->
+    <Intrinsic Name="print_char" Expression="value == 10 ? &quot;a&quot; : value == 11 ? &quot;b&quot; : value == 12 ? &quot;c&quot; : value == 13 ? &quot;d&quot; : value == 14 ? &quot;e&quot; : value == 15 ? &quot;f&quot; : &quot;&quot;">
+      <Parameter Name="value" Type="int" />
+    </Intrinsic>
+
+    <Intrinsic Name="get_value" Expression="value &lt; 10 ? value : print_char(value)">
+      <Parameter Name="value" Type="int" />
+    </Intrinsic>
+
+    <Intrinsic Name="print" Expression="(get_value(__0[index] >> 4) + &quot;&quot;) + (get_value(__0[index] &amp; 15) + &quot;&quot;)">
+      <Parameter Name="index" Type="int" />
+    </Intrinsic>
+
+    <Intrinsic Name="add_hyphen" Expression="index == 3 || index == 5 || index == 7 || index == 9 ? &quot;-&quot; : &quot;&quot;">
+      <Parameter Name="index" Type="int" />
+    </Intrinsic>
+
+    <Intrinsic Name="create_display_string" Expression="index == 16 ? &quot;&quot; : print(index) + &quot;&quot; + add_hyphen(index) + &quot;&quot; + create_display_string(index + 1) + &quot;&quot;">
+      <Parameter Name="index" Type="int" />
+    </Intrinsic>
+
+    <Intrinsic Name="display_string" Expression="create_display_string(0)" />
+
+    <DisplayString>"{display_string()}"</DisplayString>
+  </Type>
+</AutoVisualizer>

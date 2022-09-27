@@ -202,6 +202,11 @@
     html_favicon_url = "https://www.rust-lang.org/favicon.ico",
     html_root_url = "https://docs.rs/uuid/1.1.2"
 )]
+#![cfg_attr(
+    feature = "debugger_visualizer",
+    feature(debugger_visualizer),
+    debugger_visualizer(natvis_file = "../debug_metadata/uuid.natvis")
+)]
 
 #[cfg(any(feature = "std", test))]
 #[macro_use]
