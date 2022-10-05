@@ -3,7 +3,7 @@
 //! Note that you need to enable the `v7` Cargo feature
 //! in order to use this module.
 
-use crate::{rng, timestamp::Timestamp, Builder, NoContext, Uuid};
+use crate::{rng, timestamp::Timestamp, Builder, Uuid};
 use core::convert::TryInto;
 
 impl Uuid {
@@ -13,7 +13,7 @@ impl Uuid {
     /// as the source timestamp.
     #[cfg(feature = "std")]
     pub fn now_v7() -> Self {
-        Self::new_v7(Timestamp::now(NoContext))
+        Self::new_v7(Timestamp::now(crate::NoContext))
     }
 
     /// Create a new version 7 UUID using a time value and random bytes.
@@ -80,6 +80,15 @@ mod tests {
         let parsed = Uuid::parse_str(uustr.as_str()).unwrap();
 
         assert_eq!(uuid, parsed);
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    fn test_now_v7() {
+        let uuid = Uuid::now_v7();
+
+        assert_eq!(uuid.get_version(), Some(Version::SortRand));
+        assert_eq!(uuid.get_variant(), Variant::RFC4122);
     }
 
     #[test]
