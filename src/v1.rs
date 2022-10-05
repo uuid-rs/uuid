@@ -1,30 +1,38 @@
 //! The implementation for Version 1 UUIDs.
 //!
-//! Note that you need to enable the `v1` Cargo feature
-//! in order to use this module.
+//! This module is soft-deprecated. Instead of using the `Context` type re-exported here,
+//! use the one from the crate root.
 
+use crate::timestamp::context::shared_context;
 use crate::timestamp::Timestamp;
 use crate::{Builder, Uuid};
 
 pub use crate::timestamp::context::Context;
 
 impl Uuid {
-    /// Create a new UUID (version 1) using a time value + sequence +
-    /// *NodeId*.
+    /// Create a new UUID (version 1) using the current system time and a node id.
+    ///
+    /// This method is only available if both the `std` and `rng` features are enabled.
+    #[cfg(all(feature = "std", feature = "rng"))]
+    pub fn now_v1(node_id: &[u8; 6]) -> Self {
+        let ts = Timestamp::now(shared_context());
+
+        Self::new_v1(ts, node_id)
+    }
+
+    /// Create a new UUID (version 1) using the given timestamp and node id.
     ///
     /// When generating [`Timestamp`]s using a [`ClockSequence`], this function
     /// is only guaranteed to produce unique values if the following conditions
     /// hold:
     ///
-    /// 1. The *NodeId* is unique for this process,
-    /// 2. The *Context* is shared across all threads which are generating v1
+    /// 1. The *node id* is unique for this process,
+    /// 2. The *context* is shared across all threads which are generating version 1
     ///    UUIDs,
     /// 3. The [`ClockSequence`] implementation reliably returns unique
     ///    clock sequences (this crate provides [`Context`] for this
     ///    purpose. However you can create your own [`ClockSequence`]
     ///    implementation, if [`Context`] does not meet your needs).
-    ///
-    /// The NodeID must be exactly 6 bytes long.
     ///
     /// Note that usage of this method requires the `v1` feature of this crate
     /// to be enabled.
@@ -35,7 +43,7 @@ impl Uuid {
     /// [`ClockSequence`]. RFC4122 requires the clock sequence
     /// is seeded with a random value:
     ///
-    /// ```rust
+    /// ```
     /// # use uuid::{Timestamp, Context};
     /// # use uuid::Uuid;
     /// # fn random_seed() -> u16 { 42 }
@@ -67,7 +75,7 @@ impl Uuid {
     ///
     /// The timestamp can also just use the current SystemTime
     ///
-    /// ```rust
+    /// ```
     /// # use uuid::{Timestamp, Context};
     /// # use uuid::Uuid;
     /// let context = Context::new(42);
@@ -80,8 +88,46 @@ impl Uuid {
     /// [`ClockSequence`]: v1/trait.ClockSequence.html
     /// [`Context`]: v1/struct.Context.html
     pub fn new_v1(ts: Timestamp, node_id: &[u8; 6]) -> Self {
-        Builder::from_rfc4122_timestamp(ts, node_id).into_uuid()
+        let (ticks, counter) = ts.to_rfc4122();
+
+        Builder::from_rfc4122_timestamp(ticks, counter, node_id).into_uuid()
     }
+}
+
+pub(crate) const fn encode_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Uuid {
+    let time_low = (ticks & 0xFFFF_FFFF) as u32;
+    let time_mid = ((ticks >> 32) & 0xFFFF) as u16;
+    let time_high_and_version = (((ticks >> 48) & 0x0FFF) as u16) | (1 << 12);
+
+    let mut d4 = [0; 8];
+
+    d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
+    d4[1] = (counter & 0xFF) as u8;
+    d4[2] = node_id[0];
+    d4[3] = node_id[1];
+    d4[4] = node_id[2];
+    d4[5] = node_id[3];
+    d4[6] = node_id[4];
+    d4[7] = node_id[5];
+
+    Uuid::from_fields(time_low, time_mid, time_high_and_version, &d4)
+}
+
+pub(crate) const fn decode_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
+    let bytes = uuid.as_bytes();
+
+    let ticks: u64 = ((bytes[6] & 0x0F) as u64) << 56
+        | (bytes[7] as u64) << 48
+        | (bytes[4] as u64) << 40
+        | (bytes[5] as u64) << 32
+        | (bytes[0] as u64) << 24
+        | (bytes[1] as u64) << 16
+        | (bytes[2] as u64) << 8
+        | (bytes[3] as u64);
+
+    let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
+
+    (ticks, counter)
 }
 
 #[cfg(test)]

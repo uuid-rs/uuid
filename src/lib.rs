@@ -228,7 +228,7 @@ mod parser;
 pub mod fmt;
 pub mod timestamp;
 
-pub use timestamp::{ClockSequence, Timestamp, context::NoContext};
+pub use timestamp::{context::NoContext, ClockSequence, Timestamp};
 
 #[cfg(any(feature = "v1", feature = "v6"))]
 pub use timestamp::context::Context;
@@ -884,60 +884,30 @@ impl Uuid {
     /// value into more commonly-used formats, such as a unix timestamp.
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
-    pub const fn get_timestamp(&self) -> Option<crate::timestamp::Timestamp> {
+    pub const fn get_timestamp(&self) -> Option<Timestamp> {
         match self.get_version() {
             Some(Version::Mac) => {
-                let bytes = self.as_bytes();
-                let ticks: u64 = ((bytes[6] & 0x0F) as u64) << 56
-                    | (bytes[7] as u64) << 48
-                    | (bytes[4] as u64) << 40
-                    | (bytes[5] as u64) << 32
-                    | (bytes[0] as u64) << 24
-                    | (bytes[1] as u64) << 16
-                    | (bytes[2] as u64) << 8
-                    | (bytes[3] as u64);
+                let (ticks, counter) = v1::decode_rfc4122_timestamp(self);
 
-                let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
-
-                Some(crate::timestamp::Timestamp::from_rfc4122(ticks, counter))
+                Some(Timestamp::from_rfc4122(ticks, counter))
             }
             Some(Version::SortMac) => {
-                let bytes = self.as_bytes();
-                let ticks: u64 = ((self.as_bytes()[0]) as u64) << 52
-                    | (bytes[1] as u64) << 44
-                    | (bytes[2] as u64) << 36
-                    | (bytes[3] as u64) << 28
-                    | (bytes[4] as u64) << 20
-                    | (bytes[5] as u64) << 12
-                    | ((bytes[6] & 0xF) as u64) << 8
-                    | (bytes[7] as u64);
+                let (ticks, counter) = v6::decode_sorted_rfc4122_timestamp(self);
 
-                let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
-
-                Some(crate::timestamp::Timestamp::from_rfc4122(ticks, counter))
+                Some(Timestamp::from_rfc4122(ticks, counter))
             }
             Some(Version::SortRand) => {
-                let bytes = self.as_bytes();
-                let millis: u64 = (bytes[0] as u64) << 40
-                    | (bytes[1] as u64) << 32
-                    | (bytes[2] as u64) << 24
-                    | (bytes[3] as u64) << 16
-                    | (bytes[4] as u64) << 8
-                    | (bytes[5] as u64);
+                let millis = v7::decode_unix_timestamp_millis(self);
+
                 let seconds = millis / 1000;
                 let nanos = ((millis % 1000) * 1_000_000) as u32;
-                #[cfg(any(feature = "v1", feature = "v6"))]
-                {
-                    Some(Timestamp {
-                        seconds,
-                        nanos,
-                        counter: 0,
-                    })
-                }
-                #[cfg(not(any(feature = "v1", feature = "v6")))]
-                {
-                    Some(Timestamp { seconds, nanos })
-                }
+
+                Some(Timestamp {
+                    seconds,
+                    nanos,
+                    #[cfg(any(feature = "v1", feature = "v6"))]
+                    counter: 0,
+                })
             }
             _ => None,
         }
@@ -1168,7 +1138,7 @@ mod tests {
         let uuid1 = new();
         let s = uuid1.hyphenated().to_string();
 
-        assert!(s.len() == 36);
+        assert_eq!(36, s.len());
         assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
     }
 

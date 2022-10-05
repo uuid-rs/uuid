@@ -13,8 +13,7 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
-use core::time::Duration;
-use crate::{error::*, Bytes, Uuid, Variant, Version, Timestamp};
+use crate::{error::*, Bytes, Uuid, Variant, Version};
 
 /// A builder struct for creating a UUID.
 ///
@@ -539,30 +538,13 @@ impl Builder {
     }
 
     /// Creates a `Builder` for a version 1 UUID using the supplied timestamp and node id.
-    pub const fn from_rfc4122_timestamp(ts: Timestamp, node_id: &[u8; 6]) -> Self {
-        let (ticks, counter) = ts.to_rfc4122();
-
-        let time_low = (ticks & 0xFFFF_FFFF) as u32;
-        let time_mid = ((ticks >> 32) & 0xFFFF) as u16;
-        let time_high_and_version = (((ticks >> 48) & 0x0FFF) as u16) | (1 << 12);
-
-        let mut d4 = [0; 8];
-
-        d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
-        d4[1] = (counter & 0xFF) as u8;
-        d4[2] = node_id[0];
-        d4[3] = node_id[1];
-        d4[4] = node_id[2];
-        d4[5] = node_id[3];
-        d4[6] = node_id[4];
-        d4[7] = node_id[5];
-
-        Self::from_fields(time_low, time_mid, time_high_and_version, &d4)
+    pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
+        Builder(crate::v1::encode_rfc4122_timestamp(ticks, counter, node_id))
     }
 
     /// Creates a `Builder` for a version 3 UUID using the supplied MD5 hashed bytes.
-    pub const fn from_md5_bytes(b: Bytes) -> Self {
-        Builder(Uuid::from_bytes(b))
+    pub const fn from_md5_bytes(md5_bytes: Bytes) -> Self {
+        Builder(Uuid::from_bytes(md5_bytes))
             .with_variant(Variant::RFC4122)
             .with_version(Version::Md5)
     }
@@ -586,8 +568,8 @@ impl Builder {
     /// assert_eq!(Some(Version::Random), uuid.get_version());
     /// assert_eq!(Variant::RFC4122, uuid.get_variant());
     /// ```
-    pub const fn from_random_bytes(b: Bytes) -> Self {
-        Builder(Uuid::from_bytes(b))
+    pub const fn from_random_bytes(random_bytes: Bytes) -> Self {
+        Builder(Uuid::from_bytes(random_bytes))
             .with_variant(Variant::RFC4122)
             .with_version(Version::Random)
     }
@@ -596,8 +578,8 @@ impl Builder {
     ///
     /// This method assumes the bytes are already a SHA1 hash, it will only set the appropriate
     /// bits for the UUID version and variant.
-    pub const fn from_sha1_bytes(b: Bytes) -> Self {
-        Builder(Uuid::from_bytes(b))
+    pub const fn from_sha1_bytes(sha1_bytes: Bytes) -> Self {
+        Builder(Uuid::from_bytes(sha1_bytes))
             .with_variant(Variant::RFC4122)
             .with_version(Version::Sha1)
     }
@@ -605,25 +587,14 @@ impl Builder {
     /// Creates a `Builder` for a version 6 UUID using the supplied timestamp and node id.
     ///
     /// This method will encode the ticks, counter, and node id in a sortable UUID.
-    pub const fn from_sorted_rfc4122_timestamp(ts: Timestamp, node_id: &[u8; 6]) -> Self {
-        let (ticks, counter) = ts.to_rfc4122();
-
-        let time_high = ((ticks >> 28) & 0xFFFF_FFFF) as u32;
-        let time_mid = ((ticks >> 12) & 0xFFFF) as u16;
-        let time_low_and_version = ((ticks & 0x0FFF) as u16) | (0x6 << 12);
-
-        let mut d4 = [0; 8];
-
-        d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
-        d4[1] = (counter & 0xFF) as u8;
-        d4[2] = node_id[0];
-        d4[3] = node_id[1];
-        d4[4] = node_id[2];
-        d4[5] = node_id[3];
-        d4[6] = node_id[4];
-        d4[7] = node_id[5];
-
-        Self::from_fields(time_high, time_mid, time_low_and_version, &d4)
+    pub const fn from_sorted_rfc4122_timestamp(
+        ticks: u64,
+        counter: u16,
+        node_id: &[u8; 6],
+    ) -> Self {
+        Builder(crate::v6::encode_sorted_rfc4122_timestamp(
+            ticks, counter, node_id,
+        ))
     }
 
     /// Creates a `Builder` for a version 7 UUID using the supplied Unix timestamp.
@@ -637,48 +608,36 @@ impl Builder {
     /// Creating a UUID using the current system timestamp:
     ///
     /// ```
+    /// use std::time::{Duration, SystemTime};
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # use uuid::{Builder, Uuid, Variant, Version, Timestamp, NoContext};
     /// # let rng = || [
-    /// #     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204,
+    /// #     70, 235, 208, 238, 14, 109, 67, 201, 185, 13
     /// # ];
-    /// let ts = Timestamp::now(NoContext);
+    /// let ts = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+    ///
     /// let random_bytes = rng();
     ///
-    /// let uuid = Builder::from_timestamp_millis(ts, &random_bytes).into_uuid();
+    /// let uuid = Builder::from_unix_timestamp(ts.as_secs(), ts.subsec_millis(), &random_bytes).into_uuid();
     ///
     /// assert_eq!(Some(Version::SortRand), uuid.get_version());
     /// assert_eq!(Variant::RFC4122, uuid.get_variant());
     /// # Ok(())
     /// # }
     /// ```
-    pub const fn from_timestamp_millis(ts: Timestamp, random_bytes: &[u8; 11]) -> Self {
-        let millis = Duration::new(ts.seconds, ts.nanos).as_millis() as u64;
-        let millis_high = ((millis >> 16) & 0xFFFF_FFFF) as u32;
-        let millis_low = (millis & 0xFFFF) as u16;
-
-        let random_and_version = (random_bytes[0] as u16 | ((random_bytes[1] as u16) << 8) & 0x0FFF) | (0x7 << 12);
-
-        let mut d4 = [0; 8];
-
-        d4[0] = (random_bytes[2] & 0x3F) | 0x80;
-        d4[1] = random_bytes[3];
-        d4[2] = random_bytes[4];
-        d4[3] = random_bytes[5];
-        d4[4] = random_bytes[6];
-        d4[5] = random_bytes[7];
-        d4[6] = random_bytes[8];
-        d4[7] = random_bytes[9];
-
-        Self::from_fields(millis_high, millis_low, random_and_version, &d4)
+    pub const fn from_unix_timestamp_millis(millis: u64, random_bytes: &[u8; 10]) -> Self {
+        Builder(crate::v7::encode_unix_timestamp_millis(
+            millis,
+            random_bytes,
+        ))
     }
 
     /// Creates a `Builder` for a version 8 UUID using the supplied user-defined bytes.
     ///
     /// This method won't interpret the given bytes in any way, except to set the appropriate
     /// bits for the UUID version and variant.
-    pub const fn from_custom_bytes(b: Bytes) -> Self {
-        Builder::from_bytes(b)
+    pub const fn from_custom_bytes(custom_bytes: Bytes) -> Self {
+        Builder::from_bytes(custom_bytes)
             .with_variant(Variant::RFC4122)
             .with_version(Version::Custom)
     }
