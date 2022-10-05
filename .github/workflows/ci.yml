@@ -1,8 +1,8 @@
 name: Continuous integration
 
 env:
-  VERSION_FEATURES: "v1 v3 v4 v5 v6 v7"
-  STABLE_DEP_FEATURES: "serde arbitrary"
+  VERSION_FEATURES: "v1 v3 v4 v5 v6 v7 v8"
+  DEP_FEATURES: "slog serde arbitrary zerocopy"
 
 on:
   pull_request:
@@ -65,10 +65,10 @@ jobs:
       run: cargo test --all-features --examples
 
     - name: Each version feature
-      run: cargo hack test --lib --each-feature --optional-deps $STABLE_DEP_FEATURES
+      run: cargo hack test --lib --each-feature
 
-    - name: All version features
-      run: cargo hack test --lib --each-feature --features "$VERSION_FEATURES" --optional-deps "$STABLE_DEP_FEATURES"
+    - name: All features
+      run: cargo hack test --lib --all-features
 
   msrv:
     name: "Tests / MSRV / OS: ${{ matrix.os }}"
@@ -91,7 +91,7 @@ jobs:
         override: true
 
     - name: Version features
-      run: cargo test --features "$VERSION_FEATURES $STABLE_DEP_FEATURES"
+      run: cargo test --features "$VERSION_FEATURES $DEP_FEATURES"
 
   wasm:
     name: Tests / WebAssembly
@@ -107,7 +107,7 @@ jobs:
         run: wasm-pack test --node
 
       - name: Version features
-        run: wasm-pack test --node -- --features "$VERION_FEATURES $STABLE_DEP_FEATURES js"
+        run: wasm-pack test --node -- --features "$VERION_FEATURES $DEP_FEATURES js"
 
       - name: Fast RNG
         run: wasm-pack test --node -- --features "js v4 fast-rng"
@@ -151,6 +151,7 @@ jobs:
         with:
           command: build
           args: -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features
+
       - name: Version features
         uses: actions-rs/cargo@v1
         with:
@@ -216,10 +217,10 @@ jobs:
       run: cargo test --all-features --examples
 
     - name: Each version feature
-      run: cargo hack test --lib --each-feature --optional-deps $env:STABLE_DEP_FEATURES
+      run: cargo hack test --lib --each-feature --optional-deps $env:DEP_FEATURES
 
     - name: All version features
-      run: cargo hack test --lib --each-feature --features "$env:VERSION_FEATURES" --optional-deps "$env:STABLE_DEP_FEATURES"
+      run: cargo hack test --lib --each-feature --features "$env:VERSION_FEATURES" --optional-deps "$env:DEP_FEATURES"
 
   win-msrv:
     name: "Tests / MSRV / OS: Windows 2019"
@@ -236,4 +237,4 @@ jobs:
         override: true
 
     - name: Version features
-      run: cargo test --features "$env:VERSION_FEATURES $env:STABLE_DEP_FEATURES"
+      run: cargo test --features "$env:VERSION_FEATURES $env:DEP_FEATURES"

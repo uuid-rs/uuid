@@ -60,15 +60,13 @@ impl Timestamp {
             let _ = context;
         }
 
-        let dur = std::time::SystemTime::UNIX_EPOCH
-            .elapsed()
-            .expect("Getting elapsed time since UNIX_EPOCH. If this fails, we've somehow violated causality");
+        let (seconds, nanos) = now();
 
         Timestamp {
-            seconds: dur.as_secs(),
-            nanos: dur.subsec_nanos(),
+            seconds,
+            nanos,
             #[cfg(any(feature = "v1", feature = "v6"))]
-            counter: context.generate_sequence(dur.as_secs(), dur.subsec_nanos()),
+            counter: context.generate_sequence(seconds, nanos),
         }
     }
 
@@ -266,6 +264,33 @@ pub(crate) const fn decode_unix_timestamp_millis(uuid: &Uuid) -> u64 {
     millis
 }
 
+#[cfg(all(feature = "std", feature = "js", target_arch = "wasm32"))]
+fn now() -> (u64, u32) {
+    use wasm_bindgen::prelude::*;
+
+    #[wasm_bindgen]
+    extern "C" {
+        #[wasm_bindgen(js_namespace = Date)]
+        fn now() -> f64;
+    }
+
+    let now = now();
+
+    let secs = (now / 1_000.0) as u64;
+    let nanos = ((now % 1_000.0) * 1_000_000.0) as u32;
+
+    dbg!((secs, nanos))
+}
+
+#[cfg(all(feature = "std", any(not(feature = "js"), not(target_arch = "wasm32"))))]
+fn now() -> (u64, u32) {
+    let dur = std::time::SystemTime::UNIX_EPOCH
+        .elapsed()
+        .expect("Getting elapsed time since UNIX_EPOCH. If this fails, we've somehow violated causality");
+
+    (dur.as_secs(), dur.subsec_nanos())
+}
+
 /// A counter that can be used by version 1 and version 6 UUIDs to support
 /// the uniqueness of timestamps.
 ///
@@ -294,7 +319,7 @@ pub mod context {
     use super::ClockSequence;
 
     #[cfg(any(feature = "v1", feature = "v6"))]
-    use private_atomic::{Atomic, Ordering};
+    use atomic::{Atomic, Ordering};
 
     /// An empty counter that will always return the value `0`.
     ///
