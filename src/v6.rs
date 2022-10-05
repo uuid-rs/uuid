@@ -3,7 +3,7 @@
 //! Note that you need to enable the `v6` Cargo feature
 //! in order to use this module.
 
-use crate::{timestamp::context::shared_context, Builder, Timestamp, Uuid};
+use crate::{Builder, Timestamp, Uuid};
 
 impl Uuid {
     /// Create a new version 6 UUID using the current time value and a node id.
@@ -14,7 +14,7 @@ impl Uuid {
     /// as the source timestamp.
     #[cfg(all(feature = "std", feature = "rng"))]
     pub fn now_v6(node_id: &[u8; 6]) -> Self {
-        let ts = Timestamp::now(shared_context());
+        let ts = Timestamp::now(crate::timestamp::context::shared_context());
 
         Self::new_v6(ts, node_id)
     }

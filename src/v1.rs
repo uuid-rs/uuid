@@ -3,7 +3,7 @@
 //! This module is soft-deprecated. Instead of using the `Context` type re-exported here,
 //! use the one from the crate root.
 
-use crate::{timestamp::context::shared_context, Builder, Timestamp, Uuid};
+use crate::{Builder, Timestamp, Uuid};
 
 pub use crate::timestamp::context::Context;
 
@@ -16,7 +16,7 @@ impl Uuid {
     /// as the source timestamp.
     #[cfg(all(feature = "std", feature = "rng"))]
     pub fn now_v1(node_id: &[u8; 6]) -> Self {
-        let ts = Timestamp::now(shared_context());
+        let ts = Timestamp::now(crate::timestamp::context::shared_context());
 
         Self::new_v1(ts, node_id)
     }
