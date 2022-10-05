@@ -38,6 +38,10 @@ impl Uuid {
     ///     uuid.hyphenated().to_string().starts_with("015cb15a-86d8-7")
     /// );
     /// ```
+    ///
+    /// # References
+    ///
+    /// * [Version 7 UUIDs in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.2)
     pub fn new_v7(ts: Timestamp) -> Self {
         let (secs, nanos) = ts.to_unix();
         let millis = secs.saturating_add(nanos as u64 / 1_000_000);

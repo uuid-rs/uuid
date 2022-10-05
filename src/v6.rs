@@ -3,9 +3,7 @@
 //! Note that you need to enable the `v6` Cargo feature
 //! in order to use this module.
 
-use crate::timestamp::context::shared_context;
-use crate::timestamp::Timestamp;
-use crate::{Builder, Uuid};
+use crate::{timestamp::context::shared_context, Builder, Timestamp, Uuid};
 
 impl Uuid {
     /// Create a new UUID (version 6) using the current time value and a node id.
@@ -74,13 +72,10 @@ impl Uuid {
     ///     "fd64c041-1e91-6551-802a-010203040506"
     /// );
     /// ```
-    /// The timestamp can also be created automatically from the current SystemTime
     ///
-    /// # use uuid::{Uuid, Timestamp, Context};
-    /// let context = Context::new(42);
-    /// let ts = Timestamp::from_rfc4122(14976241191231231313);
+    /// # References
     ///
-    /// let uuid = Uuid::new_v6(ts, &context, &[1, 2, 3, 4, 5, 6]);
+    /// * [Version 6 UUIDs in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.1)
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
     /// [`ClockSequence`]: v1/trait.ClockSequence.html

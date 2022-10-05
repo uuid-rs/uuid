@@ -5,6 +5,19 @@
 //! in versions 6 and 7). Timestamps aren't encoded the same way by all UUID
 //! versions so this module provides a single [`Timestamp`] type that can
 //! convert between them.
+//!
+//! # Timestamp representations in UUIDs
+//!
+//! Versions 1 and 6 UUIDs use a bespoke timestamp that consists of the
+//! number of 100ns ticks since `1582-10-15 00:00:00`, along with
+//! a counter value to avoid duplicates.
+//!
+//! Version 7 UUIDs use a more standard timestamp that consists of the
+//! number of millisecond ticks since the Unix epoch (`1970-01-01 00:00:00`).
+//!
+//! # References
+//!
+//! * [Timestamp in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4)
 
 /// The number of 100 nanosecond ticks between the RFC4122 epoch
 /// (`1582-10-15 00:00:00`) and the Unix epoch (`1970-01-01 00:00:00`).
@@ -12,9 +25,14 @@ pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 
 /// A timestamp that can be encoded into a UUID.
 ///
-/// This type abstracts the specific encoding, so a UUID version 1 or
-/// a UUID version 7 can both be supported through the same type, even
+/// This type abstracts the specific encoding, so versions 1, 6, and 7
+/// UUIDs can both be supported through the same type, even
 /// though they have a different representation of a timestamp.
+///
+/// # References
+///
+/// * [Timestamp in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4)
+/// * [Clock Sequence in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.5)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Timestamp {
     pub(crate) seconds: u64,
@@ -27,6 +45,10 @@ impl Timestamp {
     /// Get a timestamp representing the current system time.
     ///
     /// This method defers to the standard library's `SystemTime` type.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if calculating the elapsed time since the Unix epoch fails.
     #[cfg(feature = "std")]
     pub fn now(context: impl ClockSequence<Output = u16>) -> Self {
         #[cfg(not(any(feature = "v1", feature = "v6")))]
@@ -47,7 +69,7 @@ impl Timestamp {
     }
 
     /// Construct a `Timestamp` from an RFC4122 timestamp and counter, as used
-    /// in version 1 and version 6 UUIDs.
+    /// in versions 1 and 6 UUIDs.
     pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
         #[cfg(not(any(feature = "v1", feature = "v6")))]
         {
@@ -64,7 +86,7 @@ impl Timestamp {
         }
     }
 
-    /// Construct a `Timestamp` from a Unix timestamp.
+    /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
     pub fn from_unix(context: impl ClockSequence<Output = u16>, seconds: u64, nanos: u32) -> Self {
         #[cfg(not(any(feature = "v1", feature = "v6")))]
         {
@@ -85,7 +107,7 @@ impl Timestamp {
     }
 
     /// Get the value of the timestamp as an RFC4122 timestamp and counter,
-    /// as used in version 1 and version 6 UUIDs.
+    /// as used in versions 1 and 6 UUIDs.
     #[cfg(any(feature = "v1", feature = "v6"))]
     pub const fn to_rfc4122(&self) -> (u64, u16) {
         (
@@ -94,8 +116,7 @@ impl Timestamp {
         )
     }
 
-    /// Get the value of the timestamp as a Unix timestamp, consisting of the
-    /// number of whole and fractional seconds.
+    /// Get the value of the timestamp as a Unix timestamp, as used in version 7 UUIDs.
     pub const fn to_unix(&self) -> (u64, u32) {
         (self.seconds, self.nanos)
     }

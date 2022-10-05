@@ -18,6 +18,10 @@ impl Uuid {
     ///
     /// assert_eq!(Some(Version::Custom), uuid.get_version());
     /// ```
+    ///
+    /// # References
+    ///
+    /// * [Version 8 UUIDs in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.3)
     pub fn new_v8(buf: [u8; 16]) -> Uuid {
         Builder::from_custom_bytes(buf).into_uuid()
     }

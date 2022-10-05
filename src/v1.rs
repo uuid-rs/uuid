@@ -3,9 +3,7 @@
 //! This module is soft-deprecated. Instead of using the `Context` type re-exported here,
 //! use the one from the crate root.
 
-use crate::timestamp::context::shared_context;
-use crate::timestamp::Timestamp;
-use crate::{Builder, Uuid};
+use crate::{timestamp::context::shared_context, Builder, Timestamp, Uuid};
 
 pub use crate::timestamp::context::Context;
 
@@ -83,6 +81,10 @@ impl Uuid {
     ///
     /// let _uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
     /// ```
+    ///
+    /// # References
+    ///
+    /// * [Version 1 UUIDs in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.2)
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
     /// [`ClockSequence`]: v1/trait.ClockSequence.html

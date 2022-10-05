@@ -24,6 +24,10 @@ impl Uuid {
     /// assert_eq!(Some(Version::Sha1), uuid.get_version());
     /// ```
     ///
+    /// # References
+    ///
+    /// * [Version 3 and 5 UUIDs in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.3)
+    ///
     /// [`NAMESPACE_DNS`]: struct.Uuid.html#associatedconst.NAMESPACE_DNS
     /// [`NAMESPACE_OID`]: struct.Uuid.html#associatedconst.NAMESPACE_OID
     /// [`NAMESPACE_URL`]: struct.Uuid.html#associatedconst.NAMESPACE_URL
