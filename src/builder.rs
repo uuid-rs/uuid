@@ -623,7 +623,7 @@ impl Builder {
     ///
     /// let random_bytes = rng();
     ///
-    /// let uuid = Builder::from_unix_timestamp(ts.as_millis().try_into()?, &random_bytes).into_uuid();
+    /// let uuid = Builder::from_unix_timestamp_millis(ts.as_millis().try_into()?, &random_bytes).into_uuid();
     ///
     /// assert_eq!(Some(Version::SortRand), uuid.get_version());
     /// assert_eq!(Variant::RFC4122, uuid.get_variant());
