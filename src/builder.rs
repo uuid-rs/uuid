@@ -13,7 +13,7 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
-use crate::{error::*, Bytes, Uuid, Variant, Version};
+use crate::{error::*, timestamp, Bytes, Uuid, Variant, Version};
 
 /// A builder struct for creating a UUID.
 ///
@@ -43,12 +43,14 @@ use crate::{error::*, Bytes, Uuid, Variant, Version};
 pub struct Builder(Uuid);
 
 impl Uuid {
-    /// The 'nil UUID'.
+    /// The 'nil UUID' (all zeros).
     ///
     /// The nil UUID is a special form of UUID that is specified to have all
-    /// 128 bits set to zero, as defined in [IETF RFC 4122 Section 4.1.7][RFC].
+    /// 128 bits set to zero.
     ///
-    /// [RFC]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
+    /// # References
+    ///
+    /// * [Nil UUID in RFC4122]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
     ///
     /// # Examples
     ///
@@ -67,12 +69,14 @@ impl Uuid {
         Uuid::from_bytes([0; 16])
     }
 
-    /// The 'max UUID'.
+    /// The 'max UUID' (all ones).
     ///
     /// The max UUID is a special form of UUID that is specified to have all
-    /// 128 bits set to one, as defined in [IETF RFC 4122 Update Section 5.4][Draft RFC].
+    /// 128 bits set to one.
     ///
-    /// [Draft RFC]: https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#page-12
+    /// # References
+    ///
+    /// * [Max UUID in Draft RFC: New UUID Formats, Version 4]: https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.4
     ///
     /// # Examples
     ///
@@ -140,6 +144,8 @@ impl Uuid {
     /// big and little endian machines.
     ///
     /// # Examples
+    ///
+    /// Basic usage:
     ///
     /// ```
     /// # use uuid::Uuid;
@@ -537,11 +543,22 @@ impl Builder {
         Builder(Uuid::from_bytes_le(b))
     }
 
-    /// Creates a `Builder` using the supplied random bytes.
+    /// Creates a `Builder` for a version 1 UUID using the supplied timestamp and node id.
+    pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
+        Builder(timestamp::encode_rfc4122_timestamp(ticks, counter, node_id))
+    }
+
+    /// Creates a `Builder` for a version 3 UUID using the supplied MD5 hashed bytes.
+    pub const fn from_md5_bytes(md5_bytes: Bytes) -> Self {
+        Builder(Uuid::from_bytes(md5_bytes))
+            .with_variant(Variant::RFC4122)
+            .with_version(Version::Md5)
+    }
+
+    /// Creates a `Builder` for a version 4 UUID using the supplied random bytes.
     ///
-    /// This method can be useful in environments where the `v4` feature isn't
-    /// available. This method will take care of setting the appropriate
-    /// version and variant fields.
+    /// This method assumes the bytes are already sufficiently random, it will only
+    /// set the appropriate bits for the UUID version and variant.
     ///
     /// # Examples
     ///
@@ -557,24 +574,77 @@ impl Builder {
     /// assert_eq!(Some(Version::Random), uuid.get_version());
     /// assert_eq!(Variant::RFC4122, uuid.get_variant());
     /// ```
-    pub const fn from_random_bytes(b: Bytes) -> Self {
-        Builder(Uuid::from_bytes(b))
+    pub const fn from_random_bytes(random_bytes: Bytes) -> Self {
+        Builder(Uuid::from_bytes(random_bytes))
             .with_variant(Variant::RFC4122)
             .with_version(Version::Random)
     }
 
-    /// Creates a `Builder` using the supplied MD5 hashed bytes.
-    pub const fn from_md5_bytes(b: Bytes) -> Self {
-        Builder(Uuid::from_bytes(b))
-            .with_variant(Variant::RFC4122)
-            .with_version(Version::Md5)
-    }
-
-    /// Creates a `Builder` using the supplied SHA1 hashed bytes.
-    pub const fn from_sha1_bytes(b: Bytes) -> Self {
-        Builder(Uuid::from_bytes(b))
+    /// Creates a `Builder` for a version 5 UUID using the supplied SHA-1 hashed bytes.
+    ///
+    /// This method assumes the bytes are already a SHA-1 hash, it will only set the appropriate
+    /// bits for the UUID version and variant.
+    pub const fn from_sha1_bytes(sha1_bytes: Bytes) -> Self {
+        Builder(Uuid::from_bytes(sha1_bytes))
             .with_variant(Variant::RFC4122)
             .with_version(Version::Sha1)
+    }
+
+    /// Creates a `Builder` for a version 6 UUID using the supplied timestamp and node id.
+    ///
+    /// This method will encode the ticks, counter, and node id in a sortable UUID.
+    pub const fn from_sorted_rfc4122_timestamp(
+        ticks: u64,
+        counter: u16,
+        node_id: &[u8; 6],
+    ) -> Self {
+        Builder(timestamp::encode_sorted_rfc4122_timestamp(
+            ticks, counter, node_id,
+        ))
+    }
+
+    /// Creates a `Builder` for a version 7 UUID using the supplied Unix timestamp and random bytes.
+    ///
+    /// This method assumes the bytes are already sufficiently random.
+    ///
+    /// # Examples
+    ///
+    /// Creating a UUID using the current system timestamp:
+    ///
+    /// ```
+    /// # use std::convert::TryInto;
+    /// use std::time::{Duration, SystemTime};
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # use uuid::{Builder, Uuid, Variant, Version, Timestamp, NoContext};
+    /// # let rng = || [
+    /// #     70, 235, 208, 238, 14, 109, 67, 201, 185, 13
+    /// # ];
+    /// let ts = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
+    ///
+    /// let random_bytes = rng();
+    ///
+    /// let uuid = Builder::from_unix_timestamp_millis(ts.as_millis().try_into()?, &random_bytes).into_uuid();
+    ///
+    /// assert_eq!(Some(Version::SortRand), uuid.get_version());
+    /// assert_eq!(Variant::RFC4122, uuid.get_variant());
+    /// # Ok(())
+    /// # }
+    /// ```
+    pub const fn from_unix_timestamp_millis(millis: u64, random_bytes: &[u8; 10]) -> Self {
+        Builder(timestamp::encode_unix_timestamp_millis(
+            millis,
+            random_bytes,
+        ))
+    }
+
+    /// Creates a `Builder` for a version 8 UUID using the supplied user-defined bytes.
+    ///
+    /// This method won't interpret the given bytes in any way, except to set the appropriate
+    /// bits for the UUID version and variant.
+    pub const fn from_custom_bytes(custom_bytes: Bytes) -> Self {
+        Builder::from_bytes(custom_bytes)
+            .with_variant(Variant::RFC4122)
+            .with_version(Version::Custom)
     }
 
     /// Creates a `Builder` using the supplied bytes.

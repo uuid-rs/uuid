@@ -25,6 +25,10 @@ impl Uuid {
     /// assert_eq!(Some(Version::Md5), uuid.get_version());
     /// ```
     ///
+    /// # References
+    ///
+    /// * [Version 3 and 5 UUIDs in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.3)
+    ///
     /// [`NAMESPACE_DNS`]: #associatedconstant.NAMESPACE_DNS
     /// [`NAMESPACE_OID`]: #associatedconstant.NAMESPACE_OID
     /// [`NAMESPACE_URL`]: #associatedconstant.NAMESPACE_URL

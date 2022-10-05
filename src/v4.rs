@@ -24,6 +24,10 @@ impl Uuid {
     /// assert_eq!(Some(Version::Random), uuid.get_version());
     /// ```
     ///
+    /// # References
+    ///
+    /// * [Version 4 UUIDs in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.4)
+    ///
     /// [`getrandom`]: https://crates.io/crates/getrandom
     /// [from_random_bytes]: struct.Builder.html#method.from_random_bytes
     pub fn new_v4() -> Uuid {
@@ -35,7 +39,6 @@ impl Uuid {
 mod tests {
     use super::*;
     use crate::{Variant, Version};
-    use std::string::ToString;
 
     #[cfg(target_arch = "wasm32")]
     use wasm_bindgen_test::*;

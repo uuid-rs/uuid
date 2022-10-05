@@ -1,35 +1,39 @@
 //! The implementation for Version 1 UUIDs.
 //!
-//! Note that you need to enable the `v1` Cargo feature
-//! in order to use this module.
+//! This module is soft-deprecated. Instead of using the `Context` type re-exported here,
+//! use the one from the crate root.
 
-use crate::timestamp::Timestamp;
-use crate::Uuid;
+use crate::{Builder, Timestamp, Uuid};
 
-/// The number of 100 ns ticks between the UUID epoch
-/// `1582-10-15 00:00:00` and the Unix epoch `1970-01-01 00:00:00`.
-const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
-
-/// The Context implementation is specific to Uuids v1 and v6
 pub use crate::timestamp::context::Context;
 
 impl Uuid {
-    /// Create a new UUID (version 1) using a time value + sequence +
-    /// *NodeId*.
+    /// Create a new version 1 UUID using the current system time and a node id.
+    ///
+    /// This method is only available if both the `std` and `rng` features are enabled.
+    ///
+    /// This method is a convenient alternative to [`Uuid::new_v1`] that uses the current system time
+    /// as the source timestamp.
+    #[cfg(all(feature = "std", feature = "rng"))]
+    pub fn now_v1(node_id: &[u8; 6]) -> Self {
+        let ts = Timestamp::now(crate::timestamp::context::shared_context());
+
+        Self::new_v1(ts, node_id)
+    }
+
+    /// Create a new version 1 UUID using the given timestamp and node id.
     ///
     /// When generating [`Timestamp`]s using a [`ClockSequence`], this function
     /// is only guaranteed to produce unique values if the following conditions
     /// hold:
     ///
-    /// 1. The *NodeId* is unique for this process,
-    /// 2. The *Context* is shared across all threads which are generating v1
+    /// 1. The *node id* is unique for this process,
+    /// 2. The *context* is shared across all threads which are generating version 1
     ///    UUIDs,
     /// 3. The [`ClockSequence`] implementation reliably returns unique
     ///    clock sequences (this crate provides [`Context`] for this
     ///    purpose. However you can create your own [`ClockSequence`]
     ///    implementation, if [`Context`] does not meet your needs).
-    ///
-    /// The NodeID must be exactly 6 bytes long.
     ///
     /// Note that usage of this method requires the `v1` feature of this crate
     /// to be enabled.
@@ -40,7 +44,7 @@ impl Uuid {
     /// [`ClockSequence`]. RFC4122 requires the clock sequence
     /// is seeded with a random value:
     ///
-    /// ```rust
+    /// ```
     /// # use uuid::{Timestamp, Context};
     /// # use uuid::Uuid;
     /// # fn random_seed() -> u16 { 42 }
@@ -70,38 +74,17 @@ impl Uuid {
     /// );
     /// ```
     ///
-    /// The timestamp can also just use the current SystemTime
+    /// # References
     ///
-    /// ```rust
-    /// # use uuid::{Timestamp, Context};
-    /// # use uuid::Uuid;
-    /// let context = Context::new(42);
-    /// let ts = Timestamp::now(&context);
-    ///
-    /// let _uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
-    /// ```
+    /// * [Version 1 UUIDs in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.2)
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
     /// [`ClockSequence`]: v1/trait.ClockSequence.html
     /// [`Context`]: v1/struct.Context.html
     pub fn new_v1(ts: Timestamp, node_id: &[u8; 6]) -> Self {
         let (ticks, counter) = ts.to_rfc4122();
-        let time_low = (ticks & 0xFFFF_FFFF) as u32;
-        let time_mid = ((ticks >> 32) & 0xFFFF) as u16;
-        let time_high_and_version = (((ticks >> 48) & 0x0FFF) as u16) | (1 << 12);
 
-        let mut d4 = [0; 8];
-
-        d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
-        d4[1] = (counter & 0xFF) as u8;
-        d4[2] = node_id[0];
-        d4[3] = node_id[1];
-        d4[4] = node_id[2];
-        d4[5] = node_id[3];
-        d4[6] = node_id[4];
-        d4[7] = node_id[5];
-
-        Uuid::from_fields(time_low, time_mid, time_high_and_version, &d4)
+        Builder::from_rfc4122_timestamp(ticks, counter, node_id).into_uuid()
     }
 }
 
@@ -115,7 +98,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_new_v1() {
+    fn test_new() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
         let node = [1, 2, 3, 4, 5, 6];
@@ -145,7 +128,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_new_v1_context() {
+    fn test_new_context() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
         let node = [1, 2, 3, 4, 5, 6];

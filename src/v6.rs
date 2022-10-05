@@ -1,18 +1,27 @@
-//! The implementation for Version 1 UUIDs.
+//! The implementation for Version 6 UUIDs.
 //!
 //! Note that you need to enable the `v6` Cargo feature
 //! in order to use this module.
 
-use crate::timestamp::{ClockSequence, Timestamp};
-use crate::Uuid;
-
-/// The Context implementation is specific to Uuids v1 and v6
-pub use crate::timestamp::context::Context;
+use crate::{Builder, Timestamp, Uuid};
 
 impl Uuid {
-    /// Create a new UUID (version 6) using a time value + sequence +
+    /// Create a new version 6 UUID using the current time value and a node id.
+    ///
+    /// This method is only available if the `std` feature is enabled.
+    ///
+    /// This method is a convenient alternative to [`Uuid::new_v6`] that uses the current system time
+    /// as the source timestamp.
+    #[cfg(all(feature = "std", feature = "rng"))]
+    pub fn now_v6(node_id: &[u8; 6]) -> Self {
+        let ts = Timestamp::now(crate::timestamp::context::shared_context());
+
+        Self::new_v6(ts, node_id)
+    }
+
+    /// Create a new version 6 UUID using a time value + sequence +
     /// *NodeId*.
-    /// This is similar to UUIDv1, except that it is lexographically sortable by timestamp.
+    /// This is similar to UUIDv1, except that it is lexicographically sortable by timestamp.
     ///
     /// When generating [`Timestamp`]s using a [`ClockSequence`], this function
     /// is only guaranteed to produce unique values if the following conditions
@@ -66,42 +75,25 @@ impl Uuid {
     ///     "fd64c041-1e91-6551-802a-010203040506"
     /// );
     /// ```
-    /// The timestamp can also be created automatically from the current SystemTime
     ///
-    /// # use uuid::{Uuid, Timestamp, Context};
-    /// let context = Context::new(42);
-    /// let ts = Timestamp::from_rfc4122(14976241191231231313);
+    /// # References
     ///
-    /// let uuid = Uuid::new_v6(ts, &context, &[1, 2, 3, 4, 5, 6]);
+    /// * [Version 6 UUIDs in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.1)
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
     /// [`ClockSequence`]: v1/trait.ClockSequence.html
     /// [`Context`]: v1/struct.Context.html
     pub fn new_v6(ts: Timestamp, node_id: &[u8; 6]) -> Self {
         let (ticks, counter) = ts.to_rfc4122();
-        let time_high = ((ticks >> 28) & 0xFFFF_FFFF) as u32;
-        let time_mid = ((ticks >> 12) & 0xFFFF) as u16;
-        let time_low_and_version = ((ticks & 0x0FFF) as u16) | (0x6 << 12);
 
-        let mut d4 = [0; 8];
-
-        d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
-        d4[1] = (counter & 0xFF) as u8;
-        d4[2] = node_id[0];
-        d4[3] = node_id[1];
-        d4[4] = node_id[2];
-        d4[5] = node_id[3];
-        d4[6] = node_id[4];
-        d4[7] = node_id[5];
-
-        Uuid::from_fields(time_high, time_mid, time_low_and_version, &d4)
+        Builder::from_sorted_rfc4122_timestamp(ticks, counter, node_id).into_uuid()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Variant, Version};
+    use crate::{Context, Variant, Version};
     use std::string::ToString;
 
     #[cfg(target_arch = "wasm32")]

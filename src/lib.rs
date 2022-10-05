@@ -30,6 +30,9 @@
 //! practical purposes, it can be assumed that an unintentional collision would
 //! be extremely unlikely.
 //!
+//! UUIDs have a number of standardized encodings that are specified in [RFC4122](http://tools.ietf.org/html/rfc4122),
+//! with recent additions [in draft](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04).
+//!
 //! # Getting started
 //!
 //! Add the following to your `Cargo.toml`:
@@ -65,21 +68,32 @@
 //! const ID: Uuid = uuid!("67e55044-10b1-426f-9247-bb680e5fe0c8");
 //! ```
 //!
-//! # Dependencies
+//! # Working with different UUID versions
 //!
-//! By default, this crate depends on nothing but `std` and can parse and format
-//! UUIDs, but cannot generate them. You need to enable the following Cargo
-//! features to enable various pieces of functionality:
+//! This library supports all standardized methods for generating UUIDs through individual Cargo features.
 //!
-//! * `v1` - adds the [`Uuid::new_v1`] function and the ability to create a V1
-//!   UUID using an implementation of [`v1::ClockSequence`] (usually
-//! [`v1::Context`]) and a UNIX timestamp.
-//! * `v3` - adds the [`Uuid::new_v3`] function and the ability to create a V3
-//!   UUID based on the MD5 hash of some data.
-//! * `v4` - adds the [`Uuid::new_v4`] function and the ability to randomly
-//!   generate a UUID.
-//! * `v5` - adds the [`Uuid::new_v5`] function and the ability to create a V5
-//!   UUID based on the SHA1 hash of some data.
+//! By default, this crate depends on nothing but the Rust standard library and can parse and format
+//! UUIDs, but cannot generate them. Depending on the kind of UUID you'd like to work with, there
+//! are Cargo features that enable generating them:
+//!
+//! * `v1` - Version 1 UUIDs using a timestamp and monotonic counter.
+//! * `v3` - Version 3 UUIDs based on the MD5 hash of some data.
+//! * `v4` - Version 4 UUIDs with random data.
+//! * `v5` - Version 5 UUIDs based on the SHA1 hash of some data.
+//! * `v6` - Version 6 UUIDs using a timestamp and monotonic counter.
+//! * `v7` - Version 7 UUIDs using a Unix timestamp.
+//! * `v8` - Version 8 UUIDs using user-defined data.
+//!
+//! This library also includes a [`Builder`] type that can be used to help construct UUIDs of any
+//! version without any additional dependencies or features.
+//!
+//! ## Which UUID version should I use?
+//!
+//! If you just want to generate unique identifiers then consider version 4 (`v4`) UUIDs. If you want
+//! to use UUIDs as database keys or need to sort them then consider version 7 (`v7`) UUIDs.
+//! Other versions should generally be avoided unless there's an existing need for them.
+//!
+//! # Other features
 //!
 //! Other crate features can also be useful beyond the version support:
 //!
@@ -88,11 +102,11 @@
 //!   `serde`.
 //! * `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid` for
 //!   fuzzing.
-//! * `fast-rng` - when combined with `v4` uses a faster algorithm for
-//!   generating random UUIDs. This feature requires more dependencies to
-//!   compile, but is just as suitable for UUIDs as the default algorithm.
+//! * `fast-rng` - uses a faster algorithm for generating random UUIDs.
+//!   This feature requires more dependencies to compile, but is just as suitable for
+//!   UUIDs as the default algorithm.
 //!
-//! ## Unstable features
+//! # Unstable features
 //!
 //! Some features are unstable. They may be incomplete or depend on other
 //! unstable libraries. These include:
@@ -114,8 +128,7 @@
 //!
 //! ## WebAssembly
 //!
-//! For WebAssembly, enable the `js` feature along with `v4` for a
-//! source of randomness:
+//! For WebAssembly, enable the `js` feature:
 //!
 //! ```toml
 //! [dependencies.uuid]
@@ -125,9 +138,6 @@
 //!     "js",
 //! ]
 //! ```
-//!
-//! You don't need the `js` feature to use `uuid` in WebAssembly if you're
-//! not also enabling `v4`.
 //!
 //! ## Embedded
 //!
@@ -142,10 +152,10 @@
 //!
 //! Some additional features are supported in no-std environments:
 //!
-//! * `v1`, `v3`, and `v5`
-//! * `serde`
+//! * `v1`, `v3`, `v5`, `v6`, and `v8`.
+//! * `serde`.
 //!
-//! If you need to use `v4` in a no-std environment, you'll need to
+//! If you need to use `v4` or `v7` in a no-std environment, you'll need to
 //! follow [`getrandom`'s docs] on configuring a source of randomness
 //! on currently unsupported targets. Alternatively, you can produce
 //! random bytes yourself and then pass them to [`Builder::from_random_bytes`]
@@ -153,7 +163,7 @@
 //!
 //! # Examples
 //!
-//! To parse a UUID given in the simple format and print it as a urn:
+//! To parse a UUID given in the simple format and print it as a URN:
 //!
 //! ```
 //! # use uuid::Uuid;
@@ -182,17 +192,11 @@
 //! # References
 //!
 //! * [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
-//! * [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
+//! * [RFC4122: A Universally Unique Identifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
+//! * [Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04)
 //!
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 //! [`cargo-web`]: https://crates.io/crates/cargo-web
-//! [`Uuid`]: struct.Uuid.html
-//! [`Uuid::new_v1`]: struct.Uuid.html#method.new_v1
-//! [`Uuid::new_v3`]: struct.Uuid.html#method.new_v3
-//! [`Uuid::new_v4`]: struct.Uuid.html#method.new_v4
-//! [`Uuid::new_v5`]: struct.Uuid.html#method.new_v5
-//! [`v1::ClockSequence`]: v1/trait.ClockSequence.html
-//! [`v1::Context`]: v1/struct.Context.html
 //! [`getrandom`'s docs]: https://docs.rs/getrandom
 
 #![no_std]
@@ -220,17 +224,20 @@ use zerocopy::{AsBytes, FromBytes, Unaligned};
 
 mod builder;
 mod error;
-pub mod fmt;
 mod parser;
-/// contains the `Timestamp` struct and `ClockSequence` trait
+
+pub mod fmt;
 pub mod timestamp;
 
-pub use timestamp::{ClockSequence, Timestamp};
+pub use timestamp::{context::NoContext, ClockSequence, Timestamp};
 
 #[cfg(any(feature = "v1", feature = "v6"))]
 pub use timestamp::context::Context;
 
 #[cfg(feature = "v1")]
+#[doc(hidden)]
+// Soft-deprecated (Rust doesn't support deprecating re-exports)
+// Use `Context` from the crate root instead
 pub mod v1;
 #[cfg(feature = "v3")]
 mod v3;
@@ -241,7 +248,7 @@ mod v5;
 #[cfg(feature = "v6")]
 mod v6;
 #[cfg(feature = "v7")]
-pub mod v7;
+mod v7;
 #[cfg(feature = "v8")]
 mod v8;
 
@@ -257,6 +264,7 @@ mod external;
 #[macro_use]
 mod macros;
 
+extern crate alloc;
 #[doc(hidden)]
 #[cfg(feature = "macro-diagnostics")]
 pub extern crate private_uuid_macro_internal;
@@ -280,9 +288,9 @@ pub type Bytes = [u8; 16];
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[non_exhaustive]
 pub enum Version {
-    /// Special case for `nil` UUID.
+    /// The _nil_ (all zeros) UUID.
     Nil = 0,
-    /// Version 1: MAC address.
+    /// Version 1: Timestamp and node ID.
     Mac,
     /// Version 2: DCE Security.
     Dce,
@@ -292,11 +300,11 @@ pub enum Version {
     Random,
     /// Version 5: SHA-1 hash.
     Sha1,
-    /// Version 6: Sortable MAC/Node-ID
+    /// Version 6: Sortable Timestamp and node ID.
     SortMac,
-    /// Version 7: Timestamp + Random
+    /// Version 7: Timestamp and random.
     SortRand,
-    /// Version 8: Custom
+    /// Version 8: Custom.
     Custom,
 }
 
@@ -877,61 +885,37 @@ impl Uuid {
     /// [`Timestamp`] offers several options for converting the raw RFC4122
     /// value into more commonly-used formats, such as a unix timestamp.
     ///
+    /// # Roundtripping
+    ///
+    /// This method is unlikely to roundtrip a timestamp in a UUID due to the way
+    /// UUIDs encode timestamps. The timestamp returned from this method will be truncated to
+    /// 100ns precision for version 1 and 6 UUIDs, and to millisecond precision for version 7 UUIDs.
+    ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
-    pub const fn get_timestamp(&self) -> Option<crate::timestamp::Timestamp> {
+    pub const fn get_timestamp(&self) -> Option<Timestamp> {
         match self.get_version() {
             Some(Version::Mac) => {
-                let bytes = self.as_bytes();
-                let ticks: u64 = ((bytes[6] & 0x0F) as u64) << 56
-                    | (bytes[7] as u64) << 48
-                    | (bytes[4] as u64) << 40
-                    | (bytes[5] as u64) << 32
-                    | (bytes[0] as u64) << 24
-                    | (bytes[1] as u64) << 16
-                    | (bytes[2] as u64) << 8
-                    | (bytes[3] as u64);
+                let (ticks, counter) = timestamp::decode_rfc4122_timestamp(self);
 
-                let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
-
-                Some(crate::timestamp::Timestamp::from_rfc4122(ticks, counter))
+                Some(Timestamp::from_rfc4122(ticks, counter))
             }
             Some(Version::SortMac) => {
-                let bytes = self.as_bytes();
-                let ticks: u64 = ((self.as_bytes()[0]) as u64) << 52
-                    | (bytes[1] as u64) << 44
-                    | (bytes[2] as u64) << 36
-                    | (bytes[3] as u64) << 28
-                    | (bytes[4] as u64) << 20
-                    | (bytes[5] as u64) << 12
-                    | ((bytes[6] & 0xF) as u64) << 8
-                    | (bytes[7] as u64);
+                let (ticks, counter) = timestamp::decode_sorted_rfc4122_timestamp(self);
 
-                let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
-
-                Some(crate::timestamp::Timestamp::from_rfc4122(ticks, counter))
+                Some(Timestamp::from_rfc4122(ticks, counter))
             }
             Some(Version::SortRand) => {
-                let bytes = self.as_bytes();
-                let millis: u64 = (bytes[0] as u64) << 40
-                    | (bytes[1] as u64) << 32
-                    | (bytes[2] as u64) << 24
-                    | (bytes[3] as u64) << 16
-                    | (bytes[4] as u64) << 8
-                    | (bytes[5] as u64);
+                let millis = timestamp::decode_unix_timestamp_millis(self);
+
                 let seconds = millis / 1000;
                 let nanos = ((millis % 1000) * 1_000_000) as u32;
-                #[cfg(any(feature = "v1", feature = "v6"))]
-                {
-                    Some(Timestamp {
-                        seconds,
-                        nanos,
-                        counter: 0,
-                    })
-                }
-                #[cfg(not(any(feature = "v1", feature = "v6")))]
-                {
-                    Some(Timestamp { seconds, nanos })
-                }
+
+                Some(Timestamp {
+                    seconds,
+                    nanos,
+                    #[cfg(any(feature = "v1", feature = "v6"))]
+                    counter: 0,
+                })
             }
             _ => None,
         }
@@ -1162,7 +1146,7 @@ mod tests {
         let uuid1 = new();
         let s = uuid1.hyphenated().to_string();
 
-        assert!(s.len() == 36);
+        assert_eq!(36, s.len());
         assert!(s.chars().all(|c| c.is_digit(16) || c == '-'));
     }
 

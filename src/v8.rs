@@ -1,4 +1,4 @@
-use crate::{Builder, Uuid, Variant, Version};
+use crate::{Builder, Uuid};
 
 impl Uuid {
     /// Creates a custom UUID comprised almost entirely of user-supplied bytes
@@ -18,17 +18,19 @@ impl Uuid {
     ///
     /// assert_eq!(Some(Version::Custom), uuid.get_version());
     /// ```
+    ///
+    /// # References
+    ///
+    /// * [Version 8 UUIDs in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.3)
     pub fn new_v8(buf: [u8; 16]) -> Uuid {
-        Builder::from_bytes(buf)
-            .with_variant(Variant::RFC4122)
-            .with_version(Version::Custom)
-            .into_uuid()
+        Builder::from_custom_bytes(buf).into_uuid()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{Variant, Version};
     use std::string::ToString;
 
     #[cfg(target_arch = "wasm32")]
@@ -38,8 +40,7 @@ mod tests {
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_new() {
         let buf: [u8; 16] = [
-            0xf, 0xe, 0xd, 0xc, 0xb, 0xa, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3,
-            0x2, 0x1, 0x0,
+            0xf, 0xe, 0xd, 0xc, 0xb, 0xa, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0,
         ];
         let uuid = Uuid::new_v8(buf);
         assert_eq!(uuid.get_version(), Some(Version::Custom));

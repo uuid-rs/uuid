@@ -1,11 +1,42 @@
-/// Contains the `Timestamp` struct and `ClockSequence` traits
-/// as well as an implementation of ClockSequence for Context (only for features v1 and v6)
+//! Generating UUIDs from timestamps.
+//!
+//! Timestamps are used in a few UUID versions as a source of decentralized
+//! uniqueness (as in versions 1 and 6), and as a way to enable sorting (as
+//! in versions 6 and 7). Timestamps aren't encoded the same way by all UUID
+//! versions so this module provides a single [`Timestamp`] type that can
+//! convert between them.
+//!
+//! # Timestamp representations in UUIDs
+//!
+//! Versions 1 and 6 UUIDs use a bespoke timestamp that consists of the
+//! number of 100ns ticks since `1582-10-15 00:00:00`, along with
+//! a counter value to avoid duplicates.
+//!
+//! Version 7 UUIDs use a more standard timestamp that consists of the
+//! number of millisecond ticks since the Unix epoch (`1970-01-01 00:00:00`).
+//!
+//! # References
+//!
+//! * [Timestamp in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4)
+//! * [Timestamp in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-6.1)
 
-/// The number of 100 ns ticks between the UUID epoch
-/// `1582-10-15 00:00:00` and the Unix epoch `1970-01-01 00:00:00`.
+use crate::Uuid;
+
+/// The number of 100 nanosecond ticks between the RFC4122 epoch
+/// (`1582-10-15 00:00:00`) and the Unix epoch (`1970-01-01 00:00:00`).
 pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
-/// Stores the number of seconds since epoch,
-/// as well as the fractional nanoseconds of that second
+
+/// A timestamp that can be encoded into a UUID.
+///
+/// This type abstracts the specific encoding, so versions 1, 6, and 7
+/// UUIDs can both be supported through the same type, even
+/// though they have a different representation of a timestamp.
+///
+/// # References
+///
+/// * [Timestamp in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4)
+/// * [Timestamp in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-6.1)
+/// * [Clock Sequence in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.5)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Timestamp {
     pub(crate) seconds: u64,
@@ -15,93 +46,72 @@ pub struct Timestamp {
 }
 
 impl Timestamp {
-    /// Construct a `Timestamp` from its raw component values: an RFC4122
-    /// timestamp and counter.
+    /// Get a timestamp representing the current system time.
     ///
-    /// RFC4122, which defines the V1 UUID, specifies a 60-byte timestamp format
-    /// as the number of 100-nanosecond intervals elapsed since 00:00:00.00,
-    /// 15 Oct 1582, "the date of the Gregorian reform of the Christian
-    /// calendar."
-    pub const fn from_rfc4122(ticks: u64, _counter: u16) -> Self {
-        let (seconds, nanos) = Self::rfc4122_to_unix(ticks);
-
-        #[cfg(any(feature = "v1", feature = "v6"))]
-        {
-            Timestamp {
-                seconds,
-                nanos,
-                counter: _counter,
-            }
-        }
+    /// This method defers to the standard library's `SystemTime` type.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if calculating the elapsed time since the Unix epoch fails.
+    #[cfg(feature = "std")]
+    pub fn now(context: impl ClockSequence<Output = u16>) -> Self {
         #[cfg(not(any(feature = "v1", feature = "v6")))]
         {
-            Timestamp { seconds, nanos }
+            let _ = context;
+        }
+
+        let dur = std::time::SystemTime::UNIX_EPOCH
+            .elapsed()
+            .expect("Getting elapsed time since UNIX_EPOCH. If this fails, we've somehow violated causality");
+
+        Timestamp {
+            seconds: dur.as_secs(),
+            nanos: dur.subsec_nanos(),
+            #[cfg(any(feature = "v1", feature = "v6"))]
+            counter: context.generate_sequence(dur.as_secs(), dur.subsec_nanos()),
         }
     }
 
-    /// Construct a `Timestamp` from a unix timestamp
-    ///
-    /// A unix timestamp represents the elapsed time since Jan 1 1970. Libc's
-    /// `clock_gettime` and other popular implementations traditionally
-    /// represent this duration as a `timespec`: a struct with `u64` and
-    /// `u32` fields representing the seconds, and "subsecond" or fractional
-    /// nanoseconds elapsed since the timestamp's second began,
-    /// respectively.
-    pub fn from_unix(
-        _context: impl ClockSequence<Output = u16>,
-        seconds: u64,
-        nanos: u32,
-    ) -> Self {
+    /// Construct a `Timestamp` from an RFC4122 timestamp and counter, as used
+    /// in versions 1 and 6 UUIDs.
+    pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
+        #[cfg(not(any(feature = "v1", feature = "v6")))]
+        {
+            let _ = counter;
+        }
+
+        let (seconds, nanos) = Self::rfc4122_to_unix(ticks);
+
+        Timestamp {
+            seconds,
+            nanos,
+            #[cfg(any(feature = "v1", feature = "v6"))]
+            counter,
+        }
+    }
+
+    /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
+    pub fn from_unix(context: impl ClockSequence<Output = u16>, seconds: u64, nanos: u32) -> Self {
+        #[cfg(not(any(feature = "v1", feature = "v6")))]
+        {
+            let _ = context;
+
+            Timestamp { seconds, nanos }
+        }
         #[cfg(any(feature = "v1", feature = "v6"))]
         {
-            let counter = _context.generate_sequence(seconds, nanos);
+            let counter = context.generate_sequence(seconds, nanos);
+
             Timestamp {
                 seconds,
                 nanos,
                 counter,
             }
         }
-        #[cfg(not(any(feature = "v1", feature = "v6")))]
-        {
-            Timestamp { seconds, nanos }
-        }
     }
 
-    /// Construct a `Timestamp` from the current time of day
-    /// according to Rust's SystemTime
-    /// NOTE: This function will panic if the current system time is earlier than
-    /// the Unix Epoch of 1970-01-01 00:00:00  So please use caution when time travelling.
-    #[cfg(all(feature = "std", not(any(feature = "v1", feature = "v6"))))]
-    pub fn now() -> Self {
-        let dur = std::time::SystemTime::UNIX_EPOCH
-            .elapsed()
-            .expect("Getting elapsed time since UNIX_EPOCH failed. This is due to a system time that is somehow earlier than Unix Epoch.");
-        Timestamp {
-            seconds: dur.as_secs(),
-            nanos: dur.subsec_nanos(),
-        }
-    }
-
-    /// Construct a `Timestamp` from the current time of day
-    /// according to Rust's SystemTime
-    #[cfg(all(feature = "std", any(feature = "v1", feature = "v6")))]
-    pub fn now(context: impl ClockSequence<Output = u16>) -> Self {
-        let dur = std::time::SystemTime::UNIX_EPOCH
-            .elapsed()
-            .expect("Getting elapsed time since UNIX_EPOCH.  If this fails, we've somehow violated causality");
-        Timestamp {
-            seconds: dur.as_secs(),
-            nanos: dur.subsec_nanos(),
-            counter: context
-                .generate_sequence(dur.as_secs(), dur.subsec_nanos()),
-        }
-    }
-
-    /// Returns the raw RFC4122 timestamp "tick" values stored by the
-    /// `Timestamp`.
-    ///
-    /// The ticks represent the  number of 100-nanosecond intervals
-    /// since 00:00:00.00, 15 Oct 1582.
+    /// Get the value of the timestamp as an RFC4122 timestamp and counter,
+    /// as used in versions 1 and 6 UUIDs.
     #[cfg(any(feature = "v1", feature = "v6"))]
     pub const fn to_rfc4122(&self) -> (u64, u16) {
         (
@@ -110,103 +120,242 @@ impl Timestamp {
         )
     }
 
-    /// Returns the timestamp converted to the seconds and fractional
-    /// nanoseconds since Jan 1 1970.
+    /// Get the value of the timestamp as a Unix timestamp, as used in version 7 UUIDs.
     pub const fn to_unix(&self) -> (u64, u32) {
         (self.seconds, self.nanos)
     }
 
-    /// Returns the timestamp converted into nanoseconds elapsed since Jan 1
-    /// 1970.
-    pub const fn to_unix_nanos(&self) -> u32 {
-        self.nanos
-    }
-
-    /// internal utility functions for converting between Unix and Uuid-epoch
-    /// convert unix-timestamp into rfc4122 ticks
+    #[cfg(any(feature = "v1", feature = "v6"))]
     const fn unix_to_rfc4122_ticks(seconds: u64, nanos: u32) -> u64 {
-        let ticks = UUID_TICKS_BETWEEN_EPOCHS
-            + seconds * 10_000_000
-            + nanos as u64 / 100;
+        let ticks = UUID_TICKS_BETWEEN_EPOCHS + seconds * 10_000_000 + nanos as u64 / 100;
 
         ticks
     }
 
-    /// convert rfc4122 ticks into unix-timestamp
     const fn rfc4122_to_unix(ticks: u64) -> (u64, u32) {
         (
             (ticks - UUID_TICKS_BETWEEN_EPOCHS) / 10_000_000,
             ((ticks - UUID_TICKS_BETWEEN_EPOCHS) % 10_000_000) as u32 * 100,
         )
     }
+
+    #[deprecated(note = "use `to_unix` instead")]
+    /// Get the number of fractional nanoseconds in the Unix timestamp.
+    ///
+    /// This method is deprecated and probably doesn't do what you're expecting it to.
+    /// It doesn't return the timestamp as nanoseconds since the Unix epoch, it returns
+    /// the fractional seconds of the timestamp.
+    pub const fn to_unix_nanos(&self) -> u32 {
+        // NOTE: This method never did what it said on the tin: instead of
+        // converting the timestamp into nanos it simply returned the nanoseconds
+        // part of the timestamp.
+        //
+        // We can't fix the behavior because the return type is too small to fit
+        // a useful value for nanoseconds since the epoch.
+        self.nanos
+    }
 }
 
-/// A trait that abstracts over generation of UUID v1 "Clock Sequence" values.
+pub(crate) const fn encode_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Uuid {
+    let time_low = (ticks & 0xFFFF_FFFF) as u32;
+    let time_mid = ((ticks >> 32) & 0xFFFF) as u16;
+    let time_high_and_version = (((ticks >> 48) & 0x0FFF) as u16) | (1 << 12);
+
+    let mut d4 = [0; 8];
+
+    d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
+    d4[1] = (counter & 0xFF) as u8;
+    d4[2] = node_id[0];
+    d4[3] = node_id[1];
+    d4[4] = node_id[2];
+    d4[5] = node_id[3];
+    d4[6] = node_id[4];
+    d4[7] = node_id[5];
+
+    Uuid::from_fields(time_low, time_mid, time_high_and_version, &d4)
+}
+
+pub(crate) const fn decode_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
+    let bytes = uuid.as_bytes();
+
+    let ticks: u64 = ((bytes[6] & 0x0F) as u64) << 56
+        | (bytes[7] as u64) << 48
+        | (bytes[4] as u64) << 40
+        | (bytes[5] as u64) << 32
+        | (bytes[0] as u64) << 24
+        | (bytes[1] as u64) << 16
+        | (bytes[2] as u64) << 8
+        | (bytes[3] as u64);
+
+    let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
+
+    (ticks, counter)
+}
+
+pub(crate) const fn encode_sorted_rfc4122_timestamp(
+    ticks: u64,
+    counter: u16,
+    node_id: &[u8; 6],
+) -> Uuid {
+    let time_high = ((ticks >> 28) & 0xFFFF_FFFF) as u32;
+    let time_mid = ((ticks >> 12) & 0xFFFF) as u16;
+    let time_low_and_version = ((ticks & 0x0FFF) as u16) | (0x6 << 12);
+
+    let mut d4 = [0; 8];
+
+    d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
+    d4[1] = (counter & 0xFF) as u8;
+    d4[2] = node_id[0];
+    d4[3] = node_id[1];
+    d4[4] = node_id[2];
+    d4[5] = node_id[3];
+    d4[6] = node_id[4];
+    d4[7] = node_id[5];
+
+    Uuid::from_fields(time_high, time_mid, time_low_and_version, &d4)
+}
+
+pub(crate) const fn decode_sorted_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
+    let bytes = uuid.as_bytes();
+
+    let ticks: u64 = ((bytes[0]) as u64) << 52
+        | (bytes[1] as u64) << 44
+        | (bytes[2] as u64) << 36
+        | (bytes[3] as u64) << 28
+        | (bytes[4] as u64) << 20
+        | (bytes[5] as u64) << 12
+        | ((bytes[6] & 0xF) as u64) << 8
+        | (bytes[7] as u64);
+
+    let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
+
+    (ticks, counter)
+}
+
+pub(crate) const fn encode_unix_timestamp_millis(millis: u64, random_bytes: &[u8; 10]) -> Uuid {
+    let millis_high = ((millis >> 16) & 0xFFFF_FFFF) as u32;
+    let millis_low = (millis & 0xFFFF) as u16;
+
+    let random_and_version =
+        (random_bytes[0] as u16 | ((random_bytes[1] as u16) << 8) & 0x0FFF) | (0x7 << 12);
+
+    let mut d4 = [0; 8];
+
+    d4[0] = (random_bytes[2] & 0x3F) | 0x80;
+    d4[1] = random_bytes[3];
+    d4[2] = random_bytes[4];
+    d4[3] = random_bytes[5];
+    d4[4] = random_bytes[6];
+    d4[5] = random_bytes[7];
+    d4[6] = random_bytes[8];
+    d4[7] = random_bytes[9];
+
+    Uuid::from_fields(millis_high, millis_low, random_and_version, &d4)
+}
+
+pub(crate) const fn decode_unix_timestamp_millis(uuid: &Uuid) -> u64 {
+    let bytes = uuid.as_bytes();
+
+    let millis: u64 = (bytes[0] as u64) << 40
+        | (bytes[1] as u64) << 32
+        | (bytes[2] as u64) << 24
+        | (bytes[3] as u64) << 16
+        | (bytes[4] as u64) << 8
+        | (bytes[5] as u64);
+
+    millis
+}
+
+/// A counter that can be used by version 1 and version 6 UUIDs to support
+/// the uniqueness of timestamps.
 ///
 /// # References
 ///
 /// * [Clock Sequence in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.5)
 pub trait ClockSequence {
-    /// The primitive type you wish out output
+    /// The type of sequence returned by this counter.
     type Output;
-    /// Return an arbitrary width number that will be used as the "clock sequence" in
-    /// the UUID. The number must be different if the time has changed since
-    /// the last time a clock sequence was requested.
-    fn generate_sequence(
-        &self,
-        seconds: u64,
-        subsec_nanos: u32,
-    ) -> Self::Output;
+
+    /// Get the next value in the sequence to feed into a timestamp.
+    ///
+    /// This method will be called each time a [`Timestamp`] is constructed.
+    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output;
 }
 
 impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T {
     type Output = T::Output;
-    fn generate_sequence(
-        &self,
-        seconds: u64,
-        subsec_nanos: u32,
-    ) -> Self::Output {
+    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
         (**self).generate_sequence(seconds, subsec_nanos)
     }
 }
 
-/// For features v1 and v1, constructs a `Context` struct which implements the `ClockSequence` trait
-#[cfg(any(feature = "v1", feature = "v6"))]
+/// Default implementations for the [`ClockSequence`] trait.
 pub mod context {
+    use super::ClockSequence;
+
+    #[cfg(any(feature = "v1", feature = "v6"))]
     use private_atomic::{Atomic, Ordering};
-    /// A thread-safe, stateful context for the v1 generator to help ensure
-    /// process-wide uniqueness.
+
+    /// An empty counter that will always return the value `0`.
+    ///
+    /// This type should be used when constructing timestamps for version 7 UUIDs,
+    /// since they don't need a counter for uniqueness.
+    #[derive(Debug, Clone, Copy, Default)]
+    pub struct NoContext;
+
+    impl ClockSequence for NoContext {
+        type Output = u16;
+
+        fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
+            0
+        }
+    }
+
+    #[cfg(all(any(feature = "v1", feature = "v6"), feature = "std", feature = "rng"))]
+    static CONTEXT: Context = Context {
+        count: Atomic::new(0),
+    };
+
+    #[cfg(all(any(feature = "v1", feature = "v6"), feature = "std", feature = "rng"))]
+    static CONTEXT_INITIALIZED: Atomic<bool> = Atomic::new(false);
+
+    #[cfg(all(any(feature = "v1", feature = "v6"), feature = "std", feature = "rng"))]
+    pub(crate) fn shared_context() -> &'static Context {
+        // If the context is in its initial state then assign it to a random value
+        // It doesn't matter if multiple threads observe `false` here and initialize the context
+        if CONTEXT_INITIALIZED
+            .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed)
+            .is_ok()
+        {
+            CONTEXT.count.store(crate::rng::u16(), Ordering::Release);
+        }
+
+        &CONTEXT
+    }
+
+    /// A thread-safe, wrapping counter that produces 14-bit numbers.
+    ///
+    /// This type should be used when constructing version 1 and version 6 UUIDs.
     #[derive(Debug)]
+    #[cfg(any(feature = "v1", feature = "v6"))]
     pub struct Context {
         count: Atomic<u16>,
     }
 
+    #[cfg(any(feature = "v1", feature = "v6"))]
     impl Context {
-        /// Creates a thread-safe, internally mutable context to help ensure
-        /// uniqueness.
+        /// Construct a new context that's initialized with the given value.
         ///
-        /// This is a context which can be shared across threads. It maintains an
-        /// internal counter that is incremented at every request, the value ends
-        /// up in the clock_seq portion of the UUID (the fourth group). This
-        /// will improve the probability that the UUID is unique across the
-        /// process.
+        /// The starting value should be a random number, so that UUIDs from
+        /// different systems with the same timestamps are less likely to collide.
+        /// When the `rng` feature is enabled, prefer the [`Context::new_random`] method.
         pub const fn new(count: u16) -> Self {
             Self {
                 count: Atomic::<u16>::new(count),
             }
         }
 
-        /// Creates a thread-safe, internally mutable context that's seeded with a
-        /// random value.
-        ///
-        /// This method requires either the `rng` or `fast-rng` feature to also be
-        /// enabled.
-        ///
-        /// This is a context which can be shared across threads. It maintains an
-        /// internal counter that is incremented at every request, the value ends
-        /// up in the clock_seq portion of the UUID (the fourth group). This
-        /// will improve the probability that the UUID is unique across the
-        /// process.
+        /// Construct a new context that's initialized with a random value.
         #[cfg(feature = "rng")]
         pub fn new_random() -> Self {
             Self {
@@ -215,13 +364,11 @@ pub mod context {
         }
     }
 
-    impl super::ClockSequence for Context {
+    #[cfg(any(feature = "v1", feature = "v6"))]
+    impl ClockSequence for Context {
         type Output = u16;
-        fn generate_sequence(
-            &self,
-            _seconds: u64,
-            _nanos: u32,
-        ) -> Self::Output {
+
+        fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
             // RFC4122 reserves 2 bits of the clock sequence so the actual
             // maximum value is smaller than `u16::MAX`. Since we unconditionally
             // increment the clock sequence we want to wrap once it becomes larger

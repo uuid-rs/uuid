@@ -1,18 +1,30 @@
-//! The implementation for Version 1 UUIDs.
+//! The implementation for Version 7 UUIDs.
 //!
 //! Note that you need to enable the `v7` Cargo feature
 //! in order to use this module.
 
-use crate::rng::{bytes, u16};
-use crate::timestamp::Timestamp;
-use crate::{Uuid, Version};
+use crate::{rng, timestamp::Timestamp, Builder, NoContext, Uuid};
 use core::convert::TryInto;
 
 impl Uuid {
-    /// Create a new UUID (version 7) using a time value + random number
+    /// Create a new version 7 UUID using the current time value and random bytes.
+    ///
+    /// This method is a convenient alternative to [`Uuid::new_v7`] that uses the current system time
+    /// as the source timestamp.
+    #[cfg(feature = "std")]
+    pub fn now_v7() -> Self {
+        Self::new_v7(Timestamp::now(NoContext))
+    }
+
+    /// Create a new version 7 UUID using a time value and random bytes.
+    ///
+    /// When the `std` feature is enabled, you can also use [`Uuid::now_v7`].
     ///
     /// Note that usage of this method requires the `v7` feature of this crate
     /// to be enabled.
+    ///
+    /// Also see [`Uuid::now_v7`] for a convenient way to generate version 7
+    /// UUIDs using the current system time.
     ///
     /// # Examples
     ///
@@ -20,9 +32,8 @@ impl Uuid {
     /// random number. When supplied as such, the data will be
     ///
     /// ```rust
-    /// # use uuid::{Uuid, Timestamp};
-    /// # use uuid::v7::NullSequence;
-    /// let ts = Timestamp::from_unix(NullSequence {}, 1497624119, 1234);
+    /// # use uuid::{Uuid, Timestamp, NoContext};
+    /// let ts = Timestamp::from_unix(NoContext, 1497624119, 1234);
     ///
     /// let uuid = Uuid::new_v7(ts);
     ///
@@ -31,61 +42,58 @@ impl Uuid {
     /// );
     /// ```
     ///
-    /// The timestamp can also be created automatically from the current SystemTime
+    /// # References
     ///
-    /// let ts = Timestamp::now();
-    ///
-    /// let uuid = Uuid::new_v7(ts);
-    ///
-    /// [`Timestamp`]: v1/struct.Timestamp.html
+    /// * [Version 7 UUIDs in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.2)
     pub fn new_v7(ts: Timestamp) -> Self {
-        let millis = ts.seconds * 1000 + (ts.nanos as u64) / 1_000_000;
-        let ms_high = ((millis >> 16) & 0xFFFF_FFFF) as u32;
-        let ms_low = (millis & 0xFFFF) as u16;
-        let ver_rand = u16() & 0xFFF | (0x7 << 12);
-        let mut rnd = bytes();
-        rnd[0] = (rnd[0] & 0x3F) | 0x80;
-        let buf: [u8; 8] = (&rnd[0..8]).try_into().unwrap();
-        Uuid::from_fields(ms_high, ms_low, ver_rand, &buf)
-    }
-}
+        let (secs, nanos) = ts.to_unix();
+        let millis = (secs * 1000).saturating_add(nanos as u64 / 1_000_000);
 
-/// Dummy struct and ClockSequence implementation to ease the construction of v7
-/// using a Timestamp
-#[derive(Debug)]
-pub struct NullSequence {}
-
-impl super::ClockSequence for NullSequence {
-    type Output = u16;
-    fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
-        0
+        Builder::from_unix_timestamp_millis(millis, &rng::bytes()[..10].try_into().unwrap())
+            .into_uuid()
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Variant, Version};
-    use std::string::ToString;
+    use crate::{std::string::ToString, NoContext, Variant, Version};
     #[cfg(target_arch = "wasm32")]
     use wasm_bindgen_test::*;
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_new_v7() {
-        let time: u64 = 1_496_854_535;
-        let time_fraction: u32 = 812_946_000;
+        let ts: u64 = 1645557742000;
 
-        let uuid = Uuid::new_v7(Timestamp::from_unix(NullSequence {}, time, time_fraction));
+        let seconds = ts / 1000;
+        let nanos = ((ts % 1000) * 1_000_000) as u32;
+
+        let uuid = Uuid::new_v7(Timestamp::from_unix(NoContext, seconds, nanos));
         let uustr = uuid.hyphenated().to_string();
 
         assert_eq!(uuid.get_version(), Some(Version::SortRand));
         assert_eq!(uuid.get_variant(), Variant::RFC4122);
-        assert!(uustr.starts_with("015c837b-9e84-7"));
+        assert!(uuid.hyphenated().to_string().starts_with("017f22e2-79b0-7"));
 
         // Ensure parsing the same UUID produces the same timestamp
         let parsed = Uuid::parse_str(uustr.as_str()).unwrap();
 
-        assert_eq!(uuid, parsed,);
+        assert_eq!(uuid, parsed);
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    fn test_new_v7_timestamp_roundtrip() {
+        let time: u64 = 1_496_854_535;
+        let time_fraction: u32 = 812_000_000;
+
+        let ts = Timestamp::from_unix(NoContext, time, time_fraction);
+
+        let uuid = Uuid::new_v7(ts);
+
+        let decoded_ts = uuid.get_timestamp().unwrap();
+
+        assert_eq!(ts.to_unix(), decoded_ts.to_unix());
     }
 }
