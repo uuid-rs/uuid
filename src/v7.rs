@@ -84,6 +84,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    #[cfg(feature = "std")]
     fn test_now_v7() {
         let uuid = Uuid::now_v7();
 
