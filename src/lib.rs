@@ -31,7 +31,7 @@
 //! be extremely unlikely.
 //!
 //! UUIDs have a number of standardized encodings that are specified in [RFC4122](http://tools.ietf.org/html/rfc4122),
-//! with recent additions [in draft](https://github.com/uuid6/uuid6-ietf-draft).
+//! with recent additions [in draft](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04).
 //!
 //! # Getting started
 //!
@@ -193,7 +193,7 @@
 //!
 //! * [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
 //! * [RFC4122: A Universally Unique Identifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
-//! * [Draft RFC: New UUID Formats](https://github.com/uuid6/uuid6-ietf-draft)
+//! * [Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04)
 //!
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 //! [`cargo-web`]: https://crates.io/crates/cargo-web
@@ -264,6 +264,7 @@ mod external;
 #[macro_use]
 mod macros;
 
+extern crate alloc;
 #[doc(hidden)]
 #[cfg(feature = "macro-diagnostics")]
 pub extern crate private_uuid_macro_internal;
@@ -894,17 +895,17 @@ impl Uuid {
     pub const fn get_timestamp(&self) -> Option<Timestamp> {
         match self.get_version() {
             Some(Version::Mac) => {
-                let (ticks, counter) = v1::decode_rfc4122_timestamp(self);
+                let (ticks, counter) = timestamp::decode_rfc4122_timestamp(self);
 
                 Some(Timestamp::from_rfc4122(ticks, counter))
             }
             Some(Version::SortMac) => {
-                let (ticks, counter) = v6::decode_sorted_rfc4122_timestamp(self);
+                let (ticks, counter) = timestamp::decode_sorted_rfc4122_timestamp(self);
 
                 Some(Timestamp::from_rfc4122(ticks, counter))
             }
             Some(Version::SortRand) => {
-                let millis = v7::decode_unix_timestamp_millis(self);
+                let millis = timestamp::decode_unix_timestamp_millis(self);
 
                 let seconds = millis / 1000;
                 let nanos = ((millis % 1000) * 1_000_000) as u32;

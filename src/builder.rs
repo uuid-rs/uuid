@@ -13,7 +13,7 @@
 //!
 //! [`Uuid`]: ../struct.Uuid.html
 
-use crate::{error::*, Bytes, Uuid, Variant, Version};
+use crate::{error::*, timestamp, Bytes, Uuid, Variant, Version};
 
 /// A builder struct for creating a UUID.
 ///
@@ -43,12 +43,14 @@ use crate::{error::*, Bytes, Uuid, Variant, Version};
 pub struct Builder(Uuid);
 
 impl Uuid {
-    /// The 'nil UUID'.
+    /// The 'nil UUID' (all zeros).
     ///
     /// The nil UUID is a special form of UUID that is specified to have all
-    /// 128 bits set to zero, as defined in [IETF RFC 4122 Section 4.1.7][RFC].
+    /// 128 bits set to zero.
     ///
-    /// [RFC]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
+    /// # References
+    ///
+    /// * [Nil UUID in RFC4122]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
     ///
     /// # Examples
     ///
@@ -67,12 +69,14 @@ impl Uuid {
         Uuid::from_bytes([0; 16])
     }
 
-    /// The 'max UUID'.
+    /// The 'max UUID' (all ones).
     ///
     /// The max UUID is a special form of UUID that is specified to have all
-    /// 128 bits set to one, as defined in [IETF RFC 4122 Update Section 5.4][Draft RFC].
+    /// 128 bits set to one.
     ///
-    /// [Draft RFC]: https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#page-12
+    /// # References
+    ///
+    /// * [Max UUID in Draft RFC: New UUID Formats, Version 4]: https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.4
     ///
     /// # Examples
     ///
@@ -140,6 +144,8 @@ impl Uuid {
     /// big and little endian machines.
     ///
     /// # Examples
+    ///
+    /// Basic usage:
     ///
     /// ```
     /// # use uuid::Uuid;
@@ -539,7 +545,7 @@ impl Builder {
 
     /// Creates a `Builder` for a version 1 UUID using the supplied timestamp and node id.
     pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
-        Builder(crate::v1::encode_rfc4122_timestamp(ticks, counter, node_id))
+        Builder(timestamp::encode_rfc4122_timestamp(ticks, counter, node_id))
     }
 
     /// Creates a `Builder` for a version 3 UUID using the supplied MD5 hashed bytes.
@@ -574,9 +580,9 @@ impl Builder {
             .with_version(Version::Random)
     }
 
-    /// Creates a `Builder` for a version 5 UUID using the supplied SHA1 hashed bytes.
+    /// Creates a `Builder` for a version 5 UUID using the supplied SHA-1 hashed bytes.
     ///
-    /// This method assumes the bytes are already a SHA1 hash, it will only set the appropriate
+    /// This method assumes the bytes are already a SHA-1 hash, it will only set the appropriate
     /// bits for the UUID version and variant.
     pub const fn from_sha1_bytes(sha1_bytes: Bytes) -> Self {
         Builder(Uuid::from_bytes(sha1_bytes))
@@ -592,22 +598,21 @@ impl Builder {
         counter: u16,
         node_id: &[u8; 6],
     ) -> Self {
-        Builder(crate::v6::encode_sorted_rfc4122_timestamp(
+        Builder(timestamp::encode_sorted_rfc4122_timestamp(
             ticks, counter, node_id,
         ))
     }
 
-    /// Creates a `Builder` for a version 7 UUID using the supplied Unix timestamp.
+    /// Creates a `Builder` for a version 7 UUID using the supplied Unix timestamp and random bytes.
     ///
-    /// This method will encode the duration since the Unix epoch at millisecond precision, filling
-    /// the rest with data from the given random bytes. This method assumes the bytes are already
-    /// sufficiently random.
+    /// This method assumes the bytes are already sufficiently random.
     ///
     /// # Examples
     ///
     /// Creating a UUID using the current system timestamp:
     ///
     /// ```
+    /// # use std::convert::TryInto;
     /// use std::time::{Duration, SystemTime};
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # use uuid::{Builder, Uuid, Variant, Version, Timestamp, NoContext};
@@ -618,7 +623,7 @@ impl Builder {
     ///
     /// let random_bytes = rng();
     ///
-    /// let uuid = Builder::from_unix_timestamp(ts.as_secs(), ts.subsec_millis(), &random_bytes).into_uuid();
+    /// let uuid = Builder::from_unix_timestamp(ts.as_millis().try_into()?, &random_bytes).into_uuid();
     ///
     /// assert_eq!(Some(Version::SortRand), uuid.get_version());
     /// assert_eq!(Variant::RFC4122, uuid.get_variant());
@@ -626,7 +631,7 @@ impl Builder {
     /// # }
     /// ```
     pub const fn from_unix_timestamp_millis(millis: u64, random_bytes: &[u8; 10]) -> Self {
-        Builder(crate::v7::encode_unix_timestamp_millis(
+        Builder(timestamp::encode_unix_timestamp_millis(
             millis,
             random_bytes,
         ))

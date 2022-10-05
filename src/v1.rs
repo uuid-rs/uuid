@@ -8,9 +8,12 @@ use crate::{timestamp::context::shared_context, Builder, Timestamp, Uuid};
 pub use crate::timestamp::context::Context;
 
 impl Uuid {
-    /// Create a new UUID (version 1) using the current system time and a node id.
+    /// Create a new version 1 UUID using the current system time and a node id.
     ///
     /// This method is only available if both the `std` and `rng` features are enabled.
+    ///
+    /// This method is a convenient alternative to [`Uuid::new_v1`] that uses the current system time
+    /// as the source timestamp.
     #[cfg(all(feature = "std", feature = "rng"))]
     pub fn now_v1(node_id: &[u8; 6]) -> Self {
         let ts = Timestamp::now(shared_context());
@@ -18,7 +21,7 @@ impl Uuid {
         Self::new_v1(ts, node_id)
     }
 
-    /// Create a new UUID (version 1) using the given timestamp and node id.
+    /// Create a new version 1 UUID using the given timestamp and node id.
     ///
     /// When generating [`Timestamp`]s using a [`ClockSequence`], this function
     /// is only guaranteed to produce unique values if the following conditions
@@ -71,17 +74,6 @@ impl Uuid {
     /// );
     /// ```
     ///
-    /// The timestamp can also just use the current SystemTime
-    ///
-    /// ```
-    /// # use uuid::{Timestamp, Context};
-    /// # use uuid::Uuid;
-    /// let context = Context::new(42);
-    /// let ts = Timestamp::now(&context);
-    ///
-    /// let _uuid = Uuid::new_v1(ts, &[1, 2, 3, 4, 5, 6]);
-    /// ```
-    ///
     /// # References
     ///
     /// * [Version 1 UUIDs in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.2)
@@ -94,42 +86,6 @@ impl Uuid {
 
         Builder::from_rfc4122_timestamp(ticks, counter, node_id).into_uuid()
     }
-}
-
-pub(crate) const fn encode_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Uuid {
-    let time_low = (ticks & 0xFFFF_FFFF) as u32;
-    let time_mid = ((ticks >> 32) & 0xFFFF) as u16;
-    let time_high_and_version = (((ticks >> 48) & 0x0FFF) as u16) | (1 << 12);
-
-    let mut d4 = [0; 8];
-
-    d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
-    d4[1] = (counter & 0xFF) as u8;
-    d4[2] = node_id[0];
-    d4[3] = node_id[1];
-    d4[4] = node_id[2];
-    d4[5] = node_id[3];
-    d4[6] = node_id[4];
-    d4[7] = node_id[5];
-
-    Uuid::from_fields(time_low, time_mid, time_high_and_version, &d4)
-}
-
-pub(crate) const fn decode_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
-    let bytes = uuid.as_bytes();
-
-    let ticks: u64 = ((bytes[6] & 0x0F) as u64) << 56
-        | (bytes[7] as u64) << 48
-        | (bytes[4] as u64) << 40
-        | (bytes[5] as u64) << 32
-        | (bytes[0] as u64) << 24
-        | (bytes[1] as u64) << 16
-        | (bytes[2] as u64) << 8
-        | (bytes[3] as u64);
-
-    let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
-
-    (ticks, counter)
 }
 
 #[cfg(test)]

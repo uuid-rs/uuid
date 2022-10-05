@@ -7,7 +7,7 @@
 fn generate_sortable_uuid() {
     use uuid::Uuid;
 
-    let uuid = Uuid::new_v7(uuid::Timestamp::now(uuid::NoContext));
+    let uuid = Uuid::now_v7();
 
     assert_eq!(Some(uuid::Version::SortRand), uuid.get_version());
 }

@@ -18,6 +18,9 @@
 //! # References
 //!
 //! * [Timestamp in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4)
+//! * [Timestamp in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-6.1)
+
+use crate::Uuid;
 
 /// The number of 100 nanosecond ticks between the RFC4122 epoch
 /// (`1582-10-15 00:00:00`) and the Unix epoch (`1970-01-01 00:00:00`).
@@ -32,6 +35,7 @@ pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 /// # References
 ///
 /// * [Timestamp in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4)
+/// * [Timestamp in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-6.1)
 /// * [Clock Sequence in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.5)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Timestamp {
@@ -150,6 +154,116 @@ impl Timestamp {
         // a useful value for nanoseconds since the epoch.
         self.nanos
     }
+}
+
+pub(crate) const fn encode_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Uuid {
+    let time_low = (ticks & 0xFFFF_FFFF) as u32;
+    let time_mid = ((ticks >> 32) & 0xFFFF) as u16;
+    let time_high_and_version = (((ticks >> 48) & 0x0FFF) as u16) | (1 << 12);
+
+    let mut d4 = [0; 8];
+
+    d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
+    d4[1] = (counter & 0xFF) as u8;
+    d4[2] = node_id[0];
+    d4[3] = node_id[1];
+    d4[4] = node_id[2];
+    d4[5] = node_id[3];
+    d4[6] = node_id[4];
+    d4[7] = node_id[5];
+
+    Uuid::from_fields(time_low, time_mid, time_high_and_version, &d4)
+}
+
+pub(crate) const fn decode_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
+    let bytes = uuid.as_bytes();
+
+    let ticks: u64 = ((bytes[6] & 0x0F) as u64) << 56
+        | (bytes[7] as u64) << 48
+        | (bytes[4] as u64) << 40
+        | (bytes[5] as u64) << 32
+        | (bytes[0] as u64) << 24
+        | (bytes[1] as u64) << 16
+        | (bytes[2] as u64) << 8
+        | (bytes[3] as u64);
+
+    let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
+
+    (ticks, counter)
+}
+
+pub(crate) const fn encode_sorted_rfc4122_timestamp(
+    ticks: u64,
+    counter: u16,
+    node_id: &[u8; 6],
+) -> Uuid {
+    let time_high = ((ticks >> 28) & 0xFFFF_FFFF) as u32;
+    let time_mid = ((ticks >> 12) & 0xFFFF) as u16;
+    let time_low_and_version = ((ticks & 0x0FFF) as u16) | (0x6 << 12);
+
+    let mut d4 = [0; 8];
+
+    d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
+    d4[1] = (counter & 0xFF) as u8;
+    d4[2] = node_id[0];
+    d4[3] = node_id[1];
+    d4[4] = node_id[2];
+    d4[5] = node_id[3];
+    d4[6] = node_id[4];
+    d4[7] = node_id[5];
+
+    Uuid::from_fields(time_high, time_mid, time_low_and_version, &d4)
+}
+
+pub(crate) const fn decode_sorted_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
+    let bytes = uuid.as_bytes();
+
+    let ticks: u64 = ((bytes[0]) as u64) << 52
+        | (bytes[1] as u64) << 44
+        | (bytes[2] as u64) << 36
+        | (bytes[3] as u64) << 28
+        | (bytes[4] as u64) << 20
+        | (bytes[5] as u64) << 12
+        | ((bytes[6] & 0xF) as u64) << 8
+        | (bytes[7] as u64);
+
+    let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
+
+    (ticks, counter)
+}
+
+pub(crate) const fn encode_unix_timestamp_millis(millis: u64, random_bytes: &[u8; 10]) -> Uuid {
+    let millis_high = ((millis >> 16) & 0xFFFF_FFFF) as u32;
+    let millis_low = (millis & 0xFFFF) as u16;
+
+    let random_and_version =
+        (random_bytes[0] as u16 | ((random_bytes[1] as u16) << 8) & 0x0FFF) | (0x7 << 12);
+
+    let mut d4 = [0; 8];
+
+    d4[0] = (random_bytes[2] & 0x3F) | 0x80;
+    d4[1] = random_bytes[3];
+    d4[2] = random_bytes[4];
+    d4[3] = random_bytes[5];
+    d4[4] = random_bytes[6];
+    d4[5] = random_bytes[7];
+    d4[6] = random_bytes[8];
+    d4[7] = random_bytes[9];
+
+    Uuid::from_fields(millis_high, millis_low, random_and_version, &d4)
+}
+
+pub(crate) const fn decode_unix_timestamp_millis(uuid: &Uuid) -> u64 {
+    let bytes = uuid.as_bytes();
+
+    let millis: u64 = (bytes[0] as u64) << 40
+        | (bytes[1] as u64) << 32
+        | (bytes[2] as u64) << 24
+        | (bytes[3] as u64) << 16
+        | (bytes[4] as u64) << 8
+        | (bytes[5] as u64);
+
+    millis
 }
 
 /// A counter that can be used by version 1 and version 6 UUIDs to support

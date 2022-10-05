@@ -6,9 +6,12 @@
 use crate::{timestamp::context::shared_context, Builder, Timestamp, Uuid};
 
 impl Uuid {
-    /// Create a new UUID (version 6) using the current time value and a node id.
+    /// Create a new version 6 UUID using the current time value and a node id.
     ///
     /// This method is only available if the `std` feature is enabled.
+    ///
+    /// This method is a convenient alternative to [`Uuid::new_v6`] that uses the current system time
+    /// as the source timestamp.
     #[cfg(all(feature = "std", feature = "rng"))]
     pub fn now_v6(node_id: &[u8; 6]) -> Self {
         let ts = Timestamp::now(shared_context());
@@ -16,9 +19,9 @@ impl Uuid {
         Self::new_v6(ts, node_id)
     }
 
-    /// Create a new UUID (version 6) using a time value + sequence +
+    /// Create a new version 6 UUID using a time value + sequence +
     /// *NodeId*.
-    /// This is similar to UUIDv1, except that it is lexographically sortable by timestamp.
+    /// This is similar to UUIDv1, except that it is lexicographically sortable by timestamp.
     ///
     /// When generating [`Timestamp`]s using a [`ClockSequence`], this function
     /// is only guaranteed to produce unique values if the following conditions
@@ -85,46 +88,6 @@ impl Uuid {
 
         Builder::from_sorted_rfc4122_timestamp(ticks, counter, node_id).into_uuid()
     }
-}
-
-pub(crate) const fn encode_sorted_rfc4122_timestamp(
-    ticks: u64,
-    counter: u16,
-    node_id: &[u8; 6],
-) -> Uuid {
-    let time_high = ((ticks >> 28) & 0xFFFF_FFFF) as u32;
-    let time_mid = ((ticks >> 12) & 0xFFFF) as u16;
-    let time_low_and_version = ((ticks & 0x0FFF) as u16) | (0x6 << 12);
-
-    let mut d4 = [0; 8];
-
-    d4[0] = (((counter & 0x3F00) >> 8) as u8) | 0x80;
-    d4[1] = (counter & 0xFF) as u8;
-    d4[2] = node_id[0];
-    d4[3] = node_id[1];
-    d4[4] = node_id[2];
-    d4[5] = node_id[3];
-    d4[6] = node_id[4];
-    d4[7] = node_id[5];
-
-    Uuid::from_fields(time_high, time_mid, time_low_and_version, &d4)
-}
-
-pub(crate) const fn decode_sorted_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
-    let bytes = uuid.as_bytes();
-
-    let ticks: u64 = ((bytes[0]) as u64) << 52
-        | (bytes[1] as u64) << 44
-        | (bytes[2] as u64) << 36
-        | (bytes[3] as u64) << 28
-        | (bytes[4] as u64) << 20
-        | (bytes[5] as u64) << 12
-        | ((bytes[6] & 0xF) as u64) << 8
-        | (bytes[7] as u64);
-
-    let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
-
-    (ticks, counter)
 }
 
 #[cfg(test)]
