@@ -6,12 +6,15 @@
 use crate::{Builder, Timestamp, Uuid};
 
 impl Uuid {
-    /// Create a new version 6 UUID using the current time value and a node id.
+    /// Create a new version 6 UUID using the current system time and node ID.
     ///
     /// This method is only available if the `std` feature is enabled.
     ///
     /// This method is a convenient alternative to [`Uuid::new_v6`] that uses the current system time
     /// as the source timestamp.
+    ///
+    /// Note that usage of this method requires the `v6`, `std`, and `rng` features of this crate
+    /// to be enabled.
     #[cfg(all(feature = "std", feature = "rng"))]
     pub fn now_v6(node_id: &[u8; 6]) -> Self {
         let ts = Timestamp::now(crate::timestamp::context::shared_context());
@@ -19,16 +22,19 @@ impl Uuid {
         Self::new_v6(ts, node_id)
     }
 
-    /// Create a new version 6 UUID using a time value + sequence +
-    /// *NodeId*.
-    /// This is similar to UUIDv1, except that it is lexicographically sortable by timestamp.
+    /// Create a new version 6 UUID using the given timestamp and a node ID.
+    ///
+    /// This is similar to version 1 UUIDs, except that it is lexicographically sortable by timestamp.
+    ///
+    /// Also see [`Uuid::now_v6`] for a convenient way to generate version 6
+    /// UUIDs using the current system time.
     ///
     /// When generating [`Timestamp`]s using a [`ClockSequence`], this function
     /// is only guaranteed to produce unique values if the following conditions
     /// hold:
     ///
-    /// 1. The *NodeId* is unique for this process,
-    /// 2. The *Context* is shared across all threads which are generating v1
+    /// 1. The *node ID* is unique for this process,
+    /// 2. The *context* is shared across all threads which are generating version 6
     ///    UUIDs,
     /// 3. The [`ClockSequence`] implementation reliably returns unique
     ///    clock sequences (this crate provides [`Context`] for this
@@ -101,7 +107,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_new_v6() {
+    fn test_new() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
         let node = [1, 2, 3, 4, 5, 6];
@@ -131,7 +137,19 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_new_v6_context() {
+    #[cfg(all(feature = "std", feature = "rng"))]
+    fn test_now() {
+        let node = [1, 2, 3, 4, 5, 6];
+
+        let uuid = Uuid::now_v6(&node);
+
+        assert_eq!(uuid.get_version(), Some(Version::SortMac));
+        assert_eq!(uuid.get_variant(), Variant::RFC4122);
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    fn test_new_context() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
         let node = [1, 2, 3, 4, 5, 6];

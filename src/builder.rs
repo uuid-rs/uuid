@@ -543,7 +543,7 @@ impl Builder {
         Builder(Uuid::from_bytes_le(b))
     }
 
-    /// Creates a `Builder` for a version 1 UUID using the supplied timestamp and node id.
+    /// Creates a `Builder` for a version 1 UUID using the supplied timestamp and node ID.
     pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
         Builder(timestamp::encode_rfc4122_timestamp(ticks, counter, node_id))
     }
@@ -590,9 +590,9 @@ impl Builder {
             .with_version(Version::Sha1)
     }
 
-    /// Creates a `Builder` for a version 6 UUID using the supplied timestamp and node id.
+    /// Creates a `Builder` for a version 6 UUID using the supplied timestamp and node ID.
     ///
-    /// This method will encode the ticks, counter, and node id in a sortable UUID.
+    /// This method will encode the ticks, counter, and node ID in a sortable UUID.
     pub const fn from_sorted_rfc4122_timestamp(
         ticks: u64,
         counter: u16,

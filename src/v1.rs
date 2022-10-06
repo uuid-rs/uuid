@@ -8,12 +8,15 @@ use crate::{Builder, Timestamp, Uuid};
 pub use crate::timestamp::context::Context;
 
 impl Uuid {
-    /// Create a new version 1 UUID using the current system time and a node id.
+    /// Create a new version 1 UUID using the current system time and node ID.
     ///
     /// This method is only available if both the `std` and `rng` features are enabled.
     ///
     /// This method is a convenient alternative to [`Uuid::new_v1`] that uses the current system time
     /// as the source timestamp.
+    ///
+    /// Note that usage of this method requires the `v1`, `std`, and `rng` features of this crate
+    /// to be enabled.
     #[cfg(all(feature = "std", feature = "rng"))]
     pub fn now_v1(node_id: &[u8; 6]) -> Self {
         let ts = Timestamp::now(crate::timestamp::context::shared_context());
@@ -21,13 +24,16 @@ impl Uuid {
         Self::new_v1(ts, node_id)
     }
 
-    /// Create a new version 1 UUID using the given timestamp and node id.
+    /// Create a new version 1 UUID using the given timestamp and node ID.
+    ///
+    /// Also see [`Uuid::now_v1`] for a convenient way to generate version 1
+    /// UUIDs using the current system time.
     ///
     /// When generating [`Timestamp`]s using a [`ClockSequence`], this function
     /// is only guaranteed to produce unique values if the following conditions
     /// hold:
     ///
-    /// 1. The *node id* is unique for this process,
+    /// 1. The *node ID* is unique for this process,
     /// 2. The *context* is shared across all threads which are generating version 1
     ///    UUIDs,
     /// 3. The [`ClockSequence`] implementation reliably returns unique
@@ -124,6 +130,18 @@ mod tests {
             uuid.get_timestamp().unwrap(),
             parsed.get_timestamp().unwrap()
         );
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    #[cfg(all(feature = "std", feature = "rng"))]
+    fn test_now() {
+        let node = [1, 2, 3, 4, 5, 6];
+
+        let uuid = Uuid::now_v1(&node);
+
+        assert_eq!(uuid.get_version(), Some(Version::Mac));
+        assert_eq!(uuid.get_variant(), Variant::RFC4122);
     }
 
     #[test]

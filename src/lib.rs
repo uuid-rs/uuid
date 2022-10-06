@@ -93,6 +93,8 @@
 //! to use UUIDs as database keys or need to sort them then consider version 7 (`v7`) UUIDs.
 //! Other versions should generally be avoided unless there's an existing need for them.
 //!
+//! Some UUID versions supersede others. Prefer version 6 over version 1 and version 5 over version 3.
+//!
 //! # Other features
 //!
 //! Other crate features can also be useful beyond the version support:
@@ -132,9 +134,10 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1"
+//! version = "1.1.2"
 //! features = [
 //!     "v4",
+//!     "v7",
 //!     "js",
 //! ]
 //! ```
@@ -146,7 +149,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1"
+//! version = "1.1.2"
 //! default-features = false
 //! ```
 //!
@@ -163,7 +166,7 @@
 //!
 //! # Examples
 //!
-//! To parse a UUID given in the simple format and print it as a URN:
+//! Parse a UUID given in the simple format and print it as a URN:
 //!
 //! ```
 //! # use uuid::Uuid;
@@ -175,7 +178,7 @@
 //! # }
 //! ```
 //!
-//! To create a new random (V4) UUID and print it out in hexadecimal form:
+//! Generate a random UUID and print it out in hexadecimal form:
 //!
 //! ```
 //! // Note that this requires the `v4` feature to be enabled.

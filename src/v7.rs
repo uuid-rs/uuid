@@ -3,8 +3,7 @@
 //! Note that you need to enable the `v7` Cargo feature
 //! in order to use this module.
 
-use crate::{rng, timestamp::Timestamp, Builder, Uuid};
-use core::convert::TryInto;
+use crate::{std::convert::TryInto, rng, timestamp::Timestamp, Builder, Uuid};
 
 impl Uuid {
     /// Create a new version 7 UUID using the current time value and random bytes.
@@ -63,7 +62,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_new_v7() {
+    fn test_new() {
         let ts: u64 = 1645557742000;
 
         let seconds = ts / 1000;
@@ -85,7 +84,7 @@ mod tests {
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     #[cfg(feature = "std")]
-    fn test_now_v7() {
+    fn test_now() {
         let uuid = Uuid::now_v7();
 
         assert_eq!(uuid.get_version(), Some(Version::SortRand));
@@ -94,7 +93,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_new_v7_timestamp_roundtrip() {
+    fn test_new_timestamp_roundtrip() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_000_000;
 
