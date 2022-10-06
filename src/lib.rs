@@ -85,13 +85,17 @@
 //! * `v8` - Version 8 UUIDs using user-defined data.
 //!
 //! This library also includes a [`Builder`] type that can be used to help construct UUIDs of any
-//! version without any additional dependencies or features.
+//! version without any additional dependencies or features. It's a lower-level API than [`Uuid`]
+//! that can be used when you need control over implicit requirements on things like a source
+//! of randomness.
 //!
 //! ## Which UUID version should I use?
 //!
 //! If you just want to generate unique identifiers then consider version 4 (`v4`) UUIDs. If you want
 //! to use UUIDs as database keys or need to sort them then consider version 7 (`v7`) UUIDs.
 //! Other versions should generally be avoided unless there's an existing need for them.
+//!
+//! Some UUID versions supersede others. Prefer version 6 over version 1 and version 5 over version 3.
 //!
 //! # Other features
 //!
@@ -132,9 +136,10 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1"
+//! version = "1.1.2"
 //! features = [
 //!     "v4",
+//!     "v7",
 //!     "js",
 //! ]
 //! ```
@@ -146,7 +151,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1"
+//! version = "1.1.2"
 //! default-features = false
 //! ```
 //!
@@ -163,7 +168,7 @@
 //!
 //! # Examples
 //!
-//! To parse a UUID given in the simple format and print it as a URN:
+//! Parse a UUID given in the simple format and print it as a URN:
 //!
 //! ```
 //! # use uuid::Uuid;
@@ -175,7 +180,7 @@
 //! # }
 //! ```
 //!
-//! To create a new random (V4) UUID and print it out in hexadecimal form:
+//! Generate a random UUID and print it out in hexadecimal form:
 //!
 //! ```
 //! // Note that this requires the `v4` feature to be enabled.
@@ -283,9 +288,10 @@ pub type Bytes = [u8; 16];
 /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[non_exhaustive]
+#[repr(u8)]
 pub enum Version {
-    /// The _nil_ (all zeros) UUID.
-    Nil = 0,
+    /// The "nil" (all zeros) UUID.
+    Nil = 0u8,
     /// Version 1: Timestamp and node ID.
     Mac,
     /// Version 2: DCE Security.
@@ -302,6 +308,8 @@ pub enum Version {
     SortRand,
     /// Version 8: Custom.
     Custom,
+    /// The "max" (all ones) UUID.
+    Max = 0xff,
 }
 
 /// The reserved variants of UUIDs.
@@ -311,9 +319,10 @@ pub enum Version {
 /// * [Variant in RFC4122](http://tools.ietf.org/html/rfc4122#section-4.1.1)
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[non_exhaustive]
+#[repr(u8)]
 pub enum Variant {
     /// Reserved by the NCS for backward compatibility.
-    NCS = 0,
+    NCS = 0u8,
     /// As described in the RFC4122 Specification (default).
     RFC4122,
     /// Reserved by Microsoft for backward compatibility.
@@ -545,6 +554,7 @@ impl Uuid {
             6 => Some(Version::SortMac),
             7 => Some(Version::SortRand),
             8 => Some(Version::Custom),
+            0xf => Some(Version::Max),
             _ => None,
         }
     }
@@ -835,9 +845,14 @@ impl Uuid {
         ]
     }
 
-    /// Tests if the UUID is nil.
+    /// Tests if the UUID is nil (all zeros).
     pub const fn is_nil(&self) -> bool {
-        self.as_u128() == 0
+        self.as_u128() == u128::MIN
+    }
+
+    /// Tests if the UUID is max (all ones).
+    pub const fn is_max(&self) -> bool {
+        self.as_u128() == u128::MAX
     }
 
     /// A buffer that can be used for `encode_...` calls, that is
@@ -1062,19 +1077,41 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-    fn test_nil() {
-        let nil = Uuid::nil();
-        let not_nil = new();
+    fn test_non_conforming() {
         let from_bytes =
             Uuid::from_bytes([4, 54, 67, 12, 43, 2, 2, 76, 32, 50, 87, 5, 1, 33, 43, 87]);
 
         assert_eq!(from_bytes.get_version(), None);
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    fn test_nil() {
+        let nil = Uuid::nil();
+        let not_nil = new();
 
         assert!(nil.is_nil());
         assert!(!not_nil.is_nil());
 
         assert_eq!(nil.get_version(), Some(Version::Nil));
-        assert_eq!(not_nil.get_version(), Some(Version::Random))
+        assert_eq!(not_nil.get_version(), Some(Version::Random));
+
+        assert_eq!(nil, Builder::from_bytes([0; 16]).with_version(Version::Nil).into_uuid());
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    fn test_max() {
+        let max = Uuid::max();
+        let not_max = new();
+
+        assert!(max.is_max());
+        assert!(!not_max.is_max());
+
+        assert_eq!(max.get_version(), Some(Version::Max));
+        assert_eq!(not_max.get_version(), Some(Version::Random));
+
+        assert_eq!(max, Builder::from_bytes([0xff; 16]).with_version(Version::Max).into_uuid());
     }
 
     #[test]

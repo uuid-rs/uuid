@@ -1,12 +1,15 @@
 use crate::{Builder, Uuid};
 
 impl Uuid {
-    /// Creates a custom UUID comprised almost entirely of user-supplied bytes
+    /// Creates a custom UUID comprised almost entirely of user-supplied bytes.
     ///
     /// This will inject the UUID Version at 4 bits starting at the 48th bit
-    /// and the Variant into 2 bits 64th bit.
-    /// So if there are bits are supplied in the input buffer, they will not be
-    /// visible in the result
+    /// and the Variant into 2 bits 64th bit. Any existing bits in the user-supplied bytes
+    /// at those locations will be overridden.
+    ///
+    /// Note that usage of this method requires the `v8` feature of this crate
+    /// to be enabled.
+    ///
     /// # Examples
     ///
     /// Basic usage:
