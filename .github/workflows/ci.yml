@@ -70,13 +70,34 @@ jobs:
     - name: All features
       run: cargo hack test --lib --all-features
 
+  stable:
+    name: "Tests / Stable / OS: ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+        - ubuntu-20.04
+
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@v2
+
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        profile: minimal
+        toolchain: stable
+        override: true
+
+    - name: All features
+      run: cargo test --all-features
+
   msrv:
     name: "Tests / MSRV / OS: ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os:
-        - macos-10.15
         - ubuntu-20.04
 
     steps:
@@ -91,7 +112,7 @@ jobs:
         override: true
 
     - name: Version features
-      run: cargo test --features "$VERSION_FEATURES $DEP_FEATURES"
+      run: cargo test --features "$VERSION_FEATURES"
 
   wasm:
     name: Tests / WebAssembly

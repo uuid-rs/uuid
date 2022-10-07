@@ -80,9 +80,8 @@
 //! * `v3` - Version 3 UUIDs based on the MD5 hash of some data.
 //! * `v4` - Version 4 UUIDs with random data.
 //! * `v5` - Version 5 UUIDs based on the SHA1 hash of some data.
-//! * `v6` - Version 6 UUIDs using a timestamp and monotonic counter.
-//! * `v7` - Version 7 UUIDs using a Unix timestamp.
-//! * `v8` - Version 8 UUIDs using user-defined data.
+//!
+//! Versions that are in draft are also supported. See the _unstable features_ section for details.
 //!
 //! This library also includes a [`Builder`] type that can be used to help construct UUIDs of any
 //! version without any additional dependencies or features. It's a lower-level API than [`Uuid`]
@@ -115,6 +114,9 @@
 //! Some features are unstable. They may be incomplete or depend on other
 //! unstable libraries. These include:
 //!
+//! * `v6` - Version 6 UUIDs using a timestamp and monotonic counter.
+//! * `v7` - Version 7 UUIDs using a Unix timestamp.
+//! * `v8` - Version 8 UUIDs using user-defined data.
 //! * `zerocopy` - adds support for zero-copy deserialization using the
 //!   `zerocopy` library.
 //!
@@ -246,11 +248,11 @@ mod v3;
 mod v4;
 #[cfg(feature = "v5")]
 mod v5;
-#[cfg(feature = "v6")]
+#[cfg(all(uuid_unstable, feature = "v6"))]
 mod v6;
-#[cfg(feature = "v7")]
+#[cfg(all(uuid_unstable, feature = "v7"))]
 mod v7;
-#[cfg(feature = "v8")]
+#[cfg(all(uuid_unstable, feature = "v8"))]
 mod v8;
 
 #[cfg(feature = "md5")]
@@ -293,22 +295,26 @@ pub enum Version {
     /// The "nil" (all zeros) UUID.
     Nil = 0u8,
     /// Version 1: Timestamp and node ID.
-    Mac,
+    Mac = 1,
     /// Version 2: DCE Security.
-    Dce,
+    Dce = 2,
     /// Version 3: MD5 hash.
-    Md5,
+    Md5 = 3,
     /// Version 4: Random.
-    Random,
+    Random = 4,
     /// Version 5: SHA-1 hash.
-    Sha1,
+    Sha1 = 5,
     /// Version 6: Sortable Timestamp and node ID.
-    SortMac,
+    #[cfg(uuid_unstable)]
+    SortMac = 6,
     /// Version 7: Timestamp and random.
-    SortRand,
+    #[cfg(uuid_unstable)]
+    SortRand = 7,
     /// Version 8: Custom.
-    Custom,
+    #[cfg(uuid_unstable)]
+    Custom = 8,
     /// The "max" (all ones) UUID.
+    #[cfg(uuid_unstable)]
     Max = 0xff,
 }
 
@@ -551,9 +557,13 @@ impl Uuid {
             3 => Some(Version::Md5),
             4 => Some(Version::Random),
             5 => Some(Version::Sha1),
+            #[cfg(uuid_unstable)]
             6 => Some(Version::SortMac),
+            #[cfg(uuid_unstable)]
             7 => Some(Version::SortRand),
+            #[cfg(uuid_unstable)]
             8 => Some(Version::Custom),
+            #[cfg(uuid_unstable)]
             0xf => Some(Version::Max),
             _ => None,
         }
@@ -851,6 +861,7 @@ impl Uuid {
     }
 
     /// Tests if the UUID is max (all ones).
+    #[cfg(uuid_unstable)]
     pub const fn is_max(&self) -> bool {
         self.as_u128() == u128::MAX
     }
@@ -910,11 +921,13 @@ impl Uuid {
 
                 Some(Timestamp::from_rfc4122(ticks, counter))
             }
+            #[cfg(uuid_unstable)]
             Some(Version::SortMac) => {
                 let (ticks, counter) = timestamp::decode_sorted_rfc4122_timestamp(self);
 
                 Some(Timestamp::from_rfc4122(ticks, counter))
             }
+            #[cfg(uuid_unstable)]
             Some(Version::SortRand) => {
                 let millis = timestamp::decode_unix_timestamp_millis(self);
 
@@ -1100,6 +1113,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(uuid_unstable)]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_max() {
         let max = Uuid::max();

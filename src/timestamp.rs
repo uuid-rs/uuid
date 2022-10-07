@@ -190,6 +190,7 @@ pub(crate) const fn decode_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
     (ticks, counter)
 }
 
+#[cfg(uuid_unstable)]
 pub(crate) const fn encode_sorted_rfc4122_timestamp(
     ticks: u64,
     counter: u16,
@@ -213,6 +214,7 @@ pub(crate) const fn encode_sorted_rfc4122_timestamp(
     Uuid::from_fields(time_high, time_mid, time_low_and_version, &d4)
 }
 
+#[cfg(uuid_unstable)]
 pub(crate) const fn decode_sorted_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
     let bytes = uuid.as_bytes();
 
@@ -230,6 +232,7 @@ pub(crate) const fn decode_sorted_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
     (ticks, counter)
 }
 
+#[cfg(uuid_unstable)]
 pub(crate) const fn encode_unix_timestamp_millis(millis: u64, random_bytes: &[u8; 10]) -> Uuid {
     let millis_high = ((millis >> 16) & 0xFFFF_FFFF) as u32;
     let millis_low = (millis & 0xFFFF) as u16;
@@ -251,6 +254,7 @@ pub(crate) const fn encode_unix_timestamp_millis(millis: u64, random_bytes: &[u8
     Uuid::from_fields(millis_high, millis_low, random_and_version, &d4)
 }
 
+#[cfg(uuid_unstable)]
 pub(crate) const fn decode_unix_timestamp_millis(uuid: &Uuid) -> u64 {
     let bytes = uuid.as_bytes();
 
