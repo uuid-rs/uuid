@@ -42,28 +42,6 @@ use crate::{error::*, timestamp, Bytes, Uuid, Variant, Version};
 /// assert_eq!(Some(Version::Random), uuid.get_version());
 /// assert_eq!(Variant::RFC4122, uuid.get_variant());
 /// ```
-///
-/// Creating a version 7 UUID from the current system time and externally generated random bytes:
-///
-/// ```
-/// # use std::convert::TryInto;
-/// use std::time::{Duration, SystemTime};
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// # use uuid::{Builder, Uuid, Variant, Version, Timestamp, NoContext};
-/// # let rng = || [
-/// #     70, 235, 208, 238, 14, 109, 67, 201, 185, 13
-/// # ];
-/// let ts = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
-///
-/// let random_bytes = rng();
-///
-/// let uuid = Builder::from_unix_timestamp_millis(ts.as_millis().try_into()?, &random_bytes).into_uuid();
-///
-/// assert_eq!(Some(Version::SortRand), uuid.get_version());
-/// assert_eq!(Variant::RFC4122, uuid.get_variant());
-/// # Ok(())
-/// # }
-/// ```
 #[allow(missing_copy_implementations)]
 #[derive(Debug)]
 pub struct Builder(Uuid);
@@ -117,6 +95,7 @@ impl Uuid {
     ///     uuid.hyphenated().to_string(),
     /// );
     /// ```
+    #[cfg(uuid_unstable)]
     pub const fn max() -> Self {
         Uuid::from_bytes([0xFF; 16])
     }
@@ -619,6 +598,7 @@ impl Builder {
     /// Creates a `Builder` for a version 6 UUID using the supplied timestamp and node ID.
     ///
     /// This method will encode the ticks, counter, and node ID in a sortable UUID.
+    #[cfg(uuid_unstable)]
     pub const fn from_sorted_rfc4122_timestamp(
         ticks: u64,
         counter: u16,
@@ -656,6 +636,7 @@ impl Builder {
     /// # Ok(())
     /// # }
     /// ```
+    #[cfg(uuid_unstable)]
     pub const fn from_unix_timestamp_millis(millis: u64, random_bytes: &[u8; 10]) -> Self {
         Builder(timestamp::encode_unix_timestamp_millis(
             millis,
@@ -667,6 +648,7 @@ impl Builder {
     ///
     /// This method won't interpret the given bytes in any way, except to set the appropriate
     /// bits for the UUID version and variant.
+    #[cfg(uuid_unstable)]
     pub const fn from_custom_bytes(custom_bytes: Bytes) -> Self {
         Builder::from_bytes(custom_bytes)
             .with_variant(Variant::RFC4122)
