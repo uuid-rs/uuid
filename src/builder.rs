@@ -54,7 +54,7 @@ impl Uuid {
     ///
     /// # References
     ///
-    /// * [Nil UUID in RFC4122]: https://tools.ietf.org/html/rfc4122.html#section-4.1.7
+    /// * [Nil UUID in RFC4122](https://tools.ietf.org/html/rfc4122.html#section-4.1.7)
     ///
     /// # Examples
     ///
@@ -80,7 +80,7 @@ impl Uuid {
     ///
     /// # References
     ///
-    /// * [Max UUID in Draft RFC: New UUID Formats, Version 4]: https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.4
+    /// * [Max UUID in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.4)
     ///
     /// # Examples
     ///
