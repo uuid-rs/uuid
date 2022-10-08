@@ -3,9 +3,10 @@
 //! This module is soft-deprecated. Instead of using the `Context` type re-exported here,
 //! use the one from the crate root.
 
-use crate::{Builder, Timestamp, Uuid};
+use crate::{Builder, Uuid};
 
-pub use crate::timestamp::context::Context;
+#[deprecated(note = "use types from the crate root instead")]
+pub use crate::{timestamp::context::Context, Timestamp};
 
 impl Uuid {
     /// Create a new version 1 UUID using the current system time and node ID.
