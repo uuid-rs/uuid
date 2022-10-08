@@ -93,6 +93,22 @@ mod tests {
 
     #[test]
     #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    fn test_sorting() {
+        let time1: u64 = 1_496_854_535;
+        let time_fraction1: u32 = 812_000_000;
+
+        let time2 = time1 + 4000;
+        let time_fraction2 = time_fraction1;
+
+        let uuid1 = Uuid::new_v7(Timestamp::from_unix(NoContext, time1, time_fraction1));
+        let uuid2 = Uuid::new_v7(Timestamp::from_unix(NoContext, time2, time_fraction2));
+
+        assert!(uuid1.as_bytes() < uuid2.as_bytes());
+        assert!(uuid1.to_string() < uuid2.to_string());
+    }
+
+    #[test]
+    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
     fn test_new_timestamp_roundtrip() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_000_000;
