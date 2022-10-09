@@ -2,7 +2,7 @@ name: Continuous integration
 
 env:
   VERSION_FEATURES: "v1 v3 v4 v5 v6 v7 v8"
-  DEP_FEATURES: "slog serde arbitrary zerocopy"
+  DEP_FEATURES: "slog serde arbitrary zerocopy defmt"
 
 on:
   pull_request:
@@ -28,9 +28,9 @@ jobs:
           rust_target: x86_64-msvc
         - os: windows-2019
           rust_target: x86_64-apple-darwin
-        - os: ubuntu-20.04
+        - os: ubuntu-latest
           rust_target: x86_64-msvc
-        - os: ubuntu-20.04
+        - os: ubuntu-latest
           rust_target: x86_64-apple-darwin
         channel:
         - stable
@@ -38,7 +38,7 @@ jobs:
         - nightly
         os:
         - macos-10.15
-        - ubuntu-20.04
+        - ubuntu-latest
         rust_target:
         - x86_64-gnu
         - x86_64-msvc
@@ -71,12 +71,8 @@ jobs:
       run: cargo hack test --lib --all-features
 
   stable:
-    name: "Tests / Stable / OS: ${{ matrix.os }}"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-        - ubuntu-20.04
+    name: "Tests / Stable"
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout sources
@@ -93,12 +89,8 @@ jobs:
       run: cargo test --all-features
 
   msrv:
-    name: "Tests / MSRV / OS: ${{ matrix.os }}"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-        - ubuntu-20.04
+    name: "Tests / MSRV"
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout sources
