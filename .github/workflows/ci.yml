@@ -72,7 +72,7 @@ jobs:
       run: cargo hack test --lib --all-features
 
   stable:
-    name: "Tests / Stable / OS: ${{ matrix.os }}"
+    name: "Tests / Stable"
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout sources
@@ -89,7 +89,7 @@ jobs:
       run: cargo test --all-features
 
   msrv:
-    name: "Tests / MSRV / OS: ${{ matrix.os }}"
+    name: "Tests / MSRV"
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout sources
