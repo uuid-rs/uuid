@@ -39,6 +39,7 @@ jobs:
         os:
         - macos-10.15
         - ubuntu-20.04
+        - windows-2019
         rust_target:
         - x86_64-gnu
         - x86_64-msvc
@@ -71,13 +72,8 @@ jobs:
       run: cargo hack test --lib --all-features
 
   stable:
-    name: "Tests / Stable / OS: ${{ matrix.os }}"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-        - ubuntu-20.04
-
+    name: "Tests / Stable"
+    runs-on: ubuntu-20.04
     steps:
     - name: Checkout sources
       uses: actions/checkout@v2
@@ -93,13 +89,8 @@ jobs:
       run: cargo test --all-features
 
   msrv:
-    name: "Tests / MSRV / OS: ${{ matrix.os }}"
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os:
-        - ubuntu-20.04
-
+    name: "Tests / MSRV"
+    runs-on: ubuntu-20.04
     steps:
     - name: Checkout sources
       uses: actions/checkout@v2
@@ -200,62 +191,3 @@ jobs:
 
       - name: Powerset
         run: cargo hack check --each-feature -Z avoid-dev-deps
-  win_tests:
-    name: "Tests / OS: Windows 2019 - ${{ matrix.channel }}-${{ matrix.rust_target }}"
-    runs-on: windows-2019
-    env:
-      RUSTFLAGS: "--cfg uuid_unstable"
-      RUSTDOCFLAGS: "--cfg uuid_unstable"
-    strategy:
-      matrix:
-        channel:
-        - stable
-        - beta
-        - nightly
-        os:
-        - windows-2019
-        rust_target:
-        - x86_64-gnu
-        - x86_64-msvc
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Install Rust Toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        override: true
-        profile: minimal
-        toolchain: ${{ matrix.channel }}-${{ matrix.rust_target }}
-
-    - name: Install cargo-hack
-      run: cargo install cargo-hack
-
-    - name: Docs
-      run: cargo test --all-features --doc
-
-    - name: Examples
-      run: cargo test --all-features --examples
-
-    - name: Each version feature
-      run: cargo hack test --lib --each-feature --optional-deps $env:DEP_FEATURES
-
-    - name: All version features
-      run: cargo hack test --lib --each-feature --features "$env:VERSION_FEATURES" --optional-deps "$env:DEP_FEATURES"
-
-  win-msrv:
-    name: "Tests / MSRV / OS: Windows 2019"
-    runs-on: windows-2019
-    steps:
-    - name: Checkout sources
-      uses: actions/checkout@v2
-
-    - name: Install Rust toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: 1.57.0
-        override: true
-
-    - name: Version features
-      run: cargo test --features "$env:VERSION_FEATURES $env:DEP_FEATURES"
