@@ -71,7 +71,7 @@ impl Uuid {
     /// hyphens.
     ///
     /// This function is similar to [`parse_str`], in fact `parse_str` shares
-    /// the same underlying parser. The difference is that if `try_parse`
+    /// the same underlying parser. The difference is that if `parse_str`
     /// fails, it won't generate very useful error messages. The `parse_str`
     /// function will eventually be deprecated in favor or `try_parse`.
     ///
