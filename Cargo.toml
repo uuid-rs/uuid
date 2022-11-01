@@ -48,8 +48,9 @@ repository = "uuid-rs/uuid"
 status = "actively-developed"
 
 [features]
-default = ["std"]
+default = ["std", "alloc"]
 std = []
+alloc = []
 macro-diagnostics = ["uuid-macro-internal"]
 
 # NOTE: When adding new features, check the `ci.yml` workflow                                              ..
