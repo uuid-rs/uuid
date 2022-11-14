@@ -267,7 +267,6 @@ mod external;
 #[macro_use]
 mod macros;
 
-extern crate alloc;
 #[doc(hidden)]
 #[cfg(feature = "macro-diagnostics")]
 pub extern crate uuid_macro_internal;
