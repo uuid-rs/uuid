@@ -108,7 +108,8 @@
 //! * `fast-rng` - uses a faster algorithm for generating random UUIDs.
 //!   This feature requires more dependencies to compile, but is just as suitable for
 //!   UUIDs as the default algorithm.
-//!
+//! * 'rocket' - adds a trait implementation for `FromParam` to `Uuid`. Usefull if you use the web framework rocket.
+//! 
 //! # Unstable features
 //!
 //! Some features are unstable. They may be incomplete or depend on other
@@ -261,6 +262,9 @@ mod md5;
 mod rng;
 #[cfg(feature = "sha1")]
 mod sha1;
+
+#[cfg(feature = "rocket")]
+mod rocket;
 
 mod external;
 

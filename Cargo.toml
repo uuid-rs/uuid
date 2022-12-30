@@ -149,6 +149,11 @@ package = "wasm-bindgen"
 version = "0.2"
 optional = true
 
+[dependencies.rocket]
+package = "rocket"
+version = "0.5.0-rc.2"
+optional = true
+
 [dev-dependencies.bincode]
 version = "1.0"
 
