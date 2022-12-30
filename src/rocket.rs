@@ -15,14 +15,6 @@ impl<'a> FromParam<'a> for Uuid {
     }
 }
 
-//impl<'a> FromRequest<'a> for Uuid {
-//    typeError = ;
-//    
-//    fn from_request<'life0,'async_trait>(request: &'r rocket::Request<'life0>) ->  core::pin::Pin<alloc::boxed::Box<dyn core::future::Future<Output = rocket::request::Outcome<Self,Self::Error> > + core::marker::Send+'async_trait> >where 'r:'async_trait,'life0:'async_trait,Self:'async_trait {
-//        
-//    }
-//}
-
 #[cfg(test)]
 mod tests {
     extern crate alloc;
