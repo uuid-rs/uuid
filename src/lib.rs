@@ -434,6 +434,22 @@ pub enum Variant {
 /// # ABI
 ///
 /// The `Uuid` type is always guaranteed to be have the same ABI as [`Bytes`].
+/// 
+/// # Request guard
+/// 
+/// When using the [web framework rocket](https://rocket.rs/) the feature `rocket` can be enabled to make
+/// the `Uuid` type a [request guard](https://api.rocket.rs/v0.5-rc/rocket/request/trait.FromRequest.html).
+/// 
+/// For the request guard to succeed the UUID needs to be submitted in an http header with name `uuid`.
+/// 
+/// ## Example
+/// 
+/// ```ignore
+/// let uuid = Uuid::from_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8").unwrap();
+/// let header = Header::new("uuid", uuid.to_string());
+/// // If a header like this is submitted with the request to the 
+/// // end point the request guard will succeed.
+/// ```
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(all(uuid_unstable, feature = "zerocopy"), derive(AsBytes, FromBytes, Unaligned))]
 #[repr(transparent)]
