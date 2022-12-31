@@ -108,7 +108,8 @@
 //! * `fast-rng` - uses a faster algorithm for generating random UUIDs.
 //!   This feature requires more dependencies to compile, but is just as suitable for
 //!   UUIDs as the default algorithm.
-//! * `rocket` - adds a trait implementation for `FromParam` to `Uuid`. Usefull if you use the web framework rocket.
+//! * `rocket` - adds a trait implementation for [FromRequest](https://api.rocket.rs/v0.5-rc/rocket/request/trait.FromRequest.html) 
+//!   and [FromParam](https://api.rocket.rs/v0.5-rc/rocket/request/trait.FromParam.html) to `Uuid`. 
 //! 
 //! # Unstable features
 //!
