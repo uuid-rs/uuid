@@ -40,12 +40,20 @@ mod tests {
 
     #[test]
     fn test_from_param() {
+        let client = Client::tracked(rocket()).expect("valid rocket instance");
+
+        // Test if response is correct
         let uuid = Uuid::from_str("a1a2a3a4b1b2c1c2d1d2d3d4d5d6d7d8").expect("Invalid uuid");
         let mut uri = String::from("/");
         uri.push_str(&uuid.to_string());
-        let client = Client::tracked(rocket()).expect("valid rocket instance");
         let response = client.get(Uri::parse_any(&uri).expect("Invalid uri")).dispatch();
         assert_eq!(response.status(), Status::Ok);
         assert_eq!(response.into_string().unwrap(), "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8");
+
+        // Test if failure message is correct
+        let mut uri = String::from("/");
+        uri.push_str("this-is-an-invalid-uuid");
+        let response = client.get(Uri::parse_any(&uri).expect("Invalid uri")).dispatch();
+        assert_eq!(response.status(), Status::NotFound);
     }
 }
