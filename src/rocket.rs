@@ -1,12 +1,12 @@
 extern crate alloc;
 
-use core::str::FromStr;
+use crate::Uuid;
 
+use core::str::FromStr;
 use alloc::string::String;
 use rocket::{request::{FromParam, FromRequest, Outcome}, http::Status};
 use std::boxed::Box;
 
-use crate::Uuid;
 
 impl<'a> FromParam<'a> for Uuid {
     type Error = &'a str;
