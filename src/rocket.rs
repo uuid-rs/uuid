@@ -51,7 +51,7 @@ fn uuid_from_cookies(cookies: &CookieJar<'_>) -> Result<Uuid, UuidFromRequestErr
         Some(id) => {
             match Uuid::parse_str(&id) {
                 Ok(uuid) => Ok(uuid),
-                Err(_err) => return Err(UuidFromRequestError::Invalid(String::from("_"))),
+                Err(_err) => return Err(UuidFromRequestError::Invalid(String::from("Unable to parse uuid from cookie."))),
             }
         },
         None => Err(UuidFromRequestError::Missing),
