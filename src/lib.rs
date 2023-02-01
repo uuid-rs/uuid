@@ -1219,8 +1219,8 @@ mod tests {
         check!(buf, "{:X}", u, 36, |c| c.is_uppercase()
             || c.is_digit(10)
             || c == '-');
-        check!(buf, "{:#x}", u, 32, |c| c.is_lowercase() || c.is_digit(10));
-        check!(buf, "{:#X}", u, 32, |c| c.is_uppercase() || c.is_digit(10));
+        check!(buf, "{:#x}", u, 36, |c| c.is_lowercase() || c.is_digit(10) || c == '-');
+        check!(buf, "{:#X}", u, 36, |c| c.is_uppercase() || c.is_digit(10) || c == '-');
 
         check!(buf, "{:X}", u.hyphenated(), 36, |c| c.is_uppercase()
             || c.is_digit(10)
