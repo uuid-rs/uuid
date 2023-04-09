@@ -52,7 +52,7 @@ default = ["std"]
 std = []
 macro-diagnostics = ["uuid-macro-internal"]
 
-# NOTE: When adding new features, check the `ci.yml` workflow                                              ..
+# NOTE: When adding new features, check the `ci.yml` workflow
 # and include them where necessary (you can follow along with existing features)
 v1 = ["atomic"]
 v3 = ["md5"]
