@@ -47,14 +47,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
     - name: Install Rust Toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        override: true
-        profile: minimal
-        toolchain: ${{ matrix.channel }}-${{ matrix.rust_target }}
+      run: rustup update ${{ matrix.channel }}-${{ matrix.rust_target }} && rustup default ${{ matrix.channel }}-${{ matrix.rust_target }}
 
     - name: Install cargo-hack
       run: cargo install cargo-hack
@@ -76,14 +72,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v2
-
-    - name: Install Rust toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: stable
-        override: true
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
     - name: All features
       run: cargo test --all-features
@@ -93,24 +82,20 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout sources
-      uses: actions/checkout@v2
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
     - name: Install Rust toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        profile: minimal
-        toolchain: 1.57.0
-        override: true
+      run: rustup update 1.57.0
 
     - name: Version features
-      run: cargo test --features "$VERSION_FEATURES"
+      run: cargo +1.57.0 test --features "$VERSION_FEATURES"
 
   wasm:
     name: Tests / WebAssembly
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
       - name: Install
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
@@ -129,13 +114,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
-      - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
       - name: Install Cross
         run: cargo install cross
@@ -148,27 +127,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          target: thumbv6m-none-eabi
-          override: true
+        run: rustup update nightly && rustup target add --toolchain nightly thumbv6m-none-eabi
 
       - name: No features
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features
+        run: cargo +nightly build -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features
 
       - name: Version features
-        uses: actions-rs/cargo@v1
-        with:
-          command: build
-          args: -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features --features "v1 v3 v5 v6 serde"
+        run: cargo +nightly build -Z avoid-dev-deps --target thumbv6m-none-eabi --no-default-features --features "v1 v3 v5 v6 serde"
 
   nodeps:
     name: Build / No deps
@@ -177,14 +145,10 @@ jobs:
       RUSTFLAGS: "--cfg uuid_unstable"
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
+        run: rustup update nightly && rustup default nightly
 
       - name: Install cargo-hack
         run: cargo install cargo-hack
