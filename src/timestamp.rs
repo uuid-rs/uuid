@@ -137,20 +137,14 @@ impl Timestamp {
         )
     }
 
-    #[deprecated(note = "use `to_unix` instead")]
+    #[deprecated(note = "use `to_unix` instead; this method will be removed in a future release")]
     /// Get the number of fractional nanoseconds in the Unix timestamp.
     ///
     /// This method is deprecated and probably doesn't do what you're expecting it to.
     /// It doesn't return the timestamp as nanoseconds since the Unix epoch, it returns
     /// the fractional seconds of the timestamp.
     pub const fn to_unix_nanos(&self) -> u32 {
-        // NOTE: This method never did what it said on the tin: instead of
-        // converting the timestamp into nanos it simply returned the nanoseconds
-        // part of the timestamp.
-        //
-        // We can't fix the behavior because the return type is too small to fit
-        // a useful value for nanoseconds since the epoch.
-        self.nanos
+        panic!("`Timestamp::to_unix_nanos` is deprecated and will be removed: use `Timestamp::to_unix` instead")
     }
 }
 
