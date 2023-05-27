@@ -119,6 +119,9 @@ jobs:
       - name: Install Wasmtime
         run: curl https://wasmtime.dev/install.sh -sSf | bash
 
+      - name: Install wasm32-wasi target
+        run: rustup target add wasm32-wasi
+
       - name: Default features
         run: cargo test --target wasm32-wasi
 
