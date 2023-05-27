@@ -36,11 +36,11 @@ mod tests {
     use crate::{Variant, Version};
     use std::string::ToString;
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(target = "wasm32-unknown-unknown")]
     use wasm_bindgen_test::*;
 
     #[test]
-    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    #[cfg_attr(target = "wasm32-unknown-unknown", wasm_bindgen_test)]
     fn test_new() {
         let buf: [u8; 16] = [
             0xf, 0xe, 0xd, 0xc, 0xb, 0xa, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0x0,

@@ -57,11 +57,11 @@ impl Uuid {
 mod tests {
     use super::*;
     use crate::{std::string::ToString, NoContext, Variant, Version};
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(target = "wasm32-unknown-unknown")]
     use wasm_bindgen_test::*;
 
     #[test]
-    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    #[cfg_attr(target = "wasm32-unknown-unknown", wasm_bindgen_test)]
     fn test_new() {
         let ts: u64 = 1645557742000;
 
@@ -82,7 +82,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    #[cfg_attr(target = "wasm32-unknown-unknown", wasm_bindgen_test)]
     #[cfg(feature = "std")]
     fn test_now() {
         let uuid = Uuid::now_v7();
@@ -92,7 +92,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    #[cfg_attr(target = "wasm32-unknown-unknown", wasm_bindgen_test)]
     fn test_sorting() {
         let time1: u64 = 1_496_854_535;
         let time_fraction1: u32 = 812_000_000;
@@ -108,7 +108,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    #[cfg_attr(target = "wasm32-unknown-unknown", wasm_bindgen_test)]
     fn test_new_timestamp_roundtrip() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_000_000;

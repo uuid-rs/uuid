@@ -262,7 +262,7 @@ pub(crate) const fn decode_unix_timestamp_millis(uuid: &Uuid) -> u64 {
     millis
 }
 
-#[cfg(all(feature = "std", feature = "js", target_arch = "wasm32"))]
+#[cfg(all(feature = "std", feature = "js", target = "wasm32-unknown-unknown"))]
 fn now() -> (u64, u32) {
     use wasm_bindgen::prelude::*;
 
@@ -280,7 +280,7 @@ fn now() -> (u64, u32) {
     dbg!((secs, nanos))
 }
 
-#[cfg(all(feature = "std", any(not(feature = "js"), not(target_arch = "wasm32"))))]
+#[cfg(all(feature = "std", any(not(feature = "js"), not(target = "wasm32-unknown-unknown"))))]
 fn now() -> (u64, u32) {
     let dur = std::time::SystemTime::UNIX_EPOCH
         .elapsed()

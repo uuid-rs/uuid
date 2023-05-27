@@ -90,8 +90,8 @@ jobs:
     - name: Version features
       run: cargo +1.57.0 test --features "$VERSION_FEATURES"
 
-  wasm:
-    name: Tests / WebAssembly
+  wasm_bindgen:
+    name: Tests / WebAssembly (wasm-bindgen)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
@@ -104,10 +104,29 @@ jobs:
         run: wasm-pack test --node
 
       - name: Version features
-        run: wasm-pack test --node -- --features "$VERION_FEATURES $DEP_FEATURES js"
+        run: wasm-pack test --node -- --features "$VERSION_FEATURES $DEP_FEATURES js"
 
       - name: Fast RNG
         run: wasm-pack test --node -- --features "js v4 fast-rng"
+
+  wasi:
+    name: Tests / WebAssembly (WASI)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+
+      - name: Install Wasmtime
+        run: curl https://wasmtime.dev/install.sh -sSf | bash
+
+      - name: Default features
+        run: cargo test --target wasm32-wasi
+
+      - name: Version features
+        run: cargo test --target wasm32-wasi --features "$VERSION_FEATURES $DEP_FEATURES"
+
+      - name: Fast RNG
+        run: cargo test --target wasm32-wasi --features "v4 fast-rng"
 
   mips:
     name: Tests / MIPS (Big Endian)
