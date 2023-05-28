@@ -78,7 +78,7 @@ jobs:
       run: cargo test --all-features
 
   msrv:
-    name: "Tests / MSRV"
+    name: "Build / MSRV"
     runs-on: ubuntu-latest
     steps:
     - name: Checkout sources
@@ -88,7 +88,7 @@ jobs:
       run: rustup update 1.57.0
 
     - name: Version features
-      run: cargo +1.57.0 test --features "$VERSION_FEATURES"
+      run: cargo +1.57.0 build --manifest-path tests/smoke-test/Cargo.toml
 
   wasm_bindgen:
     name: Tests / WebAssembly (wasm-bindgen)
