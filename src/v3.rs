@@ -42,7 +42,7 @@ impl Uuid {
 mod tests {
     use super::*;
 
-    #[cfg(target_arch = "wasm32")]
+    #[cfg(target = "wasm32-unknown-unknown")]
     use wasm_bindgen_test::*;
 
     use crate::{std::string::ToString, Variant, Version};
@@ -131,7 +131,7 @@ mod tests {
     ];
 
     #[test]
-    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    #[cfg_attr(target = "wasm32-unknown-unknown", wasm_bindgen_test)]
     fn test_new() {
         for &(ref ns, ref name, _) in FIXTURE {
             let uuid = Uuid::new_v3(*ns, name.as_bytes());
@@ -141,7 +141,7 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+    #[cfg_attr(target = "wasm32-unknown-unknown", wasm_bindgen_test)]
     fn test_hyphenated_string() {
         for &(ref ns, ref name, ref expected) in FIXTURE {
             let uuid = Uuid::new_v3(*ns, name.as_bytes());

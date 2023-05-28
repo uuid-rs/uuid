@@ -161,11 +161,11 @@ version = "1.0"
 [dev-dependencies.serde_test]
 version = "1.0.56"
 
-[target.'cfg(target_arch = "wasm32")'.dev-dependencies.wasm-bindgen]
+[target.'cfg(target = "wasm32-unknown-unknown")'.dev-dependencies.wasm-bindgen]
 package = "wasm-bindgen"
 version = "0.2"
 
-[target.'cfg(target_arch = "wasm32")'.dev-dependencies.wasm-bindgen-test]
+[target.'cfg(target = "wasm32-unknown-unknown")'.dev-dependencies.wasm-bindgen-test]
 version = "0.3"
 
 [dev-dependencies.trybuild]
