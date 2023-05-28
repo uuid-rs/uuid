@@ -180,5 +180,6 @@ features = ["Win32_System_Com"]
 
 [workspace]
 members = [
-    "macros"
+    "macros",
+    "tests/smoke-test",
 ]
