@@ -6,4 +6,4 @@ edition = "2018"
 
 [dependencies.uuid]
 path = "../../"
-features = ["v1", "v3", "v4", "v5"]
+features = ["v4"]
