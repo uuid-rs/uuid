@@ -232,7 +232,7 @@ pub(crate) const fn encode_unix_timestamp_millis(millis: u64, random_bytes: &[u8
     let millis_low = (millis & 0xFFFF) as u16;
 
     let random_and_version =
-        (random_bytes[0] as u16 | ((random_bytes[1] as u16) << 8) & 0x0FFF) | (0x7 << 12);
+        (random_bytes[1] as u16 | ((random_bytes[0] as u16) << 8) & 0x0FFF) | (0x7 << 12);
 
     let mut d4 = [0; 8];
 
