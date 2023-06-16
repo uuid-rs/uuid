@@ -119,6 +119,8 @@
 //! * `v8` - Version 8 UUIDs using user-defined data.
 //! * `zerocopy` - adds support for zero-copy deserialization using the
 //!   `zerocopy` library.
+//! * `borsh` - adds the ability to serialize and deserialize a UUID using
+//!   `borsh`.
 //!
 //! Unstable features may break between minor releases.
 //!
@@ -434,6 +436,9 @@ pub enum Variant {
 #[cfg_attr(
     all(uuid_unstable, feature = "zerocopy"),
     derive(AsBytes, FromBytes, Unaligned)
+)]
+#[cfg_attr(all(uuid_unstable, feature = "borsh"),
+    derive(borsh::BorshDeserialize, borsh::BorshSerialize)
 )]
 #[repr(transparent)]
 pub struct Uuid(Bytes);
