@@ -277,7 +277,7 @@ fn now() -> (u64, u32) {
     let secs = (now / 1_000.0) as u64;
     let nanos = ((now % 1_000.0) * 1_000_000.0) as u32;
 
-    dbg!((secs, nanos))
+    (secs, nanos)
 }
 
 #[cfg(all(feature = "std", any(not(feature = "js"), not(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown")))))]
