@@ -268,11 +268,11 @@ fn now() -> (u64, u32) {
 
     #[wasm_bindgen]
     extern "C" {
-        #[wasm_bindgen(js_namespace = Date)]
-        fn now() -> f64;
+        #[wasm_bindgen(js_namespace = Date, catch)]
+        fn now() -> Result<f64, JsValue>;
     }
 
-    let now = now();
+    let now = now().unwrap_throw();
 
     let secs = (now / 1_000.0) as u64;
     let nanos = ((now % 1_000.0) * 1_000_000.0) as u32;
