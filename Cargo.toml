@@ -165,7 +165,7 @@ version = "1.0.56"
 package = "wasm-bindgen"
 version = "0.2"
 
-[target.'cfg(target = "wasm32-unknown-unknown")'.dev-dependencies.wasm-bindgen-test]
+[target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))'.dev-dependencies.wasm-bindgen-test]
 version = "0.3"
 
 [dev-dependencies.trybuild]
