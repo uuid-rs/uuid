@@ -40,11 +40,22 @@ mod tests {
     use super::*;
     use crate::{Variant, Version};
 
-    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))]
+    #[cfg(all(
+        target_arch = "wasm32",
+        target_vendor = "unknown",
+        target_os = "unknown"
+    ))]
     use wasm_bindgen_test::*;
 
     #[test]
-    #[cfg_attr(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"), wasm_bindgen_test)]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
     fn test_new() {
         let uuid = Uuid::new_v4();
 
@@ -53,7 +64,14 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"), wasm_bindgen_test)]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
     fn test_get_version() {
         let uuid = Uuid::new_v4();
 

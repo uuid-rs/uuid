@@ -145,7 +145,9 @@ impl Timestamp {
 
     #[cfg(any(feature = "v1", feature = "v6"))]
     const fn unix_to_rfc4122_ticks(seconds: u64, nanos: u32) -> u64 {
-        let ticks = UUID_TICKS_BETWEEN_EPOCHS.wrapping_add(seconds.wrapping_mul(10_000_000)).wrapping_add(nanos as u64 / 100);
+        let ticks = UUID_TICKS_BETWEEN_EPOCHS
+            .wrapping_add(seconds.wrapping_mul(10_000_000))
+            .wrapping_add(nanos as u64 / 100);
 
         ticks
     }
@@ -282,7 +284,15 @@ pub(crate) const fn decode_unix_timestamp_millis(uuid: &Uuid) -> u64 {
     millis
 }
 
-#[cfg(all(feature = "std", feature = "js", all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown")))]
+#[cfg(all(
+    feature = "std",
+    feature = "js",
+    all(
+        target_arch = "wasm32",
+        target_vendor = "unknown",
+        target_os = "unknown"
+    )
+))]
 fn now() -> (u64, u32) {
     use wasm_bindgen::prelude::*;
 
@@ -301,11 +311,21 @@ fn now() -> (u64, u32) {
     (secs, nanos)
 }
 
-#[cfg(all(feature = "std", any(not(feature = "js"), not(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown")))))]
+#[cfg(all(
+    feature = "std",
+    any(
+        not(feature = "js"),
+        not(all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ))
+    )
+))]
 fn now() -> (u64, u32) {
-    let dur = std::time::SystemTime::UNIX_EPOCH
-        .elapsed()
-        .expect("Getting elapsed time since UNIX_EPOCH. If this fails, we've somehow violated causality");
+    let dur = std::time::SystemTime::UNIX_EPOCH.elapsed().expect(
+        "Getting elapsed time since UNIX_EPOCH. If this fails, we've somehow violated causality",
+    );
 
     (dur.as_secs(), dur.subsec_nanos())
 }
@@ -428,7 +448,14 @@ mod tests {
     use super::*;
 
     #[test]
-    #[cfg_attr(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"), wasm_bindgen_test)]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
     fn rfc4122_unix_does_not_panic() {
         // Ensure timestamp conversions never panic
         Timestamp::unix_to_rfc4122_ticks(u64::MAX, 0);

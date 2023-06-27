@@ -102,11 +102,22 @@ mod tests {
     use crate::{Context, Variant, Version};
     use std::string::ToString;
 
-    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))]
+    #[cfg(all(
+        target_arch = "wasm32",
+        target_vendor = "unknown",
+        target_os = "unknown"
+    ))]
     use wasm_bindgen_test::*;
 
     #[test]
-    #[cfg_attr(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"), wasm_bindgen_test)]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
     fn test_new() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
@@ -136,7 +147,14 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"), wasm_bindgen_test)]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
     #[cfg(all(feature = "std", feature = "rng"))]
     fn test_now() {
         let node = [1, 2, 3, 4, 5, 6];
@@ -148,7 +166,14 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"), wasm_bindgen_test)]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
     fn test_new_context() {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
