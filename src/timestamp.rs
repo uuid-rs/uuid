@@ -428,10 +428,11 @@ mod tests {
     use super::*;
 
     #[test]
-    fn rfc4122_unix_wraps() {
+    fn rfc4122_unix_does_not_panic() {
         // Ensure timestamp conversions never panic
         Timestamp::unix_to_rfc4122_ticks(u64::MAX, 0);
         Timestamp::unix_to_rfc4122_ticks(0, u32::MAX);
+        Timestamp::unix_to_rfc4122_ticks(u64::MAX, u32::MAX);
 
         Timestamp::rfc4122_to_unix(u64::MAX);
     }
