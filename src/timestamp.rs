@@ -428,6 +428,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg_attr(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"), wasm_bindgen_test)]
     fn rfc4122_unix_does_not_panic() {
         // Ensure timestamp conversions never panic
         Timestamp::unix_to_rfc4122_ticks(u64::MAX, 0);
