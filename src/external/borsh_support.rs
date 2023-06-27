@@ -1,8 +1,8 @@
 #[cfg(test)]
 mod borsh_tests {
     use crate::Uuid;
-    use std::string::ToString;
     use borsh::{BorshDeserialize, BorshSerialize};
+    use std::string::ToString;
 
     #[test]
     fn test_serialize() {

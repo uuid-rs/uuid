@@ -41,7 +41,11 @@ impl Uuid {
 mod tests {
     use super::*;
 
-    #[cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))]
+    #[cfg(all(
+        target_arch = "wasm32",
+        target_vendor = "unknown",
+        target_os = "unknown"
+    ))]
     use wasm_bindgen_test::*;
 
     use crate::{std::string::ToString, Variant, Version};
@@ -130,7 +134,14 @@ mod tests {
     ];
 
     #[test]
-    #[cfg_attr(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"), wasm_bindgen_test)]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
     fn test_get_version() {
         let uuid = Uuid::new_v5(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
 
@@ -139,7 +150,14 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"), wasm_bindgen_test)]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
     fn test_hyphenated() {
         for &(ref ns, ref name, ref expected) in FIXTURE {
             let uuid = Uuid::new_v5(*ns, name.as_bytes());
@@ -149,7 +167,14 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"), wasm_bindgen_test)]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
     fn test_new() {
         for &(ref ns, ref name, ref u) in FIXTURE {
             let uuid = Uuid::new_v5(*ns, name.as_bytes());
