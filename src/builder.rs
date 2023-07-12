@@ -412,6 +412,7 @@ impl Uuid {
     /// # Ok(())
     /// # }
     /// ```
+    #[inline]
     pub const fn from_bytes(bytes: Bytes) -> Uuid {
         Uuid(bytes)
     }
@@ -480,6 +481,7 @@ impl Uuid {
     /// # Ok(())
     /// # }
     /// ```
+    #[inline]
     pub fn from_bytes_ref(bytes: &Bytes) -> &Uuid {
         // SAFETY: `Bytes` and `Uuid` have the same ABI
         unsafe { &*(bytes as *const Bytes as *const Uuid) }
