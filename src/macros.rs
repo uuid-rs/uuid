@@ -15,8 +15,8 @@ macro_rules! define_uuid_macro {
         macro_rules! uuid {
             ($uuid:literal) => {{
                 const OUTPUT: $crate::Uuid = match $crate::Uuid::try_parse($uuid) {
-                    Ok(u) => u,
-                    Err(_) => {
+                    $crate::__macro_support::Ok(u) => u,
+                    $crate::__macro_support::Err(_) => {
                         // here triggers const_err
                         // const_panic requires 1.57
                         #[allow(unconditional_panic)]

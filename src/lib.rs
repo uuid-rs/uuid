@@ -273,6 +273,11 @@ mod macros;
 #[cfg(feature = "macro-diagnostics")]
 pub extern crate uuid_macro_internal;
 
+#[doc(hidden)]
+pub mod __macro_support {
+    pub use crate::std::result::Result::{Err, Ok};
+}
+
 use crate::std::convert;
 
 pub use crate::{builder::Builder, error::Error};
