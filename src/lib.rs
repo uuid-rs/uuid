@@ -783,6 +783,7 @@ impl Uuid {
     ///     &bytes1 as *const [u8; 16] as *const u8,
     /// ));
     /// ```
+    #[inline]
     pub const fn as_bytes(&self) -> &Bytes {
         &self.0
     }
@@ -802,6 +803,7 @@ impl Uuid {
     /// let uuid = Uuid::from_bytes(bytes);
     /// assert_eq!(bytes, uuid.into_bytes());
     /// ```
+    #[inline]
     pub const fn into_bytes(self) -> Bytes {
         self.0
     }
