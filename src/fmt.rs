@@ -11,10 +11,17 @@
 
 //! Adapters for alternative string formats.
 
+use alloc::vec::Vec;
 use crate::{
     std::{borrow::Borrow, fmt, ptr, str},
     Uuid, Variant,
 };
+
+impl From<Uuid> for Vec<u8>{
+    fn from(value: Uuid) -> Self {
+        value.as_bytes().to_vec()
+    }
+}
 
 impl std::fmt::Debug for Uuid {
     #[inline]
