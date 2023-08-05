@@ -16,6 +16,9 @@ use crate::{
     Uuid, Variant,
 };
 
+#[cfg(feature = "std")]
+use crate::std::string::{String, ToString};
+
 impl std::fmt::Debug for Uuid {
     #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -26,6 +29,13 @@ impl std::fmt::Debug for Uuid {
 impl fmt::Display for Uuid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::LowerHex::fmt(self, f)
+    }
+}
+
+#[cfg(feature = "std")]
+impl From<Uuid> for String {
+    fn from(uuid: Uuid) -> Self {
+        uuid.to_string()
     }
 }
 
