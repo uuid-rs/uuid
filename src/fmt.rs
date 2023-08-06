@@ -12,14 +12,24 @@
 //! Adapters for alternative string formats.
 
 use alloc::vec::Vec;
-use crate::{
-    std::{borrow::Borrow, fmt, ptr, str},
-    Uuid, Variant,
-};
+use crate::{Bytes, std::{borrow::Borrow, fmt, ptr, str}, Uuid, Variant};
 
 impl From<Uuid> for Vec<u8>{
     fn from(value: Uuid) -> Self {
         value.as_bytes().to_vec()
+    }
+}
+
+impl From<Vec<u8>> for Uuid{
+    fn from(value: Vec<u8>) -> Self {
+        let mut arr: [u8; 16] = [0;16];
+
+        value.into_iter()
+            .take(16)
+            .enumerate()
+            .for_each(|(i, v)| arr[i] = v);
+
+        Uuid(arr)
     }
 }
 
