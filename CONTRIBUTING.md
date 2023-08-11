@@ -60,9 +60,6 @@ sometimes you might not what exactly you are looking for.
 
 File your issue with a descriptive title, as this helps others find your issue.
 
-Reporting a bug is as easy as following [this link][Bug Report Link] and
-filling it in.
-
 Sometimes a backtrace may be needed. In that case, set `RUST_BACKTRACE`
 environment variable to `1`. For example:
 
@@ -72,8 +69,6 @@ $ RUST_BACKTRACE=1 cargo build
 
 > We welcome pull requests for your own bug reports, provided they have been
 discussed.
-
-[Bug Report Link]: https://github.com/uuid-rs/uuid/issues/new?template=Bug_report.md
 
 # Pull Requests
 [Pull Requests]: #pull-requests
