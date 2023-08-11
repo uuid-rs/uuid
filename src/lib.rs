@@ -945,6 +945,22 @@ impl AsRef<[u8]> for Uuid {
     }
 }
 
+#[cfg(feature = "std")]
+impl From<Uuid> for std::vec::Vec<u8> {
+    fn from(value: Uuid) -> Self {
+        value.0.to_vec()
+    }
+}
+
+#[cfg(feature = "std")]
+impl std::convert::TryFrom<std::vec::Vec<u8>> for Uuid {
+    type Error = Error;
+
+    fn try_from(value: std::vec::Vec<u8>) -> Result<Self, Self::Error> {
+        Uuid::from_slice(&value)
+    }
+}
+
 #[cfg(feature = "serde")]
 pub mod serde {
     //! Adapters for alternative `serde` formats.
@@ -1742,6 +1758,31 @@ mod tests {
         assert_eq!(ur.len(), 16);
         assert!(!ub.iter().all(|&b| b == 0));
         assert!(!ur.iter().all(|&b| b == 0));
+    }
+
+    #[test]
+    #[cfg(feature = "std")]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
+    fn test_convert_vec() {
+        use crate::std::{convert::TryInto, vec::Vec};
+
+        let u = new();
+        let ub = u.as_ref();
+
+        let v: Vec<u8> = u.into();
+
+        assert_eq!(&v, ub);
+
+        let uv: Uuid = v.try_into().unwrap();
+
+        assert_eq!(uv, u);
     }
 
     #[test]
