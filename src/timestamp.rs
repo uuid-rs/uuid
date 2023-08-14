@@ -438,7 +438,7 @@ pub mod context {
             // increment the clock sequence we want to wrap once it becomes larger
             // than what we can represent in a "u14". Otherwise there'd be patches
             // where the clock sequence doesn't change regardless of the timestamp
-            self.count.fetch_add(1, Ordering::AcqRel) % (u16::MAX >> 2)
+            self.count.fetch_add(1, Ordering::AcqRel) & (u16::MAX >> 2)
         }
     }
 }
