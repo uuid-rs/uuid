@@ -70,6 +70,9 @@ fast-rng = ["rng", "rand"]
 sha1 = ["sha1_smol"]
 md5 = ["md-5"]
 
+[dependencies]
+diesel = {version = "2.1.0", features = ["sqlite"]}
+
 # Public: Used in trait impls on `Uuid`
 [dependencies.serde]
 default-features = false

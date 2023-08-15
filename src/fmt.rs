@@ -12,13 +12,41 @@
 //! Adapters for alternative string formats.
 
 use alloc::vec::Vec;
+use diesel::{deserialize, Queryable};
+use diesel::deserialize::FromSql;
+use diesel::sql_types::Blob;
+use diesel::sqlite::Sqlite;
 use crate::{Bytes, std::{borrow::Borrow, fmt, ptr, str}, Uuid, Variant};
+use core::convert::TryInto;
+use diesel::backend::{Backend};
 
 impl From<Uuid> for Vec<u8>{
     fn from(value: Uuid) -> Self {
         value.as_bytes().to_vec()
     }
 }
+
+impl Queryable<Blob, Sqlite> for Uuid {
+    type Row = Uuid;
+
+    fn build(row: Self::Row) -> deserialize::Result<Self> {
+        Ok(row)
+    }
+}
+
+impl FromSql<Blob, Sqlite> for Uuid{
+    fn from_sql(bytes: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
+
+        let arr: [u8;16] = Vec::from_sql(bytes)
+            .map_err(|_| "error calling from_sql on vec")?
+            .try_into()
+            //this error is unfallible to unwrap is safe
+            .unwrap();
+
+        Ok(Uuid::from_bytes(arr))
+    }
+}
+
 
 impl From<Vec<u8>> for Uuid{
     fn from(value: Vec<u8>) -> Self {

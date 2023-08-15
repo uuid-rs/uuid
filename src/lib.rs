@@ -224,6 +224,7 @@ extern crate std;
 #[macro_use]
 extern crate core as std;
 
+use diesel::FromSqlRow;
 #[cfg(all(uuid_unstable, feature = "zerocopy"))]
 use zerocopy::{AsBytes, FromBytes, Unaligned};
 
