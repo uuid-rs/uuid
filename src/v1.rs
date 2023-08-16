@@ -178,7 +178,7 @@ mod tests {
         let node = [1, 2, 3, 4, 5, 6];
 
         // This context will wrap
-        let context = Context::new((u16::MAX >> 2) - 1);
+        let context = Context::new(u16::MAX >> 2);
 
         let uuid1 = Uuid::new_v1(Timestamp::from_unix(&context, time, time_fraction), &node);
 
@@ -186,7 +186,7 @@ mod tests {
 
         let uuid2 = Uuid::new_v1(Timestamp::from_unix(&context, time, time_fraction), &node);
 
-        assert_eq!(uuid1.get_timestamp().unwrap().to_rfc4122().1, 16382);
+        assert_eq!(uuid1.get_timestamp().unwrap().to_rfc4122().1, 16383);
         assert_eq!(uuid2.get_timestamp().unwrap().to_rfc4122().1, 0);
 
         let time = 1_496_854_535;
