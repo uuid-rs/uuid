@@ -1,7 +1,6 @@
 # `uuid`
 
 [![Latest Version](https://img.shields.io/crates/v/uuid.svg)](https://crates.io/crates/uuid)
-![Minimum rustc version](https://img.shields.io/badge/rustc-1.46.0+-yellow.svg)
 [![Continuous integration](https://github.com/uuid-rs/uuid/actions/workflows/ci.yml/badge.svg)](https://github.com/uuid-rs/uuid/actions/workflows/ci.yml)
 
 Here's an example of a UUID:
@@ -67,11 +66,6 @@ If you'd like to parse UUIDs _really_ fast, check out the [`uuid-simd`](https://
 library.
 
 For more details on using `uuid`, [see the library documentation](https://docs.rs/uuid/1.4.1/uuid).
-
-## Minimum Supported Rust Version (MSRV)
-
-The minimum supported Rust version for `uuid` is documented in
-CI. It may be bumped in minor releases as necessary.
 
 ## References
 
