@@ -8,7 +8,7 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
-
+use diesel::QueryId;
 //! Generate and parse universally unique identifiers (UUIDs).
 //!
 //! Here's an example of a UUID:
@@ -224,7 +224,7 @@ extern crate std;
 #[macro_use]
 extern crate core as std;
 
-use diesel::FromSqlRow;
+use diesel::{FromSqlRow, Queryable, Selectable};
 #[cfg(all(uuid_unstable, feature = "zerocopy"))]
 use zerocopy::{AsBytes, FromBytes, Unaligned};
 
@@ -440,6 +440,7 @@ pub enum Variant {
 ///
 /// The `Uuid` type is always guaranteed to be have the same ABI as [`Bytes`].
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(QueryId)]
 #[cfg_attr(
     all(uuid_unstable, feature = "zerocopy"),
     derive(AsBytes, FromBytes, Unaligned)
