@@ -8,7 +8,7 @@
 // <LICENSE-MIT or http://opensource.org/licenses/MIT>, at your
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
-use diesel::QueryId;
+
 //! Generate and parse universally unique identifiers (UUIDs).
 //!
 //! Here's an example of a UUID:
@@ -439,8 +439,10 @@ pub enum Variant {
 /// # ABI
 ///
 /// The `Uuid` type is always guaranteed to be have the same ABI as [`Bytes`].
+///
+
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
-#[derive(QueryId)]
+#[derive(diesel::QueryId)]
 #[cfg_attr(
     all(uuid_unstable, feature = "zerocopy"),
     derive(AsBytes, FromBytes, Unaligned)
