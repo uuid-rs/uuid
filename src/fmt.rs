@@ -12,9 +12,9 @@
 //! Adapters for alternative string formats.
 
 use alloc::vec::Vec;
-use diesel::{deserialize, Queryable};
+use diesel::{deserialize, Expression, Queryable};
 use diesel::deserialize::FromSql;
-use diesel::sql_types::Blob;
+use diesel::sql_types::{Binary, Blob};
 use diesel::sqlite::Sqlite;
 use crate::{Bytes, std::{borrow::Borrow, fmt, ptr, str}, Uuid, Variant};
 use core::convert::TryInto;
@@ -34,6 +34,9 @@ impl Queryable<Blob, Sqlite> for Uuid {
     }
 }
 
+impl Expression for Uuid{
+    type SqlType = Binary;
+}
 impl FromSql<Blob, Sqlite> for Uuid{
     fn from_sql(bytes: <Sqlite as Backend>::RawValue<'_>) -> deserialize::Result<Self> {
 
@@ -46,7 +49,6 @@ impl FromSql<Blob, Sqlite> for Uuid{
         Ok(Uuid::from_bytes(arr))
     }
 }
-
 
 impl From<Vec<u8>> for Uuid{
     fn from(value: Vec<u8>) -> Self {
