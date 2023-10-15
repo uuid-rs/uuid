@@ -447,6 +447,10 @@ pub enum Variant {
     derive(borsh::BorshDeserialize, borsh::BorshSerialize)
 )]
 #[repr(transparent)]
+#[cfg_attr(
+    feature = "bytemuck",
+    derive(bytemuck::Zeroable, bytemuck::Pod, bytemuck::TransparentWrapper)
+)]
 pub struct Uuid(Bytes);
 
 impl Uuid {
