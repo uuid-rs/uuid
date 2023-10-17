@@ -68,7 +68,7 @@ jobs:
       run: cargo hack test --lib --all-features
 
   stable:
-    name: "Tests / Stable"
+    name: Tests / Stable
     runs-on: ubuntu-latest
     steps:
     - name: Checkout sources
@@ -78,7 +78,7 @@ jobs:
       run: cargo test --all-features
 
   msrv:
-    name: "Build / MSRV"
+    name: Build / MSRV
     runs-on: ubuntu-latest
     steps:
     - name: Checkout sources
@@ -134,18 +134,38 @@ jobs:
       - name: Fast RNG
         run: cargo test --target wasm32-wasi --features "v4 fast-rng"
 
-  mips:
-    name: Tests / MIPS (Big Endian)
+  miri:
+    name: Tests / Miri
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
-      - name: Install Cross
-        run: cargo install cross
+      - name: Install Miri
+        run: |
+          rustup toolchain install nightly --component miri
+          cargo +nightly miri setup
 
       - name: Default features
-        run: cross test --target mips-unknown-linux-gnu
+        run: cargo +nightly miri test
+
+      - name: BE
+        run: cargo +nightly miri test --target s390x-unknown-linux-gnu
+
+  clippy:
+    name: Build / Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+
+      - name: Install Clippy
+        run: |
+          rustup update beta
+          rustup component add clippy --toolchain beta
+
+      - name: Default features
+        run: cargo +beta clippy --all-features
 
   embedded:
     name: Build / Embedded
