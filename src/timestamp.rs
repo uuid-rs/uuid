@@ -145,11 +145,9 @@ impl Timestamp {
 
     #[cfg(any(feature = "v1", feature = "v6"))]
     const fn unix_to_rfc4122_ticks(seconds: u64, nanos: u32) -> u64 {
-        let ticks = UUID_TICKS_BETWEEN_EPOCHS
+        UUID_TICKS_BETWEEN_EPOCHS
             .wrapping_add(seconds.wrapping_mul(10_000_000))
-            .wrapping_add(nanos as u64 / 100);
-
-        ticks
+            .wrapping_add(nanos as u64 / 100)
     }
 
     const fn rfc4122_to_unix(ticks: u64) -> (u64, u32) {
