@@ -1,6 +1,6 @@
 [package]
 name = "uuid-macro-internal"
-version = "1.4.1"
+version = "1.5.0"
 edition = "2018"
 authors = [
     "QnnOkabayashi"
