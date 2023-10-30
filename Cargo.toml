@@ -34,7 +34,20 @@ rust-version = "1.57.0"
 rustc-args = ["--cfg", "uuid_unstable"]
 rustdoc-args = ["--cfg", "uuid_unstable"]
 targets = ["x86_64-unknown-linux-gnu"]
-features = ["serde", "arbitrary", "slog", "borsh", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
+features = [
+    "serde",
+    "arbitrary",
+    "slog",
+    "borsh",
+    "prost",
+    "v1",
+    "v3",
+    "v4",
+    "v5",
+    "v6",
+    "v7",
+    "v8",
+]
 
 [package.metadata.playground]
 features = ["serde", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
@@ -110,6 +123,10 @@ version = "0.6"
 [dependencies.borsh]
 optional = true
 version = "0.10.3"
+
+[dependencies.prost]
+optional = true
+version = "0.12"
 
 # Private
 # Don't depend on this optional feature directly: it may change at any time
