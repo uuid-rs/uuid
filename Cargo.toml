@@ -27,7 +27,7 @@ homepage = "https://github.com/uuid-rs/uuid"
 name = "uuid"
 readme = "README.md"
 repository = "https://github.com/uuid-rs/uuid"
-version = "1.5.0" # remember to update html_root_url in lib.rs
+version = "1.5.1" # remember to update html_root_url in lib.rs
 rust-version = "1.57.0"
 
 [package.metadata.docs.rs]
@@ -39,7 +39,8 @@ features = [
     "arbitrary",
     "slog",
     "borsh",
-    "prost",
+    "prost-string",
+    "prost-bytes",
     "v1",
     "v3",
     "v4",
@@ -80,6 +81,9 @@ js = ["wasm-bindgen", "getrandom", "getrandom/js"]
 
 rng = ["getrandom"]
 fast-rng = ["rng", "rand"]
+
+prost-string = ["prost"]
+prost-bytes = ["prost"]
 
 sha1 = ["sha1_smol"]
 md5 = ["md-5"]
