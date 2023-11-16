@@ -86,9 +86,9 @@ impl Uuid {
     ///
     /// * [Version 6 UUIDs in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.1)
     ///
-    /// [`Timestamp`]: v1/struct.Timestamp.html
-    /// [`ClockSequence`]: v1/trait.ClockSequence.html
-    /// [`Context`]: v1/struct.Context.html
+    /// [`Timestamp`]: timestamp/struct.Timestamp.html
+    /// [`ClockSequence`]: timestamp/trait.ClockSequence.html
+    /// [`Context`]: timestamp/context/struct.Context.html
     pub fn new_v6(ts: Timestamp, node_id: &[u8; 6]) -> Self {
         let (ticks, counter) = ts.to_rfc4122();
 
