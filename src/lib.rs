@@ -251,11 +251,11 @@ mod v3;
 mod v4;
 #[cfg(feature = "v5")]
 mod v5;
-#[cfg(all(uuid_unstable, feature = "v6"))]
+#[cfg(feature = "v6")]
 mod v6;
-#[cfg(all(uuid_unstable, feature = "v7"))]
+#[cfg(feature = "v7")]
 mod v7;
-#[cfg(all(uuid_unstable, feature = "v8"))]
+#[cfg(feature = "v8")]
 mod v8;
 
 #[cfg(feature = "md5")]
@@ -312,16 +312,12 @@ pub enum Version {
     /// Version 5: SHA-1 hash.
     Sha1 = 5,
     /// Version 6: Sortable Timestamp and node ID.
-    #[cfg(uuid_unstable)]
     SortMac = 6,
     /// Version 7: Timestamp and random.
-    #[cfg(uuid_unstable)]
     SortRand = 7,
     /// Version 8: Custom.
-    #[cfg(uuid_unstable)]
     Custom = 8,
     /// The "max" (all ones) UUID.
-    #[cfg(uuid_unstable)]
     Max = 0xff,
 }
 
@@ -575,13 +571,9 @@ impl Uuid {
             3 => Some(Version::Md5),
             4 => Some(Version::Random),
             5 => Some(Version::Sha1),
-            #[cfg(uuid_unstable)]
             6 => Some(Version::SortMac),
-            #[cfg(uuid_unstable)]
             7 => Some(Version::SortRand),
-            #[cfg(uuid_unstable)]
             8 => Some(Version::Custom),
-            #[cfg(uuid_unstable)]
             0xf => Some(Version::Max),
             _ => None,
         }
@@ -851,7 +843,6 @@ impl Uuid {
     }
 
     /// Tests if the UUID is max (all ones).
-    #[cfg(uuid_unstable)]
     pub const fn is_max(&self) -> bool {
         self.as_u128() == u128::MAX
     }
@@ -911,13 +902,11 @@ impl Uuid {
 
                 Some(Timestamp::from_rfc4122(ticks, counter))
             }
-            #[cfg(uuid_unstable)]
             Some(Version::SortMac) => {
                 let (ticks, counter) = timestamp::decode_sorted_rfc4122_timestamp(self);
 
                 Some(Timestamp::from_rfc4122(ticks, counter))
             }
-            #[cfg(uuid_unstable)]
             Some(Version::SortRand) => {
                 let millis = timestamp::decode_unix_timestamp_millis(self);
 
@@ -1184,7 +1173,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(uuid_unstable)]
     #[cfg_attr(
         all(
             target_arch = "wasm32",

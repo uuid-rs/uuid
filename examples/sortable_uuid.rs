@@ -2,7 +2,7 @@
 //!
 //! If you enable the `v7` feature you can generate sortable UUIDs.
 
-#[cfg(all(uuid_unstable, feature = "v7"))]
+#[cfg(feature = "v7")]
 fn main() {
     use uuid::Uuid;
 
@@ -13,5 +13,5 @@ fn main() {
     println!("{}", uuid);
 }
 
-#[cfg(not(all(uuid_unstable, feature = "v7")))]
+#[cfg(not(feature = "v7"))]
 fn main() {}
