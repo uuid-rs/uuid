@@ -39,7 +39,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1.5.0"
+//! version = "1.6.0"
 //! features = [
 //!     "v4",                # Lets you generate random UUIDs
 //!     "fast-rng",          # Use a faster (but still sufficiently random) RNG
@@ -80,6 +80,9 @@
 //! * `v3` - Version 3 UUIDs based on the MD5 hash of some data.
 //! * `v4` - Version 4 UUIDs with random data.
 //! * `v5` - Version 5 UUIDs based on the SHA1 hash of some data.
+//! * `v6` - Version 6 UUIDs using a timestamp and monotonic counter.
+//! * `v7` - Version 7 UUIDs using a Unix timestamp.
+//! * `v8` - Version 8 UUIDs using user-defined data.
 //!
 //! Versions that are in draft are also supported. See the _unstable features_ section for details.
 //!
@@ -115,9 +118,6 @@
 //! Some features are unstable. They may be incomplete or depend on other
 //! unstable libraries. These include:
 //!
-//! * `v6` - Version 6 UUIDs using a timestamp and monotonic counter.
-//! * `v7` - Version 7 UUIDs using a Unix timestamp.
-//! * `v8` - Version 8 UUIDs using user-defined data.
 //! * `zerocopy` - adds support for zero-copy deserialization using the
 //!   `zerocopy` library.
 //! * `borsh` - adds the ability to serialize and deserialize a UUID using
@@ -141,7 +141,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1.5.0"
+//! version = "1.6.0"
 //! features = [
 //!     "v4",
 //!     "v7",
@@ -156,7 +156,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1.5.0"
+//! version = "1.6.0"
 //! default-features = false
 //! ```
 //!
@@ -214,7 +214,7 @@
 #![doc(
     html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
     html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-    html_root_url = "https://docs.rs/uuid/1.5.0"
+    html_root_url = "https://docs.rs/uuid/1.6.0"
 )]
 
 #[cfg(any(feature = "std", test))]
