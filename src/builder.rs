@@ -95,7 +95,6 @@ impl Uuid {
     ///     uuid.hyphenated().to_string(),
     /// );
     /// ```
-    #[cfg(uuid_unstable)]
     pub const fn max() -> Self {
         Uuid::from_bytes([0xFF; 16])
     }
@@ -600,7 +599,6 @@ impl Builder {
     /// Creates a `Builder` for a version 6 UUID using the supplied timestamp and node ID.
     ///
     /// This method will encode the ticks, counter, and node ID in a sortable UUID.
-    #[cfg(uuid_unstable)]
     pub const fn from_sorted_rfc4122_timestamp(
         ticks: u64,
         counter: u16,
@@ -638,7 +636,6 @@ impl Builder {
     /// # Ok(())
     /// # }
     /// ```
-    #[cfg(uuid_unstable)]
     pub const fn from_unix_timestamp_millis(millis: u64, random_bytes: &[u8; 10]) -> Self {
         Builder(timestamp::encode_unix_timestamp_millis(
             millis,
@@ -650,7 +647,6 @@ impl Builder {
     ///
     /// This method won't interpret the given bytes in any way, except to set the appropriate
     /// bits for the UUID version and variant.
-    #[cfg(uuid_unstable)]
     pub const fn from_custom_bytes(custom_bytes: Bytes) -> Self {
         Builder::from_bytes(custom_bytes)
             .with_variant(Variant::RFC4122)
