@@ -16,7 +16,7 @@ macro_rules! define_uuid_macro {
             ($uuid:literal) => {{
                 const OUTPUT: $crate::Uuid = match $crate::Uuid::try_parse($uuid) {
                     $crate::__macro_support::Ok(u) => u,
-                    $crate::__macro_support::Err(e) => panic!("{}", e),
+                    $crate::__macro_support::Err(_) => panic!("invalid UUID"),
                 };
                 OUTPUT
             }};
