@@ -472,6 +472,14 @@ mod tests {
                 index: 20,
             }))
         );
+
+        assert_eq!(
+            Uuid::parse_str("\u{bcf3c}"),
+            Err(Error(ErrorKind::Char {
+                character: '\u{bcf3c}',
+                index: 1
+            }))
+        );
     }
 
     #[test]
