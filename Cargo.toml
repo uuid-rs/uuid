@@ -109,7 +109,17 @@ version = "0.6"
 # stabilization.
 [dependencies.borsh]
 optional = true
-version = "0.10.3"
+version = "1"
+default-features = false
+
+# Private
+# Don't depend on this optional feature directly: it may change at any time
+# use the `borsh` feature instead
+[dependencies.borsh-derive]
+package = "borsh-derive"
+optional = true
+version = "1"
+default-features = false
 
 # Private
 # Don't depend on this optional feature directly: it may change at any time
