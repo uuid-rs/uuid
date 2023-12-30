@@ -440,7 +440,7 @@ pub enum Variant {
     derive(AsBytes, FromBytes, Unaligned)
 )]
 #[cfg_attr(
-    all(uuid_unstable, feature = "borsh"),
+    feature = "borsh",
     derive(borsh_derive::BorshDeserialize, borsh_derive::BorshSerialize)
 )]
 #[repr(transparent)]
