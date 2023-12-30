@@ -71,6 +71,8 @@ fast-rng = ["rng", "rand"]
 sha1 = ["sha1_smol"]
 md5 = ["md-5"]
 
+borsh = ["dep:borsh", "dep:borsh-derive"]
+
 
 # Public: Used in trait impls on `Uuid`
 [dependencies.bytemuck]
