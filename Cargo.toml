@@ -54,7 +54,7 @@ status = "actively-developed"
 [features]
 default = ["std"]
 std = []
-macro-diagnostics = ["uuid-macro-internal"]
+macro-diagnostics = ["dep:uuid-macro-internal"]
 
 # NOTE: When adding new features, check the `ci.yml` workflow
 # and include them where necessary (you can follow along with existing features)
@@ -66,16 +66,16 @@ v6 = ["atomic"]
 v7 = ["atomic", "rng"]
 v8 = []
 
-js = ["wasm-bindgen", "getrandom", "getrandom/js"]
+js = ["dep:wasm-bindgen", "getrandom?/js"]
 
-rng = ["getrandom"]
-fast-rng = ["rng", "rand"]
+rng = ["dep:getrandom"]
+fast-rng = ["rng", "dep:rand"]
 
-sha1 = ["sha1_smol"]
-md5 = ["md-5"]
+sha1 = ["dep:sha1_smol"]
+md5 = ["dep:md-5"]
+atomic = ["dep:atomic"]
 
 borsh = ["dep:borsh", "dep:borsh-derive"]
-
 
 # Public: Used in trait impls on `Uuid`
 [dependencies.bytemuck]
@@ -115,65 +115,49 @@ version = "1"
 default-features = false
 
 # Private
-# Don't depend on this optional feature directly: it may change at any time
-# use the `borsh` feature instead
 [dependencies.borsh-derive]
-package = "borsh-derive"
 optional = true
 version = "1"
 default-features = false
 
-# Private
-# Don't depend on this optional feature directly: it may change at any time
-# use the `rng` feature instead
+# Public
+# Usage of `getrandom`'s pluggable randomness for custom targets is documented
+# in `uuid`'s library docs
 [dependencies.getrandom]
-package = "getrandom"
 optional = true
 version = "0.2"
 
 # Private
-# Don't depend on this optional feature directly: it may change at any time
-# use the `fast-rng` feature instead
 [dependencies.rand]
-package = "rand"
 optional = true
 version = "0.8"
 
 # Private
-# Don't depend on this optional feature directly: it may change at any time
-# Use the `md5` feature instead
 [dependencies.md-5]
-package = "md-5"
 default-features = false
 optional = true
 version = "0.10"
 
 # Private
-# Don't depend on this optional feature directly: it may change at any time
-# Use the `sha1` feature instead
 [dependencies.sha1_smol]
-package = "sha1_smol"
 default-features = false
 optional = true
 version = "1"
 
 # Public: Re-exported
-# Don't depend on this optional feature directly: it may change at any time
-# Use the `macro-diagnostics` feature instead
 [dependencies.uuid-macro-internal]
-package = "uuid-macro-internal"
 version = "1.6.1"
 path = "macros"
 optional = true
 
+# Private
 [dependencies.atomic]
-package = "atomic"
 default-features = false
 optional = true
 version = "0.5"
 
+# Private
 [dependencies.wasm-bindgen]
-package = "wasm-bindgen"
 version = "0.2"
 optional = true
 
@@ -190,7 +174,6 @@ version = "1.0"
 version = "1.0.56"
 
 [target.'cfg(target = "wasm32-unknown-unknown")'.dev-dependencies.wasm-bindgen]
-package = "wasm-bindgen"
 version = "0.2"
 
 [target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))'.dev-dependencies.wasm-bindgen-test]
