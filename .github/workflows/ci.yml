@@ -91,7 +91,7 @@ jobs:
       run: cargo +1.60.0 build --manifest-path tests/smoke-test/Cargo.toml
 
   examples:
-    name: Tests / Stable
+    name: Tests / Examples
     runs-on: ubuntu-latest
     steps:
     - name: Checkout sources
