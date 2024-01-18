@@ -90,6 +90,16 @@ jobs:
     - name: Version features
       run: cargo +1.60.0 build --manifest-path tests/smoke-test/Cargo.toml
 
+  examples:
+    name: Tests / Stable
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout sources
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+
+    - name: Examples
+      run: cargo test --manifest-path examples/Cargo.toml
+
   wasm_bindgen:
     name: Tests / WebAssembly (wasm-bindgen)
     runs-on: ubuntu-latest

@@ -7,13 +7,10 @@
 //! If you enable the `macro-diagnostics` feature, you can see much better
 //! error messages.
 
-#[test]
-fn parse_uuid_at_compile_time() {
+fn main() {
     use uuid::uuid;
 
     let uuid = uuid!("67e55044-10b1-426f-9247-bb680e5fe0c8");
 
     assert_eq!(Some(uuid::Version::Random), uuid.get_version());
 }
-
-fn main() {}
