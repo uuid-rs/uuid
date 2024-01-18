@@ -14,8 +14,11 @@ categories = [
 description = "A library to generate and parse UUIDs."
 documentation = "https://docs.rs/uuid"
 edition = "2018"
-exclude = [
-    ".github/**"
+include = [
+    "src",
+    "README.md",
+    "LICENSE-APACHE",
+    "LICENSE-MIT",
 ]
 keywords = [
     "guid",
@@ -199,12 +202,9 @@ version = "1.0.52"
 [dev-dependencies.rustversion]
 version = "1"
 
-[target.'cfg(windows)'.dev-dependencies.windows-sys]
-version = "0.48.0"
-features = ["Win32_System_Com"]
-
 [workspace]
 members = [
     "macros",
+    "examples",
     "tests/smoke-test",
 ]

@@ -2,7 +2,6 @@
 //!
 //! If you enable the `v4` feature you can generate random UUIDs.
 
-#[cfg(feature = "v4")]
 fn main() {
     use uuid::Uuid;
 
@@ -12,6 +11,3 @@ fn main() {
 
     println!("{}", uuid);
 }
-
-#[cfg(not(feature = "v4"))]
-fn main() {}
