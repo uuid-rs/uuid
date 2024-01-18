@@ -106,6 +106,8 @@
 //! * `macro-diagnostics` - enhances the diagnostics of `uuid!` macro.
 //! * `serde` - adds the ability to serialize and deserialize a UUID using
 //!   `serde`.
+//! * `borsh` - adds the ability to serialize and deserialize a UUID using
+//!   `borsh`.
 //! * `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid` for
 //!   fuzzing.
 //! * `fast-rng` - uses a faster algorithm for generating random UUIDs.
@@ -120,8 +122,6 @@
 //!
 //! * `zerocopy` - adds support for zero-copy deserialization using the
 //!   `zerocopy` library.
-//! * `borsh` - adds the ability to serialize and deserialize a UUID using
-//!   `borsh`.
 //!
 //! Unstable features may break between minor releases.
 //!
@@ -440,8 +440,8 @@ pub enum Variant {
     derive(AsBytes, FromBytes, Unaligned)
 )]
 #[cfg_attr(
-    all(uuid_unstable, feature = "borsh"),
-    derive(borsh::BorshDeserialize, borsh::BorshSerialize)
+    feature = "borsh",
+    derive(borsh_derive::BorshDeserialize, borsh_derive::BorshSerialize)
 )]
 #[repr(transparent)]
 #[cfg_attr(
