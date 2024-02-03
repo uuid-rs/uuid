@@ -281,6 +281,9 @@ pub mod __macro_support {
 
 use crate::std::convert;
 
+#[cfg(feature = "std")]
+use crate::{error::ErrorKind, std::convert::TryInto};
+
 pub use crate::{builder::Builder, error::Error};
 
 /// A 128-bit (16 byte) buffer containing the UUID.
@@ -951,7 +954,10 @@ impl std::convert::TryFrom<std::vec::Vec<u8>> for Uuid {
     type Error = Error;
 
     fn try_from(value: std::vec::Vec<u8>) -> Result<Self, Self::Error> {
-        Uuid::from_slice(&value)
+        let bytes = value
+            .try_into()
+            .map_err(|value: std::vec::Vec<_>| Error(ErrorKind::ByteLength { len: value.len() }))?;
+        Ok(Uuid::from_bytes(bytes))
     }
 }
 
