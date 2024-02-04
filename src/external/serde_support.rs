@@ -207,6 +207,72 @@ pub mod compact {
     }
 }
 
+/// Serialize from a [`Uuid`] as a `uuid::fmt::Simple`
+///
+/// [`Uuid`]: ../../struct.Uuid.html
+///
+/// # Example
+///
+/// ```rust
+/// #[derive(serde_derive::Serialize)]
+/// struct Struct {
+///     // This will be serialize as uuid::fmt::Simple
+///     #[serde(serialize_with = "uuid::serde::simple")]
+///     id: uuid::Uuid,
+/// }
+///
+/// ```
+pub fn simple<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    serde::Serialize::serialize(u.as_simple(), serializer)
+}
+
+/// Serialize from a [`Uuid`] as a `uuid::fmt::Urn`
+///
+/// [`Uuid`]: ../../struct.Uuid.html
+///
+/// # Example
+///
+/// ```rust
+/// #[derive(serde_derive::Serialize)]
+/// struct Struct {
+///     // This will be serialize as uuid::fmt::Urn
+///     #[serde(serialize_with = "uuid::serde::urn")]
+///     id: uuid::Uuid,
+/// }
+///
+/// ```
+pub fn urn<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    serde::Serialize::serialize(u.as_urn(), serializer)
+}
+
+/// Serialize from a [`Uuid`] as a `uuid::fmt::Braced`
+///
+/// [`Uuid`]: ../../struct.Uuid.html
+///
+/// # Example
+///
+/// ```rust
+/// #[derive(serde_derive::Serialize)]
+/// struct Struct {
+///     // This will be serialize as uuid::fmt::Simple
+///     #[serde(serialize_with = "uuid::serde::braced")]
+///     id: uuid::Uuid,
+/// }
+///
+/// ```
+pub fn braced<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    serde::Serialize::serialize(u.as_braced(), serializer)
+}
+
 #[cfg(test)]
 mod serde_tests {
     use super::*;
@@ -270,6 +336,54 @@ mod serde_tests {
         let uuid_str = "f9168c5eceb24faab6bf329bf39fa1e4";
         let u = Uuid::parse_str(uuid_str).unwrap();
         serde_test::assert_ser_tokens(&u.simple(), &[Token::Str(uuid_str)]);
+    }
+
+    #[test]
+    fn test_serialize_as_simple() {
+        #[derive(serde_derive::Serialize)]
+        struct Struct(#[serde(serialize_with = "super::simple")] crate::Uuid);
+        let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
+        let simple_uuid_str = "f9168c5eceb24faab6bf329bf39fa1e4";
+        let u = Struct(Uuid::parse_str(uuid_str).unwrap());
+        serde_test::assert_ser_tokens(
+            &u,
+            &[
+                Token::NewtypeStruct { name: "Struct" },
+                Token::Str(simple_uuid_str),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_serialize_as_braced() {
+        #[derive(serde_derive::Serialize)]
+        struct Struct(#[serde(serialize_with = "super::braced")] crate::Uuid);
+        let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
+        let braced_uuid_str = "{f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4}";
+        let u = Struct(Uuid::parse_str(uuid_str).unwrap());
+        serde_test::assert_ser_tokens(
+            &u,
+            &[
+                Token::NewtypeStruct { name: "Struct" },
+                Token::Str(braced_uuid_str),
+            ],
+        );
+    }
+
+    #[test]
+    fn test_serialize_as_urn() {
+        #[derive(serde_derive::Serialize)]
+        struct Struct(#[serde(serialize_with = "super::urn")] crate::Uuid);
+        let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
+        let urn_uuid_str = "urn:uuid:f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
+        let u = Struct(Uuid::parse_str(uuid_str).unwrap());
+        serde_test::assert_ser_tokens(
+            &u,
+            &[
+                Token::NewtypeStruct { name: "Struct" },
+                Token::Str(urn_uuid_str),
+            ],
+        );
     }
 
     #[test]
