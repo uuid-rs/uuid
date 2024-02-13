@@ -73,7 +73,7 @@ impl Uuid {
     /// This function is similar to [`parse_str`], in fact `parse_str` shares
     /// the same underlying parser. The difference is that if `try_parse`
     /// fails, it won't generate very useful error messages. The `parse_str`
-    /// function will eventually be deprecated in favor or `try_parse`.
+    /// function will eventually be deprecated in favor of `try_parse`.
     ///
     /// To parse a UUID from a byte stream instead of a UTF8 string, see
     /// [`try_parse_ascii`].
