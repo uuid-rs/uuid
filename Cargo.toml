@@ -157,7 +157,7 @@ optional = true
 version = "0.5"
 
 # Private
-[dependencies.wasm-bindgen]
+[target.'cfg(target = "wasm32-unknown-unknown")'.dependencies.wasm-bindgen]
 version = "0.2"
 optional = true
 
