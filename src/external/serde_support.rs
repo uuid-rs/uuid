@@ -84,22 +84,22 @@ impl<'de> Deserialize<'de> for Uuid {
                 {
                     #[rustfmt::skip]
                     let bytes = [
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
-                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(16, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(0, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(1, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(2, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(3, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(4, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(5, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(6, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(7, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(8, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(9, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(10, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(11, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(12, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(13, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(14, &self)) },
+                        match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(15, &self)) },
                     ];
 
                     Ok(Uuid::from_bytes(bytes))
