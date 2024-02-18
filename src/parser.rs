@@ -133,7 +133,7 @@ impl Uuid {
 }
 
 const fn try_parse(input: &[u8]) -> Result<[u8; 16], InvalidUuid> {
-    let result = match (input.len(), input) {
+    match (input.len(), input) {
         // Inputs of 32 bytes must be a non-hyphenated UUID
         (32, s) => parse_simple(s),
         // Hyphenated UUIDs may be wrapped in various ways:
@@ -146,21 +146,16 @@ const fn try_parse(input: &[u8]) -> Result<[u8; 16], InvalidUuid> {
             parse_hyphenated(s)
         }
         // Any other shaped input is immediately invalid
-        _ => Err(()),
-    };
-
-    match result {
-        Ok(b) => Ok(b),
-        Err(()) => Err(InvalidUuid(input)),
+        _ => Err(InvalidUuid(input)),
     }
 }
 
 #[inline]
-const fn parse_simple(s: &[u8]) -> Result<[u8; 16], ()> {
+const fn parse_simple(s: &[u8]) -> Result<[u8; 16], InvalidUuid> {
     // This length check here removes all other bounds
     // checks in this function
     if s.len() != 32 {
-        return Err(());
+        return Err(InvalidUuid(s));
     }
 
     let mut buf: [u8; 16] = [0; 16];
@@ -175,7 +170,7 @@ const fn parse_simple(s: &[u8]) -> Result<[u8; 16], ()> {
         // We use `0xff` as a sentinel value to indicate
         // an invalid hex character sequence (like the letter `G`)
         if h1 | h2 == 0xff {
-            return Err(());
+            return Err(InvalidUuid(s));
         }
 
         // The upper nibble needs to be shifted into position
@@ -188,11 +183,11 @@ const fn parse_simple(s: &[u8]) -> Result<[u8; 16], ()> {
 }
 
 #[inline]
-const fn parse_hyphenated(s: &[u8]) -> Result<[u8; 16], ()> {
+const fn parse_hyphenated(s: &[u8]) -> Result<[u8; 16], InvalidUuid> {
     // This length check here removes all other bounds
     // checks in this function
     if s.len() != 36 {
-        return Err(());
+        return Err(InvalidUuid(s));
     }
 
     // We look at two hex-encoded values (4 chars) at a time because
@@ -207,7 +202,7 @@ const fn parse_hyphenated(s: &[u8]) -> Result<[u8; 16], ()> {
     // First, ensure the hyphens appear in the right places
     match [s[8], s[13], s[18], s[23]] {
         [b'-', b'-', b'-', b'-'] => {}
-        _ => return Err(()),
+        _ => return Err(InvalidUuid(s)),
     }
 
     let positions: [u8; 8] = [0, 4, 9, 14, 19, 24, 28, 32];
@@ -225,7 +220,7 @@ const fn parse_hyphenated(s: &[u8]) -> Result<[u8; 16], ()> {
         let h4 = HEX_TABLE[s[(i + 3) as usize] as usize];
 
         if h1 | h2 | h3 | h4 == 0xff {
-            return Err(());
+            return Err(InvalidUuid(s));
         }
 
         buf[j * 2] = SHL4_TABLE[h1 as usize] | h2;
