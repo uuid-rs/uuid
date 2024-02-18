@@ -151,7 +151,27 @@ const fn try_parse(input: &[u8]) -> Result<[u8; 16], InvalidUuid> {
 }
 
 #[inline]
-const fn parse_simple(s: &[u8]) -> Result<[u8; 16], InvalidUuid> {
+pub(crate) const fn parse_braced(input: &[u8]) -> Result<[u8; 16], InvalidUuid> {
+    if let (38, [b'{', s @ .., b'}']) = (input.len(), input) {
+        parse_hyphenated(s)
+    } else {
+        Err(InvalidUuid(input))
+    }
+}
+
+#[inline]
+pub(crate) const fn parse_urn(input: &[u8]) -> Result<[u8; 16], InvalidUuid> {
+    if let (45, [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..]) =
+        (input.len(), input)
+    {
+        parse_hyphenated(s)
+    } else {
+        Err(InvalidUuid(input))
+    }
+}
+
+#[inline]
+pub(crate) const fn parse_simple(s: &[u8]) -> Result<[u8; 16], InvalidUuid> {
     // This length check here removes all other bounds
     // checks in this function
     if s.len() != 32 {
@@ -514,6 +534,22 @@ mod tests {
         let uuid_orig = new();
         let orig_str = uuid_orig.braced().to_string();
         let uuid_out = Uuid::parse_str(&orig_str).unwrap();
+        assert_eq!(uuid_orig, uuid_out);
+    }
+
+    #[test]
+    fn test_roundtrip_parse_urn() {
+        let uuid_orig = new();
+        let orig_str = uuid_orig.urn().to_string();
+        let uuid_out = Uuid::from_bytes(parse_urn(orig_str.as_bytes()).unwrap());
+        assert_eq!(uuid_orig, uuid_out);
+    }
+
+    #[test]
+    fn test_roundtrip_parse_braced() {
+        let uuid_orig = new();
+        let orig_str = uuid_orig.braced().to_string();
+        let uuid_out = Uuid::from_bytes(parse_braced(orig_str.as_bytes()).unwrap());
         assert_eq!(uuid_orig, uuid_out);
     }
 
