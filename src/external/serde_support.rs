@@ -629,28 +629,6 @@ pub mod urn {
     }
 }
 
-/// Serialize from a [`Uuid`] as a `uuid::fmt::Braced`
-///
-/// [`Uuid`]: ../../struct.Uuid.html
-///
-/// # Example
-///
-/// ```rust
-/// #[derive(serde_derive::Serialize)]
-/// struct Struct {
-///     // This will be serialize as uuid::fmt::Simple
-///     #[serde(serialize_with = "uuid::serde::braced")]
-///     id: uuid::Uuid,
-/// }
-///
-/// ```
-pub fn braced<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
-where
-    S: serde::Serializer,
-{
-    serde::Serialize::serialize(u.as_braced(), serializer)
-}
-
 #[cfg(test)]
 mod serde_tests {
     use super::*;
