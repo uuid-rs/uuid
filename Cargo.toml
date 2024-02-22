@@ -59,6 +59,7 @@ macro-diagnostics = ["dep:uuid-macro-internal"]
 # NOTE: When adding new features, check the `ci.yml` workflow
 # and include them where necessary (you can follow along with existing features)
 v1 = ["atomic"]
+v1_auto = ["v1", "dep:mac_address", "rng"]
 v3 = ["md5"]
 v4 = ["rng"]
 v5 = ["sha1"]
@@ -76,6 +77,10 @@ md5 = ["dep:md-5"]
 atomic = ["dep:atomic"]
 
 borsh = ["dep:borsh", "dep:borsh-derive"]
+
+[dependencies]
+mac_address = { version = "1.1.5", optional = true }
+
 
 # Public: Used in trait impls on `Uuid`
 [dependencies.bytemuck]

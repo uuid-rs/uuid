@@ -25,6 +25,13 @@ impl Uuid {
         Self::new_v1(ts, node_id)
     }
 
+    #[cfg(feature = "v1_auto")]
+    pub fn now_v1_auto() -> Self {
+        let ts = Timestamp::now(crate::timestamp::context::shared_context());
+        let node_id = super::node_id::get_or_make_node_id();
+        Self::new_v1(ts, node_id)
+    }
+
     /// Create a new version 1 UUID using the given timestamp and node ID.
     ///
     /// Also see [`Uuid::now_v1`] for a convenient way to generate version 1
@@ -196,5 +203,18 @@ mod tests {
 
         assert_eq!(uuid3.get_timestamp().unwrap().to_rfc4122().1, 1);
         assert_eq!(uuid4.get_timestamp().unwrap().to_rfc4122().1, 2);
+    }
+
+    #[cfg(feature = "v1_auto")]
+    #[test]
+    fn test_v1_auto() {
+        use crate::node_id::get_or_make_node_id;
+
+        let node1 = get_or_make_node_id();
+        let node2 = get_or_make_node_id();
+        let node3 = get_or_make_node_id();
+        assert_eq!(node1, node2);
+        assert_eq!(node2, node3);
+        println!("{:x?}", &node1);
     }
 }

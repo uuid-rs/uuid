@@ -245,6 +245,8 @@ pub use timestamp::context::Context;
 // Soft-deprecated (Rust doesn't support deprecating re-exports)
 // Use `Context` from the crate root instead
 pub mod v1;
+#[cfg(feature="v1_auto")]
+mod node_id;
 #[cfg(feature = "v3")]
 mod v3;
 #[cfg(feature = "v4")]
