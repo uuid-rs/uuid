@@ -25,6 +25,15 @@ impl Uuid {
         Self::new_v1(ts, node_id)
     }
 
+    /// Create a new version 1 UUID using the current system time and node ID.
+    ///
+    /// This method fully automates constructing a version 1 UUID, with no additional arguments required.
+    /// Use it to get a v1 UUID based on RFC 4122 semantics.
+    ///
+    /// To specify `node_id` manually, use [`Uuid::now_v1`] instead.
+    ///
+    /// Note that usage of this method requires the `v1_auto` feature of this crate
+    /// to be enabled.
     #[cfg(feature = "v1_auto")]
     pub fn now_v1_auto() -> Self {
         let ts = Timestamp::now(crate::timestamp::context::shared_context());
