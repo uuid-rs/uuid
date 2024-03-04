@@ -963,7 +963,7 @@ pub mod serde {
     //! to change the way a [`Uuid`](../struct.Uuid.html) is serialized
     //! and deserialized.
 
-    pub use crate::external::serde_support::compact;
+    pub use crate::external::serde_support::{braced, compact, simple, urn};
 }
 
 #[cfg(test)]
