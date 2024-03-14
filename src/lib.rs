@@ -933,6 +933,7 @@ impl Default for Uuid {
 }
 
 impl AsRef<Uuid> for Uuid {
+    #[inline]
     fn as_ref(&self) -> &Uuid {
         self
     }
