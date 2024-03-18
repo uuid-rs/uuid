@@ -1,0 +1,20 @@
+name: Dependency Check
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  outdated:
+    name: Update Available
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+
+    - name: Install cargo-outdated
+      run: cargo install cargo-outdated
+
+    - name: Check for outdated dependencies
+      run: cargo outdated
