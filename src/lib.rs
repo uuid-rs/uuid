@@ -932,6 +932,13 @@ impl Default for Uuid {
     }
 }
 
+impl AsRef<Uuid> for Uuid {
+    #[inline]
+    fn as_ref(&self) -> &Uuid {
+        self
+    }
+}
+
 impl AsRef<[u8]> for Uuid {
     #[inline]
     fn as_ref(&self) -> &[u8] {
@@ -1745,7 +1752,7 @@ mod tests {
     fn test_as_bytes() {
         let u = new();
         let ub = u.as_bytes();
-        let ur = u.as_ref();
+        let ur: &[u8] = u.as_ref();
 
         assert_eq!(ub.len(), 16);
         assert_eq!(ur.len(), 16);
@@ -1767,7 +1774,7 @@ mod tests {
         use crate::std::{convert::TryInto, vec::Vec};
 
         let u = new();
-        let ub = u.as_ref();
+        let ub: &[u8] = u.as_ref();
 
         let v: Vec<u8> = u.into();
 
