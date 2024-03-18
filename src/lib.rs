@@ -39,7 +39,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1.7.0"
+//! version = "1.8.0"
 //! features = [
 //!     "v4",                # Lets you generate random UUIDs
 //!     "fast-rng",          # Use a faster (but still sufficiently random) RNG
@@ -141,7 +141,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1.7.0"
+//! version = "1.8.0"
 //! features = [
 //!     "v4",
 //!     "v7",
@@ -156,7 +156,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1.7.0"
+//! version = "1.8.0"
 //! default-features = false
 //! ```
 //!
@@ -214,7 +214,7 @@
 #![doc(
     html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
     html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-    html_root_url = "https://docs.rs/uuid/1.7.0"
+    html_root_url = "https://docs.rs/uuid/1.8.0"
 )]
 
 #[cfg(any(feature = "std", test))]
