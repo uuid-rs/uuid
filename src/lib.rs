@@ -877,24 +877,14 @@ impl Uuid {
     }
 
     /// If the UUID is the correct version (v1, v6, or v7) this will return
-    /// the timestamp and counter portion parsed from a V1 UUID.
-    ///
-    /// Returns `None` if the supplied UUID is not V1.
-    ///
-    /// The V1 timestamp format defined in RFC4122 specifies a 60-bit
-    /// integer representing the number of 100-nanosecond intervals
-    /// since 00:00:00.00, 15 Oct 1582.
-    ///
-    /// [`Timestamp`] offers several options for converting the raw RFC4122
-    /// value into more commonly-used formats, such as a unix timestamp.
+    /// the timestamp in a version-agnostic [`Timestamp`]. For other versions
+    /// this will return `None`.
     ///
     /// # Roundtripping
     ///
     /// This method is unlikely to roundtrip a timestamp in a UUID due to the way
     /// UUIDs encode timestamps. The timestamp returned from this method will be truncated to
     /// 100ns precision for version 1 and 6 UUIDs, and to millisecond precision for version 7 UUIDs.
-    ///
-    /// [`Timestamp`]: v1/struct.Timestamp.html
     pub const fn get_timestamp(&self) -> Option<Timestamp> {
         match self.get_version() {
             Some(Version::Mac) => {
@@ -919,6 +909,26 @@ impl Uuid {
                     #[cfg(any(feature = "v1", feature = "v6"))]
                     counter: 0,
                 })
+            }
+            _ => None,
+        }
+    }
+
+    /// If the UUID is the correct version (v1, or v6) this will return the
+    /// node value as a 6-byte array. For other versions this will return `None`.
+    pub const fn get_node_id(&self) -> Option<[u8; 6]> {
+        match self.get_version() {
+            Some(Version::Mac) | Some(Version::SortMac) => {
+                let mut node_id = [0; 6];
+
+                node_id[0] = self.0[10];
+                node_id[1] = self.0[11];
+                node_id[2] = self.0[12];
+                node_id[3] = self.0[13];
+                node_id[4] = self.0[14];
+                node_id[5] = self.0[15];
+
+                Some(node_id)
             }
             _ => None,
         }
@@ -1249,6 +1259,43 @@ mod tests {
 
         assert_eq!(uuid.get_version().unwrap(), Version::Md5);
         assert_eq!(uuid.get_version_num(), 3);
+    }
+
+    #[test]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
+    fn test_get_timestamp_unsupported_version() {
+        let uuid = new();
+
+        assert_ne!(Version::Mac, uuid.get_version().unwrap());
+        assert_ne!(Version::SortMac, uuid.get_version().unwrap());
+        assert_ne!(Version::SortRand, uuid.get_version().unwrap());
+
+        assert!(uuid.get_timestamp().is_none());
+    }
+
+    #[test]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
+    fn test_get_node_id_unsupported_version() {
+        let uuid = new();
+
+        assert_ne!(Version::Mac, uuid.get_version().unwrap());
+        assert_ne!(Version::SortMac, uuid.get_version().unwrap());
+
+        assert!(uuid.get_node_id().is_none());
     }
 
     #[test]

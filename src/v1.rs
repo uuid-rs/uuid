@@ -135,6 +135,8 @@ mod tests {
 
         assert_eq!(ts.0 - 0x01B2_1DD2_1381_4000, 14_968_545_358_129_460);
 
+        assert_eq!(Some(node), uuid.get_node_id(),);
+
         // Ensure parsing the same UUID produces the same timestamp
         let parsed = Uuid::parse_str("20616934-4ba2-11e7-8000-010203040506").unwrap();
 
@@ -142,6 +144,8 @@ mod tests {
             uuid.get_timestamp().unwrap(),
             parsed.get_timestamp().unwrap()
         );
+
+        assert_eq!(uuid.get_node_id().unwrap(), parsed.get_node_id().unwrap(),);
     }
 
     #[test]
