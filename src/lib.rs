@@ -227,7 +227,7 @@ extern crate std;
 extern crate core as std;
 
 #[cfg(all(uuid_unstable, feature = "zerocopy"))]
-use zerocopy::{AsBytes, FromBytes, Unaligned};
+use zerocopy::{AsBytes, FromBytes, FromZeroes, Unaligned};
 
 mod builder;
 mod error;
@@ -438,7 +438,7 @@ pub enum Variant {
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[cfg_attr(
     all(uuid_unstable, feature = "zerocopy"),
-    derive(AsBytes, FromBytes, Unaligned)
+    derive(AsBytes, FromBytes, FromZeroes, Unaligned)
 )]
 #[cfg_attr(
     feature = "borsh",
