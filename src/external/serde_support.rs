@@ -184,7 +184,7 @@ pub mod compact {
     #[cfg(test)]
     mod tests {
         use serde_derive::*;
-        use serde_test::{self, Configure};
+        use serde_test::Configure;
 
         #[test]
         fn test_serialize_compact() {

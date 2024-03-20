@@ -82,7 +82,7 @@ impl<'a> InvalidUuid<'a> {
                     group_bounds[hyphen_count] = index;
                 }
                 hyphen_count += 1;
-            } else if !matches!(byte, b'0'..=b'9' | b'a'..=b'f' | b'A'..=b'F') {
+            } else if !byte.is_ascii_hexdigit() {
                 // Non-hex char
                 return Error(ErrorKind::Char {
                     character: byte as char,
