@@ -37,3 +37,20 @@ pub(crate) fn u16() -> u16 {
         rand::random()
     }
 }
+
+#[cfg(feature = "v1_auto")]
+pub(crate) fn fill_random_bytes(buf: &mut [u8]) {
+    #[cfg(not(feature = "fast-rng"))]
+    {
+        getrandom::getrandom(buf).unwrap_or_else(|err| {
+            // NB: getrandom::Error has no source; this is adequate display
+            panic!("could not retrieve random bytes for node id: {}", err)
+        });
+    }
+
+    #[cfg(feature = "fast-rng")]
+    {
+        use rand::RngCore;
+        rand::thread_rng().fill_bytes(buf);
+    }
+}
