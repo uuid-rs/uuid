@@ -13,6 +13,7 @@ categories = [
 ]
 description = "Private implementation details of the uuid! macro."
 documentation = "https://docs.rs/uuid"
+repository = "https://github.com/uuid-rs/uuid"
 license = "Apache-2.0 OR MIT"
 
 [lib]
