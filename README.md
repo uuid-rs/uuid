@@ -71,8 +71,7 @@ For more details on using `uuid`, [see the library documentation](https://docs.r
 
 * [`uuid` library docs](https://docs.rs/uuid/1.8.0/uuid).
 * [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier).
-* [RFC4122: A Universally Unique IDentifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122).
-* [Revision of RFC4122: Universally Unique IDentifiers (UUID)](https://www.ietf.org/archive/id/draft-ietf-uuidrev-rfc4122bis-14.html).
+* [RFC 9562: Universally Unique IDentifiers (UUID)](https://www.ietf.org/rfc/rfc9562.html).
 
 ---
 # License

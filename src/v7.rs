@@ -43,7 +43,7 @@ impl Uuid {
     ///
     /// # References
     ///
-    /// * [Version 7 UUIDs in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.2)
+    /// * [UUID Version 7 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.7)
     pub fn new_v7(ts: Timestamp) -> Self {
         let (secs, nanos) = ts.to_unix();
         let millis = (secs * 1000).saturating_add(nanos as u64 / 1_000_000);

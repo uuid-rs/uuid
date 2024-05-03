@@ -48,7 +48,7 @@ impl Uuid {
     /// # Examples
     ///
     /// A UUID can be created from a unix [`Timestamp`] with a
-    /// [`ClockSequence`]. RFC4122 requires the clock sequence
+    /// [`ClockSequence`]. RFC 9562 requires the clock sequence
     /// is seeded with a random value:
     ///
     /// ```
@@ -66,7 +66,7 @@ impl Uuid {
     /// );
     /// ```
     ///
-    /// The timestamp can also be created manually as per RFC4122:
+    /// The timestamp can also be created manually as per RFC 9562:
     ///
     /// ```
     /// # use uuid::{Uuid, Timestamp, Context, ClockSequence};
@@ -83,7 +83,7 @@ impl Uuid {
     ///
     /// # References
     ///
-    /// * [Version 1 UUIDs in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.2)
+    /// * [UUID Version 1 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.1)
     ///
     /// [`Timestamp`]: v1/struct.Timestamp.html
     /// [`ClockSequence`]: v1/trait.ClockSequence.html

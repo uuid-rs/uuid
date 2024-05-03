@@ -124,10 +124,10 @@ For people new to Uuid, and just starting to contribute, or even for more
 seasoned developers, some useful places to look for information are:
 
 * The Wikipedia entry on [Universally Unique Identifier][wiki-uuid].
-* [RFC 4122] which gives the specification of Uuids.
+* [RFC 9562][rfc-uuid] which gives the specification of Uuids.
 
 [wiki-uuid]: https://en.wikipedia.org/wiki/Universally_unique_identifier
-[RFC 4122]: https://www.ietf.org/rfc/rfc4122.txt
+[rfc-uuid]: https://www.ietf.org/rfc/rfc9562.html
 
 [u-r-l-o]: https://users.rust-lang.org
 [Discussions]: https://github.com/uuid-rs/uuid/discussions

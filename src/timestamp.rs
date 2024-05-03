@@ -17,12 +17,13 @@
 //!
 //! # References
 //!
-//! * [Timestamp in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4)
-//! * [Timestamp in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-6.1)
+//! * [UUID Version 1 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.1)
+//! * [UUID Version 7 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.7)
+//! * [Timestamp Considerations in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.1)
 
 use crate::Uuid;
 
-/// The number of 100 nanosecond ticks between the RFC4122 epoch
+/// The number of 100 nanosecond ticks between the RFC 9562 epoch
 /// (`1582-10-15 00:00:00`) and the Unix epoch (`1970-01-01 00:00:00`).
 pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 
@@ -34,9 +35,8 @@ pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 ///
 /// # References
 ///
-/// * [Timestamp in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4)
-/// * [Timestamp in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-6.1)
-/// * [Clock Sequence in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.5)
+/// * [Timestamp Considerations in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.1)
+/// * [UUID Generator States in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.3)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Timestamp {
     pub(crate) seconds: u64,
@@ -70,12 +70,12 @@ impl Timestamp {
         }
     }
 
-    /// Construct a `Timestamp` from an RFC4122 timestamp and counter, as used
+    /// Construct a `Timestamp` from an RFC 9562 timestamp and counter, as used
     /// in versions 1 and 6 UUIDs.
     ///
     /// # Overflow
     ///
-    /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
+    /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
     pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
         #[cfg(not(any(feature = "v1", feature = "v6")))]
@@ -97,7 +97,7 @@ impl Timestamp {
     ///
     /// # Overflow
     ///
-    /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
+    /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
     pub fn from_unix(context: impl ClockSequence<Output = u16>, seconds: u64, nanos: u32) -> Self {
         #[cfg(not(any(feature = "v1", feature = "v6")))]
@@ -118,12 +118,12 @@ impl Timestamp {
         }
     }
 
-    /// Get the value of the timestamp as an RFC4122 timestamp and counter,
+    /// Get the value of the timestamp as an RFC 9562 timestamp and counter,
     /// as used in versions 1 and 6 UUIDs.
     ///
     /// # Overflow
     ///
-    /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
+    /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
     #[cfg(any(feature = "v1", feature = "v6"))]
     pub const fn to_rfc4122(&self) -> (u64, u16) {
@@ -137,7 +137,7 @@ impl Timestamp {
     ///
     /// # Overflow
     ///
-    /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
+    /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
     pub const fn to_unix(&self) -> (u64, u32) {
         (self.seconds, self.nanos)
@@ -329,7 +329,9 @@ fn now() -> (u64, u32) {
 ///
 /// # References
 ///
-/// * [Clock Sequence in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.5)
+/// * [UUID Version 1 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.1)
+/// * [UUID Version 6 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.6)
+/// * [UUID Generator States in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.3)
 pub trait ClockSequence {
     /// The type of sequence returned by this counter.
     type Output;
@@ -427,7 +429,7 @@ pub mod context {
         type Output = u16;
 
         fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
-            // RFC4122 reserves 2 bits of the clock sequence so the actual
+            // RFC 9562 reserves 2 bits for Variant field, so the actual `clock_seq`
             // maximum value is smaller than `u16::MAX`. Since we unconditionally
             // increment the clock sequence we want to wrap once it becomes larger
             // than what we can represent in a "u14". Otherwise there'd be patches

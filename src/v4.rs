@@ -26,7 +26,7 @@ impl Uuid {
     ///
     /// # References
     ///
-    /// * [Version 4 UUIDs in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.4)
+    /// * [UUID Version 4 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.4)
     ///
     /// [`getrandom`]: https://crates.io/crates/getrandom
     /// [from_random_bytes]: struct.Builder.html#method.from_random_bytes
