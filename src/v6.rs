@@ -200,7 +200,7 @@ mod tests {
         let uuid3 = Uuid::new_v6(Timestamp::from_unix(&context, time, time_fraction), &node);
         let uuid4 = Uuid::new_v6(Timestamp::from_unix(&context, time, time_fraction), &node);
 
-        assert_eq!(uuid3.get_timestamp().unwrap().counter, 1);
-        assert_eq!(uuid4.get_timestamp().unwrap().counter, 2);
+        assert_eq!(uuid3.get_timestamp().unwrap().to_rfc4122().1, 1);
+        assert_eq!(uuid4.get_timestamp().unwrap().to_rfc4122().1, 2);
     }
 }

@@ -39,10 +39,10 @@ pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 /// * [Clock Sequence in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.5)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Timestamp {
-    pub(crate) seconds: u64,
-    pub(crate) nanos: u32,
-    #[cfg(any(feature = "v1", feature = "v6"))]
-    pub(crate) counter: u16,
+    seconds: u64,
+    nanos: u32,
+    counter: u64,
+    usable_counter_bits: usize,
 }
 
 impl Timestamp {
@@ -55,18 +55,32 @@ impl Timestamp {
     /// This method will panic if calculating the elapsed time since the Unix epoch fails.
     #[cfg(feature = "std")]
     pub fn now(context: impl ClockSequence<Output = u16>) -> Self {
-        #[cfg(not(any(feature = "v1", feature = "v6")))]
-        {
-            let _ = context;
-        }
-
         let (seconds, nanos) = now();
+
+        let counter = context.generate_sequence(seconds, nanos) as u64;
+        let usable_counter_bits = context.usable_bits();
 
         Timestamp {
             seconds,
             nanos,
-            #[cfg(any(feature = "v1", feature = "v6"))]
-            counter: context.generate_sequence(seconds, nanos),
+            counter,
+            usable_counter_bits,
+        }
+    }
+
+    /// Get a timestamp representing the current system time.
+    #[cfg(feature = "std")]
+    pub fn now_u64(context: impl ClockSequence<Output = u64>) -> Self {
+        let (seconds, nanos) = now();
+
+        let counter = context.generate_sequence(seconds, nanos);
+        let usable_counter_bits = context.usable_bits();
+
+        Timestamp {
+            seconds,
+            nanos,
+            counter,
+            usable_counter_bits,
         }
     }
 
@@ -78,18 +92,28 @@ impl Timestamp {
     /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
     /// it will wrap.
     pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
-        #[cfg(not(any(feature = "v1", feature = "v6")))]
-        {
-            let _ = counter;
-        }
-
         let (seconds, nanos) = Self::rfc4122_to_unix(ticks);
 
         Timestamp {
             seconds,
             nanos,
-            #[cfg(any(feature = "v1", feature = "v6"))]
-            counter,
+            counter: counter as u64,
+            usable_counter_bits: 16,
+        }
+    }
+
+    /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
+    /// 
+    /// # Overflow
+    ///
+    /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
+    /// it will wrap.
+    pub const fn from_unix_time(seconds: u64, nanos: u32, counter: u16) -> Self {
+        Timestamp {
+            seconds,
+            nanos,
+            counter: counter as u64,
+            usable_counter_bits: 16,
         }
     }
 
@@ -100,21 +124,14 @@ impl Timestamp {
     /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
     /// it will wrap.
     pub fn from_unix(context: impl ClockSequence<Output = u16>, seconds: u64, nanos: u32) -> Self {
-        #[cfg(not(any(feature = "v1", feature = "v6")))]
-        {
-            let _ = context;
+        let counter = context.generate_sequence(seconds, nanos) as u64;
+        let usable_counter_bits = context.usable_bits();
 
-            Timestamp { seconds, nanos }
-        }
-        #[cfg(any(feature = "v1", feature = "v6"))]
-        {
-            let counter = context.generate_sequence(seconds, nanos);
-
-            Timestamp {
-                seconds,
-                nanos,
-                counter,
-            }
+        Timestamp {
+            seconds,
+            nanos,
+            counter,
+            usable_counter_bits,
         }
     }
 
@@ -125,11 +142,10 @@ impl Timestamp {
     ///
     /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
     /// it will wrap.
-    #[cfg(any(feature = "v1", feature = "v6"))]
     pub const fn to_rfc4122(&self) -> (u64, u16) {
         (
             Self::unix_to_rfc4122_ticks(self.seconds, self.nanos),
-            self.counter,
+            self.counter as u16,
         )
     }
 
@@ -143,7 +159,6 @@ impl Timestamp {
         (self.seconds, self.nanos)
     }
 
-    #[cfg(any(feature = "v1", feature = "v6"))]
     const fn unix_to_rfc4122_ticks(seconds: u64, nanos: u32) -> u64 {
         UUID_TICKS_BETWEEN_EPOCHS
             .wrapping_add(seconds.wrapping_mul(10_000_000))
@@ -338,12 +353,27 @@ pub trait ClockSequence {
     ///
     /// This method will be called each time a [`Timestamp`] is constructed.
     fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output;
+
+    /// The number of usable bits from the least significant bit in the result of [`ClockSequence::generate_sequence`].
+    fn usable_bits(&self) -> usize
+    where
+        Self::Output: Sized,
+    {
+        core::mem::size_of::<Self::Output>()
+    }
 }
 
 impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T {
     type Output = T::Output;
+
     fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
         (**self).generate_sequence(seconds, subsec_nanos)
+    }
+
+    fn usable_bits(&self) -> usize
+        where
+            Self::Output: Sized, {
+        (**self).usable_bits()
     }
 }
 
@@ -365,6 +395,10 @@ pub mod context {
         type Output = u16;
 
         fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
+            0
+        }
+
+        fn usable_bits(&self) -> usize {
             0
         }
     }
@@ -433,6 +467,10 @@ pub mod context {
             // than what we can represent in a "u14". Otherwise there'd be patches
             // where the clock sequence doesn't change regardless of the timestamp
             self.count.fetch_add(1, Ordering::AcqRel) & (u16::MAX >> 2)
+        }
+
+        fn usable_bits(&self) -> usize {
+            14
         }
     }
 }
