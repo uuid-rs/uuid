@@ -636,10 +636,10 @@ impl Builder {
     /// # Ok(())
     /// # }
     /// ```
-    pub const fn from_unix_timestamp_millis(millis: u64, random_bytes: &[u8; 10]) -> Self {
+    pub const fn from_unix_timestamp_millis(millis: u64, counter_random_bytes: &[u8; 10]) -> Self {
         Builder(timestamp::encode_unix_timestamp_millis(
             millis,
-            random_bytes,
+            counter_random_bytes,
         ))
     }
 

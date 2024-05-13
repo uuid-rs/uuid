@@ -103,7 +103,7 @@ impl Timestamp {
     }
 
     /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
-    /// 
+    ///
     /// # Overflow
     ///
     /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
@@ -147,6 +147,10 @@ impl Timestamp {
             Self::unix_to_rfc4122_ticks(self.seconds, self.nanos),
             self.counter as u16,
         )
+    }
+
+    pub(crate) const fn counter(&self) -> (u64, usize) {
+        (self.counter, self.usable_counter_bits)
     }
 
     /// Get the value of the timestamp as a Unix timestamp, as used in version 7 UUIDs.
@@ -259,23 +263,27 @@ pub(crate) const fn decode_sorted_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
     (ticks, counter)
 }
 
-pub(crate) const fn encode_unix_timestamp_millis(millis: u64, random_bytes: &[u8; 10]) -> Uuid {
+pub(crate) const fn encode_unix_timestamp_millis(
+    millis: u64,
+    counter_random_bytes: &[u8; 10],
+) -> Uuid {
     let millis_high = ((millis >> 16) & 0xFFFF_FFFF) as u32;
     let millis_low = (millis & 0xFFFF) as u16;
 
-    let random_and_version =
-        (random_bytes[1] as u16 | ((random_bytes[0] as u16) << 8) & 0x0FFF) | (0x7 << 12);
+    let random_and_version = (counter_random_bytes[1] as u16
+        | ((counter_random_bytes[0] as u16) << 8) & 0x0FFF)
+        | (0x7 << 12);
 
     let mut d4 = [0; 8];
 
-    d4[0] = (random_bytes[2] & 0x3F) | 0x80;
-    d4[1] = random_bytes[3];
-    d4[2] = random_bytes[4];
-    d4[3] = random_bytes[5];
-    d4[4] = random_bytes[6];
-    d4[5] = random_bytes[7];
-    d4[6] = random_bytes[8];
-    d4[7] = random_bytes[9];
+    d4[0] = (counter_random_bytes[2] & 0x3F) | 0x80;
+    d4[1] = counter_random_bytes[3];
+    d4[2] = counter_random_bytes[4];
+    d4[3] = counter_random_bytes[5];
+    d4[4] = counter_random_bytes[6];
+    d4[5] = counter_random_bytes[7];
+    d4[6] = counter_random_bytes[8];
+    d4[7] = counter_random_bytes[9];
 
     Uuid::from_fields(millis_high, millis_low, random_and_version, &d4)
 }
@@ -371,8 +379,9 @@ impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T {
     }
 
     fn usable_bits(&self) -> usize
-        where
-            Self::Output: Sized, {
+    where
+        Self::Output: Sized,
+    {
         (**self).usable_bits()
     }
 }

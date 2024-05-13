@@ -3,6 +3,8 @@
 //! Note that you need to enable the `v7` Cargo feature
 //! in order to use this module.
 
+use core::cmp;
+
 use crate::{rng, std::convert::TryInto, timestamp::Timestamp, Builder, Uuid};
 
 impl Uuid {
@@ -41,6 +43,18 @@ impl Uuid {
     /// );
     /// ```
     ///
+    /// A v7 UUID can also be created with a counter to ensure batches of
+    /// UUIDs created together remain sortable:
+    ///
+    /// ```rust
+    /// # use uuid::{Uuid, Timestamp, Context};
+    /// let context = Context::new(42);
+    /// let uuid1 = Uuid::new_v7(Timestamp::from_unix(&context, 1497624119, 1234));
+    /// let uuid2 = Uuid::new_v7(Timestamp::from_unix(&context, 1497624119, 1234));
+    ///
+    /// assert!(uuid1 < uuid2);
+    /// ```
+    ///
     /// # References
     ///
     /// * [Version 7 UUIDs in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.2)
@@ -48,8 +62,22 @@ impl Uuid {
         let (secs, nanos) = ts.to_unix();
         let millis = (secs * 1000).saturating_add(nanos as u64 / 1_000_000);
 
-        Builder::from_unix_timestamp_millis(millis, &rng::bytes()[..10].try_into().unwrap())
-            .into_uuid()
+        let mut counter_and_random = rng::u128();
+
+        let (counter, counter_bits) = ts.counter();
+
+        counter_and_random &= u128::MAX
+            .overflowing_shr(cmp::min(128, counter_bits as u32))
+            .0;
+        counter_and_random |= (counter as u128)
+            .overflowing_shl(128usize.saturating_sub(counter_bits) as u32)
+            .0;
+
+        Builder::from_unix_timestamp_millis(
+            millis,
+            &counter_and_random.to_be_bytes()[..10].try_into().unwrap(),
+        )
+        .into_uuid()
     }
 }
 

@@ -18,6 +18,11 @@ pub(crate) fn bytes() -> [u8; 16] {
     }
 }
 
+#[cfg(any(feature = "v4", feature = "v7"))]
+pub(crate) fn u128() -> u128 {
+    u128::from_be_bytes(bytes())
+}
+
 #[cfg(any(feature = "v1", feature = "v6"))]
 pub(crate) fn u16() -> u16 {
     #[cfg(not(feature = "fast-rng"))]
