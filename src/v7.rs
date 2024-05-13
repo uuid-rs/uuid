@@ -69,8 +69,8 @@ impl Uuid {
         counter_and_random &= u128::MAX
             .overflowing_shr(cmp::min(128, counter_bits as u32))
             .0;
-        counter_and_random |= (counter as u128)
-            .overflowing_shl(128usize.saturating_sub(counter_bits) as u32)
+        counter_and_random |= counter
+            .overflowing_shl(128u8.saturating_sub(counter_bits) as u32)
             .0;
 
         Builder::from_unix_timestamp_millis(

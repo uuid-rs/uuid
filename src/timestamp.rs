@@ -41,8 +41,8 @@ pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 pub struct Timestamp {
     seconds: u64,
     nanos: u32,
-    counter: u64,
-    usable_counter_bits: usize,
+    counter: u128,
+    usable_counter_bits: u8,
 }
 
 impl Timestamp {
@@ -55,26 +55,16 @@ impl Timestamp {
     /// This method will panic if calculating the elapsed time since the Unix epoch fails.
     #[cfg(feature = "std")]
     pub fn now(context: impl ClockSequence<Output = u16>) -> Self {
-        let (seconds, nanos) = now();
-
-        let counter = context.generate_sequence(seconds, nanos) as u64;
-        let usable_counter_bits = context.usable_bits();
-
-        Timestamp {
-            seconds,
-            nanos,
-            counter,
-            usable_counter_bits,
-        }
+        Self::now_128(context)
     }
 
     /// Get a timestamp representing the current system time.
     #[cfg(feature = "std")]
-    pub fn now_u64(context: impl ClockSequence<Output = u64>) -> Self {
+    pub fn now_128(context: impl ClockSequence<Output = impl Into<u128>>) -> Self {
         let (seconds, nanos) = now();
 
-        let counter = context.generate_sequence(seconds, nanos);
-        let usable_counter_bits = context.usable_bits();
+        let counter = context.generate_sequence(seconds, nanos).into();
+        let usable_counter_bits = context.usable_bits() as u8;
 
         Timestamp {
             seconds,
@@ -97,35 +87,44 @@ impl Timestamp {
         Timestamp {
             seconds,
             nanos,
-            counter: counter as u64,
+            counter: counter as u128,
             usable_counter_bits: 16,
         }
     }
 
     /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
-    ///
-    /// # Overflow
-    ///
-    /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
-    /// it will wrap.
     pub const fn from_unix_time(seconds: u64, nanos: u32, counter: u16) -> Self {
+        Self::from_unix_time_128(seconds, nanos, counter as u128, 16)
+    }
+
+    /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
+    pub const fn from_unix_time_128(
+        seconds: u64,
+        nanos: u32,
+        counter: u128,
+        usable_counter_bits: u8,
+    ) -> Self {
         Timestamp {
             seconds,
             nanos,
-            counter: counter as u64,
-            usable_counter_bits: 16,
+            counter,
+            usable_counter_bits,
         }
     }
 
     /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
-    ///
-    /// # Overflow
-    ///
-    /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
-    /// it will wrap.
     pub fn from_unix(context: impl ClockSequence<Output = u16>, seconds: u64, nanos: u32) -> Self {
-        let counter = context.generate_sequence(seconds, nanos) as u64;
-        let usable_counter_bits = context.usable_bits();
+        Self::from_unix_128(context, seconds, nanos)
+    }
+
+    /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
+    pub fn from_unix_128(
+        context: impl ClockSequence<Output = impl Into<u128>>,
+        seconds: u64,
+        nanos: u32,
+    ) -> Self {
+        let counter = context.generate_sequence(seconds, nanos).into();
+        let usable_counter_bits = context.usable_bits() as u8;
 
         Timestamp {
             seconds,
@@ -149,7 +148,7 @@ impl Timestamp {
         )
     }
 
-    pub(crate) const fn counter(&self) -> (u64, usize) {
+    pub(crate) const fn counter(&self) -> (u128, u8) {
         (self.counter, self.usable_counter_bits)
     }
 
@@ -270,7 +269,9 @@ pub(crate) const fn encode_unix_timestamp_millis(
     let millis_high = ((millis >> 16) & 0xFFFF_FFFF) as u32;
     let millis_low = (millis & 0xFFFF) as u16;
 
-    let random_and_version = (counter_random_bytes[1] as u16
+    // TODO: Ensure we shift the value around the version, rather than overwrite it
+    // Otherwise there will be a patch of counters that don't observably change ordering
+    let counter_random_version = (counter_random_bytes[1] as u16
         | ((counter_random_bytes[0] as u16) << 8) & 0x0FFF)
         | (0x7 << 12);
 
@@ -285,7 +286,7 @@ pub(crate) const fn encode_unix_timestamp_millis(
     d4[6] = counter_random_bytes[8];
     d4[7] = counter_random_bytes[9];
 
-    Uuid::from_fields(millis_high, millis_low, random_and_version, &d4)
+    Uuid::from_fields(millis_high, millis_low, counter_random_version, &d4)
 }
 
 pub(crate) const fn decode_unix_timestamp_millis(uuid: &Uuid) -> u64 {
