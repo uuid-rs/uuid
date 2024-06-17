@@ -63,7 +63,8 @@ impl Timestamp {
     pub fn now_128(context: impl ClockSequence<Output = impl Into<u128>>) -> Self {
         let (seconds, nanos) = now();
 
-        let counter = context.generate_sequence(seconds, nanos).into();
+        let (counter, seconds, nanos) = context.generate_timestamp_sequence(seconds, nanos);
+        let counter = counter.into();
         let usable_counter_bits = context.usable_bits() as u8;
 
         Timestamp {
@@ -123,7 +124,8 @@ impl Timestamp {
         seconds: u64,
         nanos: u32,
     ) -> Self {
-        let counter = context.generate_sequence(seconds, nanos).into();
+        let (counter, seconds, nanos) = context.generate_timestamp_sequence(seconds, nanos);
+        let counter = counter.into();
         let usable_counter_bits = context.usable_bits() as u8;
 
         Timestamp {
@@ -363,7 +365,26 @@ pub trait ClockSequence {
     /// This method will be called each time a [`Timestamp`] is constructed.
     fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output;
 
-    /// The number of usable bits from the least significant bit in the result of [`ClockSequence::generate_sequence`].
+    /// Get the next value in the sequence, potentially also adjusting the timestamp.
+    ///
+    /// This method should be preferred over `generate_sequence`.
+    fn generate_timestamp_sequence(
+        &self,
+        seconds: u64,
+        subsec_nanos: u32,
+    ) -> (Self::Output, u64, u32) {
+        (
+            self.generate_sequence(seconds, subsec_nanos),
+            seconds,
+            subsec_nanos,
+        )
+    }
+
+    /// The number of usable bits from the least significant bit in the result of [`ClockSequence::generate_sequence`]
+    /// or [`ClockSequence::generate_timestamp_sequence`].
+    ///
+    /// The number of usable bits is not expected to change between calls. An implementation of `ClockSequence` should
+    /// always return the same value from this method.
     fn usable_bits(&self) -> usize
     where
         Self::Output: Sized,
@@ -377,6 +398,14 @@ impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T {
 
     fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
         (**self).generate_sequence(seconds, subsec_nanos)
+    }
+
+    fn generate_timestamp_sequence(
+        &self,
+        seconds: u64,
+        subsec_nanos: u32,
+    ) -> (Self::Output, u64, u32) {
+        (**self).generate_timestamp_sequence(seconds, subsec_nanos)
     }
 
     fn usable_bits(&self) -> usize
