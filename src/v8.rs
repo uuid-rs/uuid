@@ -24,7 +24,7 @@ impl Uuid {
     ///
     /// # References
     ///
-    /// * [Version 8 UUIDs in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-5.3)
+    /// * [UUID Version 8 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.8)
     pub fn new_v8(buf: [u8; 16]) -> Uuid {
         Builder::from_custom_bytes(buf).into_uuid()
     }
