@@ -111,6 +111,7 @@
 //!   This feature requires more dependencies to compile, but is just as suitable for
 //!   UUIDs as the default algorithm.
 //! * `bytemuck` - adds a `Pod` trait implementation to `Uuid` for byte manipulation
+//! * `bitcode` - adds the ability to encode and decode a UUID using `bitcode`.
 //!
 //! # Unstable features
 //!
@@ -437,6 +438,7 @@ pub enum Variant {
     all(uuid_unstable, feature = "zerocopy"),
     derive(AsBytes, FromBytes, FromZeroes, Unaligned)
 )]
+#[cfg_attr(feature = "bitcode", derive(bitcode::Encode, bitcode::Decode))]
 #[cfg_attr(
     feature = "borsh",
     derive(borsh_derive::BorshDeserialize, borsh_derive::BorshSerialize)
