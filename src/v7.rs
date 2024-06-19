@@ -8,10 +8,12 @@ use core::cmp;
 use crate::{rng, std::convert::TryInto, timestamp::Timestamp, Builder, Uuid};
 
 impl Uuid {
-    /// Create a new version 7 UUID using the current time value and random bytes.
+    /// Create a new version 7 UUID using the current time value.
     ///
     /// This method is a convenient alternative to [`Uuid::new_v7`] that uses the current system time
-    /// as the source timestamp.
+    /// as the source timestamp. UUIDs generated on the same thread will remain ordered based on the
+    /// order they were created in. UUIDs generated on multiple threads are not guaranteed to share a
+    /// global ordering within the same millisecond.
     #[cfg(feature = "std")]
     pub fn now_v7() -> Self {
         Self::new_v7(Timestamp::now_128(crate::timestamp::context::shared_context_v7()))
@@ -47,10 +49,10 @@ impl Uuid {
     /// UUIDs created together remain sortable:
     ///
     /// ```rust
-    /// # use uuid::{Uuid, Timestamp, Context};
-    /// let context = Context::new(42);
-    /// let uuid1 = Uuid::new_v7(Timestamp::from_unix(&context, 1497624119, 1234));
-    /// let uuid2 = Uuid::new_v7(Timestamp::from_unix(&context, 1497624119, 1234));
+    /// # use uuid::{Uuid, Timestamp, ContextV7};
+    /// let context = ContextV7::new();
+    /// let uuid1 = Uuid::new_v7(Timestamp::from_unix_128(&context, 1497624119, 1234));
+    /// let uuid2 = Uuid::new_v7(Timestamp::from_unix_128(&context, 1497624119, 1234));
     ///
     /// assert!(uuid1 < uuid2);
     /// ```

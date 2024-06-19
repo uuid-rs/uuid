@@ -241,6 +241,9 @@ pub use timestamp::{context::NoContext, ClockSequence, Timestamp};
 #[cfg(any(feature = "v1", feature = "v6"))]
 pub use timestamp::context::Context;
 
+#[cfg(feature = "v7")]
+pub use timestamp::context::ContextV7;
+
 #[cfg(feature = "v1")]
 #[doc(hidden)]
 // Soft-deprecated (Rust doesn't support deprecating re-exports)

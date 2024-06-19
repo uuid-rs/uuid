@@ -418,17 +418,259 @@ impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T {
 
 /// Default implementations for the [`ClockSequence`] trait.
 pub mod context {
-    use core::cell::Cell;
-
     use super::ClockSequence;
 
     #[cfg(any(feature = "v1", feature = "v6"))]
-    use atomic::{Atomic, Ordering};
+    mod v1_support {
+        use super::*;
+
+        use atomic::{Atomic, Ordering};
+
+        #[cfg(all(feature = "std", feature = "rng"))]
+        static CONTEXT: Context = Context {
+            count: Atomic::new(0),
+        };
+
+        #[cfg(all(feature = "std", feature = "rng"))]
+        static CONTEXT_INITIALIZED: Atomic<bool> = Atomic::new(false);
+
+        #[cfg(all(feature = "std", feature = "rng"))]
+        pub(crate) fn shared_context() -> &'static Context {
+            // If the context is in its initial state then assign it to a random value
+            // It doesn't matter if multiple threads observe `false` here and initialize the context
+            if CONTEXT_INITIALIZED
+                .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed)
+                .is_ok()
+            {
+                CONTEXT.count.store(crate::rng::u16(), Ordering::Release);
+            }
+
+            &CONTEXT
+        }
+
+        /// A thread-safe, wrapping counter that produces 14-bit values.
+        /// 
+        /// This type works by:
+        /// 
+        /// 1. Atomically incrementing the counter value for each timestamp.
+        /// 2. Wrapping the counter back to zero if it overflows its 14-bit storage.
+        ///
+        /// This type should be used when constructing version 1 and version 6 UUIDs.
+        /// 
+        /// This type should not be used when constructing version 7 UUIDs. When used to 
+        /// construct a version 7 UUID, the 14-bit counter will be padded with random data.
+        /// Counter overflows are more likely with a 14-bit counter than they are with a 
+        /// 42-bit counter when working at millisecond precision. This type doesn't attempt 
+        /// to adjust the timestamp on overflow.
+        #[derive(Debug)]
+        pub struct Context {
+            count: Atomic<u16>,
+        }
+
+        impl Context {
+            /// Construct a new context that's initialized with the given value.
+            ///
+            /// The starting value should be a random number, so that UUIDs from
+            /// different systems with the same timestamps are less likely to collide.
+            /// When the `rng` feature is enabled, prefer the [`Context::new_random`] method.
+            pub const fn new(count: u16) -> Self {
+                Self {
+                    count: Atomic::<u16>::new(count),
+                }
+            }
+
+            /// Construct a new context that's initialized with a random value.
+            #[cfg(feature = "rng")]
+            pub fn new_random() -> Self {
+                Self {
+                    count: Atomic::<u16>::new(crate::rng::u16()),
+                }
+            }
+        }
+
+        impl ClockSequence for Context {
+            type Output = u16;
+
+            fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
+                // RFC4122 reserves 2 bits of the clock sequence so the actual
+                // maximum value is smaller than `u16::MAX`. Since we unconditionally
+                // increment the clock sequence we want to wrap once it becomes larger
+                // than what we can represent in a "u14". Otherwise there'd be patches
+                // where the clock sequence doesn't change regardless of the timestamp
+                self.count.fetch_add(1, Ordering::AcqRel) & (u16::MAX >> 2)
+            }
+
+            fn usable_bits(&self) -> usize {
+                14
+            }
+        }
+    }
+
+    #[cfg(any(feature = "v1", feature = "v6"))]
+    pub use v1_support::*;
+
+    #[cfg(feature = "std")]
+    mod std_support {
+        use super::*;
+
+        use std::thread::LocalKey;
+
+        /// A wrapper for a context that uses thread-local storage.
+        pub struct ThreadLocalContext<C: 'static>(&'static LocalKey<C>);
+
+        impl<C> std::fmt::Debug for ThreadLocalContext<C> {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.debug_struct("ThreadLocalContext").finish_non_exhaustive()
+            }
+        }
+
+        impl<C: 'static> ThreadLocalContext<C> {
+            /// Wrap a thread-local container with a context.
+            pub const fn new(local_key: &'static LocalKey<C>) -> Self {
+                ThreadLocalContext(local_key)
+            }
+        }
+
+        impl<C: ClockSequence + 'static> ClockSequence for ThreadLocalContext<C> {
+            type Output = C::Output;
+        
+            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
+                self.0.with(|ctxt| ctxt.generate_sequence(seconds, subsec_nanos))
+            }
+            
+            fn generate_timestamp_sequence(
+                &self,
+                seconds: u64,
+                subsec_nanos: u32,
+            ) -> (Self::Output, u64, u32) {
+                self.0.with(|ctxt| ctxt.generate_timestamp_sequence(seconds, subsec_nanos))
+            }
+            
+            fn usable_bits(&self) -> usize {
+                self.0.with(|ctxt| ctxt.usable_bits())
+            }
+        }
+    }
+
+    #[cfg(feature = "std")]
+    pub use std_support::*;
+
+    #[cfg(feature = "v7")]
+    mod v7_support {
+        use super::*;
+
+        use core::cell::Cell;
+
+        #[cfg(feature = "std")]
+        use crate::timestamp::context::ThreadLocalContext;
+
+        #[cfg(feature = "std")]
+        thread_local! {
+            static THREAD_CONTEXT_V7: ContextV7 = ContextV7::new();
+        }
+
+        #[cfg(feature = "std")]
+        static CONTEXT_V7: ThreadLocalContext<ContextV7> = ThreadLocalContext::new(&THREAD_CONTEXT_V7);
+
+        #[cfg(feature = "std")]
+        pub(crate) fn shared_context_v7() -> &'static ThreadLocalContext<ContextV7> {
+            &CONTEXT_V7
+        }
+
+        /// A non-thread-safe, reseeding counter that produces 42-bit values.
+        /// 
+        /// This type works by:
+        /// 
+        /// 1. Reseeding the counter each millisecond with a random 41-bit value. The 42nd bit
+        ///    is left unset so the counter can safely increment over the millisecond.
+        /// 2. Wrapping the counter back to zero if it overflows its 42-bit storage and adding a 
+        ///    millisecond to the timestamp.
+        ///
+        /// This type can be used when constructing version 7 UUIDs. When used to construct a 
+        /// version 7 UUID, the 42-bit counter will be padded with random data. This type can 
+        /// be used to maintain ordering of UUIDs within the same millisecond.
+        ///
+        /// This type should not be used when constructing version 1 or version 6 UUIDs.
+        /// When used to construct a version 1 or version 6 UUID, only the 14 least significant
+        /// bits of the counter will be used.
+        #[derive(Debug)]
+        pub struct ContextV7 {
+            last_reseed: Cell<u64>,
+            counter: Cell<u64>,
+        }
+
+        impl ContextV7 {
+            /// Construct a new context that will reseed its counter on the first
+            /// non-zero timestamp it receives.
+            pub const fn new() -> Self {
+                ContextV7 {
+                    last_reseed: Cell::new(0),
+                    counter: Cell::new(0),
+                }
+            }
+        }
+
+        impl ClockSequence for ContextV7 {
+            type Output = u64;
+        
+            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
+                self.generate_timestamp_sequence(seconds, subsec_nanos).0
+            }
+
+            fn generate_timestamp_sequence(
+                &self,
+                seconds: u64,
+                subsec_nanos: u32,
+            ) -> (Self::Output, u64, u32) {
+                use std::time::Duration;
+
+                let millis = (seconds * 1000).saturating_add(subsec_nanos as u64 / 1_000_000);
+
+                if millis > self.last_reseed.get() {
+                    let counter = crate::rng::u64() & (u64::MAX >> 23);
+                    self.counter.set(counter);
+                    self.last_reseed.set(millis);
+
+                    (counter, seconds, subsec_nanos)
+                } else {
+                    // Guaranteed to never overflow u64
+                    let counter = self.counter.get() + 1;
+
+                    if counter > u64::MAX >> 22 {
+                        let counter = 0;
+                        self.counter.set(counter);
+                        self.last_reseed.set(millis + 1);
+
+                        let new_ts = Duration::new(seconds, subsec_nanos) + Duration::from_millis(1);
+
+                        (counter, new_ts.as_secs(), new_ts.subsec_nanos())
+                    } else {
+                        self.counter.set(counter);
+
+                        (counter, seconds, subsec_nanos)
+                    }
+                }
+            }
+
+            fn usable_bits(&self) -> usize {
+                42
+            }
+        }
+    }
+
+    #[cfg(feature = "v7")]
+    pub use v7_support::*;
 
     /// An empty counter that will always return the value `0`.
     ///
-    /// This type should be used when constructing timestamps for version 7 UUIDs,
-    /// since they don't need a counter for uniqueness.
+    /// This type can be used when constructing version 7 UUIDs. When used to 
+    /// construct a version 7 UUID, the entire counter segment of the UUID will be 
+    /// filled with a random value. This type does not maintain ordering of UUIDs 
+    /// within a millisecond but is efficient.
+    /// 
+    /// This type should not be used when constructing version 1 or version 6 UUIDs.
+    /// When used to construct a version 1 or version 6 UUID, the counter
+    /// segment will remain zero.
     #[derive(Debug, Clone, Copy, Default)]
     pub struct NoContext;
 
@@ -441,206 +683,6 @@ pub mod context {
 
         fn usable_bits(&self) -> usize {
             0
-        }
-    }
-
-    /// A wrapper for a context that uses thread-local storage.
-    #[cfg(feature = "std")]
-    pub struct ThreadLocalContext<C: 'static>(&'static std::thread::LocalKey<C>);
-
-    #[cfg(feature = "std")]
-    impl<C> std::fmt::Debug for ThreadLocalContext<C> {
-        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-            f.debug_struct("ThreadLocalContext").finish_non_exhaustive()
-        }
-    }
-
-    #[cfg(feature = "std")]
-    impl<C: 'static> ThreadLocalContext<C> {
-        /// Wrap a thread-local container with a context.
-        pub const fn new(local_key: &'static std::thread::LocalKey<C>) -> Self {
-            ThreadLocalContext(local_key)
-        }
-    }
-
-    #[cfg(feature = "std")]
-    impl<C: ClockSequence + 'static> ClockSequence for ThreadLocalContext<C> {
-        type Output = C::Output;
-    
-        fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
-            self.0.with(|ctxt| ctxt.generate_sequence(seconds, subsec_nanos))
-        }
-        
-        fn generate_timestamp_sequence(
-            &self,
-            seconds: u64,
-            subsec_nanos: u32,
-        ) -> (Self::Output, u64, u32) {
-            self.0.with(|ctxt| ctxt.generate_timestamp_sequence(seconds, subsec_nanos))
-        }
-        
-        fn usable_bits(&self) -> usize {
-            self.0.with(|ctxt| ctxt.usable_bits())
-        }
-    }
-
-    #[cfg(all(any(feature = "v1", feature = "v6"), feature = "std", feature = "rng"))]
-    static CONTEXT: Context = Context {
-        count: Atomic::new(0),
-    };
-
-    #[cfg(all(any(feature = "v1", feature = "v6"), feature = "std", feature = "rng"))]
-    static CONTEXT_INITIALIZED: Atomic<bool> = Atomic::new(false);
-
-    #[cfg(all(any(feature = "v1", feature = "v6"), feature = "std", feature = "rng"))]
-    pub(crate) fn shared_context() -> &'static Context {
-        // If the context is in its initial state then assign it to a random value
-        // It doesn't matter if multiple threads observe `false` here and initialize the context
-        if CONTEXT_INITIALIZED
-            .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed)
-            .is_ok()
-        {
-            CONTEXT.count.store(crate::rng::u16(), Ordering::Release);
-        }
-
-        &CONTEXT
-    }
-
-    /// A thread-safe, wrapping counter that produces 14-bit numbers.
-    ///
-    /// This type should be used when constructing version 1 and version 6 UUIDs.
-    #[derive(Debug)]
-    #[cfg(any(feature = "v1", feature = "v6"))]
-    pub struct Context {
-        count: Atomic<u16>,
-    }
-
-    #[cfg(any(feature = "v1", feature = "v6"))]
-    impl Context {
-        /// Construct a new context that's initialized with the given value.
-        ///
-        /// The starting value should be a random number, so that UUIDs from
-        /// different systems with the same timestamps are less likely to collide.
-        /// When the `rng` feature is enabled, prefer the [`Context::new_random`] method.
-        pub const fn new(count: u16) -> Self {
-            Self {
-                count: Atomic::<u16>::new(count),
-            }
-        }
-
-        /// Construct a new context that's initialized with a random value.
-        #[cfg(feature = "rng")]
-        pub fn new_random() -> Self {
-            Self {
-                count: Atomic::<u16>::new(crate::rng::u16()),
-            }
-        }
-    }
-
-    #[cfg(any(feature = "v1", feature = "v6"))]
-    impl ClockSequence for Context {
-        type Output = u16;
-
-        fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
-            // RFC4122 reserves 2 bits of the clock sequence so the actual
-            // maximum value is smaller than `u16::MAX`. Since we unconditionally
-            // increment the clock sequence we want to wrap once it becomes larger
-            // than what we can represent in a "u14". Otherwise there'd be patches
-            // where the clock sequence doesn't change regardless of the timestamp
-            self.count.fetch_add(1, Ordering::AcqRel) & (u16::MAX >> 2)
-        }
-
-        fn usable_bits(&self) -> usize {
-            14
-        }
-    }
-
-    #[cfg(feature = "v7")]
-    thread_local! {
-        static THREAD_CONTEXT_V7: ContextV7 = ContextV7::new();
-    }
-
-    #[cfg(feature = "v7")]
-    static CONTEXT_V7: ThreadLocalContext<ContextV7> = ThreadLocalContext(&THREAD_CONTEXT_V7);
-
-    #[cfg(feature = "v7")]
-    pub(crate) fn shared_context_v7() -> &'static ThreadLocalContext<ContextV7> {
-        &CONTEXT_V7
-    }
-
-    /// A non-thread-safe, wrapping counter that produces 42-bit numbers.
-    ///
-    /// This type should be used when constructing version 7 UUIDs where strict
-    /// ordering is required.
-    /// 
-    /// This type should not be used when constructing version 1 or version 6 UUIDs.
-    #[cfg(feature = "v7")]
-    #[derive(Debug)]
-    pub struct ContextV7 {
-        last_reseed: Cell<u64>,
-        counter: Cell<u64>,
-    }
-
-    impl ContextV7 {
-        /// Construct a new context that will reseed its counter on the first
-        /// non-zero timestamp it receives.
-        pub const fn new() -> Self {
-            ContextV7 {
-                last_reseed: Cell::new(0),
-                counter: Cell::new(0),
-            }
-        }
-    }
-
-    #[cfg(feature = "v7")]
-    impl ClockSequence for ContextV7 {
-        type Output = u64;
-    
-        fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
-            self.generate_timestamp_sequence(seconds, subsec_nanos).0
-        }
-
-        fn generate_timestamp_sequence(
-            &self,
-            seconds: u64,
-            subsec_nanos: u32,
-        ) -> (Self::Output, u64, u32) {
-            use std::time::Duration;
-
-            let reseed = || {
-                let counter = crate::rng::u64() & (u64::MAX >> 23);
-                self.counter.set(counter);
-
-                counter
-            };
-
-            let millis = (seconds * 1000).saturating_add(subsec_nanos as u64 / 1_000_000);
-
-            // TODO: Allow some grace period so we don't reseed every millisecond
-            if millis != self.last_reseed.get() {
-                let counter = reseed();
-
-                (counter, seconds, subsec_nanos)
-            } else {
-                // Guaranteed to never overflow u64
-                let counter = self.counter.get() + 1;
-
-                if counter > u64::MAX >> 22 {
-                    let counter = reseed();
-
-                    let new_ts = Duration::new(seconds, subsec_nanos) + Duration::from_millis(1);
-
-                    (counter, new_ts.as_secs(), new_ts.subsec_nanos())
-                } else {
-                    self.counter.set(counter);
-
-                    (counter, seconds, subsec_nanos)
-                }
-            }
-        }
-
-        fn usable_bits(&self) -> usize {
-            42
         }
     }
 }
