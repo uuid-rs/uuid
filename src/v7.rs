@@ -14,7 +14,7 @@ impl Uuid {
     /// as the source timestamp.
     #[cfg(feature = "std")]
     pub fn now_v7() -> Self {
-        Self::new_v7(Timestamp::now(crate::NoContext))
+        Self::new_v7(Timestamp::now_128(crate::timestamp::context::shared_context_v7()))
     }
 
     /// Create a new version 7 UUID using a time value and random bytes.

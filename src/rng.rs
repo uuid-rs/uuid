@@ -20,7 +20,7 @@ pub(crate) fn bytes() -> [u8; 16] {
 
 #[cfg(any(feature = "v4", feature = "v7"))]
 pub(crate) fn u128() -> u128 {
-    u128::from_be_bytes(bytes())
+    u128::from_ne_bytes(bytes())
 }
 
 #[cfg(any(feature = "v1", feature = "v6"))]
@@ -34,7 +34,27 @@ pub(crate) fn u16() -> u16 {
             panic!("could not retrieve random bytes for uuid: {}", err)
         });
 
-        ((bytes[0] as u16) << 8) | (bytes[1] as u16)
+        u16::from_ne_bytes(bytes)
+    }
+
+    #[cfg(feature = "fast-rng")]
+    {
+        rand::random()
+    }
+}
+
+#[cfg(feature = "v7")]
+pub(crate) fn u64() -> u64 {
+    #[cfg(not(feature = "fast-rng"))]
+    {
+        let mut bytes = [0u8; 8];
+
+        getrandom::getrandom(&mut bytes).unwrap_or_else(|err| {
+            // NB: getrandom::Error has no source; this is adequate display
+            panic!("could not retrieve random bytes for uuid: {}", err)
+        });
+
+        u64::from_ne_bytes(bytes)
     }
 
     #[cfg(feature = "fast-rng")]
