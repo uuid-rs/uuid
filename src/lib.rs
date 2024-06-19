@@ -30,8 +30,7 @@
 //! practical purposes, it can be assumed that an unintentional collision would
 //! be extremely unlikely.
 //!
-//! UUIDs have a number of standardized encodings that are specified in [RFC4122](http://tools.ietf.org/html/rfc4122),
-//! with recent additions [in draft](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04).
+//! UUIDs have a number of standardized encodings that are specified in [RFC 9562](https://www.ietf.org/rfc/rfc9562.html).
 //!
 //! # Getting started
 //!
@@ -83,8 +82,6 @@
 //! * `v6` - Version 6 UUIDs using a timestamp and monotonic counter.
 //! * `v7` - Version 7 UUIDs using a Unix timestamp.
 //! * `v8` - Version 8 UUIDs using user-defined data.
-//!
-//! Versions that are in draft are also supported. See the _unstable features_ section for details.
 //!
 //! This library also includes a [`Builder`] type that can be used to help construct UUIDs of any
 //! version without any additional dependencies or features. It's a lower-level API than [`Uuid`]
@@ -202,8 +199,7 @@
 //! # References
 //!
 //! * [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier)
-//! * [RFC4122: A Universally Unique Identifier (UUID) URN Namespace](http://tools.ietf.org/html/rfc4122)
-//! * [Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04)
+//! * [RFC 9562: Universally Unique IDentifiers (UUID)](https://www.ietf.org/rfc/rfc9562.html).
 //!
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 //! [`cargo-web`]: https://crates.io/crates/cargo-web
@@ -298,7 +294,7 @@ pub type Bytes = [u8; 16];
 ///
 /// # References
 ///
-/// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
+/// * [Version Field in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-4.2)
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[non_exhaustive]
 #[repr(u8)]
@@ -329,14 +325,15 @@ pub enum Version {
 ///
 /// # References
 ///
-/// * [Variant in RFC4122](http://tools.ietf.org/html/rfc4122#section-4.1.1)
+/// * [Variant Field in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-4.1)
 #[derive(Clone, Copy, Debug, PartialEq)]
 #[non_exhaustive]
 #[repr(u8)]
 pub enum Variant {
     /// Reserved by the NCS for backward compatibility.
     NCS = 0u8,
-    /// As described in the RFC4122 Specification (default).
+    /// As described in the RFC 9562 Specification (default).
+    /// (for backward compatibility it is not yet renamed)
     RFC4122,
     /// Reserved by Microsoft for backward compatibility.
     Microsoft,
@@ -501,7 +498,7 @@ impl Uuid {
     ///
     /// # References
     ///
-    /// * [Variant in RFC4122](http://tools.ietf.org/html/rfc4122#section-4.1.1)
+    /// * [Variant Field in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-4.1)
     pub const fn get_variant(&self) -> Variant {
         match self.as_bytes()[8] {
             x if x & 0x80 == 0x00 => Variant::NCS,
@@ -536,7 +533,7 @@ impl Uuid {
     ///
     /// # References
     ///
-    /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
+    /// * [Version Field in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-4.2)
     pub const fn get_version_num(&self) -> usize {
         (self.as_bytes()[6] >> 4) as usize
     }
@@ -566,7 +563,7 @@ impl Uuid {
     ///
     /// # References
     ///
-    /// * [Version in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.3)
+    /// * [Version Field in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-4.2)
     pub const fn get_version(&self) -> Option<Version> {
         match self.get_version_num() {
             0 if self.is_nil() => Some(Version::Nil),

@@ -17,12 +17,13 @@
 //!
 //! # References
 //!
-//! * [Timestamp in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4)
-//! * [Timestamp in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-6.1)
+//! * [UUID Version 1 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.1)
+//! * [UUID Version 7 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.7)
+//! * [Timestamp Considerations in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.1)
 
 use crate::Uuid;
 
-/// The number of 100 nanosecond ticks between the RFC4122 epoch
+/// The number of 100 nanosecond ticks between the RFC 9562 epoch
 /// (`1582-10-15 00:00:00`) and the Unix epoch (`1970-01-01 00:00:00`).
 pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 
@@ -34,9 +35,8 @@ pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 ///
 /// # References
 ///
-/// * [Timestamp in RFC4122](https://www.rfc-editor.org/rfc/rfc4122#section-4.1.4)
-/// * [Timestamp in Draft RFC: New UUID Formats, Version 4](https://datatracker.ietf.org/doc/html/draft-peabody-dispatch-new-uuid-format-04#section-6.1)
-/// * [Clock Sequence in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.5)
+/// * [Timestamp Considerations in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.1)
+/// * [UUID Generator States in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.3)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Timestamp {
     seconds: u64,
@@ -75,12 +75,12 @@ impl Timestamp {
         }
     }
 
-    /// Construct a `Timestamp` from an RFC4122 timestamp and counter, as used
+    /// Construct a `Timestamp` from an RFC 9562 timestamp and counter, as used
     /// in versions 1 and 6 UUIDs.
     ///
     /// # Overflow
     ///
-    /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
+    /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
     pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
         let (seconds, nanos) = Self::rfc4122_to_unix(ticks);
@@ -136,12 +136,12 @@ impl Timestamp {
         }
     }
 
-    /// Get the value of the timestamp as an RFC4122 timestamp and counter,
+    /// Get the value of the timestamp as an RFC 9562 timestamp and counter,
     /// as used in versions 1 and 6 UUIDs.
     ///
     /// # Overflow
     ///
-    /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
+    /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
     pub const fn to_rfc4122(&self) -> (u64, u16) {
         (
@@ -158,7 +158,7 @@ impl Timestamp {
     ///
     /// # Overflow
     ///
-    /// If conversion from RFC4122 ticks to the internal timestamp format would overflow
+    /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
     pub const fn to_unix(&self) -> (u64, u32) {
         (self.seconds, self.nanos)
@@ -355,7 +355,9 @@ fn now() -> (u64, u32) {
 ///
 /// # References
 ///
-/// * [Clock Sequence in RFC4122](https://datatracker.ietf.org/doc/html/rfc4122#section-4.1.5)
+/// * [UUID Version 1 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.1)
+/// * [UUID Version 6 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.6)
+/// * [UUID Generator States in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.3)
 pub trait ClockSequence {
     /// The type of sequence returned by this counter.
     type Output;
@@ -449,18 +451,18 @@ pub mod context {
         }
 
         /// A thread-safe, wrapping counter that produces 14-bit values.
-        /// 
+        ///
         /// This type works by:
-        /// 
+        ///
         /// 1. Atomically incrementing the counter value for each timestamp.
         /// 2. Wrapping the counter back to zero if it overflows its 14-bit storage.
         ///
         /// This type should be used when constructing version 1 and version 6 UUIDs.
-        /// 
-        /// This type should not be used when constructing version 7 UUIDs. When used to 
+        ///
+        /// This type should not be used when constructing version 7 UUIDs. When used to
         /// construct a version 7 UUID, the 14-bit counter will be padded with random data.
-        /// Counter overflows are more likely with a 14-bit counter than they are with a 
-        /// 42-bit counter when working at millisecond precision. This type doesn't attempt 
+        /// Counter overflows are more likely with a 14-bit counter than they are with a
+        /// 42-bit counter when working at millisecond precision. This type doesn't attempt
         /// to adjust the timestamp on overflow.
         #[derive(Debug)]
         pub struct Context {
@@ -533,19 +535,21 @@ pub mod context {
 
         impl<C: ClockSequence + 'static> ClockSequence for ThreadLocalContext<C> {
             type Output = C::Output;
-        
+
             fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
-                self.0.with(|ctxt| ctxt.generate_sequence(seconds, subsec_nanos))
+                self.0
+                    .with(|ctxt| ctxt.generate_sequence(seconds, subsec_nanos))
             }
-            
+
             fn generate_timestamp_sequence(
                 &self,
                 seconds: u64,
                 subsec_nanos: u32,
             ) -> (Self::Output, u64, u32) {
-                self.0.with(|ctxt| ctxt.generate_timestamp_sequence(seconds, subsec_nanos))
+                self.0
+                    .with(|ctxt| ctxt.generate_timestamp_sequence(seconds, subsec_nanos))
             }
-            
+
             fn usable_bits(&self) -> usize {
                 self.0.with(|ctxt| ctxt.usable_bits())
             }
@@ -570,7 +574,8 @@ pub mod context {
         }
 
         #[cfg(feature = "std")]
-        static CONTEXT_V7: ThreadLocalContext<ContextV7> = ThreadLocalContext::new(&THREAD_CONTEXT_V7);
+        static CONTEXT_V7: ThreadLocalContext<ContextV7> =
+            ThreadLocalContext::new(&THREAD_CONTEXT_V7);
 
         #[cfg(feature = "std")]
         pub(crate) fn shared_context_v7() -> &'static ThreadLocalContext<ContextV7> {
@@ -578,16 +583,16 @@ pub mod context {
         }
 
         /// A non-thread-safe, reseeding counter that produces 42-bit values.
-        /// 
+        ///
         /// This type works by:
-        /// 
+        ///
         /// 1. Reseeding the counter each millisecond with a random 41-bit value. The 42nd bit
         ///    is left unset so the counter can safely increment over the millisecond.
-        /// 2. Wrapping the counter back to zero if it overflows its 42-bit storage and adding a 
+        /// 2. Wrapping the counter back to zero if it overflows its 42-bit storage and adding a
         ///    millisecond to the timestamp.
         ///
-        /// This type can be used when constructing version 7 UUIDs. When used to construct a 
-        /// version 7 UUID, the 42-bit counter will be padded with random data. This type can 
+        /// This type can be used when constructing version 7 UUIDs. When used to construct a
+        /// version 7 UUID, the 42-bit counter will be padded with random data. This type can
         /// be used to maintain ordering of UUIDs within the same millisecond.
         ///
         /// This type should not be used when constructing version 1 or version 6 UUIDs.
@@ -612,7 +617,7 @@ pub mod context {
 
         impl ClockSequence for ContextV7 {
             type Output = u64;
-        
+
             fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
                 self.generate_timestamp_sequence(seconds, subsec_nanos).0
             }
@@ -641,7 +646,8 @@ pub mod context {
                         self.counter.set(counter);
                         self.last_reseed.set(millis + 1);
 
-                        let new_ts = Duration::new(seconds, subsec_nanos) + Duration::from_millis(1);
+                        let new_ts =
+                            Duration::new(seconds, subsec_nanos) + Duration::from_millis(1);
 
                         (counter, new_ts.as_secs(), new_ts.subsec_nanos())
                     } else {
@@ -663,11 +669,11 @@ pub mod context {
 
     /// An empty counter that will always return the value `0`.
     ///
-    /// This type can be used when constructing version 7 UUIDs. When used to 
-    /// construct a version 7 UUID, the entire counter segment of the UUID will be 
-    /// filled with a random value. This type does not maintain ordering of UUIDs 
+    /// This type can be used when constructing version 7 UUIDs. When used to
+    /// construct a version 7 UUID, the entire counter segment of the UUID will be
+    /// filled with a random value. This type does not maintain ordering of UUIDs
     /// within a millisecond but is efficient.
-    /// 
+    ///
     /// This type should not be used when constructing version 1 or version 6 UUIDs.
     /// When used to construct a version 1 or version 6 UUID, the counter
     /// segment will remain zero.
