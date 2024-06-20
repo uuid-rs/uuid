@@ -1,5 +1,5 @@
 #[cfg(any(feature = "v4", feature = "v7"))]
-pub(crate) fn bytes() -> [u8; 16] {
+pub(crate) fn u128() -> u128 {
     #[cfg(not(feature = "fast-rng"))]
     {
         let mut bytes = [0u8; 16];
@@ -9,18 +9,13 @@ pub(crate) fn bytes() -> [u8; 16] {
             panic!("could not retrieve random bytes for uuid: {}", err)
         });
 
-        bytes
+        u128::from_ne_bytes(bytes)
     }
 
     #[cfg(feature = "fast-rng")]
     {
         rand::random()
     }
-}
-
-#[cfg(any(feature = "v4", feature = "v7"))]
-pub(crate) fn u128() -> u128 {
-    u128::from_ne_bytes(bytes())
 }
 
 #[cfg(any(feature = "v1", feature = "v6"))]

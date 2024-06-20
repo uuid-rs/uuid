@@ -40,13 +40,13 @@ pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Timestamp {
     seconds: u64,
-    nanos: u32,
+    subsec_nanos: u32,
     counter: u128,
     usable_counter_bits: u8,
 }
 
 impl Timestamp {
-    /// Get a timestamp representing the current system time.
+    /// Get a timestamp representing the current system time and up to a 16-bit counter.
     ///
     /// This method defers to the standard library's `SystemTime` type.
     ///
@@ -58,24 +58,24 @@ impl Timestamp {
         Self::now_128(context)
     }
 
-    /// Get a timestamp representing the current system time.
+    /// Get a timestamp representing the current system time and up to a 128-bit counter.
     #[cfg(feature = "std")]
     pub fn now_128(context: impl ClockSequence<Output = impl Into<u128>>) -> Self {
-        let (seconds, nanos) = now();
+        let (seconds, subsec_nanos) = now();
 
-        let (counter, seconds, nanos) = context.generate_timestamp_sequence(seconds, nanos);
+        let (counter, seconds, subsec_nanos) = context.generate_timestamp_sequence(seconds, subsec_nanos);
         let counter = counter.into();
         let usable_counter_bits = context.usable_bits() as u8;
 
         Timestamp {
             seconds,
-            nanos,
+            subsec_nanos,
             counter,
             usable_counter_bits,
         }
     }
 
-    /// Construct a `Timestamp` from an RFC 9562 timestamp and counter, as used
+    /// Construct a `Timestamp` from an RFC 9562 timestamp and 16-bit counter, as used
     /// in versions 1 and 6 UUIDs.
     ///
     /// # Overflow
@@ -83,54 +83,54 @@ impl Timestamp {
     /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
     pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
-        let (seconds, nanos) = Self::rfc4122_to_unix(ticks);
+        let (seconds, subsec_nanos) = Self::rfc4122_to_unix(ticks);
 
         Timestamp {
             seconds,
-            nanos,
+            subsec_nanos,
             counter: counter as u128,
             usable_counter_bits: 16,
         }
     }
 
-    /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
-    pub const fn from_unix_time(seconds: u64, nanos: u32, counter: u16) -> Self {
-        Self::from_unix_time_128(seconds, nanos, counter as u128, 16)
+    /// Construct a `Timestamp` from a Unix timestamp and a 16-bit counter, as used in version 7 UUIDs.
+    pub const fn from_unix_time(seconds: u64, subsec_nanos: u32, counter: u16) -> Self {
+        Self::from_unix_time_128(seconds, subsec_nanos, counter as u128, 16)
     }
 
-    /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
+    /// Construct a `Timestamp` from a Unix timestamp and up to a 128-bit counter, as used in version 7 UUIDs.
     pub const fn from_unix_time_128(
         seconds: u64,
-        nanos: u32,
+        subsec_nanos: u32,
         counter: u128,
         usable_counter_bits: u8,
     ) -> Self {
         Timestamp {
             seconds,
-            nanos,
+            subsec_nanos,
             counter,
             usable_counter_bits,
         }
     }
 
-    /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
+    /// Construct a `Timestamp` from a Unix timestamp and up to a 16-bit counter, as used in version 7 UUIDs.
     pub fn from_unix(context: impl ClockSequence<Output = u16>, seconds: u64, nanos: u32) -> Self {
         Self::from_unix_128(context, seconds, nanos)
     }
 
-    /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
+    /// Construct a `Timestamp` from a Unix timestamp and up to a 128-bit counter, as used in version 7 UUIDs.
     pub fn from_unix_128(
         context: impl ClockSequence<Output = impl Into<u128>>,
         seconds: u64,
-        nanos: u32,
+        subsec_nanos: u32,
     ) -> Self {
-        let (counter, seconds, nanos) = context.generate_timestamp_sequence(seconds, nanos);
+        let (counter, seconds, subsec_nanos) = context.generate_timestamp_sequence(seconds, subsec_nanos);
         let counter = counter.into();
         let usable_counter_bits = context.usable_bits() as u8;
 
         Timestamp {
             seconds,
-            nanos,
+            subsec_nanos,
             counter,
             usable_counter_bits,
         }
@@ -145,23 +145,20 @@ impl Timestamp {
     /// it will wrap.
     pub const fn to_rfc4122(&self) -> (u64, u16) {
         (
-            Self::unix_to_rfc4122_ticks(self.seconds, self.nanos),
+            Self::unix_to_rfc4122_ticks(self.seconds, self.subsec_nanos),
             self.counter as u16,
         )
     }
 
+    // NOTE: This method is not public; the usable counter bits are lost in a version 7 UUID
+    // so can't be reliably recovered.
     pub(crate) const fn counter(&self) -> (u128, u8) {
         (self.counter, self.usable_counter_bits)
     }
 
     /// Get the value of the timestamp as a Unix timestamp, as used in version 7 UUIDs.
-    ///
-    /// # Overflow
-    ///
-    /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
-    /// it will wrap.
     pub const fn to_unix(&self) -> (u64, u32) {
-        (self.seconds, self.nanos)
+        (self.seconds, self.subsec_nanos)
     }
 
     const fn unix_to_rfc4122_ticks(seconds: u64, nanos: u32) -> u64 {
@@ -271,8 +268,6 @@ pub(crate) const fn encode_unix_timestamp_millis(
     let millis_high = ((millis >> 16) & 0xFFFF_FFFF) as u32;
     let millis_low = (millis & 0xFFFF) as u16;
 
-    // TODO: Ensure we shift the value around the version, rather than overwrite it
-    // Otherwise there will be a patch of counters that don't observably change ordering
     let counter_random_version = (counter_random_bytes[1] as u16
         | ((counter_random_bytes[0] as u16) << 8) & 0x0FFF)
         | (0x7 << 12);

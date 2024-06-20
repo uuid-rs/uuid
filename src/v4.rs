@@ -31,7 +31,9 @@ impl Uuid {
     /// [`getrandom`]: https://crates.io/crates/getrandom
     /// [from_random_bytes]: struct.Builder.html#method.from_random_bytes
     pub fn new_v4() -> Uuid {
-        crate::Builder::from_random_bytes(crate::rng::bytes()).into_uuid()
+        // This is an optimized method for generating random UUIDs that just masks
+        // out the bits for the version and variant and sets them both together
+        Uuid::from_u128(crate::rng::u128() & 0xFFFFFFFFFFFF4FFFBFFFFFFFFFFFFFFF | 0x40008000000000000000)
     }
 }
 
