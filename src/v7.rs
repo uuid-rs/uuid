@@ -3,8 +3,6 @@
 //! Note that you need to enable the `v7` Cargo feature
 //! in order to use this module.
 
-use core::cmp;
-
 use crate::{rng, std::convert::TryInto, timestamp::Timestamp, Builder, Uuid};
 
 impl Uuid {
@@ -68,13 +66,26 @@ impl Uuid {
 
         let mut counter_and_random = rng::u128();
 
-        let (counter, counter_bits) = ts.counter();
+        let (mut counter, counter_bits) = ts.counter();
 
-        counter_and_random &= u128::MAX
-            .overflowing_shr(cmp::min(128, counter_bits as u32))
-            .0;
+        debug_assert!(counter_bits <= 128);
+
+        let mut counter_bits = counter_bits as u32;
+
+        // If the counter intersects the variant field then shift around it.
+        // This ensures that any bits set in the counter that would intersect
+        // the variant are still preserved
+        if counter_bits > 12 {
+            let mask = u128::MAX << (counter_bits - 12);
+
+            counter = (counter & !mask) | ((counter & mask) << 2);
+
+            counter_bits += 2;
+        }
+
+        counter_and_random &= u128::MAX.overflowing_shr(counter_bits).0;
         counter_and_random |= counter
-            .overflowing_shl(128u8.saturating_sub(counter_bits) as u32)
+            .overflowing_shl(128u32.saturating_sub(counter_bits))
             .0;
 
         Builder::from_unix_timestamp_millis(

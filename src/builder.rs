@@ -609,9 +609,11 @@ impl Builder {
         ))
     }
 
-    /// Creates a `Builder` for a version 7 UUID using the supplied Unix timestamp and random bytes.
+    /// Creates a `Builder` for a version 7 UUID using the supplied Unix timestamp and counter bytes.
     ///
-    /// This method assumes the bytes are already sufficiently random.
+    /// This method will set the variant field within the counter bytes without attempting to shift
+    /// the data around it. Callers using the counter as a monotonic value should be careful not to
+    /// store significant data in the 2 least significant bits of the 3rd byte.
     ///
     /// # Examples
     ///

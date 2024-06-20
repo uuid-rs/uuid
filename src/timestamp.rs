@@ -21,6 +21,8 @@
 //! * [UUID Version 7 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.7)
 //! * [Timestamp Considerations in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.1)
 
+use core::cmp;
+
 use crate::Uuid;
 
 /// The number of 100 nanosecond ticks between the RFC 9562 epoch
@@ -362,11 +364,15 @@ pub trait ClockSequence {
     /// Get the next value in the sequence to feed into a timestamp.
     ///
     /// This method will be called each time a [`Timestamp`] is constructed.
+    ///
+    /// Any bits beyond [`ClockSequence::usable_bits`] in the output must be unset.
     fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output;
 
     /// Get the next value in the sequence, potentially also adjusting the timestamp.
     ///
     /// This method should be preferred over `generate_sequence`.
+    ///
+    /// Any bits beyond [`ClockSequence::usable_bits`] in the output must be unset.
     fn generate_timestamp_sequence(
         &self,
         seconds: u64,
@@ -382,13 +388,15 @@ pub trait ClockSequence {
     /// The number of usable bits from the least significant bit in the result of [`ClockSequence::generate_sequence`]
     /// or [`ClockSequence::generate_timestamp_sequence`].
     ///
+    /// The number of usable bits must not exceed 128.
+    ///
     /// The number of usable bits is not expected to change between calls. An implementation of `ClockSequence` should
     /// always return the same value from this method.
     fn usable_bits(&self) -> usize
     where
         Self::Output: Sized,
     {
-        core::mem::size_of::<Self::Output>()
+        cmp::min(128, core::mem::size_of::<Self::Output>())
     }
 }
 
