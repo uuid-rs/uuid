@@ -63,7 +63,8 @@ impl Timestamp {
     pub fn now_128(context: impl ClockSequence<Output = impl Into<u128>>) -> Self {
         let (seconds, subsec_nanos) = now();
 
-        let (counter, seconds, subsec_nanos) = context.generate_timestamp_sequence(seconds, subsec_nanos);
+        let (counter, seconds, subsec_nanos) =
+            context.generate_timestamp_sequence(seconds, subsec_nanos);
         let counter = counter.into();
         let usable_counter_bits = context.usable_bits() as u8;
 
@@ -124,7 +125,8 @@ impl Timestamp {
         seconds: u64,
         subsec_nanos: u32,
     ) -> Self {
-        let (counter, seconds, subsec_nanos) = context.generate_timestamp_sequence(seconds, subsec_nanos);
+        let (counter, seconds, subsec_nanos) =
+            context.generate_timestamp_sequence(seconds, subsec_nanos);
         let counter = counter.into();
         let usable_counter_bits = context.usable_bits() as u8;
 
@@ -626,17 +628,40 @@ pub mod context {
 
                 let millis = (seconds * 1000).saturating_add(subsec_nanos as u64 / 1_000_000);
 
-                if millis > self.last_reseed.get() {
+                let last_reseed = self.last_reseed.get();
+
+                // If the observed system time has shifted forwards then regenerate the counter
+                if millis > last_reseed {
+                    // Leave the most significant bit unset
+                    // This guarantees the counter has at least 2,199,023,255,552
+                    // values before it will overflow, which is exceptionally unlikely
+                    // even in the worst case
                     let counter = crate::rng::u64() & (u64::MAX >> 23);
                     self.counter.set(counter);
                     self.last_reseed.set(millis);
 
                     (counter, seconds, subsec_nanos)
-                } else {
+                }
+                // If the observed system time has not shifted forwards then increment the counter
+                else {
+                    // If the incoming timestamp is earlier than the last observed one then
+                    // use it instead. This may happen if the system clock jitters, or if the counter
+                    // has wrapped and the timestamp is artificially incremented
+                    let millis = last_reseed;
+
                     // Guaranteed to never overflow u64
                     let counter = self.counter.get() + 1;
 
-                    if counter > u64::MAX >> 22 {
+                    // If the counter has not overflowed its 42-bit storage then return it
+                    if counter <= u64::MAX >> 22 {
+                        self.counter.set(counter);
+
+                        (counter, seconds, subsec_nanos)
+                    }
+                    // Unlikely: If the counter has overflowed its 42-bit storage then wrap it
+                    // and increment the timestamp. Until the observed system time shifts past
+                    // this incremented value, all timestamps will use it to maintain monotonicity
+                    else {
                         let counter = 0;
                         self.counter.set(counter);
                         self.last_reseed.set(millis + 1);
@@ -645,10 +670,6 @@ pub mod context {
                             Duration::new(seconds, subsec_nanos) + Duration::from_millis(1);
 
                         (counter, new_ts.as_secs(), new_ts.subsec_nanos())
-                    } else {
-                        self.counter.set(counter);
-
-                        (counter, seconds, subsec_nanos)
                     }
                 }
             }

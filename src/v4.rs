@@ -33,7 +33,9 @@ impl Uuid {
     pub fn new_v4() -> Uuid {
         // This is an optimized method for generating random UUIDs that just masks
         // out the bits for the version and variant and sets them both together
-        Uuid::from_u128(crate::rng::u128() & 0xFFFFFFFFFFFF4FFFBFFFFFFFFFFFFFFF | 0x40008000000000000000)
+        Uuid::from_u128(
+            crate::rng::u128() & 0xFFFFFFFFFFFF4FFFBFFFFFFFFFFFFFFF | 0x40008000000000000000,
+        )
     }
 }
 
