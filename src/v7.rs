@@ -9,9 +9,8 @@ impl Uuid {
     /// Create a new version 7 UUID using the current time value.
     ///
     /// This method is a convenient alternative to [`Uuid::new_v7`] that uses the current system time
-    /// as the source timestamp. UUIDs generated on the same thread will remain ordered based on the
-    /// order they were created in. UUIDs generated on multiple threads are not guaranteed to share a
-    /// global ordering within the same millisecond.
+    /// as the source timestamp. All UUIDs generated through this method by the same process are
+    /// guaranteed to be ordered by their creation.
     #[cfg(feature = "std")]
     pub fn now_v7() -> Self {
         Self::new_v7(Timestamp::now_128(

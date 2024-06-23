@@ -168,39 +168,4 @@ mod tests {
         assert_eq!(uuid.get_version(), Some(Version::SortMac));
         assert_eq!(uuid.get_variant(), Variant::RFC4122);
     }
-
-    #[test]
-    #[cfg_attr(
-        all(
-            target_arch = "wasm32",
-            target_vendor = "unknown",
-            target_os = "unknown"
-        ),
-        wasm_bindgen_test
-    )]
-    fn test_new_context() {
-        let time: u64 = 1_496_854_535;
-        let time_fraction: u32 = 812_946_000;
-        let node = [1, 2, 3, 4, 5, 6];
-
-        // This context will wrap
-        let context = Context::new(u16::MAX >> 2);
-
-        let uuid1 = Uuid::new_v6(Timestamp::from_unix(&context, time, time_fraction), &node);
-
-        let time: u64 = 1_496_854_536;
-
-        let uuid2 = Uuid::new_v6(Timestamp::from_unix(&context, time, time_fraction), &node);
-
-        assert_eq!(uuid1.get_timestamp().unwrap().to_rfc4122().1, 16383);
-        assert_eq!(uuid2.get_timestamp().unwrap().to_rfc4122().1, 0);
-
-        let time = 1_496_854_535;
-
-        let uuid3 = Uuid::new_v6(Timestamp::from_unix(&context, time, time_fraction), &node);
-        let uuid4 = Uuid::new_v6(Timestamp::from_unix(&context, time, time_fraction), &node);
-
-        assert_eq!(uuid3.get_timestamp().unwrap().to_rfc4122().1, 1);
-        assert_eq!(uuid4.get_timestamp().unwrap().to_rfc4122().1, 2);
-    }
 }

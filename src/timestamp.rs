@@ -117,8 +117,12 @@ impl Timestamp {
     }
 
     /// Construct a `Timestamp` from a Unix timestamp and up to a 16-bit counter, as used in version 7 UUIDs.
-    pub fn from_unix(context: impl ClockSequence<Output = u16>, seconds: u64, nanos: u32) -> Self {
-        Self::from_unix_128(context, seconds, nanos)
+    pub fn from_unix(
+        context: impl ClockSequence<Output = u16>,
+        seconds: u64,
+        subsec_nanos: u32,
+    ) -> Self {
+        Self::from_unix_128(context, seconds, subsec_nanos)
     }
 
     /// Construct a `Timestamp` from a Unix timestamp and up to a 128-bit counter, as used in version 7 UUIDs.
@@ -511,6 +515,35 @@ pub mod context {
                 14
             }
         }
+
+        #[cfg(test)]
+        mod tests {
+            use crate::Timestamp;
+
+            use super::*;
+
+            #[test]
+            fn context() {
+                let seconds = 1_496_854_535;
+                let subsec_nanos = 812_946_000;
+
+                let context = Context::new(u16::MAX >> 2);
+
+                let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
+                assert_eq!(16383, ts.counter);
+                assert_eq!(14, ts.usable_counter_bits);
+
+                let seconds = 1_496_854_536;
+
+                let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
+                assert_eq!(0, ts.counter);
+
+                let seconds = 1_496_854_535;
+
+                let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
+                assert_eq!(1, ts.counter);
+            }
+        }
     }
 
     #[cfg(any(feature = "v1", feature = "v6"))]
@@ -520,7 +553,8 @@ pub mod context {
     mod std_support {
         use super::*;
 
-        use std::thread::LocalKey;
+        use core::panic::{AssertUnwindSafe, RefUnwindSafe};
+        use std::{sync::Mutex, thread::LocalKey};
 
         /// A wrapper for a context that uses thread-local storage.
         pub struct ThreadLocalContext<C: 'static>(&'static LocalKey<C>);
@@ -559,6 +593,58 @@ pub mod context {
                 self.0.with(|ctxt| ctxt.usable_bits())
             }
         }
+
+        impl<C: ClockSequence> ClockSequence for AssertUnwindSafe<C> {
+            type Output = C::Output;
+
+            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
+                self.0.generate_sequence(seconds, subsec_nanos)
+            }
+
+            fn generate_timestamp_sequence(
+                &self,
+                seconds: u64,
+                subsec_nanos: u32,
+            ) -> (Self::Output, u64, u32) {
+                self.0.generate_timestamp_sequence(seconds, subsec_nanos)
+            }
+
+            fn usable_bits(&self) -> usize
+            where
+                Self::Output: Sized,
+            {
+                self.0.usable_bits()
+            }
+        }
+
+        impl<C: ClockSequence + RefUnwindSafe> ClockSequence for Mutex<C> {
+            type Output = C::Output;
+
+            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
+                self.lock()
+                    .unwrap_or_else(|err| err.into_inner())
+                    .generate_sequence(seconds, subsec_nanos)
+            }
+
+            fn generate_timestamp_sequence(
+                &self,
+                seconds: u64,
+                subsec_nanos: u32,
+            ) -> (Self::Output, u64, u32) {
+                self.lock()
+                    .unwrap_or_else(|err| err.into_inner())
+                    .generate_timestamp_sequence(seconds, subsec_nanos)
+            }
+
+            fn usable_bits(&self) -> usize
+            where
+                Self::Output: Sized,
+            {
+                self.lock()
+                    .unwrap_or_else(|err| err.into_inner())
+                    .usable_bits()
+            }
+        }
     }
 
     #[cfg(feature = "std")]
@@ -568,26 +654,17 @@ pub mod context {
     mod v7_support {
         use super::*;
 
-        use core::cell::Cell;
+        use core::{cell::Cell, panic::RefUnwindSafe};
 
         #[cfg(feature = "std")]
-        use crate::timestamp::context::ThreadLocalContext;
+        static CONTEXT_V7: std::sync::Mutex<ContextV7> = std::sync::Mutex::new(ContextV7::new());
 
         #[cfg(feature = "std")]
-        thread_local! {
-            static THREAD_CONTEXT_V7: ContextV7 = ContextV7::new();
-        }
-
-        #[cfg(feature = "std")]
-        static CONTEXT_V7: ThreadLocalContext<ContextV7> =
-            ThreadLocalContext::new(&THREAD_CONTEXT_V7);
-
-        #[cfg(feature = "std")]
-        pub(crate) fn shared_context_v7() -> &'static ThreadLocalContext<ContextV7> {
+        pub(crate) fn shared_context_v7() -> &'static std::sync::Mutex<ContextV7> {
             &CONTEXT_V7
         }
 
-        /// A non-thread-safe, reseeding counter that produces 42-bit values.
+        /// An unsynchronized, reseeding counter that produces 42-bit values.
         ///
         /// This type works by:
         ///
@@ -605,16 +682,39 @@ pub mod context {
         /// bits of the counter will be used.
         #[derive(Debug)]
         pub struct ContextV7 {
-            last_reseed: Cell<u64>,
+            last_reseed: Cell<LastReseed>,
             counter: Cell<u64>,
         }
+
+        #[derive(Debug, Default, Clone, Copy)]
+        struct LastReseed {
+            millis: u64,
+            ts_seconds: u64,
+            ts_subsec_nanos: u32,
+        }
+
+        impl LastReseed {
+            fn from_millis(millis: u64) -> Self {
+                LastReseed {
+                    millis,
+                    ts_seconds: millis / 1_000,
+                    ts_subsec_nanos: (millis % 1_000) as u32 * 1_000_000,
+                }
+            }
+        }
+
+        impl RefUnwindSafe for ContextV7 {}
 
         impl ContextV7 {
             /// Construct a new context that will reseed its counter on the first
             /// non-zero timestamp it receives.
             pub const fn new() -> Self {
                 ContextV7 {
-                    last_reseed: Cell::new(0),
+                    last_reseed: Cell::new(LastReseed {
+                        millis: 0,
+                        ts_seconds: 0,
+                        ts_subsec_nanos: 0,
+                    }),
                     counter: Cell::new(0),
                 }
             }
@@ -632,58 +732,129 @@ pub mod context {
                 seconds: u64,
                 subsec_nanos: u32,
             ) -> (Self::Output, u64, u32) {
-                use std::time::Duration;
+                // Leave the most significant bit unset
+                // This guarantees the counter has at least 2,199,023,255,552
+                // values before it will overflow, which is exceptionally unlikely
+                // even in the worst case
+                const RESEED_MASK: u64 = u64::MAX >> 23;
+                const MAX_COUNTER: u64 = u64::MAX >> 22;
 
-                let millis = (seconds * 1000).saturating_add(subsec_nanos as u64 / 1_000_000);
+                let millis = (seconds * 1_000).saturating_add(subsec_nanos as u64 / 1_000_000);
 
                 let last_reseed = self.last_reseed.get();
 
                 // If the observed system time has shifted forwards then regenerate the counter
-                if millis > last_reseed {
-                    // Leave the most significant bit unset
-                    // This guarantees the counter has at least 2,199,023,255,552
-                    // values before it will overflow, which is exceptionally unlikely
-                    // even in the worst case
-                    let counter = crate::rng::u64() & (u64::MAX >> 23);
-                    self.counter.set(counter);
-                    self.last_reseed.set(millis);
+                if millis > last_reseed.millis {
+                    let last_reseed = LastReseed::from_millis(millis);
+                    self.last_reseed.set(last_reseed);
 
-                    (counter, seconds, subsec_nanos)
+                    let counter = crate::rng::u64() & RESEED_MASK;
+                    self.counter.set(counter);
+
+                    (counter, last_reseed.ts_seconds, last_reseed.ts_subsec_nanos)
                 }
                 // If the observed system time has not shifted forwards then increment the counter
                 else {
                     // If the incoming timestamp is earlier than the last observed one then
                     // use it instead. This may happen if the system clock jitters, or if the counter
                     // has wrapped and the timestamp is artificially incremented
-                    let millis = last_reseed;
+                    let millis = ();
+                    let _ = millis;
 
                     // Guaranteed to never overflow u64
                     let counter = self.counter.get() + 1;
 
                     // If the counter has not overflowed its 42-bit storage then return it
-                    if counter <= u64::MAX >> 22 {
+                    if counter <= MAX_COUNTER {
                         self.counter.set(counter);
 
-                        (counter, seconds, subsec_nanos)
+                        (counter, last_reseed.ts_seconds, last_reseed.ts_subsec_nanos)
                     }
                     // Unlikely: If the counter has overflowed its 42-bit storage then wrap it
                     // and increment the timestamp. Until the observed system time shifts past
                     // this incremented value, all timestamps will use it to maintain monotonicity
                     else {
-                        let counter = 0;
+                        // Increment the timestamp by 1 milli
+                        let last_reseed = LastReseed::from_millis(last_reseed.millis + 1);
+                        self.last_reseed.set(last_reseed);
+
+                        // Reseed the counter
+                        let counter = crate::rng::u64() & RESEED_MASK;
                         self.counter.set(counter);
-                        self.last_reseed.set(millis + 1);
 
-                        let new_ts =
-                            Duration::new(seconds, subsec_nanos) + Duration::from_millis(1);
-
-                        (counter, new_ts.as_secs(), new_ts.subsec_nanos())
+                        (counter, last_reseed.ts_seconds, last_reseed.ts_subsec_nanos)
                     }
                 }
             }
 
             fn usable_bits(&self) -> usize {
                 42
+            }
+        }
+
+        #[cfg(test)]
+        mod tests {
+            use core::time::Duration;
+
+            use super::*;
+
+            use crate::Timestamp;
+
+            #[test]
+            fn context() {
+                let seconds = 1_496_854_535;
+                let subsec_nanos = 812_946_000;
+
+                let context = ContextV7::new();
+
+                let ts1 = Timestamp::from_unix_128(&context, seconds, subsec_nanos);
+                assert_eq!(42, ts1.usable_counter_bits);
+
+                // Backwards second
+                let seconds = 1_496_854_534;
+
+                let ts2 = Timestamp::from_unix_128(&context, seconds, subsec_nanos);
+
+                // The backwards time should be ignored
+                // The counter should still increment
+                assert_eq!(ts1.seconds, ts2.seconds);
+                assert_eq!(ts1.subsec_nanos, ts2.subsec_nanos);
+                assert_eq!(ts1.counter + 1, ts2.counter);
+
+                // Forwards second
+                let seconds = 1_496_854_536;
+
+                let ts3 = Timestamp::from_unix_128(&context, seconds, subsec_nanos);
+
+                // The counter should have reseeded
+                assert_ne!(ts2.counter + 1, ts3.counter);
+                assert_ne!(0, ts3.counter);
+            }
+
+            #[test]
+            fn context_wrap() {
+                let seconds = 1_496_854_535u64;
+                let subsec_nanos = 812_946_000u32;
+
+                let millis = (seconds * 1000).saturating_add(subsec_nanos as u64 / 1_000_000);
+
+                // This context will wrap
+                let context = ContextV7 {
+                    last_reseed: Cell::new(LastReseed::from_millis(millis)),
+                    counter: Cell::new(u64::MAX >> 22),
+                };
+
+                let ts = Timestamp::from_unix_128(&context, seconds, subsec_nanos);
+
+                // The timestamp should be incremented by 1ms
+                let expected_ts = Duration::new(seconds, subsec_nanos / 1_000_000 * 1_000_000)
+                    + Duration::from_millis(1);
+                assert_eq!(expected_ts.as_secs(), ts.seconds);
+                assert_eq!(expected_ts.subsec_nanos(), ts.subsec_nanos);
+
+                // The counter should have reseeded
+                assert!(ts.counter < (u64::MAX >> 22) as u128);
+                assert_ne!(0, ts.counter);
             }
         }
     }
