@@ -237,6 +237,9 @@ pub use timestamp::{context::NoContext, ClockSequence, Timestamp};
 #[cfg(any(feature = "v1", feature = "v6"))]
 pub use timestamp::context::Context;
 
+#[cfg(feature = "v7")]
+pub use timestamp::context::ContextV7;
+
 #[cfg(feature = "v1")]
 #[doc(hidden)]
 // Soft-deprecated (Rust doesn't support deprecating re-exports)
@@ -901,12 +904,7 @@ impl Uuid {
                 let seconds = millis / 1000;
                 let nanos = ((millis % 1000) * 1_000_000) as u32;
 
-                Some(Timestamp {
-                    seconds,
-                    nanos,
-                    #[cfg(any(feature = "v1", feature = "v6"))]
-                    counter: 0,
-                })
+                Some(Timestamp::from_unix_time(seconds, nanos, 0))
             }
             _ => None,
         }

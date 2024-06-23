@@ -41,6 +41,9 @@ features = ["serde", "arbitrary", "slog", "borsh", "v1", "v3", "v4", "v5", "v6",
 [package.metadata.playground]
 features = ["serde", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
 
+[lints.rust]
+unexpected_cfgs = { level = "allow", check-cfg = ['cfg(uuid_unstable)'] }
+
 [badges.is-it-maintained-issue-resolution]
 repository = "uuid-rs/uuid"
 

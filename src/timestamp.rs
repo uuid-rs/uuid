@@ -21,6 +21,8 @@
 //! * [UUID Version 7 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.7)
 //! * [Timestamp Considerations in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.1)
 
+use core::cmp;
+
 use crate::Uuid;
 
 /// The number of 100 nanosecond ticks between the RFC 9562 epoch
@@ -39,14 +41,14 @@ pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
 /// * [UUID Generator States in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.3)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Timestamp {
-    pub(crate) seconds: u64,
-    pub(crate) nanos: u32,
-    #[cfg(any(feature = "v1", feature = "v6"))]
-    pub(crate) counter: u16,
+    seconds: u64,
+    subsec_nanos: u32,
+    counter: u128,
+    usable_counter_bits: u8,
 }
 
 impl Timestamp {
-    /// Get a timestamp representing the current system time.
+    /// Get a timestamp representing the current system time and up to a 16-bit counter.
     ///
     /// This method defers to the standard library's `SystemTime` type.
     ///
@@ -55,22 +57,28 @@ impl Timestamp {
     /// This method will panic if calculating the elapsed time since the Unix epoch fails.
     #[cfg(feature = "std")]
     pub fn now(context: impl ClockSequence<Output = u16>) -> Self {
-        #[cfg(not(any(feature = "v1", feature = "v6")))]
-        {
-            let _ = context;
-        }
+        Self::now_128(context)
+    }
 
-        let (seconds, nanos) = now();
+    /// Get a timestamp representing the current system time and up to a 128-bit counter.
+    #[cfg(feature = "std")]
+    pub fn now_128(context: impl ClockSequence<Output = impl Into<u128>>) -> Self {
+        let (seconds, subsec_nanos) = now();
+
+        let (counter, seconds, subsec_nanos) =
+            context.generate_timestamp_sequence(seconds, subsec_nanos);
+        let counter = counter.into();
+        let usable_counter_bits = context.usable_bits() as u8;
 
         Timestamp {
             seconds,
-            nanos,
-            #[cfg(any(feature = "v1", feature = "v6"))]
-            counter: context.generate_sequence(seconds, nanos),
+            subsec_nanos,
+            counter,
+            usable_counter_bits,
         }
     }
 
-    /// Construct a `Timestamp` from an RFC 9562 timestamp and counter, as used
+    /// Construct a `Timestamp` from an RFC 9562 timestamp and 16-bit counter, as used
     /// in versions 1 and 6 UUIDs.
     ///
     /// # Overflow
@@ -78,43 +86,61 @@ impl Timestamp {
     /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
     pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
-        #[cfg(not(any(feature = "v1", feature = "v6")))]
-        {
-            let _ = counter;
-        }
-
-        let (seconds, nanos) = Self::rfc4122_to_unix(ticks);
+        let (seconds, subsec_nanos) = Self::rfc4122_to_unix(ticks);
 
         Timestamp {
             seconds,
-            nanos,
-            #[cfg(any(feature = "v1", feature = "v6"))]
-            counter,
+            subsec_nanos,
+            counter: counter as u128,
+            usable_counter_bits: 16,
         }
     }
 
-    /// Construct a `Timestamp` from a Unix timestamp, as used in version 7 UUIDs.
-    ///
-    /// # Overflow
-    ///
-    /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
-    /// it will wrap.
-    pub fn from_unix(context: impl ClockSequence<Output = u16>, seconds: u64, nanos: u32) -> Self {
-        #[cfg(not(any(feature = "v1", feature = "v6")))]
-        {
-            let _ = context;
+    /// Construct a `Timestamp` from a Unix timestamp and a 16-bit counter, as used in version 7 UUIDs.
+    pub const fn from_unix_time(seconds: u64, subsec_nanos: u32, counter: u16) -> Self {
+        Self::from_unix_time_128(seconds, subsec_nanos, counter as u128, 16)
+    }
 
-            Timestamp { seconds, nanos }
+    /// Construct a `Timestamp` from a Unix timestamp and up to a 128-bit counter, as used in version 7 UUIDs.
+    pub const fn from_unix_time_128(
+        seconds: u64,
+        subsec_nanos: u32,
+        counter: u128,
+        usable_counter_bits: u8,
+    ) -> Self {
+        Timestamp {
+            seconds,
+            subsec_nanos,
+            counter,
+            usable_counter_bits,
         }
-        #[cfg(any(feature = "v1", feature = "v6"))]
-        {
-            let counter = context.generate_sequence(seconds, nanos);
+    }
 
-            Timestamp {
-                seconds,
-                nanos,
-                counter,
-            }
+    /// Construct a `Timestamp` from a Unix timestamp and up to a 16-bit counter, as used in version 7 UUIDs.
+    pub fn from_unix(
+        context: impl ClockSequence<Output = u16>,
+        seconds: u64,
+        subsec_nanos: u32,
+    ) -> Self {
+        Self::from_unix_128(context, seconds, subsec_nanos)
+    }
+
+    /// Construct a `Timestamp` from a Unix timestamp and up to a 128-bit counter, as used in version 7 UUIDs.
+    pub fn from_unix_128(
+        context: impl ClockSequence<Output = impl Into<u128>>,
+        seconds: u64,
+        subsec_nanos: u32,
+    ) -> Self {
+        let (counter, seconds, subsec_nanos) =
+            context.generate_timestamp_sequence(seconds, subsec_nanos);
+        let counter = counter.into();
+        let usable_counter_bits = context.usable_bits() as u8;
+
+        Timestamp {
+            seconds,
+            subsec_nanos,
+            counter,
+            usable_counter_bits,
         }
     }
 
@@ -125,25 +151,24 @@ impl Timestamp {
     ///
     /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
-    #[cfg(any(feature = "v1", feature = "v6"))]
     pub const fn to_rfc4122(&self) -> (u64, u16) {
         (
-            Self::unix_to_rfc4122_ticks(self.seconds, self.nanos),
-            self.counter,
+            Self::unix_to_rfc4122_ticks(self.seconds, self.subsec_nanos),
+            self.counter as u16,
         )
     }
 
-    /// Get the value of the timestamp as a Unix timestamp, as used in version 7 UUIDs.
-    ///
-    /// # Overflow
-    ///
-    /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
-    /// it will wrap.
-    pub const fn to_unix(&self) -> (u64, u32) {
-        (self.seconds, self.nanos)
+    // NOTE: This method is not public; the usable counter bits are lost in a version 7 UUID
+    // so can't be reliably recovered.
+    pub(crate) const fn counter(&self) -> (u128, u8) {
+        (self.counter, self.usable_counter_bits)
     }
 
-    #[cfg(any(feature = "v1", feature = "v6"))]
+    /// Get the value of the timestamp as a Unix timestamp, as used in version 7 UUIDs.
+    pub const fn to_unix(&self) -> (u64, u32) {
+        (self.seconds, self.subsec_nanos)
+    }
+
     const fn unix_to_rfc4122_ticks(seconds: u64, nanos: u32) -> u64 {
         UUID_TICKS_BETWEEN_EPOCHS
             .wrapping_add(seconds.wrapping_mul(10_000_000))
@@ -244,25 +269,29 @@ pub(crate) const fn decode_sorted_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
     (ticks, counter)
 }
 
-pub(crate) const fn encode_unix_timestamp_millis(millis: u64, random_bytes: &[u8; 10]) -> Uuid {
+pub(crate) const fn encode_unix_timestamp_millis(
+    millis: u64,
+    counter_random_bytes: &[u8; 10],
+) -> Uuid {
     let millis_high = ((millis >> 16) & 0xFFFF_FFFF) as u32;
     let millis_low = (millis & 0xFFFF) as u16;
 
-    let random_and_version =
-        (random_bytes[1] as u16 | ((random_bytes[0] as u16) << 8) & 0x0FFF) | (0x7 << 12);
+    let counter_random_version = (counter_random_bytes[1] as u16
+        | ((counter_random_bytes[0] as u16) << 8) & 0x0FFF)
+        | (0x7 << 12);
 
     let mut d4 = [0; 8];
 
-    d4[0] = (random_bytes[2] & 0x3F) | 0x80;
-    d4[1] = random_bytes[3];
-    d4[2] = random_bytes[4];
-    d4[3] = random_bytes[5];
-    d4[4] = random_bytes[6];
-    d4[5] = random_bytes[7];
-    d4[6] = random_bytes[8];
-    d4[7] = random_bytes[9];
+    d4[0] = (counter_random_bytes[2] & 0x3F) | 0x80;
+    d4[1] = counter_random_bytes[3];
+    d4[2] = counter_random_bytes[4];
+    d4[3] = counter_random_bytes[5];
+    d4[4] = counter_random_bytes[6];
+    d4[5] = counter_random_bytes[7];
+    d4[6] = counter_random_bytes[8];
+    d4[7] = counter_random_bytes[9];
 
-    Uuid::from_fields(millis_high, millis_low, random_and_version, &d4)
+    Uuid::from_fields(millis_high, millis_low, counter_random_version, &d4)
 }
 
 pub(crate) const fn decode_unix_timestamp_millis(uuid: &Uuid) -> u64 {
@@ -339,13 +368,62 @@ pub trait ClockSequence {
     /// Get the next value in the sequence to feed into a timestamp.
     ///
     /// This method will be called each time a [`Timestamp`] is constructed.
+    ///
+    /// Any bits beyond [`ClockSequence::usable_bits`] in the output must be unset.
     fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output;
+
+    /// Get the next value in the sequence, potentially also adjusting the timestamp.
+    ///
+    /// This method should be preferred over `generate_sequence`.
+    ///
+    /// Any bits beyond [`ClockSequence::usable_bits`] in the output must be unset.
+    fn generate_timestamp_sequence(
+        &self,
+        seconds: u64,
+        subsec_nanos: u32,
+    ) -> (Self::Output, u64, u32) {
+        (
+            self.generate_sequence(seconds, subsec_nanos),
+            seconds,
+            subsec_nanos,
+        )
+    }
+
+    /// The number of usable bits from the least significant bit in the result of [`ClockSequence::generate_sequence`]
+    /// or [`ClockSequence::generate_timestamp_sequence`].
+    ///
+    /// The number of usable bits must not exceed 128.
+    ///
+    /// The number of usable bits is not expected to change between calls. An implementation of `ClockSequence` should
+    /// always return the same value from this method.
+    fn usable_bits(&self) -> usize
+    where
+        Self::Output: Sized,
+    {
+        cmp::min(128, core::mem::size_of::<Self::Output>())
+    }
 }
 
 impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T {
     type Output = T::Output;
+
     fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
         (**self).generate_sequence(seconds, subsec_nanos)
+    }
+
+    fn generate_timestamp_sequence(
+        &self,
+        seconds: u64,
+        subsec_nanos: u32,
+    ) -> (Self::Output, u64, u32) {
+        (**self).generate_timestamp_sequence(seconds, subsec_nanos)
+    }
+
+    fn usable_bits(&self) -> usize
+    where
+        Self::Output: Sized,
+    {
+        (**self).usable_bits()
     }
 }
 
@@ -354,12 +432,446 @@ pub mod context {
     use super::ClockSequence;
 
     #[cfg(any(feature = "v1", feature = "v6"))]
-    use atomic::{Atomic, Ordering};
+    mod v1_support {
+        use super::*;
+
+        use atomic::{Atomic, Ordering};
+
+        #[cfg(all(feature = "std", feature = "rng"))]
+        static CONTEXT: Context = Context {
+            count: Atomic::new(0),
+        };
+
+        #[cfg(all(feature = "std", feature = "rng"))]
+        static CONTEXT_INITIALIZED: Atomic<bool> = Atomic::new(false);
+
+        #[cfg(all(feature = "std", feature = "rng"))]
+        pub(crate) fn shared_context() -> &'static Context {
+            // If the context is in its initial state then assign it to a random value
+            // It doesn't matter if multiple threads observe `false` here and initialize the context
+            if CONTEXT_INITIALIZED
+                .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed)
+                .is_ok()
+            {
+                CONTEXT.count.store(crate::rng::u16(), Ordering::Release);
+            }
+
+            &CONTEXT
+        }
+
+        /// A thread-safe, wrapping counter that produces 14-bit values.
+        ///
+        /// This type works by:
+        ///
+        /// 1. Atomically incrementing the counter value for each timestamp.
+        /// 2. Wrapping the counter back to zero if it overflows its 14-bit storage.
+        ///
+        /// This type should be used when constructing version 1 and version 6 UUIDs.
+        ///
+        /// This type should not be used when constructing version 7 UUIDs. When used to
+        /// construct a version 7 UUID, the 14-bit counter will be padded with random data.
+        /// Counter overflows are more likely with a 14-bit counter than they are with a
+        /// 42-bit counter when working at millisecond precision. This type doesn't attempt
+        /// to adjust the timestamp on overflow.
+        #[derive(Debug)]
+        pub struct Context {
+            count: Atomic<u16>,
+        }
+
+        impl Context {
+            /// Construct a new context that's initialized with the given value.
+            ///
+            /// The starting value should be a random number, so that UUIDs from
+            /// different systems with the same timestamps are less likely to collide.
+            /// When the `rng` feature is enabled, prefer the [`Context::new_random`] method.
+            pub const fn new(count: u16) -> Self {
+                Self {
+                    count: Atomic::<u16>::new(count),
+                }
+            }
+
+            /// Construct a new context that's initialized with a random value.
+            #[cfg(feature = "rng")]
+            pub fn new_random() -> Self {
+                Self {
+                    count: Atomic::<u16>::new(crate::rng::u16()),
+                }
+            }
+        }
+
+        impl ClockSequence for Context {
+            type Output = u16;
+
+            fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
+                // RFC4122 reserves 2 bits of the clock sequence so the actual
+                // maximum value is smaller than `u16::MAX`. Since we unconditionally
+                // increment the clock sequence we want to wrap once it becomes larger
+                // than what we can represent in a "u14". Otherwise there'd be patches
+                // where the clock sequence doesn't change regardless of the timestamp
+                self.count.fetch_add(1, Ordering::AcqRel) & (u16::MAX >> 2)
+            }
+
+            fn usable_bits(&self) -> usize {
+                14
+            }
+        }
+
+        #[cfg(test)]
+        mod tests {
+            use crate::Timestamp;
+
+            use super::*;
+
+            #[test]
+            fn context() {
+                let seconds = 1_496_854_535;
+                let subsec_nanos = 812_946_000;
+
+                let context = Context::new(u16::MAX >> 2);
+
+                let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
+                assert_eq!(16383, ts.counter);
+                assert_eq!(14, ts.usable_counter_bits);
+
+                let seconds = 1_496_854_536;
+
+                let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
+                assert_eq!(0, ts.counter);
+
+                let seconds = 1_496_854_535;
+
+                let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
+                assert_eq!(1, ts.counter);
+            }
+        }
+    }
+
+    #[cfg(any(feature = "v1", feature = "v6"))]
+    pub use v1_support::*;
+
+    #[cfg(feature = "std")]
+    mod std_support {
+        use super::*;
+
+        use core::panic::{AssertUnwindSafe, RefUnwindSafe};
+        use std::{sync::Mutex, thread::LocalKey};
+
+        /// A wrapper for a context that uses thread-local storage.
+        pub struct ThreadLocalContext<C: 'static>(&'static LocalKey<C>);
+
+        impl<C> std::fmt::Debug for ThreadLocalContext<C> {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                f.debug_struct("ThreadLocalContext").finish_non_exhaustive()
+            }
+        }
+
+        impl<C: 'static> ThreadLocalContext<C> {
+            /// Wrap a thread-local container with a context.
+            pub const fn new(local_key: &'static LocalKey<C>) -> Self {
+                ThreadLocalContext(local_key)
+            }
+        }
+
+        impl<C: ClockSequence + 'static> ClockSequence for ThreadLocalContext<C> {
+            type Output = C::Output;
+
+            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
+                self.0
+                    .with(|ctxt| ctxt.generate_sequence(seconds, subsec_nanos))
+            }
+
+            fn generate_timestamp_sequence(
+                &self,
+                seconds: u64,
+                subsec_nanos: u32,
+            ) -> (Self::Output, u64, u32) {
+                self.0
+                    .with(|ctxt| ctxt.generate_timestamp_sequence(seconds, subsec_nanos))
+            }
+
+            fn usable_bits(&self) -> usize {
+                self.0.with(|ctxt| ctxt.usable_bits())
+            }
+        }
+
+        impl<C: ClockSequence> ClockSequence for AssertUnwindSafe<C> {
+            type Output = C::Output;
+
+            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
+                self.0.generate_sequence(seconds, subsec_nanos)
+            }
+
+            fn generate_timestamp_sequence(
+                &self,
+                seconds: u64,
+                subsec_nanos: u32,
+            ) -> (Self::Output, u64, u32) {
+                self.0.generate_timestamp_sequence(seconds, subsec_nanos)
+            }
+
+            fn usable_bits(&self) -> usize
+            where
+                Self::Output: Sized,
+            {
+                self.0.usable_bits()
+            }
+        }
+
+        impl<C: ClockSequence + RefUnwindSafe> ClockSequence for Mutex<C> {
+            type Output = C::Output;
+
+            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
+                self.lock()
+                    .unwrap_or_else(|err| err.into_inner())
+                    .generate_sequence(seconds, subsec_nanos)
+            }
+
+            fn generate_timestamp_sequence(
+                &self,
+                seconds: u64,
+                subsec_nanos: u32,
+            ) -> (Self::Output, u64, u32) {
+                self.lock()
+                    .unwrap_or_else(|err| err.into_inner())
+                    .generate_timestamp_sequence(seconds, subsec_nanos)
+            }
+
+            fn usable_bits(&self) -> usize
+            where
+                Self::Output: Sized,
+            {
+                self.lock()
+                    .unwrap_or_else(|err| err.into_inner())
+                    .usable_bits()
+            }
+        }
+    }
+
+    #[cfg(feature = "std")]
+    pub use std_support::*;
+
+    #[cfg(feature = "v7")]
+    mod v7_support {
+        use super::*;
+
+        use core::{cell::Cell, panic::RefUnwindSafe};
+
+        #[cfg(feature = "std")]
+        static CONTEXT_V7: std::sync::Mutex<ContextV7> = std::sync::Mutex::new(ContextV7::new());
+
+        #[cfg(feature = "std")]
+        pub(crate) fn shared_context_v7() -> &'static std::sync::Mutex<ContextV7> {
+            &CONTEXT_V7
+        }
+
+        /// An unsynchronized, reseeding counter that produces 42-bit values.
+        ///
+        /// This type works by:
+        ///
+        /// 1. Reseeding the counter each millisecond with a random 41-bit value. The 42nd bit
+        ///    is left unset so the counter can safely increment over the millisecond.
+        /// 2. Wrapping the counter back to zero if it overflows its 42-bit storage and adding a
+        ///    millisecond to the timestamp.
+        ///
+        /// This type can be used when constructing version 7 UUIDs. When used to construct a
+        /// version 7 UUID, the 42-bit counter will be padded with random data. This type can
+        /// be used to maintain ordering of UUIDs within the same millisecond.
+        ///
+        /// This type should not be used when constructing version 1 or version 6 UUIDs.
+        /// When used to construct a version 1 or version 6 UUID, only the 14 least significant
+        /// bits of the counter will be used.
+        #[derive(Debug)]
+        pub struct ContextV7 {
+            last_reseed: Cell<LastReseed>,
+            counter: Cell<u64>,
+        }
+
+        #[derive(Debug, Default, Clone, Copy)]
+        struct LastReseed {
+            millis: u64,
+            ts_seconds: u64,
+            ts_subsec_nanos: u32,
+        }
+
+        impl LastReseed {
+            fn from_millis(millis: u64) -> Self {
+                LastReseed {
+                    millis,
+                    ts_seconds: millis / 1_000,
+                    ts_subsec_nanos: (millis % 1_000) as u32 * 1_000_000,
+                }
+            }
+        }
+
+        impl RefUnwindSafe for ContextV7 {}
+
+        impl ContextV7 {
+            /// Construct a new context that will reseed its counter on the first
+            /// non-zero timestamp it receives.
+            pub const fn new() -> Self {
+                ContextV7 {
+                    last_reseed: Cell::new(LastReseed {
+                        millis: 0,
+                        ts_seconds: 0,
+                        ts_subsec_nanos: 0,
+                    }),
+                    counter: Cell::new(0),
+                }
+            }
+        }
+
+        impl ClockSequence for ContextV7 {
+            type Output = u64;
+
+            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
+                self.generate_timestamp_sequence(seconds, subsec_nanos).0
+            }
+
+            fn generate_timestamp_sequence(
+                &self,
+                seconds: u64,
+                subsec_nanos: u32,
+            ) -> (Self::Output, u64, u32) {
+                // Leave the most significant bit unset
+                // This guarantees the counter has at least 2,199,023,255,552
+                // values before it will overflow, which is exceptionally unlikely
+                // even in the worst case
+                const RESEED_MASK: u64 = u64::MAX >> 23;
+                const MAX_COUNTER: u64 = u64::MAX >> 22;
+
+                let millis = (seconds * 1_000).saturating_add(subsec_nanos as u64 / 1_000_000);
+
+                let last_reseed = self.last_reseed.get();
+
+                // If the observed system time has shifted forwards then regenerate the counter
+                if millis > last_reseed.millis {
+                    let last_reseed = LastReseed::from_millis(millis);
+                    self.last_reseed.set(last_reseed);
+
+                    let counter = crate::rng::u64() & RESEED_MASK;
+                    self.counter.set(counter);
+
+                    (counter, last_reseed.ts_seconds, last_reseed.ts_subsec_nanos)
+                }
+                // If the observed system time has not shifted forwards then increment the counter
+                else {
+                    // If the incoming timestamp is earlier than the last observed one then
+                    // use it instead. This may happen if the system clock jitters, or if the counter
+                    // has wrapped and the timestamp is artificially incremented
+                    let millis = ();
+                    let _ = millis;
+
+                    // Guaranteed to never overflow u64
+                    let counter = self.counter.get() + 1;
+
+                    // If the counter has not overflowed its 42-bit storage then return it
+                    if counter <= MAX_COUNTER {
+                        self.counter.set(counter);
+
+                        (counter, last_reseed.ts_seconds, last_reseed.ts_subsec_nanos)
+                    }
+                    // Unlikely: If the counter has overflowed its 42-bit storage then wrap it
+                    // and increment the timestamp. Until the observed system time shifts past
+                    // this incremented value, all timestamps will use it to maintain monotonicity
+                    else {
+                        // Increment the timestamp by 1 milli
+                        let last_reseed = LastReseed::from_millis(last_reseed.millis + 1);
+                        self.last_reseed.set(last_reseed);
+
+                        // Reseed the counter
+                        let counter = crate::rng::u64() & RESEED_MASK;
+                        self.counter.set(counter);
+
+                        (counter, last_reseed.ts_seconds, last_reseed.ts_subsec_nanos)
+                    }
+                }
+            }
+
+            fn usable_bits(&self) -> usize {
+                42
+            }
+        }
+
+        #[cfg(test)]
+        mod tests {
+            use core::time::Duration;
+
+            use super::*;
+
+            use crate::Timestamp;
+
+            #[test]
+            fn context() {
+                let seconds = 1_496_854_535;
+                let subsec_nanos = 812_946_000;
+
+                let context = ContextV7::new();
+
+                let ts1 = Timestamp::from_unix_128(&context, seconds, subsec_nanos);
+                assert_eq!(42, ts1.usable_counter_bits);
+
+                // Backwards second
+                let seconds = 1_496_854_534;
+
+                let ts2 = Timestamp::from_unix_128(&context, seconds, subsec_nanos);
+
+                // The backwards time should be ignored
+                // The counter should still increment
+                assert_eq!(ts1.seconds, ts2.seconds);
+                assert_eq!(ts1.subsec_nanos, ts2.subsec_nanos);
+                assert_eq!(ts1.counter + 1, ts2.counter);
+
+                // Forwards second
+                let seconds = 1_496_854_536;
+
+                let ts3 = Timestamp::from_unix_128(&context, seconds, subsec_nanos);
+
+                // The counter should have reseeded
+                assert_ne!(ts2.counter + 1, ts3.counter);
+                assert_ne!(0, ts3.counter);
+            }
+
+            #[test]
+            fn context_wrap() {
+                let seconds = 1_496_854_535u64;
+                let subsec_nanos = 812_946_000u32;
+
+                let millis = (seconds * 1000).saturating_add(subsec_nanos as u64 / 1_000_000);
+
+                // This context will wrap
+                let context = ContextV7 {
+                    last_reseed: Cell::new(LastReseed::from_millis(millis)),
+                    counter: Cell::new(u64::MAX >> 22),
+                };
+
+                let ts = Timestamp::from_unix_128(&context, seconds, subsec_nanos);
+
+                // The timestamp should be incremented by 1ms
+                let expected_ts = Duration::new(seconds, subsec_nanos / 1_000_000 * 1_000_000)
+                    + Duration::from_millis(1);
+                assert_eq!(expected_ts.as_secs(), ts.seconds);
+                assert_eq!(expected_ts.subsec_nanos(), ts.subsec_nanos);
+
+                // The counter should have reseeded
+                assert!(ts.counter < (u64::MAX >> 22) as u128);
+                assert_ne!(0, ts.counter);
+            }
+        }
+    }
+
+    #[cfg(feature = "v7")]
+    pub use v7_support::*;
 
     /// An empty counter that will always return the value `0`.
     ///
-    /// This type should be used when constructing timestamps for version 7 UUIDs,
-    /// since they don't need a counter for uniqueness.
+    /// This type can be used when constructing version 7 UUIDs. When used to
+    /// construct a version 7 UUID, the entire counter segment of the UUID will be
+    /// filled with a random value. This type does not maintain ordering of UUIDs
+    /// within a millisecond but is efficient.
+    ///
+    /// This type should not be used when constructing version 1 or version 6 UUIDs.
+    /// When used to construct a version 1 or version 6 UUID, the counter
+    /// segment will remain zero.
     #[derive(Debug, Clone, Copy, Default)]
     pub struct NoContext;
 
@@ -369,72 +881,9 @@ pub mod context {
         fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
             0
         }
-    }
 
-    #[cfg(all(any(feature = "v1", feature = "v6"), feature = "std", feature = "rng"))]
-    static CONTEXT: Context = Context {
-        count: Atomic::new(0),
-    };
-
-    #[cfg(all(any(feature = "v1", feature = "v6"), feature = "std", feature = "rng"))]
-    static CONTEXT_INITIALIZED: Atomic<bool> = Atomic::new(false);
-
-    #[cfg(all(any(feature = "v1", feature = "v6"), feature = "std", feature = "rng"))]
-    pub(crate) fn shared_context() -> &'static Context {
-        // If the context is in its initial state then assign it to a random value
-        // It doesn't matter if multiple threads observe `false` here and initialize the context
-        if CONTEXT_INITIALIZED
-            .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed)
-            .is_ok()
-        {
-            CONTEXT.count.store(crate::rng::u16(), Ordering::Release);
-        }
-
-        &CONTEXT
-    }
-
-    /// A thread-safe, wrapping counter that produces 14-bit numbers.
-    ///
-    /// This type should be used when constructing version 1 and version 6 UUIDs.
-    #[derive(Debug)]
-    #[cfg(any(feature = "v1", feature = "v6"))]
-    pub struct Context {
-        count: Atomic<u16>,
-    }
-
-    #[cfg(any(feature = "v1", feature = "v6"))]
-    impl Context {
-        /// Construct a new context that's initialized with the given value.
-        ///
-        /// The starting value should be a random number, so that UUIDs from
-        /// different systems with the same timestamps are less likely to collide.
-        /// When the `rng` feature is enabled, prefer the [`Context::new_random`] method.
-        pub const fn new(count: u16) -> Self {
-            Self {
-                count: Atomic::<u16>::new(count),
-            }
-        }
-
-        /// Construct a new context that's initialized with a random value.
-        #[cfg(feature = "rng")]
-        pub fn new_random() -> Self {
-            Self {
-                count: Atomic::<u16>::new(crate::rng::u16()),
-            }
-        }
-    }
-
-    #[cfg(any(feature = "v1", feature = "v6"))]
-    impl ClockSequence for Context {
-        type Output = u16;
-
-        fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
-            // RFC 9562 reserves 2 bits for Variant field, so the actual `clock_seq`
-            // maximum value is smaller than `u16::MAX`. Since we unconditionally
-            // increment the clock sequence we want to wrap once it becomes larger
-            // than what we can represent in a "u14". Otherwise there'd be patches
-            // where the clock sequence doesn't change regardless of the timestamp
-            self.count.fetch_add(1, Ordering::AcqRel) & (u16::MAX >> 2)
+        fn usable_bits(&self) -> usize {
+            0
         }
     }
 }
