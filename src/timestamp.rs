@@ -336,6 +336,7 @@ fn now() -> (u64, u32) {
 
 #[cfg(all(
     feature = "std",
+    not(miri),
     any(
         not(feature = "js"),
         not(all(
@@ -351,6 +352,21 @@ fn now() -> (u64, u32) {
     );
 
     (dur.as_secs(), dur.subsec_nanos())
+}
+
+#[cfg(all(feature = "std", miri))]
+fn now() -> (u64, u32) {
+    use std::{sync::Mutex, time::Duration};
+
+    static TS: Mutex<u64> = Mutex::new(0);
+
+    let ts = Duration::from_nanos({
+        let mut ts = TS.lock().unwrap();
+        *ts += 1;
+        *ts
+    });
+
+    (ts.as_secs(), ts.subsec_nanos())
 }
 
 /// A counter that can be used by version 1 and version 6 UUIDs to support
