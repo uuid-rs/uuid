@@ -654,12 +654,22 @@ pub mod context {
         use core::{cell::Cell, panic::RefUnwindSafe};
 
         #[cfg(feature = "std")]
-        static CONTEXT_V7: std::sync::Mutex<ContextV7> = std::sync::Mutex::new(ContextV7::new());
+        static CONTEXT_V7: SharedContextV7 =
+            SharedContextV7(std::sync::Mutex::new(ContextV7::new()));
 
         #[cfg(feature = "std")]
-        pub(crate) fn shared_context_v7() -> &'static std::sync::Mutex<ContextV7> {
+        pub(crate) fn shared_context_v7() -> &'static SharedContextV7 {
             &CONTEXT_V7
         }
+
+        const USABLE_BITS: usize = 42;
+
+        // Leave the most significant bit unset
+        // This guarantees the counter has at least 2,199,023,255,552
+        // values before it will overflow, which is exceptionally unlikely
+        // even in the worst case
+        const RESEED_MASK: u64 = u64::MAX >> 23;
+        const MAX_COUNTER: u64 = u64::MAX >> 22;
 
         /// An unsynchronized, reseeding counter that produces 42-bit values.
         ///
@@ -729,13 +739,6 @@ pub mod context {
                 seconds: u64,
                 subsec_nanos: u32,
             ) -> (Self::Output, u64, u32) {
-                // Leave the most significant bit unset
-                // This guarantees the counter has at least 2,199,023,255,552
-                // values before it will overflow, which is exceptionally unlikely
-                // even in the worst case
-                const RESEED_MASK: u64 = u64::MAX >> 23;
-                const MAX_COUNTER: u64 = u64::MAX >> 22;
-
                 let millis = (seconds * 1_000).saturating_add(subsec_nanos as u64 / 1_000_000);
 
                 let last_reseed = self.last_reseed.get();
@@ -785,7 +788,34 @@ pub mod context {
             }
 
             fn usable_bits(&self) -> usize {
-                42
+                USABLE_BITS
+            }
+        }
+
+        #[cfg(feature = "std")]
+        pub(crate) struct SharedContextV7(std::sync::Mutex<ContextV7>);
+
+        #[cfg(feature = "std")]
+        impl ClockSequence for SharedContextV7 {
+            type Output = u64;
+
+            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
+                self.0.generate_sequence(seconds, subsec_nanos)
+            }
+
+            fn generate_timestamp_sequence(
+                &self,
+                seconds: u64,
+                subsec_nanos: u32,
+            ) -> (Self::Output, u64, u32) {
+                self.0.generate_timestamp_sequence(seconds, subsec_nanos)
+            }
+
+            fn usable_bits(&self) -> usize
+            where
+                Self::Output: Sized,
+            {
+                USABLE_BITS
             }
         }
 

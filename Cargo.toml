@@ -65,7 +65,7 @@ v3 = ["md5"]
 v4 = ["rng"]
 v5 = ["sha1"]
 v6 = ["atomic"]
-v7 = ["atomic", "rng"]
+v7 = ["rng"]
 v8 = []
 
 js = ["dep:wasm-bindgen", "getrandom?/js"]
