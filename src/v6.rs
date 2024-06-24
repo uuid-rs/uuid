@@ -72,7 +72,7 @@ impl Uuid {
     /// # use uuid::{Uuid, Timestamp, Context, ClockSequence};
     /// # fn random_seed() -> u16 { 42 }
     /// let context = Context::new(random_seed());
-    /// let ts = Timestamp::from_rfc4122(14976241191231231313, context.generate_sequence(0, 0) );
+    /// let ts = Timestamp::from_gregorian(14976241191231231313, context.generate_sequence(0, 0));
     ///
     /// let uuid = Uuid::new_v6(ts, &[1, 2, 3, 4, 5, 6]);
     ///
@@ -90,9 +90,9 @@ impl Uuid {
     /// [`ClockSequence`]: timestamp/trait.ClockSequence.html
     /// [`Context`]: timestamp/context/struct.Context.html
     pub fn new_v6(ts: Timestamp, node_id: &[u8; 6]) -> Self {
-        let (ticks, counter) = ts.to_rfc4122();
+        let (ticks, counter) = ts.to_gregorian();
 
-        Builder::from_sorted_rfc4122_timestamp(ticks, counter, node_id).into_uuid()
+        Builder::from_sorted_gregorian_timestamp(ticks, counter, node_id).into_uuid()
     }
 }
 
@@ -133,7 +133,7 @@ mod tests {
             "1e74ba22-0616-6934-8000-010203040506"
         );
 
-        let ts = uuid.get_timestamp().unwrap().to_rfc4122();
+        let ts = uuid.get_timestamp().unwrap().to_gregorian();
 
         assert_eq!(ts.0 - 0x01B2_1DD2_1381_4000, 14_968_545_358_129_460);
 

@@ -79,8 +79,8 @@ impl Timestamp {
     ///
     /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
-    pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
-        let (seconds, subsec_nanos) = Self::rfc4122_to_unix(ticks);
+    pub const fn from_gregorian(ticks: u64, counter: u16) -> Self {
+        let (seconds, subsec_nanos) = Self::gregorian_to_unix(ticks);
 
         Timestamp {
             seconds,
@@ -131,9 +131,9 @@ impl Timestamp {
     ///
     /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
-    pub const fn to_rfc4122(&self) -> (u64, u16) {
+    pub const fn to_gregorian(&self) -> (u64, u16) {
         (
-            Self::unix_to_rfc4122_ticks(self.seconds, self.subsec_nanos),
+            Self::unix_to_gregorian_ticks(self.seconds, self.subsec_nanos),
             (self.counter as u16) & 0x3FFF,
         )
     }
@@ -150,31 +150,49 @@ impl Timestamp {
         (self.seconds, self.subsec_nanos)
     }
 
-    const fn unix_to_rfc4122_ticks(seconds: u64, nanos: u32) -> u64 {
+    const fn unix_to_gregorian_ticks(seconds: u64, nanos: u32) -> u64 {
         UUID_TICKS_BETWEEN_EPOCHS
             .wrapping_add(seconds.wrapping_mul(10_000_000))
             .wrapping_add(nanos as u64 / 100)
     }
 
-    const fn rfc4122_to_unix(ticks: u64) -> (u64, u32) {
+    const fn gregorian_to_unix(ticks: u64) -> (u64, u32) {
         (
             ticks.wrapping_sub(UUID_TICKS_BETWEEN_EPOCHS) / 10_000_000,
             (ticks.wrapping_sub(UUID_TICKS_BETWEEN_EPOCHS) % 10_000_000) as u32 * 100,
         )
     }
+}
 
-    #[deprecated(note = "use `to_unix` instead; this method will be removed in a future release")]
+// Deprecations. Remove when major version changes (2.0.0)
+#[doc(hidden)]
+impl Timestamp {
+    #[deprecated(since = "1.10.0", note = "Deprecated! Use `from_gregorian()` instead!")]
+    pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
+        Timestamp::from_gregorian(ticks, counter)
+    }
+
+    #[deprecated(since = "1.10.0", note = "Deprecated! Use `to_gregorian()` instead!")]
+    pub const fn to_rfc4122(&self) -> (u64, u16) {
+        self.to_gregorian()
+    }
+
     /// Get the number of fractional nanoseconds in the Unix timestamp.
     ///
     /// This method is deprecated and probably doesn't do what you're expecting it to.
     /// It doesn't return the timestamp as nanoseconds since the Unix epoch, it returns
     /// the fractional seconds of the timestamp.
+    #[deprecated(since = "1.2.0", note = "Deprecated! Use `to_unix()` instead!")]
     pub const fn to_unix_nanos(&self) -> u32 {
         panic!("`Timestamp::to_unix_nanos` is deprecated and will be removed: use `Timestamp::to_unix` instead")
     }
 }
 
-pub(crate) const fn encode_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Uuid {
+pub(crate) const fn encode_gregorian_timestamp(
+    ticks: u64,
+    counter: u16,
+    node_id: &[u8; 6],
+) -> Uuid {
     let time_low = (ticks & 0xFFFF_FFFF) as u32;
     let time_mid = ((ticks >> 32) & 0xFFFF) as u16;
     let time_high_and_version = (((ticks >> 48) & 0x0FFF) as u16) | (1 << 12);
@@ -193,7 +211,7 @@ pub(crate) const fn encode_rfc4122_timestamp(ticks: u64, counter: u16, node_id: 
     Uuid::from_fields(time_low, time_mid, time_high_and_version, &d4)
 }
 
-pub(crate) const fn decode_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
+pub(crate) const fn decode_gregorian_timestamp(uuid: &Uuid) -> (u64, u16) {
     let bytes = uuid.as_bytes();
 
     let ticks: u64 = ((bytes[6] & 0x0F) as u64) << 56
@@ -210,7 +228,7 @@ pub(crate) const fn decode_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
     (ticks, counter)
 }
 
-pub(crate) const fn encode_sorted_rfc4122_timestamp(
+pub(crate) const fn encode_sorted_gregorian_timestamp(
     ticks: u64,
     counter: u16,
     node_id: &[u8; 6],
@@ -233,7 +251,7 @@ pub(crate) const fn encode_sorted_rfc4122_timestamp(
     Uuid::from_fields(time_high, time_mid, time_low_and_version, &d4)
 }
 
-pub(crate) const fn decode_sorted_rfc4122_timestamp(uuid: &Uuid) -> (u64, u16) {
+pub(crate) const fn decode_sorted_gregorian_timestamp(uuid: &Uuid) -> (u64, u16) {
     let bytes = uuid.as_bytes();
 
     let ticks: u64 = ((bytes[0]) as u64) << 52
@@ -500,7 +518,7 @@ pub mod context {
             type Output = u16;
 
             fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
-                // RFC4122 reserves 2 bits of the clock sequence so the actual
+                // RFC 9562 reserves 2 bits of the clock sequence so the actual
                 // maximum value is smaller than `u16::MAX`. Since we unconditionally
                 // increment the clock sequence we want to wrap once it becomes larger
                 // than what we can represent in a "u14". Otherwise there'd be patches
@@ -905,13 +923,13 @@ mod tests {
         ),
         wasm_bindgen_test
     )]
-    fn rfc4122_unix_does_not_panic() {
+    fn gregorian_unix_does_not_panic() {
         // Ensure timestamp conversions never panic
-        Timestamp::unix_to_rfc4122_ticks(u64::MAX, 0);
-        Timestamp::unix_to_rfc4122_ticks(0, u32::MAX);
-        Timestamp::unix_to_rfc4122_ticks(u64::MAX, u32::MAX);
+        Timestamp::unix_to_gregorian_ticks(u64::MAX, 0);
+        Timestamp::unix_to_gregorian_ticks(0, u32::MAX);
+        Timestamp::unix_to_gregorian_ticks(u64::MAX, u32::MAX);
 
-        Timestamp::rfc4122_to_unix(u64::MAX);
+        Timestamp::gregorian_to_unix(u64::MAX);
     }
 
     #[test]
@@ -923,9 +941,9 @@ mod tests {
         ),
         wasm_bindgen_test
     )]
-    fn to_rfc4122_truncates_to_usable_bits() {
-        let ts = Timestamp::from_rfc4122(123, u16::MAX);
+    fn to_gregorian_truncates_to_usable_bits() {
+        let ts = Timestamp::from_gregorian(123, u16::MAX);
 
-        assert_eq!((123, u16::MAX >> 2), ts.to_rfc4122());
+        assert_eq!((123, u16::MAX >> 2), ts.to_gregorian());
     }
 }
