@@ -48,7 +48,7 @@ pub struct Timestamp {
 }
 
 impl Timestamp {
-    /// Get a timestamp representing the current system time and up to a 16-bit counter.
+    /// Get a timestamp representing the current system time and up to a 128-bit counter.
     ///
     /// This method defers to the standard library's `SystemTime` type.
     ///
@@ -56,13 +56,7 @@ impl Timestamp {
     ///
     /// This method will panic if calculating the elapsed time since the Unix epoch fails.
     #[cfg(feature = "std")]
-    pub fn now(context: impl ClockSequence<Output = u16>) -> Self {
-        Self::now_128(context)
-    }
-
-    /// Get a timestamp representing the current system time and up to a 128-bit counter.
-    #[cfg(feature = "std")]
-    pub fn now_128(context: impl ClockSequence<Output = impl Into<u128>>) -> Self {
+    pub fn now(context: impl ClockSequence<Output = impl Into<u128>>) -> Self {
         let (seconds, subsec_nanos) = now();
 
         let (counter, seconds, subsec_nanos) =
@@ -78,7 +72,7 @@ impl Timestamp {
         }
     }
 
-    /// Construct a `Timestamp` from an RFC 9562 timestamp and 16-bit counter, as used
+    /// Construct a `Timestamp` from an RFC 9562 timestamp and 14-bit counter, as used
     /// in versions 1 and 6 UUIDs.
     ///
     /// # Overflow
@@ -92,17 +86,12 @@ impl Timestamp {
             seconds,
             subsec_nanos,
             counter: counter as u128,
-            usable_counter_bits: 16,
+            usable_counter_bits: 14,
         }
     }
 
-    /// Construct a `Timestamp` from a Unix timestamp and a 16-bit counter, as used in version 7 UUIDs.
-    pub const fn from_unix_time(seconds: u64, subsec_nanos: u32, counter: u16) -> Self {
-        Self::from_unix_time_128(seconds, subsec_nanos, counter as u128, 16)
-    }
-
     /// Construct a `Timestamp` from a Unix timestamp and up to a 128-bit counter, as used in version 7 UUIDs.
-    pub const fn from_unix_time_128(
+    pub const fn from_unix_time(
         seconds: u64,
         subsec_nanos: u32,
         counter: u128,
@@ -116,17 +105,8 @@ impl Timestamp {
         }
     }
 
-    /// Construct a `Timestamp` from a Unix timestamp and up to a 16-bit counter, as used in version 7 UUIDs.
-    pub fn from_unix(
-        context: impl ClockSequence<Output = u16>,
-        seconds: u64,
-        subsec_nanos: u32,
-    ) -> Self {
-        Self::from_unix_128(context, seconds, subsec_nanos)
-    }
-
     /// Construct a `Timestamp` from a Unix timestamp and up to a 128-bit counter, as used in version 7 UUIDs.
-    pub fn from_unix_128(
+    pub fn from_unix(
         context: impl ClockSequence<Output = impl Into<u128>>,
         seconds: u64,
         subsec_nanos: u32,
@@ -154,12 +134,13 @@ impl Timestamp {
     pub const fn to_rfc4122(&self) -> (u64, u16) {
         (
             Self::unix_to_rfc4122_ticks(self.seconds, self.subsec_nanos),
-            self.counter as u16,
+            (self.counter as u16) & 0x3FFF,
         )
     }
 
     // NOTE: This method is not public; the usable counter bits are lost in a version 7 UUID
     // so can't be reliably recovered.
+    #[cfg(feature = "v7")]
     pub(crate) const fn counter(&self) -> (u128, u8) {
         (self.counter, self.usable_counter_bits)
     }
@@ -369,7 +350,7 @@ fn now() -> (u64, u32) {
     (ts.as_secs(), ts.subsec_nanos())
 }
 
-/// A counter that can be used by version 1 and version 6 UUIDs to support
+/// A counter that can be used by versions 1 and 6 UUIDs to support
 /// the uniqueness of timestamps.
 ///
 /// # References
@@ -482,7 +463,7 @@ pub mod context {
         /// 1. Atomically incrementing the counter value for each timestamp.
         /// 2. Wrapping the counter back to zero if it overflows its 14-bit storage.
         ///
-        /// This type should be used when constructing version 1 and version 6 UUIDs.
+        /// This type should be used when constructing versions 1 and 6 UUIDs.
         ///
         /// This type should not be used when constructing version 7 UUIDs. When used to
         /// construct a version 7 UUID, the 14-bit counter will be padded with random data.
@@ -823,13 +804,13 @@ pub mod context {
 
                 let context = ContextV7::new();
 
-                let ts1 = Timestamp::from_unix_128(&context, seconds, subsec_nanos);
+                let ts1 = Timestamp::from_unix(&context, seconds, subsec_nanos);
                 assert_eq!(42, ts1.usable_counter_bits);
 
                 // Backwards second
                 let seconds = 1_496_854_534;
 
-                let ts2 = Timestamp::from_unix_128(&context, seconds, subsec_nanos);
+                let ts2 = Timestamp::from_unix(&context, seconds, subsec_nanos);
 
                 // The backwards time should be ignored
                 // The counter should still increment
@@ -840,7 +821,7 @@ pub mod context {
                 // Forwards second
                 let seconds = 1_496_854_536;
 
-                let ts3 = Timestamp::from_unix_128(&context, seconds, subsec_nanos);
+                let ts3 = Timestamp::from_unix(&context, seconds, subsec_nanos);
 
                 // The counter should have reseeded
                 assert_ne!(ts2.counter + 1, ts3.counter);
@@ -860,7 +841,7 @@ pub mod context {
                     counter: Cell::new(u64::MAX >> 22),
                 };
 
-                let ts = Timestamp::from_unix_128(&context, seconds, subsec_nanos);
+                let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
 
                 // The timestamp should be incremented by 1ms
                 let expected_ts = Duration::new(seconds, subsec_nanos / 1_000_000 * 1_000_000)
@@ -931,5 +912,20 @@ mod tests {
         Timestamp::unix_to_rfc4122_ticks(u64::MAX, u32::MAX);
 
         Timestamp::rfc4122_to_unix(u64::MAX);
+    }
+
+    #[test]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
+    fn to_rfc4122_truncates_to_usable_bits() {
+        let ts = Timestamp::from_rfc4122(123, u16::MAX);
+
+        assert_eq!((123, u16::MAX >> 2), ts.to_rfc4122());
     }
 }

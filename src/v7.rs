@@ -13,7 +13,7 @@ impl Uuid {
     /// guaranteed to be ordered by their creation.
     #[cfg(feature = "std")]
     pub fn now_v7() -> Self {
-        Self::new_v7(Timestamp::now_128(
+        Self::new_v7(Timestamp::now(
             crate::timestamp::context::shared_context_v7(),
         ))
     }
@@ -50,8 +50,8 @@ impl Uuid {
     /// ```rust
     /// # use uuid::{Uuid, Timestamp, ContextV7};
     /// let context = ContextV7::new();
-    /// let uuid1 = Uuid::new_v7(Timestamp::from_unix_128(&context, 1497624119, 1234));
-    /// let uuid2 = Uuid::new_v7(Timestamp::from_unix_128(&context, 1497624119, 1234));
+    /// let uuid1 = Uuid::new_v7(Timestamp::from_unix(&context, 1497624119, 1234));
+    /// let uuid2 = Uuid::new_v7(Timestamp::from_unix(&context, 1497624119, 1234));
     ///
     /// assert!(uuid1 < uuid2);
     /// ```
@@ -98,7 +98,7 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     use crate::{std::string::ToString, ClockSequence, NoContext, Variant, Version};
 
     #[cfg(all(
@@ -227,8 +227,8 @@ mod tests {
         let time_fraction: u32 = 812_000_000;
 
         // Ensure we don't overflow here
-        let ts = Timestamp::from_unix_128(MaxContext, time, time_fraction);
-        
+        let ts = Timestamp::from_unix(MaxContext, time, time_fraction);
+
         let uuid = Uuid::new_v7(ts);
 
         assert_eq!(uuid.get_version(), Some(Version::SortRand));

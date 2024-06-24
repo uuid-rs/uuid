@@ -904,7 +904,7 @@ impl Uuid {
                 let seconds = millis / 1000;
                 let nanos = ((millis % 1000) * 1_000_000) as u32;
 
-                Some(Timestamp::from_unix_time(seconds, nanos, 0))
+                Some(Timestamp::from_unix_time(seconds, nanos, 0, 0))
             }
             _ => None,
         }
