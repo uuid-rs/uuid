@@ -13,6 +13,10 @@ name = "sortable_uuid"
 path = "src/sortable_uuid.rs"
 
 [[example]]
+name = "sortable_uuid_bulk"
+path = "src/sortable_uuid_bulk.rs"
+
+[[example]]
 name = "uuid_macro"
 path = "src/uuid_macro.rs"
 
