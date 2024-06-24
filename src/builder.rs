@@ -550,8 +550,10 @@ impl Builder {
     }
 
     /// Creates a `Builder` for a version 1 UUID using the supplied timestamp and node ID.
-    pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
-        Builder(timestamp::encode_rfc4122_timestamp(ticks, counter, node_id))
+    pub const fn from_gregorian_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
+        Builder(timestamp::encode_gregorian_timestamp(
+            ticks, counter, node_id,
+        ))
     }
 
     /// Creates a `Builder` for a version 3 UUID using the supplied MD5 hashed bytes.
@@ -599,12 +601,12 @@ impl Builder {
     /// Creates a `Builder` for a version 6 UUID using the supplied timestamp and node ID.
     ///
     /// This method will encode the ticks, counter, and node ID in a sortable UUID.
-    pub const fn from_sorted_rfc4122_timestamp(
+    pub const fn from_sorted_gregorian_timestamp(
         ticks: u64,
         counter: u16,
         node_id: &[u8; 6],
     ) -> Self {
-        Builder(timestamp::encode_sorted_rfc4122_timestamp(
+        Builder(timestamp::encode_sorted_gregorian_timestamp(
             ticks, counter, node_id,
         ))
     }
@@ -901,5 +903,29 @@ impl Builder {
     /// ```
     pub const fn into_uuid(self) -> Uuid {
         self.0
+    }
+}
+
+// Deprecations. Remove when major version changes (2.0.0)
+#[doc(hidden)]
+impl Builder {
+    #[deprecated(
+        since = "1.10.0",
+        note = "Deprecated! Use `from_gregorian_timestamp()` instead!"
+    )]
+    pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
+        Builder::from_gregorian_timestamp(ticks, counter, node_id)
+    }
+
+    #[deprecated(
+        since = "1.10.0",
+        note = "Deprecated! Use `from_sorted_gregorian_timestamp()` instead!"
+    )]
+    pub const fn from_sorted_rfc4122_timestamp(
+        ticks: u64,
+        counter: u16,
+        node_id: &[u8; 6],
+    ) -> Self {
+        Builder::from_sorted_gregorian_timestamp(ticks, counter, node_id)
     }
 }
