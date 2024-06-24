@@ -127,7 +127,7 @@ mod tests {
         let uustr = uuid.hyphenated().to_string();
 
         assert_eq!(uuid.get_version(), Some(Version::SortRand));
-        assert_eq!(uuid.get_variant(), Variant::RFC4122);
+        assert_eq!(uuid.get_variant(), Variant::RFC);
         assert!(uuid.hyphenated().to_string().starts_with("017f22e2-79b0-7"));
 
         // Ensure parsing the same UUID produces the same timestamp
@@ -150,7 +150,7 @@ mod tests {
         let uuid = Uuid::now_v7();
 
         assert_eq!(uuid.get_version(), Some(Version::SortRand));
-        assert_eq!(uuid.get_variant(), Variant::RFC4122);
+        assert_eq!(uuid.get_variant(), Variant::RFC);
     }
 
     #[test]
@@ -232,7 +232,7 @@ mod tests {
         let uuid = Uuid::new_v7(ts);
 
         assert_eq!(uuid.get_version(), Some(Version::SortRand));
-        assert_eq!(uuid.get_variant(), Variant::RFC4122);
+        assert_eq!(uuid.get_variant(), Variant::RFC);
 
         let decoded_ts = uuid.get_timestamp().unwrap();
 

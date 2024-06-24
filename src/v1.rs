@@ -125,7 +125,7 @@ mod tests {
         let uuid = Uuid::new_v1(Timestamp::from_unix(&context, time, time_fraction), &node);
 
         assert_eq!(uuid.get_version(), Some(Version::Mac));
-        assert_eq!(uuid.get_variant(), Variant::RFC4122);
+        assert_eq!(uuid.get_variant(), Variant::RFC);
         assert_eq!(
             uuid.hyphenated().to_string(),
             "20616934-4ba2-11e7-8000-010203040506"
@@ -164,6 +164,6 @@ mod tests {
         let uuid = Uuid::now_v1(&node);
 
         assert_eq!(uuid.get_version(), Some(Version::Mac));
-        assert_eq!(uuid.get_variant(), Variant::RFC4122);
+        assert_eq!(uuid.get_variant(), Variant::RFC);
     }
 }

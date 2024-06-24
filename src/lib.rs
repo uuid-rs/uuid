@@ -326,19 +326,38 @@ pub enum Version {
 /// # References
 ///
 /// * [Variant Field in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-4.1)
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug)]
 #[non_exhaustive]
 #[repr(u8)]
 pub enum Variant {
     /// Reserved by the NCS for backward compatibility.
     NCS = 0u8,
     /// As described in the RFC 9562 Specification (default).
-    /// (for backward compatibility it is not yet renamed)
-    RFC4122,
+    RFC,
     /// Reserved by Microsoft for backward compatibility.
     Microsoft,
     /// Reserved for future expansion.
     Future,
+    /// As described in the RFC 4122 Specification (deprecated).
+    #[deprecated(since = "1.10.0", note = "Deprecated! Use `Variant::RFC` instead!")]
+    RFC4122 = 255u8,
+}
+
+// Deprecations:
+// - Remove when major version changes (2.0.0)
+// - put back `PartialEq` derive macro
+#[doc(hidden)]
+impl PartialEq for Variant {
+    fn eq(&self, other: &Self) -> bool {
+        #[allow(deprecated)]
+        match self {
+            Variant::RFC4122 | Variant::RFC => match other {
+                Variant::RFC | Variant::RFC4122 => true,
+                _ => *self as u8 == *other as u8,
+            },
+            _ => *self as u8 == *other as u8,
+        }
+    }
 }
 
 /// A Universally Unique Identifier (UUID).
@@ -491,7 +510,7 @@ impl Uuid {
     /// # fn main() -> Result<(), uuid::Error> {
     /// let my_uuid = Uuid::parse_str("02f09a3f-1624-3b1d-8409-44eff7708208")?;
     ///
-    /// assert_eq!(Variant::RFC4122, my_uuid.get_variant());
+    /// assert_eq!(Variant::RFC, my_uuid.get_variant());
     /// # Ok(())
     /// # }
     /// ```
@@ -502,7 +521,7 @@ impl Uuid {
     pub const fn get_variant(&self) -> Variant {
         match self.as_bytes()[8] {
             x if x & 0x80 == 0x00 => Variant::NCS,
-            x if x & 0xc0 == 0x80 => Variant::RFC4122,
+            x if x & 0xc0 == 0x80 => Variant::RFC,
             x if x & 0xe0 == 0xc0 => Variant::Microsoft,
             x if x & 0xe0 == 0xe0 => Variant::Future,
             // The above match arms are actually exhaustive
@@ -1311,12 +1330,20 @@ mod tests {
         let uuid5 = Uuid::parse_str("F9168C5E-CEB2-4faa-D6BF-329BF39FA1E4").unwrap();
         let uuid6 = Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
 
-        assert_eq!(uuid1.get_variant(), Variant::RFC4122);
-        assert_eq!(uuid2.get_variant(), Variant::RFC4122);
-        assert_eq!(uuid3.get_variant(), Variant::RFC4122);
+        assert_eq!(uuid1.get_variant(), Variant::RFC);
+        assert_eq!(uuid2.get_variant(), Variant::RFC);
+        assert_eq!(uuid3.get_variant(), Variant::RFC);
         assert_eq!(uuid4.get_variant(), Variant::Microsoft);
         assert_eq!(uuid5.get_variant(), Variant::Microsoft);
         assert_eq!(uuid6.get_variant(), Variant::NCS);
+
+        // test deprecation
+        #[allow(deprecated)]
+        {
+            assert_eq!(uuid1.get_variant(), Variant::RFC4122);
+            assert_eq!(uuid2.get_variant(), Variant::RFC4122);
+            assert_eq!(uuid3.get_variant(), Variant::RFC4122);
+        }
     }
 
     #[test]

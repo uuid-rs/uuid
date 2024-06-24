@@ -43,9 +43,12 @@ impl fmt::Display for Variant {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match *self {
             Variant::NCS => write!(f, "NCS"),
-            Variant::RFC4122 => write!(f, "RFC4122"),
+            Variant::RFC => write!(f, "RFC"),
             Variant::Microsoft => write!(f, "Microsoft"),
             Variant::Future => write!(f, "Future"),
+            // Deprecated. Remove when major version changes (2.0.0)
+            #[allow(deprecated)]
+            Variant::RFC4122 => write!(f, "RFC4122"),
         }
     }
 }
@@ -924,6 +927,7 @@ impl_fmt_traits! {
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
 
     #[test]
@@ -1036,5 +1040,11 @@ mod tests {
     fn braced_to_inner() {
         let braced = Uuid::nil().braced();
         assert_eq!(Uuid::from(braced), Uuid::nil());
+    }
+
+    #[test]
+    #[allow(deprecated)]
+    fn fmt_variant() {
+        assert_eq!(format!("{}", Variant::RFC4122), "RFC4122");
     }
 }

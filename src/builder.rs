@@ -40,7 +40,7 @@ use crate::{error::*, timestamp, Bytes, Uuid, Variant, Version};
 /// let uuid = Builder::from_random_bytes(random_bytes).into_uuid();
 ///
 /// assert_eq!(Some(Version::Random), uuid.get_version());
-/// assert_eq!(Variant::RFC4122, uuid.get_variant());
+/// assert_eq!(Variant::RFC, uuid.get_variant());
 /// ```
 #[allow(missing_copy_implementations)]
 #[derive(Debug)]
@@ -559,7 +559,7 @@ impl Builder {
     /// Creates a `Builder` for a version 3 UUID using the supplied MD5 hashed bytes.
     pub const fn from_md5_bytes(md5_bytes: Bytes) -> Self {
         Builder(Uuid::from_bytes(md5_bytes))
-            .with_variant(Variant::RFC4122)
+            .with_variant(Variant::RFC)
             .with_version(Version::Md5)
     }
 
@@ -580,11 +580,11 @@ impl Builder {
     /// let uuid = Builder::from_random_bytes(random_bytes).into_uuid();
     ///
     /// assert_eq!(Some(Version::Random), uuid.get_version());
-    /// assert_eq!(Variant::RFC4122, uuid.get_variant());
+    /// assert_eq!(Variant::RFC, uuid.get_variant());
     /// ```
     pub const fn from_random_bytes(random_bytes: Bytes) -> Self {
         Builder(Uuid::from_bytes(random_bytes))
-            .with_variant(Variant::RFC4122)
+            .with_variant(Variant::RFC)
             .with_version(Version::Random)
     }
 
@@ -594,7 +594,7 @@ impl Builder {
     /// bits for the UUID version and variant.
     pub const fn from_sha1_bytes(sha1_bytes: Bytes) -> Self {
         Builder(Uuid::from_bytes(sha1_bytes))
-            .with_variant(Variant::RFC4122)
+            .with_variant(Variant::RFC)
             .with_version(Version::Sha1)
     }
 
@@ -636,7 +636,7 @@ impl Builder {
     /// let uuid = Builder::from_unix_timestamp_millis(ts.as_millis().try_into()?, &random_bytes).into_uuid();
     ///
     /// assert_eq!(Some(Version::SortRand), uuid.get_version());
-    /// assert_eq!(Variant::RFC4122, uuid.get_variant());
+    /// assert_eq!(Variant::RFC, uuid.get_variant());
     /// # Ok(())
     /// # }
     /// ```
@@ -653,7 +653,7 @@ impl Builder {
     /// bits for the UUID version and variant.
     pub const fn from_custom_bytes(custom_bytes: Bytes) -> Self {
         Builder::from_bytes(custom_bytes)
-            .with_variant(Variant::RFC4122)
+            .with_variant(Variant::RFC)
             .with_version(Version::Custom)
     }
 
@@ -846,9 +846,12 @@ impl Builder {
 
         (self.0).0[8] = match v {
             Variant::NCS => byte & 0x7f,
-            Variant::RFC4122 => (byte & 0x3f) | 0x80,
+            Variant::RFC => (byte & 0x3f) | 0x80,
             Variant::Microsoft => (byte & 0x1f) | 0xc0,
             Variant::Future => byte | 0xe0,
+            // Deprecated. Remove when major version changes (2.0.0)
+            #[allow(deprecated)]
+            Variant::RFC4122 => (byte & 0x3f) | 0x80,
         };
 
         self
