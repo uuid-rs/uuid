@@ -98,7 +98,9 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{std::string::ToString, NoContext, Variant, Version};
+    
+    use crate::{std::string::ToString, ClockSequence, NoContext, Variant, Version};
+
     #[cfg(all(
         target_arch = "wasm32",
         target_vendor = "unknown",
@@ -190,6 +192,47 @@ mod tests {
         let ts = Timestamp::from_unix(NoContext, time, time_fraction);
 
         let uuid = Uuid::new_v7(ts);
+
+        let decoded_ts = uuid.get_timestamp().unwrap();
+
+        assert_eq!(ts.to_unix(), decoded_ts.to_unix());
+    }
+
+    #[test]
+    #[cfg_attr(
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
+        wasm_bindgen_test
+    )]
+    fn test_new_max_context() {
+        struct MaxContext;
+
+        #[cfg(test)]
+        impl ClockSequence for MaxContext {
+            type Output = u128;
+
+            fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
+                u128::MAX
+            }
+
+            fn usable_bits(&self) -> usize {
+                128
+            }
+        }
+
+        let time: u64 = 1_496_854_535;
+        let time_fraction: u32 = 812_000_000;
+
+        // Ensure we don't overflow here
+        let ts = Timestamp::from_unix_128(MaxContext, time, time_fraction);
+        
+        let uuid = Uuid::new_v7(ts);
+
+        assert_eq!(uuid.get_version(), Some(Version::SortRand));
+        assert_eq!(uuid.get_variant(), Variant::RFC4122);
 
         let decoded_ts = uuid.get_timestamp().unwrap();
 
