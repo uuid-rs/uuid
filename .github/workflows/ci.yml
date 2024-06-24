@@ -157,10 +157,10 @@ jobs:
           cargo +nightly miri setup
 
       - name: Default features
-        run: cargo +nightly miri test --lib
+        run: cargo +nightly miri test --lib --all-features
 
       - name: BE
-        run: cargo +nightly miri test --target s390x-unknown-linux-gnu --lib
+        run: cargo +nightly miri test --target s390x-unknown-linux-gnu --lib --all-features
 
   clippy:
     name: Build / Clippy
