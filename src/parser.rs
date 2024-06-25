@@ -55,7 +55,7 @@ impl Uuid {
     /// let uuid = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000")?;
     ///
     /// assert_eq!(Some(Version::Random), uuid.get_version());
-    /// assert_eq!(Variant::RFC4122, uuid.get_variant());
+    /// assert_eq!(Variant::RFC, uuid.get_variant());
     /// # Ok(())
     /// # }
     /// ```
@@ -88,7 +88,7 @@ impl Uuid {
     /// let uuid = Uuid::try_parse("550e8400-e29b-41d4-a716-446655440000")?;
     ///
     /// assert_eq!(Some(Version::Random), uuid.get_version());
-    /// assert_eq!(Variant::RFC4122, uuid.get_variant());
+    /// assert_eq!(Variant::RFC, uuid.get_variant());
     /// # Ok(())
     /// # }
     /// ```
@@ -116,7 +116,7 @@ impl Uuid {
     /// let uuid = Uuid::try_parse_ascii(b"550e8400-e29b-41d4-a716-446655440000")?;
     ///
     /// assert_eq!(Some(Version::Random), uuid.get_version());
-    /// assert_eq!(Variant::RFC4122, uuid.get_variant());
+    /// assert_eq!(Variant::RFC, uuid.get_variant());
     /// # Ok(())
     /// # }
     /// ```

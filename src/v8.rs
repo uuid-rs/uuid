@@ -58,7 +58,7 @@ mod tests {
         ];
         let uuid = Uuid::new_v8(buf);
         assert_eq!(uuid.get_version(), Some(Version::Custom));
-        assert_eq!(uuid.get_variant(), Variant::RFC4122);
+        assert_eq!(uuid.get_variant(), Variant::RFC);
         assert_eq!(uuid.get_version_num(), 8);
         assert_eq!(
             uuid.hyphenated().to_string(),

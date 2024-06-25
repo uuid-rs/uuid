@@ -40,7 +40,7 @@ use crate::{error::*, timestamp, Bytes, Uuid, Variant, Version};
 /// let uuid = Builder::from_random_bytes(random_bytes).into_uuid();
 ///
 /// assert_eq!(Some(Version::Random), uuid.get_version());
-/// assert_eq!(Variant::RFC4122, uuid.get_variant());
+/// assert_eq!(Variant::RFC, uuid.get_variant());
 /// ```
 #[allow(missing_copy_implementations)]
 #[derive(Debug)]
@@ -550,14 +550,16 @@ impl Builder {
     }
 
     /// Creates a `Builder` for a version 1 UUID using the supplied timestamp and node ID.
-    pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
-        Builder(timestamp::encode_rfc4122_timestamp(ticks, counter, node_id))
+    pub const fn from_gregorian_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
+        Builder(timestamp::encode_gregorian_timestamp(
+            ticks, counter, node_id,
+        ))
     }
 
     /// Creates a `Builder` for a version 3 UUID using the supplied MD5 hashed bytes.
     pub const fn from_md5_bytes(md5_bytes: Bytes) -> Self {
         Builder(Uuid::from_bytes(md5_bytes))
-            .with_variant(Variant::RFC4122)
+            .with_variant(Variant::RFC)
             .with_version(Version::Md5)
     }
 
@@ -578,11 +580,11 @@ impl Builder {
     /// let uuid = Builder::from_random_bytes(random_bytes).into_uuid();
     ///
     /// assert_eq!(Some(Version::Random), uuid.get_version());
-    /// assert_eq!(Variant::RFC4122, uuid.get_variant());
+    /// assert_eq!(Variant::RFC, uuid.get_variant());
     /// ```
     pub const fn from_random_bytes(random_bytes: Bytes) -> Self {
         Builder(Uuid::from_bytes(random_bytes))
-            .with_variant(Variant::RFC4122)
+            .with_variant(Variant::RFC)
             .with_version(Version::Random)
     }
 
@@ -592,19 +594,19 @@ impl Builder {
     /// bits for the UUID version and variant.
     pub const fn from_sha1_bytes(sha1_bytes: Bytes) -> Self {
         Builder(Uuid::from_bytes(sha1_bytes))
-            .with_variant(Variant::RFC4122)
+            .with_variant(Variant::RFC)
             .with_version(Version::Sha1)
     }
 
     /// Creates a `Builder` for a version 6 UUID using the supplied timestamp and node ID.
     ///
     /// This method will encode the ticks, counter, and node ID in a sortable UUID.
-    pub const fn from_sorted_rfc4122_timestamp(
+    pub const fn from_sorted_gregorian_timestamp(
         ticks: u64,
         counter: u16,
         node_id: &[u8; 6],
     ) -> Self {
-        Builder(timestamp::encode_sorted_rfc4122_timestamp(
+        Builder(timestamp::encode_sorted_gregorian_timestamp(
             ticks, counter, node_id,
         ))
     }
@@ -634,7 +636,7 @@ impl Builder {
     /// let uuid = Builder::from_unix_timestamp_millis(ts.as_millis().try_into()?, &random_bytes).into_uuid();
     ///
     /// assert_eq!(Some(Version::SortRand), uuid.get_version());
-    /// assert_eq!(Variant::RFC4122, uuid.get_variant());
+    /// assert_eq!(Variant::RFC, uuid.get_variant());
     /// # Ok(())
     /// # }
     /// ```
@@ -651,7 +653,7 @@ impl Builder {
     /// bits for the UUID version and variant.
     pub const fn from_custom_bytes(custom_bytes: Bytes) -> Self {
         Builder::from_bytes(custom_bytes)
-            .with_variant(Variant::RFC4122)
+            .with_variant(Variant::RFC)
             .with_version(Version::Custom)
     }
 
@@ -844,9 +846,12 @@ impl Builder {
 
         (self.0).0[8] = match v {
             Variant::NCS => byte & 0x7f,
-            Variant::RFC4122 => (byte & 0x3f) | 0x80,
+            Variant::RFC => (byte & 0x3f) | 0x80,
             Variant::Microsoft => (byte & 0x1f) | 0xc0,
             Variant::Future => byte | 0xe0,
+            // Deprecated. Remove when major version changes (2.0.0)
+            #[allow(deprecated)]
+            Variant::RFC4122 => (byte & 0x3f) | 0x80,
         };
 
         self
@@ -901,5 +906,29 @@ impl Builder {
     /// ```
     pub const fn into_uuid(self) -> Uuid {
         self.0
+    }
+}
+
+// Deprecations. Remove when major version changes (2.0.0)
+#[doc(hidden)]
+impl Builder {
+    #[deprecated(
+        since = "1.10.0",
+        note = "Deprecated! Use `from_gregorian_timestamp()` instead!"
+    )]
+    pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
+        Builder::from_gregorian_timestamp(ticks, counter, node_id)
+    }
+
+    #[deprecated(
+        since = "1.10.0",
+        note = "Deprecated! Use `from_sorted_gregorian_timestamp()` instead!"
+    )]
+    pub const fn from_sorted_rfc4122_timestamp(
+        ticks: u64,
+        counter: u16,
+        node_id: &[u8; 6],
+    ) -> Self {
+        Builder::from_sorted_gregorian_timestamp(ticks, counter, node_id)
     }
 }
