@@ -4,7 +4,7 @@ macro_rules! define_uuid_macro {
         #[cfg(feature = "macro-diagnostics")]
         #[macro_export]
         macro_rules! uuid {
-            ($uuid:ident) => {{
+            ($uuid:expr) => {{
                 const OUTPUT: $crate::Uuid = match $crate::Uuid::try_parse($uuid) {
                     $crate::__macro_support::Ok(u) => u,
                     $crate::__macro_support::Err(_) => panic!("invalid UUID"),
