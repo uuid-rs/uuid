@@ -51,10 +51,6 @@ impl Timestamp {
     /// Get a timestamp representing the current system time and up to a 128-bit counter.
     ///
     /// This method defers to the standard library's `SystemTime` type.
-    ///
-    /// # Panics
-    ///
-    /// This method will panic if calculating the elapsed time since the Unix epoch fails.
     #[cfg(feature = "std")]
     pub fn now(context: impl ClockSequence<Output = impl Into<u128>>) -> Self {
         let (seconds, subsec_nanos) = now();
@@ -72,8 +68,9 @@ impl Timestamp {
         }
     }
 
-    /// Construct a `Timestamp` from an RFC 9562 timestamp and 14-bit counter, as used
-    /// in versions 1 and 6 UUIDs.
+    /// Construct a `Timestamp` from the number of 100 nanosecond ticks since 00:00:00.00,
+    /// 15 October 1582 (the date of Gregorian reform to the Christian calendar) and a 14-bit
+    /// counter, as used in versions 1 and 6 UUIDs.
     ///
     /// # Overflow
     ///
@@ -124,13 +121,15 @@ impl Timestamp {
         }
     }
 
-    /// Get the value of the timestamp as an RFC 9562 timestamp and counter,
-    /// as used in versions 1 and 6 UUIDs.
+    /// Get the value of the timestamp as the number of 100 nanosecond ticks since 00:00:00.00,
+    /// 15 October 1582 and a 14-bit counter, as used in versions 1 and 6 UUIDs.
     ///
     /// # Overflow
     ///
-    /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
-    /// it will wrap.
+    /// If conversion from the internal timestamp format to ticks would overflow
+    /// then it will wrap.
+    /// 
+    /// If the internal counter is wider than 14 bits then it will be truncated to 14 bits.
     pub const fn to_gregorian(&self) -> (u64, u16) {
         (
             Self::unix_to_gregorian_ticks(self.seconds, self.subsec_nanos),
@@ -164,27 +163,21 @@ impl Timestamp {
     }
 }
 
-// Deprecations. Remove when major version changes (2.0.0)
 #[doc(hidden)]
 impl Timestamp {
-    #[deprecated(since = "1.10.0", note = "Deprecated! Use `from_gregorian()` instead!")]
+    #[deprecated(since = "1.10.0", note = "use `Timestamp::from_gregorian(ticks, counter)`")]
     pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
         Timestamp::from_gregorian(ticks, counter)
     }
 
-    #[deprecated(since = "1.10.0", note = "Deprecated! Use `to_gregorian()` instead!")]
+    #[deprecated(since = "1.10.0", note = "use `Timestamp::to_gregorian()`")]
     pub const fn to_rfc4122(&self) -> (u64, u16) {
         self.to_gregorian()
     }
 
-    /// Get the number of fractional nanoseconds in the Unix timestamp.
-    ///
-    /// This method is deprecated and probably doesn't do what you're expecting it to.
-    /// It doesn't return the timestamp as nanoseconds since the Unix epoch, it returns
-    /// the fractional seconds of the timestamp.
-    #[deprecated(since = "1.2.0", note = "Deprecated! Use `to_unix()` instead!")]
+    #[deprecated(since = "1.2.0", note = "`Timestamp::to_unix_nanos()` is deprecated and will be removed: use `Timestamp::to_unix()`")]
     pub const fn to_unix_nanos(&self) -> u32 {
-        panic!("`Timestamp::to_unix_nanos` is deprecated and will be removed: use `Timestamp::to_unix` instead")
+        panic!("`Timestamp::to_unix_nanos()` is deprecated and will be removed: use `Timestamp::to_unix()`")
     }
 }
 

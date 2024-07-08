@@ -549,7 +549,7 @@ impl Builder {
         Builder(Uuid::from_bytes_le(b))
     }
 
-    /// Creates a `Builder` for a version 1 UUID using the supplied timestamp and node ID.
+    /// Creates a `Builder` for a version 1 UUID using the supplied timestamp, counter, and node ID.
     pub const fn from_gregorian_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
         Builder(timestamp::encode_gregorian_timestamp(
             ticks, counter, node_id,
@@ -598,7 +598,7 @@ impl Builder {
             .with_version(Version::Sha1)
     }
 
-    /// Creates a `Builder` for a version 6 UUID using the supplied timestamp and node ID.
+    /// Creates a `Builder` for a version 6 UUID using the supplied timestamp, counter, and node ID.
     ///
     /// This method will encode the ticks, counter, and node ID in a sortable UUID.
     pub const fn from_sorted_gregorian_timestamp(
@@ -906,12 +906,11 @@ impl Builder {
     }
 }
 
-// Deprecations. Remove when major version changes (2.0.0)
 #[doc(hidden)]
 impl Builder {
     #[deprecated(
         since = "1.10.0",
-        note = "Deprecated! Use `from_gregorian_timestamp()` instead!"
+        note = "use `Builder::from_gregorian_timestamp(ticks, counter, node_id)`"
     )]
     pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
         Builder::from_gregorian_timestamp(ticks, counter, node_id)
@@ -919,7 +918,7 @@ impl Builder {
 
     #[deprecated(
         since = "1.10.0",
-        note = "Deprecated! Use `from_sorted_gregorian_timestamp()` instead!"
+        note = "use `Builder::from_sorted_gregorian_timestamp(ticks, counter, node_id)`"
     )]
     pub const fn from_sorted_rfc4122_timestamp(
         ticks: u64,
