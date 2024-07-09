@@ -889,14 +889,14 @@ impl Uuid {
     pub const fn get_timestamp(&self) -> Option<Timestamp> {
         match self.get_version() {
             Some(Version::Mac) => {
-                let (ticks, counter) = timestamp::decode_rfc4122_timestamp(self);
+                let (ticks, counter) = timestamp::decode_gregorian_timestamp(self);
 
-                Some(Timestamp::from_rfc4122(ticks, counter))
+                Some(Timestamp::from_gregorian(ticks, counter))
             }
             Some(Version::SortMac) => {
-                let (ticks, counter) = timestamp::decode_sorted_rfc4122_timestamp(self);
+                let (ticks, counter) = timestamp::decode_sorted_gregorian_timestamp(self);
 
-                Some(Timestamp::from_rfc4122(ticks, counter))
+                Some(Timestamp::from_gregorian(ticks, counter))
             }
             Some(Version::SortRand) => {
                 let millis = timestamp::decode_unix_timestamp_millis(self);
