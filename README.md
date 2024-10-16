@@ -28,7 +28,7 @@ Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies.uuid]
-version = "1.10.0"
+version = "1.11.0"
 features = [
     "v4",                # Lets you generate random UUIDs
     "fast-rng",          # Use a faster (but still sufficiently random) RNG
@@ -65,11 +65,11 @@ assert_eq!(Some(Version::Random), my_uuid.get_version());
 If you'd like to parse UUIDs _really_ fast, check out the [`uuid-simd`](https://github.com/nugine/uuid-simd)
 library.
 
-For more details on using `uuid`, [see the library documentation](https://docs.rs/uuid/1.10.0/uuid).
+For more details on using `uuid`, [see the library documentation](https://docs.rs/uuid/1.11.0/uuid).
 
 ## References
 
-* [`uuid` library docs](https://docs.rs/uuid/1.10.0/uuid).
+* [`uuid` library docs](https://docs.rs/uuid/1.11.0/uuid).
 * [Wikipedia: Universally Unique Identifier](http://en.wikipedia.org/wiki/Universally_unique_identifier).
 * [RFC 9562: Universally Unique IDentifiers (UUID)](https://www.ietf.org/rfc/rfc9562.html).
 

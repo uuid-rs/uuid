@@ -909,7 +909,7 @@ impl Builder {
 #[doc(hidden)]
 impl Builder {
     #[deprecated(
-        since = "1.10.0",
+        since = "1.11.0",
         note = "use `Builder::from_gregorian_timestamp(ticks, counter, node_id)`"
     )]
     pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
@@ -917,7 +917,7 @@ impl Builder {
     }
 
     #[deprecated(
-        since = "1.10.0",
+        since = "1.11.0",
         note = "use `Builder::from_sorted_gregorian_timestamp(ticks, counter, node_id)`"
     )]
     pub const fn from_sorted_rfc4122_timestamp(
