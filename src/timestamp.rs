@@ -165,12 +165,12 @@ impl Timestamp {
 
 #[doc(hidden)]
 impl Timestamp {
-    #[deprecated(since = "1.10.0", note = "use `Timestamp::from_gregorian(ticks, counter)`")]
+    #[deprecated(since = "1.11.0", note = "use `Timestamp::from_gregorian(ticks, counter)`")]
     pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
         Timestamp::from_gregorian(ticks, counter)
     }
 
-    #[deprecated(since = "1.10.0", note = "use `Timestamp::to_gregorian()`")]
+    #[deprecated(since = "1.11.0", note = "use `Timestamp::to_gregorian()`")]
     pub const fn to_rfc4122(&self) -> (u64, u16) {
         self.to_gregorian()
     }
