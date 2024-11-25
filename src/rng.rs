@@ -14,7 +14,7 @@ pub(crate) fn u128() -> u128 {
 
     #[cfg(feature = "fast-rng")]
     {
-        rand::random()
+        fastrand::u128()
     }
 }
 
@@ -34,7 +34,7 @@ pub(crate) fn u16() -> u16 {
 
     #[cfg(feature = "fast-rng")]
     {
-        rand::random()
+        fastrand::u16()
     }
 }
 
@@ -54,6 +54,6 @@ pub(crate) fn u64() -> u64 {
 
     #[cfg(feature = "fast-rng")]
     {
-        rand::random()
+        fastrand::u64()
     }
 }

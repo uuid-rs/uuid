@@ -71,7 +71,7 @@ v8 = []
 js = ["dep:wasm-bindgen", "getrandom?/js"]
 
 rng = ["dep:getrandom"]
-fast-rng = ["rng", "dep:rand"]
+fast-rng = ["rng", "dep:fastrand"]
 
 sha1 = ["dep:sha1_smol"]
 md5 = ["dep:md-5"]
@@ -131,9 +131,9 @@ optional = true
 version = "0.2"
 
 # Private
-[dependencies.rand]
+[dependencies.fastrand]
 optional = true
-version = "0.8"
+version = "2.2"
 
 # Private
 [dependencies.md-5]
