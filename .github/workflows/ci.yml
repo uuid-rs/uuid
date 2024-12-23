@@ -85,10 +85,10 @@ jobs:
       uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
     - name: Install Rust toolchain
-      run: rustup update 1.60.0
+      run: rustup update 1.63.0
 
     - name: Version features
-      run: cargo +1.60.0 build --manifest-path tests/smoke-test/Cargo.toml
+      run: cargo +1.63.0 build --manifest-path tests/smoke-test/Cargo.toml
 
   examples:
     name: Tests / Examples
