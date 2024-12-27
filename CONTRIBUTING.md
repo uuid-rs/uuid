@@ -99,7 +99,7 @@ improvements to documentation are always welcome.
 
 We follow the documentation style guidelines as given by [RFC 1574].
 
-[RFC 1574]: https://github.com/rust-lang/rfcs/blob/main/text/1574-more-api-documentation-conventions.md#appendix-a-full-conventions-text
+[RFC 1574]: https://github.com/rust-lang/rfcs/blob/9b39f573ff9fc230de7388fb515bac0794fe2e36/text/1574-more-api-documentation-conventions.md#appendix-a-full-conventions-text
 
 # Issue Triage
 [Issue Triage]: #issue-triage
