@@ -9,7 +9,7 @@ Thank you for your interest in contributing to the Uuid Project!
 * [Pull Requests](#pull-requests)
 * [Writing Documentation](#writing-documentation)
 * [Issue Triage](#issue-triage)
-* [Out-of-tree Contributions](#out-of-tree-contributions)
+* [Fuzzing](#fuzzing)
 * [Helpful Links](#helpful-links)
 
 For any questions, please make a post on [Discussions] or [users.rust-lang.org][u-r-l-o].
@@ -99,7 +99,7 @@ improvements to documentation are always welcome.
 
 We follow the documentation style guidelines as given by [RFC 1574].
 
-[RFC 1574]: https://github.com/rust-lang/rfcs/blob/main/text/1574-more-api-documentation-conventions.md#appendix-a-full-conventions-text
+[RFC 1574]: https://github.com/rust-lang/rfcs/blob/9b39f573ff9fc230de7388fb515bac0794fe2e36/text/1574-more-api-documentation-conventions.md#appendix-a-full-conventions-text
 
 # Issue Triage
 [Issue Triage]: #issue-triage
@@ -114,6 +114,8 @@ You can follow [this link][lrus] to look for issues like this.
 [lrus]: https://github.com/uuid-rs/uuid/issues?q=is%3Aissue+is%3Aopen+sort%3Aupdated-asc
 
 # Fuzzing
+[Fuzzing]: #fuzzing
+
 We use [`cargo fuzz`] to fuzz test various parts of `uuid`. See their guide
 for more details on what fuzzing is and how to run the tests yourself.
 
