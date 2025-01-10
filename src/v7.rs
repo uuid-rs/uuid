@@ -31,7 +31,7 @@ impl Uuid {
     /// # Examples
     ///
     /// A v7 UUID can be created from a unix [`Timestamp`] plus a 128 bit
-    /// random number. When supplied as such, the data will be combined 
+    /// random number. When supplied as such, the data will be combined
     /// to ensure uniqueness and sortability at millisecond granularity.
     ///
     /// ```rust
