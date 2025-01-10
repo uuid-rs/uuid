@@ -50,7 +50,7 @@ jobs:
       uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
     - name: Install Rust Toolchain
-      run: rustup default ${{ matrix.channel }}-${{ matrix.rust_target }}
+      run: rustup update ${{ matrix.channel }}-${{ matrix.rust_target }} && rustup default ${{ matrix.channel }}-${{ matrix.rust_target }}
 
     - name: Install cargo-hack
       run: cargo install cargo-hack
@@ -73,6 +73,9 @@ jobs:
     steps:
     - name: Checkout sources
       uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+
+    - name: Install Rust Toolchain
+      run: rustup update stable
 
     - name: All features
       run: cargo test --all-features
@@ -97,6 +100,9 @@ jobs:
     - name: Checkout sources
       uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
+    - name: Install Rust Toolchain
+      run: rustup update stable
+
     - name: Examples
       run: cargo test --manifest-path examples/Cargo.toml
 
@@ -111,6 +117,9 @@ jobs:
         uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af
         with:
           node-version: '20'
+
+      - name: Install Rust Toolchain
+        run: rustup update stable
 
       - name: Install
         run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
@@ -137,17 +146,20 @@ jobs:
       - name: Add Wasmtime to path
         run: echo "$HOME/.wasmtime/bin" >> $GITHUB_PATH
 
-      - name: Install wasm32-wasi target
-        run: rustup target add wasm32-wasi
+      - name: Install Rust Toolchain
+        run: rustup update nightly && rustup default nightly
+
+      - name: Install wasm32-wasip1 target
+        run: rustup target add wasm32-wasip1
 
       - name: Default features
-        run: cargo test --target wasm32-wasi
+        run: cargo test --target wasm32-wasip1
 
       - name: Version features
-        run: cargo test --target wasm32-wasi --features "$VERSION_FEATURES $DEP_FEATURES"
+        run: cargo test --target wasm32-wasip1 --features "$VERSION_FEATURES $DEP_FEATURES"
 
       - name: Fast RNG
-        run: cargo test --target wasm32-wasi --features "v4 fast-rng"
+        run: cargo test --target wasm32-wasip1 --features "v4 fast-rng"
 
   miri:
     name: Tests / Miri
@@ -155,6 +167,9 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+
+      - name: Install Rust Toolchain
+        run: rustup update nightly
 
       - name: Install Miri
         run: |
@@ -173,6 +188,9 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+
+      - name: Install Rust Toolchain
+        run: rustup update beta
 
       - name: Install Clippy
         run: |
