@@ -2,7 +2,7 @@ name: Continuous integration
 
 env:
   VERSION_FEATURES: "v1 v3 v4 v5 v6 v7 v8"
-  DEP_FEATURES: "slog serde arbitrary borsh zerocopy bytemuck nonzero"
+  DEP_FEATURES: "slog serde arbitrary borsh zerocopy bytemuck"
 
 on:
   pull_request:
