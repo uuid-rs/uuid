@@ -12,6 +12,7 @@
 use crate::{
     error::*,
     fmt::{Braced, Hyphenated, Simple, Urn},
+    non_nil::NonNilUuid,
     std::fmt,
     Uuid,
 };
@@ -27,6 +28,15 @@ impl Serialize for Uuid {
         } else {
             serializer.serialize_bytes(self.as_bytes())
         }
+    }
+}
+
+impl Serialize for NonNilUuid {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        Uuid::from(*self).serialize(serializer)
     }
 }
 
@@ -124,6 +134,16 @@ impl<'de> Deserialize<'de> for Uuid {
 
             deserializer.deserialize_bytes(UuidBytesVisitor)
         }
+    }
+}
+
+impl<'de> Deserialize<'de> for NonNilUuid {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let uuid = Uuid::deserialize(deserializer)?;
+        Ok(NonNilUuid::from(uuid))
     }
 }
 
@@ -731,5 +751,22 @@ mod serde_tests {
             &[Token::Bytes(b"hello_world")],
             "UUID parsing failed: invalid length: expected 16 bytes, found 11",
         );
+    }
+
+    #[test]
+    fn test_serialize_non_nil_uuid() {
+        let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
+        let uuid = Uuid::parse_str(uuid_str).unwrap();
+        let non_nil_uuid = NonNilUuid::from(uuid);
+
+        serde_test::assert_ser_tokens(&non_nil_uuid.readable(), &[Token::Str(uuid_str)]);
+    }
+    #[test]
+    fn test_deserialize_non_nil_uuid() {
+        let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
+        let uuid = Uuid::parse_str(uuid_str).unwrap();
+        let non_nil_uuid = NonNilUuid::from(uuid);
+
+        serde_test::assert_de_tokens(&non_nil_uuid.readable(), &[Token::Str(uuid_str)]);
     }
 }

@@ -223,13 +223,14 @@ extern crate std;
 extern crate core as std;
 
 #[cfg(all(uuid_unstable, feature = "zerocopy"))]
-use zerocopy::{IntoBytes, FromBytes, Immutable, KnownLayout, Unaligned};
+use zerocopy::{FromBytes, Immutable, IntoBytes, KnownLayout, Unaligned};
 
 mod builder;
 mod error;
 mod parser;
 
 pub mod fmt;
+pub mod non_nil;
 pub mod timestamp;
 
 pub use timestamp::{context::NoContext, ClockSequence, Timestamp};
