@@ -25,7 +25,7 @@ impl From<NonNilUuid> for Uuid {
     /// ```
     /// use uuid::{non_nil::NonNilUuid, Uuid};
     ///
-    /// let uuid = Uuid::new_v4();
+    /// let uuid = Uuid::from_u128(0x0123456789abcdef0123456789abcdef);
     /// let non_nil = NonNilUuid::from(uuid);
     /// let uuid_again = Uuid::from(non_nil);
     ///
@@ -46,7 +46,7 @@ impl From<Uuid> for NonNilUuid {
     /// ```
     /// use uuid::{non_nil::NonNilUuid, Uuid};
     ///
-    /// let uuid = Uuid::new_v4();
+    /// let uuid = Uuid::from_u128(0x0123456789abcdef0123456789abcdef);
     /// let non_nil = NonNilUuid::from(uuid);
     /// ```
     fn from(uuid: Uuid) -> Self {
@@ -70,7 +70,7 @@ mod tests {
 
     #[test]
     fn test_new_with_non_nil() {
-        let uuid = Uuid::new_v4();
+        let uuid = Uuid::from_u128(0x0123456789abcdef0123456789abcdef);
         let nn_uuid = NonNilUuid::from(uuid);
         assert_eq!(Uuid::from(nn_uuid), uuid);
     }
@@ -78,7 +78,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "Attempted to convert nil Uuid to NonNilUuid")]
     fn test_new_with_nil() {
-        let nil_uuid = Uuid::nil();
+        let nil_uuid = Uuid::from_u128(0x0);
         let _ = NonNilUuid::from(nil_uuid);
     }
 }
