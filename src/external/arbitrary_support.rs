@@ -1,4 +1,8 @@
-use crate::{non_nil::NonNilUuid, std::convert::TryInto, Builder, Uuid};
+use crate::{
+    non_nil::NonNilUuid,
+    std::convert::{TryFrom, TryInto},
+    Builder, Uuid,
+};
 
 use arbitrary::{Arbitrary, Unstructured};
 
@@ -19,9 +23,7 @@ impl Arbitrary<'_> for Uuid {
 impl arbitrary::Arbitrary<'_> for NonNilUuid {
     fn arbitrary(u: &mut arbitrary::Unstructured<'_>) -> arbitrary::Result<Self> {
         let uuid = Uuid::arbitrary(u)?;
-
-        // Generated `Uuid`s are never nil since we set version/variant bits
-        Ok(NonNilUuid::from(uuid))
+        Self::try_from(uuid).map_err(|_| arbitrary::Error::NotEnoughData)
     }
 
     fn size_hint(_: usize) -> (usize, Option<usize>) {

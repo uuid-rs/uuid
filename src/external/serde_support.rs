@@ -10,6 +10,7 @@
 // except according to those terms.
 
 use crate::{
+    convert::TryFrom,
     error::*,
     fmt::{Braced, Hyphenated, Simple, Urn},
     non_nil::NonNilUuid,
@@ -143,7 +144,8 @@ impl<'de> Deserialize<'de> for NonNilUuid {
         D: serde::Deserializer<'de>,
     {
         let uuid = Uuid::deserialize(deserializer)?;
-        Ok(NonNilUuid::from(uuid))
+
+        NonNilUuid::try_from(uuid).map_err(|_| de::Error::custom("Uuid cannot be nil"))
     }
 }
 
@@ -754,19 +756,12 @@ mod serde_tests {
     }
 
     #[test]
-    fn test_serialize_non_nil_uuid() {
+    fn test_serde_non_nil_uuid() {
         let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
         let uuid = Uuid::parse_str(uuid_str).unwrap();
-        let non_nil_uuid = NonNilUuid::from(uuid);
+        let non_nil_uuid = NonNilUuid::try_from(uuid).unwrap();
 
         serde_test::assert_ser_tokens(&non_nil_uuid.readable(), &[Token::Str(uuid_str)]);
-    }
-    #[test]
-    fn test_deserialize_non_nil_uuid() {
-        let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
-        let uuid = Uuid::parse_str(uuid_str).unwrap();
-        let non_nil_uuid = NonNilUuid::from(uuid);
-
         serde_test::assert_de_tokens(&non_nil_uuid.readable(), &[Token::Str(uuid_str)]);
     }
 }
