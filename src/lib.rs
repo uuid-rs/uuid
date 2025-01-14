@@ -222,9 +222,6 @@ extern crate std;
 #[macro_use]
 extern crate core as std;
 
-#[cfg(all(uuid_unstable, feature = "zerocopy"))]
-use zerocopy::{FromBytes, Immutable, IntoBytes, KnownLayout, Unaligned};
-
 mod builder;
 mod error;
 mod non_nil;
@@ -441,7 +438,7 @@ pub enum Variant {
 // NOTE: Also check `NonNilUuid` when ading new derives here
 #[cfg_attr(
     all(uuid_unstable, feature = "zerocopy"),
-    derive(IntoBytes, FromBytes, KnownLayout, Immutable, Unaligned)
+    derive(zerocopy::IntoBytes, zerocopy::FromBytes, zerocopy::KnownLayout, zerocopy::Immutable, zerocopy::Unaligned)
 )]
 #[cfg_attr(
     feature = "borsh",

@@ -28,7 +28,7 @@ use crate::{
 /// - [`Uuid::new_v8`]
 #[cfg_attr(
     all(uuid_unstable, feature = "zerocopy"),
-    derive(IntoBytes, FromBytes, KnownLayout, Immutable, Unaligned)
+    derive(zerocopy::IntoBytes, zerocopy::FromBytes, zerocopy::KnownLayout, zerocopy::Immutable, zerocopy::Unaligned)
 )]
 #[cfg_attr(
     feature = "borsh",
