@@ -437,6 +437,7 @@ pub enum Variant {
 ///
 /// The `Uuid` type is always guaranteed to be have the same ABI as [`Bytes`].
 #[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[repr(transparent)]
 #[cfg_attr(
     all(uuid_unstable, feature = "zerocopy"),
     derive(IntoBytes, FromBytes, KnownLayout, Immutable, Unaligned)
@@ -445,7 +446,6 @@ pub enum Variant {
     feature = "borsh",
     derive(borsh_derive::BorshDeserialize, borsh_derive::BorshSerialize)
 )]
-#[repr(transparent)]
 #[cfg_attr(
     feature = "bytemuck",
     derive(bytemuck::Zeroable, bytemuck::Pod, bytemuck::TransparentWrapper)

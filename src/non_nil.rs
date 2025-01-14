@@ -26,6 +26,15 @@ use crate::{
 /// - [`Uuid::new_v7`]
 /// - [`Uuid::now_v7`]
 /// - [`Uuid::new_v8`]
+#[cfg_attr(
+    all(uuid_unstable, feature = "zerocopy"),
+    derive(IntoBytes, FromBytes, KnownLayout, Immutable, Unaligned)
+)]
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh_derive::BorshDeserialize, borsh_derive::BorshSerialize)
+)]
+#[repr(transparent)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct NonNilUuid(NonZeroU128);
 

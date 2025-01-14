@@ -23,7 +23,7 @@ impl Arbitrary<'_> for Uuid {
 impl arbitrary::Arbitrary<'_> for NonNilUuid {
     fn arbitrary(u: &mut arbitrary::Unstructured<'_>) -> arbitrary::Result<Self> {
         let uuid = Uuid::arbitrary(u)?;
-        Self::try_from(uuid).map_err(|_| arbitrary::Error::NotEnoughData)
+        Self::try_from(uuid).map_err(|_| arbitrary::Error::IncorrectFormat)
     }
 
     fn size_hint(_: usize) -> (usize, Option<usize>) {

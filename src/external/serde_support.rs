@@ -145,7 +145,7 @@ impl<'de> Deserialize<'de> for NonNilUuid {
     {
         let uuid = Uuid::deserialize(deserializer)?;
 
-        NonNilUuid::try_from(uuid).map_err(|_| de::Error::custom("Uuid cannot be nil"))
+        NonNilUuid::try_from(uuid).map_err(|_| de::Error::invalid_value(de::Unexpected::Other("nil UUID"), &"a non-nil UUID"))
     }
 }
 
