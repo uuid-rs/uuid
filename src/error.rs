@@ -30,6 +30,8 @@ pub(crate) enum ErrorKind {
     },
     /// The input was not a valid UTF8 string
     InvalidUTF8,
+    /// The UUID is nil.
+    Nil,
     /// Some other error occurred.
     Other,
 }
@@ -158,6 +160,7 @@ impl fmt::Display for Error {
                 )
             }
             ErrorKind::InvalidUTF8 => write!(f, "non-UTF8 input"),
+            ErrorKind::Nil => write!(f, "the UUID is nil"),
             ErrorKind::Other => write!(f, "failed to parse a UUID"),
         }
     }

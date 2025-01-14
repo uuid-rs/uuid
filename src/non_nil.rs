@@ -4,12 +4,28 @@
 use core::convert::TryFrom;
 use std::{fmt, num::NonZeroU128};
 
-use crate::Uuid;
+use crate::{
+    error::{Error, ErrorKind},
+    Uuid,
+};
 
 /// A UUID that is guaranteed not to be the nil UUID.
 ///
 /// This is useful for representing optional UUIDs more efficiently, as `Option<NonNilUuid>`
 /// takes up the same space as `Uuid`.
+///
+/// Note that `Uuid`s created by the following methods are guaranteed to be non-nil:
+///
+/// - [`Uuid::new_v1`]
+/// - [`Uuid::now_v1`]
+/// - [`Uuid::new_v3`]
+/// - [`Uuid::new_v4`]
+/// - [`Uuid::new_v5`]
+/// - [`Uuid::new_v6`]
+/// - [`Uuid::now_v6`]
+/// - [`Uuid::new_v7`]
+/// - [`Uuid::now_v7`]
+/// - [`Uuid::new_v8`]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct NonNilUuid(NonZeroU128);
 
@@ -20,7 +36,24 @@ impl fmt::Display for NonNilUuid {
 }
 
 impl NonNilUuid {
-    /// Returns the underlying `Uuid`.
+    /// Creates a non-nil UUID if the value is non-nil.
+    pub const fn new(uuid: Uuid) -> Option<Self> {
+        match NonZeroU128::new(uuid.as_u128()) {
+            Some(non_nil) => Some(NonNilUuid(non_nil)),
+            None => None,
+        }
+    }
+
+    /// Creates a non-nil without checking whether the value is non-nil. This results in undefined behavior if the value is nil.
+    ///
+    /// # Safety
+    ///
+    /// The value must not be nil.
+    pub const unsafe fn new_unchecked(uuid: Uuid) -> Self {
+        NonNilUuid(unsafe { NonZeroU128::new_unchecked(uuid.as_u128()) })
+    }
+
+    /// Get the underlying [`Uuid`] value.
     #[inline]
     pub const fn get(self) -> Uuid {
         Uuid::from_u128(self.0.get())
@@ -47,7 +80,7 @@ impl From<NonNilUuid> for Uuid {
 }
 
 impl TryFrom<Uuid> for NonNilUuid {
-    type Error = &'static str;
+    type Error = Error;
 
     /// Attempts to convert a [`Uuid`] into a [`NonNilUuid`].
     ///
@@ -62,7 +95,7 @@ impl TryFrom<Uuid> for NonNilUuid {
     fn try_from(uuid: Uuid) -> Result<Self, Self::Error> {
         NonZeroU128::new(uuid.as_u128())
             .map(Self)
-            .ok_or("Attempted to convert nil Uuid to NonNilUuid")
+            .ok_or(Error(ErrorKind::Nil))
     }
 }
 
@@ -81,13 +114,12 @@ mod tests {
     #[test]
     fn test_non_nil() {
         let uuid = Uuid::from_u128(0x0123456789abcdef0123456789abcdef);
-        let nn_uuid = NonNilUuid::try_from(uuid);
 
-        assert!(nn_uuid.is_ok());
-        assert_eq!(Uuid::from(nn_uuid.unwrap()), uuid);
+        assert_eq!(Uuid::from(NonNilUuid::try_from(uuid).unwrap()), uuid);
+        assert_eq!(NonNilUuid::new(uuid).unwrap().get(), uuid);
+        assert_eq!(unsafe { NonNilUuid::new_unchecked(uuid) }.get(), uuid);
 
-        let nil_uuid = Uuid::nil();
-        let nn_uuid = NonNilUuid::try_from(nil_uuid);
-        assert!(nn_uuid.is_err());
+        assert!(NonNilUuid::try_from(Uuid::nil()).is_err());
+        assert!(NonNilUuid::new(Uuid::nil()).is_none());
     }
 }

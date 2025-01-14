@@ -227,10 +227,10 @@ use zerocopy::{FromBytes, Immutable, IntoBytes, KnownLayout, Unaligned};
 
 mod builder;
 mod error;
+mod non_nil;
 mod parser;
 
 pub mod fmt;
-pub mod non_nil;
 pub mod timestamp;
 
 pub use timestamp::{context::NoContext, ClockSequence, Timestamp};
@@ -282,7 +282,7 @@ pub mod __macro_support {
 
 use crate::std::convert;
 
-pub use crate::{builder::Builder, error::Error};
+pub use crate::{builder::Builder, error::Error, non_nil::NonNilUuid};
 
 /// A 128-bit (16 byte) buffer containing the UUID.
 ///
