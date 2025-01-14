@@ -9,7 +9,7 @@ use crate::{
     Uuid,
 };
 
-/// A UUID that is guaranteed not to be the nil UUID.
+/// A UUID that is guaranteed not to be the [nil UUID](https://www.ietf.org/rfc/rfc9562.html#name-nil-uuid).
 ///
 /// This is useful for representing optional UUIDs more efficiently, as `Option<NonNilUuid>`
 /// takes up the same space as `Uuid`.
@@ -30,11 +30,8 @@ use crate::{
 /// # ABI
 ///
 /// The `NonNilUuid` type does not yet have a stable ABI. Its representation or alignment
-/// may change.
-#[cfg_attr(
-    feature = "borsh",
-    derive(borsh_derive::BorshDeserialize, borsh_derive::BorshSerialize)
-)]
+/// may change. It is currently only guaranteed that `NonNilUuid` and `Option<NonNilUuid>`
+/// are the same size as `Uuid`.
 #[repr(transparent)]
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct NonNilUuid(NonZeroU128);
