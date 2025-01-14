@@ -87,9 +87,8 @@ impl From<NonNilUuid> for Uuid {
     ///
     /// # Examples
     /// ```
-    /// use uuid::{non_nil::NonNilUuid, Uuid};
-    /// use std::convert::TryFrom;
-    ///
+    /// # use std::convert::TryFrom;
+    /// # use uuid::{NonNilUuid, Uuid};
     /// let uuid = Uuid::from_u128(0x0123456789abcdef0123456789abcdef);
     /// let non_nil = NonNilUuid::try_from(uuid).unwrap();
     /// let uuid_again = Uuid::from(non_nil);
@@ -108,9 +107,8 @@ impl TryFrom<Uuid> for NonNilUuid {
     ///
     /// # Examples
     /// ```
-    /// use uuid::{non_nil::NonNilUuid, Uuid};
-    /// use std::convert::TryFrom;
-    ///
+    /// # use std::convert::TryFrom;
+    /// # use uuid::{NonNilUuid, Uuid};
     /// let uuid = Uuid::from_u128(0x0123456789abcdef0123456789abcdef);
     /// let non_nil = NonNilUuid::try_from(uuid).unwrap();
     /// ```
