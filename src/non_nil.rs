@@ -26,10 +26,11 @@ use crate::{
 /// - [`Uuid::new_v7`]
 /// - [`Uuid::now_v7`]
 /// - [`Uuid::new_v8`]
-#[cfg_attr(
-    all(uuid_unstable, feature = "zerocopy"),
-    derive(zerocopy::IntoBytes, zerocopy::FromBytes, zerocopy::KnownLayout, zerocopy::Immutable, zerocopy::Unaligned)
-)]
+///
+/// # ABI
+///
+/// The `NonNilUuid` type does not yet have a stable ABI. Its representation or alignment
+/// may change.
 #[cfg_attr(
     feature = "borsh",
     derive(borsh_derive::BorshDeserialize, borsh_derive::BorshSerialize)
