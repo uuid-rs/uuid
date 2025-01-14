@@ -44,6 +44,18 @@ impl fmt::Display for NonNilUuid {
     }
 }
 
+impl PartialEq<Uuid> for NonNilUuid {
+    fn eq(&self, other: &Uuid) -> bool {
+        self.get() == *other
+    }
+}
+
+impl PartialEq<NonNilUuid> for Uuid {
+    fn eq(&self, other: &NonNilUuid) -> bool {
+        *self == other.get()
+    }
+}
+
 impl NonNilUuid {
     /// Creates a non-nil UUID if the value is non-nil.
     pub const fn new(uuid: Uuid) -> Option<Self> {
@@ -125,8 +137,8 @@ mod tests {
         let uuid = Uuid::from_u128(0x0123456789abcdef0123456789abcdef);
 
         assert_eq!(Uuid::from(NonNilUuid::try_from(uuid).unwrap()), uuid);
-        assert_eq!(NonNilUuid::new(uuid).unwrap().get(), uuid);
-        assert_eq!(unsafe { NonNilUuid::new_unchecked(uuid) }.get(), uuid);
+        assert_eq!(NonNilUuid::new(uuid).unwrap(), uuid);
+        assert_eq!(unsafe { NonNilUuid::new_unchecked(uuid) }, uuid);
 
         assert!(NonNilUuid::try_from(Uuid::nil()).is_err());
         assert!(NonNilUuid::new(Uuid::nil()).is_none());
