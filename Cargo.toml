@@ -29,7 +29,7 @@ homepage = "https://github.com/uuid-rs/uuid"
 name = "uuid"
 readme = "README.md"
 repository = "https://github.com/uuid-rs/uuid"
-version = "1.11.1" # remember to update html_root_url in lib.rs
+version = "1.12.0" # remember to update html_root_url in lib.rs
 rust-version = "1.63.0"
 
 [package.metadata.docs.rs]
@@ -149,7 +149,7 @@ version = "1"
 
 # Public: Re-exported
 [dependencies.uuid-macro-internal]
-version = "1.11.1"
+version = "1.12.0"
 path = "macros"
 optional = true
 
