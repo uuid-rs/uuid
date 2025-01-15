@@ -83,9 +83,6 @@ Licensed under either of
 
 at your option.
 
-
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fuuid-rs%2Fuuid.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fuuid-rs%2Fuuid?ref=badge_large)
-
 ## Contribution
 
 Unless you explicitly state otherwise, any contribution intentionally submitted
