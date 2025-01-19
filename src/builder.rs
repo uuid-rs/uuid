@@ -252,24 +252,7 @@ impl Uuid {
     /// );
     /// ```
     pub const fn from_u64_pair(high_bits: u64, low_bits: u64) -> Self {
-        Uuid::from_bytes([
-            (high_bits >> 56) as u8,
-            (high_bits >> 48) as u8,
-            (high_bits >> 40) as u8,
-            (high_bits >> 32) as u8,
-            (high_bits >> 24) as u8,
-            (high_bits >> 16) as u8,
-            (high_bits >> 8) as u8,
-            high_bits as u8,
-            (low_bits >> 56) as u8,
-            (low_bits >> 48) as u8,
-            (low_bits >> 40) as u8,
-            (low_bits >> 32) as u8,
-            (low_bits >> 24) as u8,
-            (low_bits >> 16) as u8,
-            (low_bits >> 8) as u8,
-            low_bits as u8,
-        ])
+        Uuid::from_u128((high_bits as u128 << 64) | low_bits as u128)
     }
 
     /// Creates a UUID using the supplied bytes.
