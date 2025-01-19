@@ -204,24 +204,7 @@ impl Uuid {
     /// );
     /// ```
     pub const fn from_u128(v: u128) -> Self {
-        Uuid::from_bytes([
-            (v >> 120) as u8,
-            (v >> 112) as u8,
-            (v >> 104) as u8,
-            (v >> 96) as u8,
-            (v >> 88) as u8,
-            (v >> 80) as u8,
-            (v >> 72) as u8,
-            (v >> 64) as u8,
-            (v >> 56) as u8,
-            (v >> 48) as u8,
-            (v >> 40) as u8,
-            (v >> 32) as u8,
-            (v >> 24) as u8,
-            (v >> 16) as u8,
-            (v >> 8) as u8,
-            v as u8,
-        ])
+        Uuid::from_bytes(v.to_be_bytes())
     }
 
     /// Creates a UUID from a 128bit value in little-endian order.
@@ -247,24 +230,7 @@ impl Uuid {
     /// );
     /// ```
     pub const fn from_u128_le(v: u128) -> Self {
-        Uuid::from_bytes([
-            v as u8,
-            (v >> 8) as u8,
-            (v >> 16) as u8,
-            (v >> 24) as u8,
-            (v >> 32) as u8,
-            (v >> 40) as u8,
-            (v >> 48) as u8,
-            (v >> 56) as u8,
-            (v >> 64) as u8,
-            (v >> 72) as u8,
-            (v >> 80) as u8,
-            (v >> 88) as u8,
-            (v >> 96) as u8,
-            (v >> 104) as u8,
-            (v >> 112) as u8,
-            (v >> 120) as u8,
-        ])
+        Uuid::from_bytes(v.to_le_bytes())
     }
 
     /// Creates a UUID from two 64bit values.
