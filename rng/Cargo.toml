@@ -1,5 +1,5 @@
 [package]
-name = "uuid-getrandom-internal"
+name = "uuid-rng-internal"
 version = "1.12.1"
 edition = "2018"
 authors = [
@@ -19,3 +19,8 @@ license = "Apache-2.0 OR MIT"
 # Forces a dependency on `getrandom`
 [dependencies.getrandom]
 version = "0.3"
+optional = true
+
+[dependencies.rand]
+version = "0.9"
+optional = true
