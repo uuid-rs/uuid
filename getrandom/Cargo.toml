@@ -1,6 +1,6 @@
 [package]
 name = "uuid-getrandom-internal"
-version = "0.3.0"
+version = "1.12.1"
 edition = "2018"
 authors = [
     "uuid-rs contributors"
