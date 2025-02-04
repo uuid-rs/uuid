@@ -136,13 +136,13 @@ jobs:
       - name: rng-getrandom
         env:
           RUSTFLAGS: '--cfg getrandom_backend="wasm_js"'
-        working_dir: ./tests/wasm32-getrandom-test
+        working-directory: ./tests/wasm32-getrandom-test
         run: wasm-pack test --node
 
       - name: rng-rand
         env:
           RUSTFLAGS: '--cfg getrandom_backend="wasm_js"'
-        working_dir: ./tests/wasm32-getrandom-test
+        working-directory: ./tests/wasm32-getrandom-test
         run: wasm-pack test --node -- --features "rand"
 
   wasi:
