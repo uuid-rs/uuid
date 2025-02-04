@@ -163,10 +163,12 @@
 //! * `serde`.
 //!
 //! If you need to use `v4` or `v7` in a no-std environment, you'll need to
-//! follow [`getrandom`'s docs] on configuring a source of randomness
-//! on currently unsupported targets. Alternatively, you can produce
-//! random bytes yourself and then pass them to [`Builder::from_random_bytes`]
+//! produce random bytes yourself and then pass them to [`Builder::from_random_bytes`]
 //! without enabling the `v4` or `v7` features.
+//!
+//! Versions of `uuid` `1.12` or earlier relied on `getrandom` for randomness, this
+//! is no longer guaranteed and configuring `getrandom`'s provider is not guaranteed
+//! to make other features relying on randomness work.
 //!
 //! # Examples
 //!
@@ -202,8 +204,6 @@
 //! * [RFC 9562: Universally Unique IDentifiers (UUID)](https://www.ietf.org/rfc/rfc9562.html).
 //!
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
-//! [`cargo-web`]: https://crates.io/crates/cargo-web
-//! [`getrandom`'s docs]: https://docs.rs/getrandom
 
 #![no_std]
 #![deny(missing_debug_implementations, missing_docs)]

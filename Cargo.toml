@@ -68,7 +68,7 @@ v6 = ["atomic"]
 v7 = ["rng"]
 v8 = []
 
-js = ["dep:wasm-bindgen", "getrandom?/js"]
+js = ["dep:wasm-bindgen"]
 
 rng = ["dep:getrandom"]
 fast-rng = ["rng", "dep:rand"]
@@ -123,17 +123,16 @@ optional = true
 version = "1"
 default-features = false
 
-# Public
-# Usage of `getrandom`'s pluggable randomness for custom targets is documented
-# in `uuid`'s library docs
-[dependencies.getrandom]
+# Private
+# (Formally public)
+[target.'cfg(not(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown")))'.dependencies.getrandom]
 optional = true
-version = "0.2"
+version = "0.3"
 
 # Private
-[dependencies.rand]
+[target.'cfg(not(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown")))'.dependencies.rand]
 optional = true
-version = "0.8"
+version = "0.9"
 
 # Private
 [dependencies.md-5]
