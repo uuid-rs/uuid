@@ -208,6 +208,8 @@ mod imp {
 
     #[cfg(feature = "js")]
     mod webcrypto {
+        use core::convert::TryInto;
+
         /*
         This module preserves the stabilized behavior of `uuid` that requires the
         `js` feature to enable rng on `wasm32-unknown-unknown`, which it inherited
@@ -287,7 +289,7 @@ mod imp {
                     return false;
                 }
 
-                sub_buf.copy_to_uninit(chunk);
+                sub_buf.copy_to(chunk);
             }
 
             true

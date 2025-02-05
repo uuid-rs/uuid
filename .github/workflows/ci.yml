@@ -133,6 +133,11 @@ jobs:
       - name: Fast RNG
         run: wasm-pack test --node -- --features "js v4 fast-rng"
 
+      - name: +atomics
+        env:
+          RUSTFLAGS: '-C target-feature=+atomics'
+        run: cargo check --target wasm32-unknown-unknown --features "$VERSION_FEATURES $DEP_FEATURES js"
+
       - name: rng-getrandom
         env:
           RUSTFLAGS: '--cfg getrandom_backend="wasm_js"'
