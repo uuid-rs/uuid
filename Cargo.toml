@@ -71,8 +71,8 @@ v8 = []
 js = ["dep:wasm-bindgen"]
 
 rng = ["dep:getrandom"]
-rng-getrandom = ["rng", "dep:getrandom", "dep:uuid-rng-internal", "uuid-rng-internal/getrandom"]
-rng-rand = ["rng", "dep:rand", "dep:uuid-rng-internal", "uuid-rng-internal/rand"]
+rng-getrandom = ["rng", "dep:getrandom", "uuid-rng-internal-lib", "uuid-rng-internal-lib/getrandom"]
+rng-rand = ["rng", "dep:rand", "uuid-rng-internal-lib", "uuid-rng-internal-lib/rand"]
 
 fast-rng = ["rng", "dep:rand"]
 
@@ -132,7 +132,9 @@ default-features = false
 version = "0.3"
 optional = true
 
-[target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))'.dependencies.uuid-rng-internal]
+[target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))'.dependencies.uuid-rng-internal-lib]
+# Work-around lack of support for both `dep:x` and `x/` in MSRV
+package = "uuid-rng-internal"
 version = "1.12.1"
 path = "rng"
 optional = true

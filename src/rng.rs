@@ -115,15 +115,15 @@ mod imp {
     #[cfg(feature = "rng-rand")]
     impl Rng for RngImp {
         fn u128() -> u128 {
-            uuid_rng_internal::__private::rand::random()
+            uuid_rng_internal_lib::__private::rand::random()
         }
 
         fn u64() -> u64 {
-            uuid_rng_internal::__private::rand::random()
+            uuid_rng_internal_lib::__private::rand::random()
         }
 
         fn u16() -> u16 {
-            uuid_rng_internal::__private::rand::random()
+            uuid_rng_internal_lib::__private::rand::random()
         }
     }
 
@@ -136,7 +136,7 @@ mod imp {
         fn u128() -> u128 {
             let mut bytes = [0u8; 16];
 
-            uuid_rng_internal::__private::getrandom::fill(&mut bytes).unwrap_or_else(|err| {
+            uuid_rng_internal_lib::__private::getrandom::fill(&mut bytes).unwrap_or_else(|err| {
                 // NB: getrandom::Error has no source; this is adequate display
                 panic!("could not retrieve random bytes for uuid: {}", err)
             });
@@ -147,7 +147,7 @@ mod imp {
         fn u64() -> u64 {
             let mut bytes = [0u8; 8];
 
-            uuid_rng_internal::__private::getrandom::fill(&mut bytes).unwrap_or_else(|err| {
+            uuid_rng_internal_lib::__private::getrandom::fill(&mut bytes).unwrap_or_else(|err| {
                 // NB: getrandom::Error has no source; this is adequate display
                 panic!("could not retrieve random bytes for uuid: {}", err)
             });
@@ -158,7 +158,7 @@ mod imp {
         fn u16() -> u16 {
             let mut bytes = [0u8; 2];
 
-            uuid_rng_internal::__private::getrandom::fill(&mut bytes).unwrap_or_else(|err| {
+            uuid_rng_internal_lib::__private::getrandom::fill(&mut bytes).unwrap_or_else(|err| {
                 // NB: getrandom::Error has no source; this is adequate display
                 panic!("could not retrieve random bytes for uuid: {}", err)
             });
