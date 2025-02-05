@@ -438,7 +438,13 @@ pub enum Variant {
 // NOTE: Also check `NonNilUuid` when ading new derives here
 #[cfg_attr(
     all(uuid_unstable, feature = "zerocopy"),
-    derive(zerocopy::IntoBytes, zerocopy::FromBytes, zerocopy::KnownLayout, zerocopy::Immutable, zerocopy::Unaligned)
+    derive(
+        zerocopy::IntoBytes,
+        zerocopy::FromBytes,
+        zerocopy::KnownLayout,
+        zerocopy::Immutable,
+        zerocopy::Unaligned
+    )
 )]
 #[cfg_attr(
     feature = "borsh",

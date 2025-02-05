@@ -1,0 +1,21 @@
+[package]
+name = "uuid-wasm32-getrandom-test"
+version = "0.1.0"
+edition = "2018"
+
+[features]
+rand = ["uuid/rng-rand"]
+
+[dependencies.uuid]
+path = "../../"
+features = ["v4", "rng-getrandom"]
+
+[dependencies.getrandom]
+version = "0.3"
+features = ["wasm_js"]
+
+[dependencies.wasm-bindgen]
+version = "0.2"
+
+[dependencies.wasm-bindgen-test]
+version = "0.3"

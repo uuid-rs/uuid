@@ -71,6 +71,9 @@ v8 = []
 js = ["dep:wasm-bindgen"]
 
 rng = ["dep:getrandom"]
+rng-getrandom = ["rng", "dep:getrandom", "uuid-rng-internal-lib", "uuid-rng-internal-lib/getrandom"]
+rng-rand = ["rng", "dep:rand", "uuid-rng-internal-lib", "uuid-rng-internal-lib/rand"]
+
 fast-rng = ["rng", "dep:rand"]
 
 sha1 = ["dep:sha1_smol"]
@@ -126,13 +129,20 @@ default-features = false
 # Private
 # (Formally public)
 [target.'cfg(not(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown")))'.dependencies.getrandom]
-optional = true
 version = "0.3"
+optional = true
+
+[target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))'.dependencies.uuid-rng-internal-lib]
+# Work-around lack of support for both `dep:x` and `x/` in MSRV
+package = "uuid-rng-internal"
+version = "1.12.1"
+path = "rng"
+optional = true
 
 # Private
 [target.'cfg(not(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown")))'.dependencies.rand]
-optional = true
 version = "0.9"
+optional = true
 
 # Private
 [dependencies.md-5]
@@ -175,7 +185,7 @@ version = "1.0"
 [dev-dependencies.serde_test]
 version = "1.0.56"
 
-[target.'cfg(target = "wasm32-unknown-unknown")'.dev-dependencies.wasm-bindgen]
+[target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))'.dev-dependencies.wasm-bindgen]
 version = "0.2"
 
 [target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))'.dev-dependencies.wasm-bindgen-test]
@@ -190,6 +200,8 @@ version = "1"
 [workspace]
 members = [
     "macros",
+    "rng",
     "examples",
     "tests/smoke-test",
+    "tests/wasm32-getrandom-test",
 ]

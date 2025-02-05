@@ -1,9 +1,61 @@
-#[cfg(not(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown")))]
+#![allow(dead_code)] // Keeps our cfg's from becoming too convoluted in here
+
+trait Rng {
+    fn u128() -> u128;
+    fn u64() -> u64;
+    fn u16() -> u16;
+}
+
+pub(crate) fn u128() -> u128 {
+    imp::RngImp::u128()
+}
+
+pub(crate) fn u64() -> u64 {
+    imp::RngImp::u64()
+}
+
+pub(crate) fn u16() -> u16 {
+    imp::RngImp::u16()
+}
+
+#[cfg(not(all(
+    target_arch = "wasm32",
+    target_vendor = "unknown",
+    target_os = "unknown"
+)))]
 mod imp {
-    #[cfg(any(feature = "v4", feature = "v7"))]
-    pub(crate) fn u128() -> u128 {
-        #[cfg(not(feature = "fast-rng"))]
-        {
+    /*
+    Random support for non `wasm32-unknown-unknown` platforms.
+    */
+
+    use super::*;
+
+    // Using `rand`
+    #[cfg(any(feature = "rng-rand", feature = "fast-rng"))]
+    pub(super) struct RngImp;
+
+    #[cfg(any(feature = "rng-rand", feature = "fast-rng"))]
+    impl Rng for RngImp {
+        fn u128() -> u128 {
+            rand::random()
+        }
+
+        fn u64() -> u64 {
+            rand::random()
+        }
+
+        fn u16() -> u16 {
+            rand::random()
+        }
+    }
+
+    // Using `getrandom`
+    #[cfg(all(not(feature = "fast-rng"), not(feature = "rng-rand")))]
+    pub(super) struct RngImp;
+
+    #[cfg(all(not(feature = "fast-rng"), not(feature = "rng-rand")))]
+    impl Rng for RngImp {
+        fn u128() -> u128 {
             let mut bytes = [0u8; 16];
 
             getrandom::fill(&mut bytes).unwrap_or_else(|err| {
@@ -14,36 +66,7 @@ mod imp {
             u128::from_ne_bytes(bytes)
         }
 
-        #[cfg(feature = "fast-rng")]
-        {
-            rand::random()
-        }
-    }
-
-    #[cfg(any(feature = "v1", feature = "v6"))]
-    pub(crate) fn u16() -> u16 {
-        #[cfg(not(feature = "fast-rng"))]
-        {
-            let mut bytes = [0u8; 2];
-
-            getrandom::fill(&mut bytes).unwrap_or_else(|err| {
-                // NB: getrandom::Error has no source; this is adequate display
-                panic!("could not retrieve random bytes for uuid: {}", err)
-            });
-
-            u16::from_ne_bytes(bytes)
-        }
-
-        #[cfg(feature = "fast-rng")]
-        {
-            rand::random()
-        }
-    }
-
-    #[cfg(feature = "v7")]
-    pub(crate) fn u64() -> u64 {
-        #[cfg(not(feature = "fast-rng"))]
-        {
+        fn u64() -> u64 {
             let mut bytes = [0u8; 8];
 
             getrandom::fill(&mut bytes).unwrap_or_else(|err| {
@@ -54,56 +77,142 @@ mod imp {
             u64::from_ne_bytes(bytes)
         }
 
-        #[cfg(feature = "fast-rng")]
-        {
-            rand::random()
+        fn u16() -> u16 {
+            let mut bytes = [0u8; 2];
+
+            getrandom::fill(&mut bytes).unwrap_or_else(|err| {
+                // NB: getrandom::Error has no source; this is adequate display
+                panic!("could not retrieve random bytes for uuid: {}", err)
+            });
+
+            u16::from_ne_bytes(bytes)
         }
     }
 }
 
-#[cfg(all(feature = "js", target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))]
+#[cfg(all(
+    target_arch = "wasm32",
+    target_vendor = "unknown",
+    target_os = "unknown"
+))]
 mod imp {
     /*
-    This module preserves the stabilized behavior of `uuid` that requires the
-    `js` feature to enable rng on `wasm32-unknown-unknown`, which it inherited
-    from `getrandom` `0.2`
+    Random support for `wasm32-unknown-unknown`.
     */
 
-    #[cfg(any(feature = "v4", feature = "v7"))]
-    pub(crate) fn u128() -> u128 {
-        let mut bytes = [0u8; 16];
+    use super::*;
 
-        if !getrandom::fill(&mut bytes) {
-            panic!("could not retrieve random bytes for uuid")
+    // Using `rand`
+    #[cfg(feature = "rng-rand")]
+    pub(super) struct RngImp;
+
+    #[cfg(feature = "rng-rand")]
+    impl Rng for RngImp {
+        fn u128() -> u128 {
+            uuid_rng_internal_lib::__private::rand::random()
         }
 
-        u128::from_ne_bytes(bytes)
-    }
-
-    #[cfg(any(feature = "v1", feature = "v6"))]
-    pub(crate) fn u16() -> u16 {
-        let mut bytes = [0u8; 2];
-
-        if !getrandom::fill(&mut bytes) {
-            panic!("could not retrieve random bytes for uuid")
+        fn u64() -> u64 {
+            uuid_rng_internal_lib::__private::rand::random()
         }
 
-        u16::from_ne_bytes(bytes)
+        fn u16() -> u16 {
+            uuid_rng_internal_lib::__private::rand::random()
+        }
     }
 
-    #[cfg(feature = "v7")]
-    pub(crate) fn u64() -> u64 {
-        let mut bytes = [0u8; 8];
+    // Using `getrandom`
+    #[cfg(all(feature = "rng-getrandom", not(feature = "rng-rand")))]
+    pub(super) struct RngImp;
 
-        if !getrandom::fill(&mut bytes) {
-            panic!("could not retrieve random bytes for uuid")
+    #[cfg(all(feature = "rng-getrandom", not(feature = "rng-rand")))]
+    impl Rng for RngImp {
+        fn u128() -> u128 {
+            let mut bytes = [0u8; 16];
+
+            uuid_rng_internal_lib::__private::getrandom::fill(&mut bytes).unwrap_or_else(|err| {
+                // NB: getrandom::Error has no source; this is adequate display
+                panic!("could not retrieve random bytes for uuid: {}", err)
+            });
+
+            u128::from_ne_bytes(bytes)
         }
 
-        u64::from_ne_bytes(bytes)
+        fn u64() -> u64 {
+            let mut bytes = [0u8; 8];
+
+            uuid_rng_internal_lib::__private::getrandom::fill(&mut bytes).unwrap_or_else(|err| {
+                // NB: getrandom::Error has no source; this is adequate display
+                panic!("could not retrieve random bytes for uuid: {}", err)
+            });
+
+            u64::from_ne_bytes(bytes)
+        }
+
+        fn u16() -> u16 {
+            let mut bytes = [0u8; 2];
+
+            uuid_rng_internal_lib::__private::getrandom::fill(&mut bytes).unwrap_or_else(|err| {
+                // NB: getrandom::Error has no source; this is adequate display
+                panic!("could not retrieve random bytes for uuid: {}", err)
+            });
+
+            u16::from_ne_bytes(bytes)
+        }
     }
 
-    mod getrandom {
+    // Using WebCrypto via `wasm-bindgen`
+    #[cfg(all(
+        feature = "js",
+        not(feature = "rng-rand"),
+        not(feature = "rng-getrandom")
+    ))]
+    pub(super) struct RngImp;
+
+    #[cfg(all(
+        feature = "js",
+        not(feature = "rng-rand"),
+        not(feature = "rng-getrandom")
+    ))]
+    impl Rng for RngImp {
+        fn u128() -> u128 {
+            let mut bytes = [0u8; 16];
+
+            if !webcrypto::fill(&mut bytes) {
+                panic!("could not retrieve random bytes for uuid")
+            }
+
+            u128::from_ne_bytes(bytes)
+        }
+
+        fn u64() -> u64 {
+            let mut bytes = [0u8; 8];
+
+            if !webcrypto::fill(&mut bytes) {
+                panic!("could not retrieve random bytes for uuid")
+            }
+
+            u64::from_ne_bytes(bytes)
+        }
+
+        fn u16() -> u16 {
+            let mut bytes = [0u8; 2];
+
+            if !webcrypto::fill(&mut bytes) {
+                panic!("could not retrieve random bytes for uuid")
+            }
+
+            u16::from_ne_bytes(bytes)
+        }
+    }
+
+    #[cfg(feature = "js")]
+    mod webcrypto {
         /*
+        This module preserves the stabilized behavior of `uuid` that requires the
+        `js` feature to enable rng on `wasm32-unknown-unknown`, which it inherited
+        from `getrandom` `0.2`.
+
         Vendored from `getrandom`: https://github.com/rust-random/getrandom/blob/ce3b017fdee0233c6ecd61e68b96a84bf6f911bf/src/backends/wasm_js.rs
 
         Copyright (c) 2018-2024 The rust-random Project Developers
@@ -180,7 +289,7 @@ mod imp {
 
                 sub_buf.copy_to_uninit(chunk);
             }
-            
+
             true
         }
 
@@ -196,8 +305,3 @@ mod imp {
         }
     }
 }
-
-#[cfg(all(not(feature = "js"), target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))]
-compile_error!("the `js` feature is required for the `wasm32-unknown-unknown` target");
-
-pub(crate) use self::imp::*;
