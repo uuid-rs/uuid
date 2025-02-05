@@ -68,7 +68,7 @@ v6 = ["atomic"]
 v7 = ["rng"]
 v8 = []
 
-js = ["dep:wasm-bindgen"]
+js = ["dep:wasm-bindgen", "dep:js-sys"]
 
 rng = ["dep:getrandom"]
 rng-getrandom = ["rng", "dep:getrandom", "uuid-rng-internal-lib", "uuid-rng-internal-lib/getrandom"]
@@ -171,6 +171,11 @@ version = "0.6"
 # Private
 [target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown"))'.dependencies.wasm-bindgen]
 version = "0.2"
+optional = true
+
+# Private
+[target.'cfg(all(target_arch = "wasm32", target_vendor = "unknown", target_os = "unknown", target_feature = "atomics"))'.dependencies.js-sys]
+version = "0.3"
 optional = true
 
 [dev-dependencies.bincode]
