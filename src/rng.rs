@@ -244,6 +244,9 @@ mod imp {
         */
 
         use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
+    
+        #[cfg(target_feature = "atomics")]
+        use core::convert::TryInto;
 
         // Maximum buffer size allowed in `Crypto.getRandomValuesSize` is 65536 bytes.
         // See https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues
@@ -287,7 +290,7 @@ mod imp {
                     return false;
                 }
 
-                sub_buf.copy_to_uninit(chunk);
+                sub_buf.copy_to(chunk);
             }
 
             true
