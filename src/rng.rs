@@ -1,25 +1,19 @@
+#![allow(dead_code)] // Keeps our cfg's from becoming too convoluted in here
+
 trait Rng {
-    #[allow(dead_code)]
     fn u128() -> u128;
-
-    #[allow(dead_code)]
     fn u64() -> u64;
-
-    #[allow(dead_code)]
     fn u16() -> u16;
 }
 
-#[cfg(any(feature = "v4", feature = "v7"))]
 pub(crate) fn u128() -> u128 {
     imp::RngImp::u128()
 }
 
-#[cfg(feature = "v7")]
 pub(crate) fn u64() -> u64 {
     imp::RngImp::u64()
 }
 
-#[cfg(any(feature = "v1", feature = "v6"))]
 pub(crate) fn u16() -> u16 {
     imp::RngImp::u16()
 }
@@ -212,11 +206,7 @@ mod imp {
         }
     }
 
-    #[cfg(all(
-        feature = "js",
-        not(feature = "rng-rand"),
-        not(feature = "rng-getrandom")
-    ))]
+    #[cfg(feature = "js")]
     mod webcrypto {
         /*
         This module preserves the stabilized behavior of `uuid` that requires the
