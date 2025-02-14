@@ -1,4 +1,4 @@
-#![allow(dead_code)] // Keeps our cfg's from becoming too convoluted in here
+#![allow(dead_code, unused_imports)] // Keeps our cfg's from becoming too convoluted in here
 
 trait Rng {
     fn u128() -> u128;
@@ -100,7 +100,12 @@ mod imp {
     Random support for `wasm32-unknown-unknown`.
     */
 
+    #![allow(dead_code, unused_imports)] // Keeps our cfg's from becoming too convoluted in here
+
     use super::*;
+
+    #[cfg(all(not(feature = "js"), not(feature = "rng-getrandom"), not(feature = "rng-rand")))]
+    compile_error!("to use `uuid` on `wasm32-unknown-unknown`, specify a source of randomness using one of the `js`, `rng-getrandom`, or `rng-rand` features");
 
     // Using `rand`
     #[cfg(feature = "rng-rand")]
