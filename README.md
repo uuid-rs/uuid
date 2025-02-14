@@ -31,8 +31,6 @@ Add the following to your `Cargo.toml`:
 version = "1.13.1"
 features = [
     "v4",                # Lets you generate random UUIDs
-    "fast-rng",          # Use a faster (but still sufficiently random) RNG
-    "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
 ]
 ```
 
