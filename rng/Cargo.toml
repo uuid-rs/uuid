@@ -1,6 +1,6 @@
 [package]
 name = "uuid-rng-internal"
-version = "1.13.1"
+version = "1.13.2"
 edition = "2018"
 authors = [
     "uuid-rs contributors"
