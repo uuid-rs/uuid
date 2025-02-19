@@ -104,7 +104,11 @@ mod imp {
 
     use super::*;
 
-    #[cfg(all(not(feature = "js"), not(feature = "rng-getrandom"), not(feature = "rng-rand")))]
+    #[cfg(all(
+        not(feature = "js"),
+        not(feature = "rng-getrandom"),
+        not(feature = "rng-rand")
+    ))]
     compile_error!("to use `uuid` on `wasm32-unknown-unknown`, specify a source of randomness using one of the `js`, `rng-getrandom`, or `rng-rand` features");
 
     // Using `rand`
@@ -249,7 +253,7 @@ mod imp {
         */
 
         use wasm_bindgen::{prelude::wasm_bindgen, JsValue};
-    
+
         #[cfg(target_feature = "atomics")]
         use core::convert::TryInto;
 
