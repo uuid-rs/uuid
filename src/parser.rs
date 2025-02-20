@@ -205,7 +205,7 @@ pub(crate) const fn parse_simple(s: &[u8]) -> Result<[u8; 16], InvalidUuid> {
 }
 
 #[inline]
-const fn parse_hyphenated(s: &[u8]) -> Result<[u8; 16], InvalidUuid> {
+pub(crate) const fn parse_hyphenated(s: &[u8]) -> Result<[u8; 16], InvalidUuid> {
     // This length check here removes all other bounds
     // checks in this function
     if s.len() != 36 {

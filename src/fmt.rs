@@ -11,9 +11,11 @@
 
 //! Adapters for alternative string formats.
 
+use core::str::FromStr;
+
 use crate::{
     std::{borrow::Borrow, fmt, ptr, str},
-    Uuid, Variant,
+    Error, Uuid, Variant,
 };
 
 #[cfg(feature = "std")]
@@ -826,6 +828,46 @@ impl Urn {
     /// ```
     pub const fn into_uuid(self) -> Uuid {
         self.0
+    }
+}
+
+impl FromStr for Hyphenated {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        crate::parser::parse_hyphenated(s.as_bytes())
+            .map(|b| Hyphenated(Uuid(b)))
+            .map_err(|invalid| invalid.into_err())
+    }
+}
+
+impl FromStr for Simple {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        crate::parser::parse_simple(s.as_bytes())
+            .map(|b| Simple(Uuid(b)))
+            .map_err(|invalid| invalid.into_err())
+    }
+}
+
+impl FromStr for Urn {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        crate::parser::parse_urn(s.as_bytes())
+            .map(|b| Urn(Uuid(b)))
+            .map_err(|invalid| invalid.into_err())
+    }
+}
+
+impl FromStr for Braced {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        crate::parser::parse_braced(s.as_bytes())
+            .map(|b| Braced(Uuid(b)))
+            .map_err(|invalid| invalid.into_err())
     }
 }
 
