@@ -38,13 +38,13 @@ pub struct NonNilUuid(NonZeroU128);
 
 impl fmt::Debug for NonNilUuid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", Uuid::from(*self))
+        fmt::Debug::fmt(&Uuid::from(*self), f)
     }
 }
 
 impl fmt::Display for NonNilUuid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", Uuid::from(*self))
+        fmt::Display::fmt(&Uuid::from(*self), f)
     }
 }
 
