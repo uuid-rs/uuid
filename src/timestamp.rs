@@ -668,7 +668,7 @@ pub mod context {
     mod v7_support {
         use super::*;
 
-        use core::{cell::Cell, panic::RefUnwindSafe};
+        use core::{cell::Cell, panic::RefUnwindSafe, convert::TryInto};
 
         #[cfg(feature = "std")]
         static CONTEXT_V7: SharedContextV7 =
@@ -707,6 +707,8 @@ pub mod context {
         #[derive(Debug)]
         pub struct ContextV7 {
             last_reseed: Cell<LastReseed>,
+            shift: Shift,
+            sub_milli_precision_bits: u8,
             counter: Cell<u64>,
         }
 
@@ -718,11 +720,61 @@ pub mod context {
         }
 
         impl LastReseed {
-            fn from_millis(millis: u64) -> Self {
+            fn from_ts(ts_seconds: u64, ts_subsec_nanos: u32) -> Self {
+                let millis = (ts_seconds * 1_000).saturating_add(ts_subsec_nanos as u64 / 1_000_000);
+
                 LastReseed {
                     millis,
-                    ts_seconds: millis / 1_000,
-                    ts_subsec_nanos: (millis % 1_000) as u32 * 1_000_000,
+                    ts_seconds,
+                    ts_subsec_nanos,
+                }
+            }
+            
+            fn should_reseed(&self, ts_seconds: u64, ts_subsec_nanos: u32) -> bool {
+                let millis = (ts_seconds * 1_000).saturating_add(ts_subsec_nanos as u64 / 1_000_000);
+                
+                self.millis != millis
+            }
+            
+            fn increment(&self) -> Self {
+                let (ts_seconds, ts_subsec_nanos) = Shift { by_ns: 1_000_000 }.apply(self.ts_seconds, self.ts_subsec_nanos);
+                
+                LastReseed {
+                    millis: self.millis + 1,
+                    ts_seconds,
+                    ts_subsec_nanos,
+                }
+            }
+        }
+
+        #[derive(Debug)]
+        struct Shift {
+            by_ns: u32,
+        }
+
+        impl Shift {
+            #[inline]
+            fn apply(&self, seconds: u64, subsec_nanos: u32) -> (u64, u32) {
+                if self.by_ns == 0 {
+                    // No shift applied
+                    return (seconds, subsec_nanos);
+                }
+
+                let mut shifted_subsec_nanos = subsec_nanos.checked_add(self.by_ns).unwrap_or(subsec_nanos);
+
+                if shifted_subsec_nanos < 1_000_000_000 {
+                    // The shift hasn't overflowed into the next second
+                    (seconds, shifted_subsec_nanos)
+                } else {
+                    // The shift has overflowed into the next second
+                    shifted_subsec_nanos -= 1_000_000_000;
+
+                    if seconds < u64::MAX {
+                        (seconds + 1, shifted_subsec_nanos)
+                    } else {
+                        // The next second would overflow a `u64`
+                        (seconds, subsec_nanos)
+                    }
                 }
             }
         }
@@ -740,7 +792,17 @@ pub mod context {
                         ts_subsec_nanos: 0,
                     }),
                     counter: Cell::new(0),
+                    shift: Shift {
+                        by_ns: 0,
+                    },
+                    sub_milli_precision_bits: 0,
                 }
+            }
+
+            /// Specify an amount to shift timestamps by to obfuscate their actual generation time.
+            pub fn with_shift_millis(mut self, shift: u32) -> Self {
+                self.shift.by_ns = shift * 1_000_000;
+                self
             }
         }
 
@@ -756,13 +818,13 @@ pub mod context {
                 seconds: u64,
                 subsec_nanos: u32,
             ) -> (Self::Output, u64, u32) {
-                let millis = (seconds * 1_000).saturating_add(subsec_nanos as u64 / 1_000_000);
+                let (seconds, subsec_nanos) = self.shift.apply(seconds, subsec_nanos);
 
                 let last_reseed = self.last_reseed.get();
 
                 // If the observed system time has shifted forwards then regenerate the counter
-                if millis > last_reseed.millis {
-                    let last_reseed = LastReseed::from_millis(millis);
+                if last_reseed.should_reseed(seconds, subsec_nanos) {
+                    let last_reseed = LastReseed::from_ts(seconds, subsec_nanos);
                     self.last_reseed.set(last_reseed);
 
                     let counter = crate::rng::u64() & RESEED_MASK;
@@ -792,7 +854,7 @@ pub mod context {
                     // this incremented value, all timestamps will use it to maintain monotonicity
                     else {
                         // Increment the timestamp by 1 milli
-                        let last_reseed = LastReseed::from_millis(last_reseed.millis + 1);
+                        let last_reseed = last_reseed.increment();
                         self.last_reseed.set(last_reseed);
 
                         // Reseed the counter
@@ -885,6 +947,7 @@ pub mod context {
                 // This context will wrap
                 let context = ContextV7 {
                     last_reseed: Cell::new(LastReseed::from_millis(millis)),
+                    shift_ns: 0,
                     counter: Cell::new(u64::MAX >> 22),
                 };
 
@@ -899,6 +962,24 @@ pub mod context {
                 // The counter should have reseeded
                 assert!(ts.counter < (u64::MAX >> 22) as u128);
                 assert_ne!(0, ts.counter);
+            }
+
+            #[test]
+            fn context_shift() {
+                let seconds = 1_496_854_535;
+                let subsec_nanos = 812_946_000;
+
+                let context = ContextV7::new().with_shift_millis(1);
+
+                let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
+
+                assert_eq!((1_496_854_535, 813_000_000), ts.to_unix());
+
+                let context = ContextV7::new().with_shift_millis(-1);
+
+                let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
+
+                assert_eq!((1_496_854_535, 811_000_000), ts.to_unix());
             }
         }
     }
