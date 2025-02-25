@@ -668,7 +668,7 @@ pub mod context {
     mod v7_support {
         use super::*;
 
-        use core::{cell::Cell, panic::RefUnwindSafe, convert::TryInto};
+        use core::{cell::Cell, panic::RefUnwindSafe};
 
         #[cfg(feature = "std")]
         static CONTEXT_V7: SharedContextV7 =
@@ -714,33 +714,38 @@ pub mod context {
 
         #[derive(Debug, Default, Clone, Copy)]
         struct LastReseed {
-            millis: u64,
+            ts_value: u64,
             ts_seconds: u64,
             ts_subsec_nanos: u32,
         }
 
         impl LastReseed {
+            #[inline]
             fn from_ts(ts_seconds: u64, ts_subsec_nanos: u32) -> Self {
-                let millis = (ts_seconds * 1_000).saturating_add(ts_subsec_nanos as u64 / 1_000_000);
+                // TODO: Assumes milli precision
+                let ts_value = (ts_seconds * 1_000).saturating_add(ts_subsec_nanos as u64 / 1_000_000);
 
                 LastReseed {
-                    millis,
+                    ts_value,
                     ts_seconds,
                     ts_subsec_nanos,
                 }
             }
-            
+
+            #[inline]
             fn should_reseed(&self, ts_seconds: u64, ts_subsec_nanos: u32) -> bool {
-                let millis = (ts_seconds * 1_000).saturating_add(ts_subsec_nanos as u64 / 1_000_000);
-                
-                self.millis != millis
+                let incoming = LastReseed::from_ts(ts_seconds, ts_subsec_nanos);
+
+                self.ts_value < incoming.ts_value
             }
-            
+
+            #[inline]
             fn increment(&self) -> Self {
-                let (ts_seconds, ts_subsec_nanos) = Shift { by_ns: 1_000_000 }.apply(self.ts_seconds, self.ts_subsec_nanos);
-                
+                // TODO: Assumes milli precision
+                let (ts_seconds, ts_subsec_nanos) = Shift::by_millis(1).apply(self.ts_seconds, self.ts_subsec_nanos);
+
                 LastReseed {
-                    millis: self.millis + 1,
+                    ts_value: self.ts_value + 1,
                     ts_seconds,
                     ts_subsec_nanos,
                 }
@@ -753,6 +758,13 @@ pub mod context {
         }
 
         impl Shift {
+            #[inline]
+            fn by_millis(millis: u32) -> Self {
+                Shift {
+                    by_ns: millis.saturating_mul(1_000_000),
+                }
+            }
+
             #[inline]
             fn apply(&self, seconds: u64, subsec_nanos: u32) -> (u64, u32) {
                 if self.by_ns == 0 {
@@ -787,7 +799,7 @@ pub mod context {
             pub const fn new() -> Self {
                 ContextV7 {
                     last_reseed: Cell::new(LastReseed {
-                        millis: 0,
+                        ts_value: 0,
                         ts_seconds: 0,
                         ts_subsec_nanos: 0,
                     }),
@@ -801,7 +813,7 @@ pub mod context {
 
             /// Specify an amount to shift timestamps by to obfuscate their actual generation time.
             pub fn with_shift_millis(mut self, shift: u32) -> Self {
-                self.shift.by_ns = shift * 1_000_000;
+                self.shift = Shift::by_millis(shift);
                 self
             }
         }
@@ -837,8 +849,6 @@ pub mod context {
                     // If the incoming timestamp is earlier than the last observed one then
                     // use it instead. This may happen if the system clock jitters, or if the counter
                     // has wrapped and the timestamp is artificially incremented
-                    let millis = ();
-                    let _ = millis;
 
                     // Guaranteed to never overflow u64
                     let counter = self.counter.get() + 1;
@@ -942,19 +952,18 @@ pub mod context {
                 let seconds = 1_496_854_535u64;
                 let subsec_nanos = 812_946_000u32;
 
-                let millis = (seconds * 1000).saturating_add(subsec_nanos as u64 / 1_000_000);
-
                 // This context will wrap
                 let context = ContextV7 {
-                    last_reseed: Cell::new(LastReseed::from_millis(millis)),
-                    shift_ns: 0,
+                    last_reseed: Cell::new(LastReseed::from_ts(seconds, subsec_nanos)),
+                    shift: Shift::by_millis(0),
+                    sub_milli_precision_bits: 0,
                     counter: Cell::new(u64::MAX >> 22),
                 };
 
                 let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
 
                 // The timestamp should be incremented by 1ms
-                let expected_ts = Duration::new(seconds, subsec_nanos / 1_000_000 * 1_000_000)
+                let expected_ts = Duration::new(seconds, subsec_nanos)
                     + Duration::from_millis(1);
                 assert_eq!(expected_ts.as_secs(), ts.seconds);
                 assert_eq!(expected_ts.subsec_nanos(), ts.subsec_nanos);
@@ -973,13 +982,7 @@ pub mod context {
 
                 let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
 
-                assert_eq!((1_496_854_535, 813_000_000), ts.to_unix());
-
-                let context = ContextV7::new().with_shift_millis(-1);
-
-                let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
-
-                assert_eq!((1_496_854_535, 811_000_000), ts.to_unix());
+                assert_eq!((1_496_854_535, 813_946_000), ts.to_unix());
             }
         }
     }
