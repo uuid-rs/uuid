@@ -668,7 +668,7 @@ pub mod context {
     mod v7_support {
         use super::*;
 
-        use core::{cell::Cell, panic::RefUnwindSafe};
+        use core::{cell::Cell, cmp, panic::RefUnwindSafe};
 
         #[cfg(feature = "std")]
         static CONTEXT_V7: SharedContextV7 =
@@ -706,62 +706,162 @@ pub mod context {
         /// bits of the counter will be used.
         #[derive(Debug)]
         pub struct ContextV7 {
-            last_reseed: Cell<LastReseed>,
-            shift: Shift,
+            timestamp: Cell<ReseedingTimestamp>,
+            counter: Cell<Counter>,
+            adjust: Adjust,
             additional_precision_bits: usize,
-            counter: Cell<u64>,
+        }
+
+        impl RefUnwindSafe for ContextV7 {}
+
+        impl ContextV7 {
+            /// Construct a new context that will reseed its counter on the first
+            /// non-zero timestamp it receives.
+            pub const fn new() -> Self {
+                ContextV7 {
+                    timestamp: Cell::new(ReseedingTimestamp {
+                        last_seed: 0,
+                        seconds: 0,
+                        subsec_nanos: 0,
+                    }),
+                    counter: Cell::new(Counter { value: 0 }),
+                    adjust: Adjust { by_ns: 0 },
+                    additional_precision_bits: 0,
+                }
+            }
+
+            /// Specify an amount to shift timestamps by to obfuscate their actual generation time.
+            pub fn with_adjust_millis(mut self, millis: u32) -> Self {
+                self.adjust = Adjust::by_millis(millis);
+                self
+            }
+
+            /// Use the leftmost 12 bits of the counter for additional timestamp precision.
+            ///
+            /// This method can provide better sorting for distributed applications that generate frequent UUIDs
+            /// by trading a small amount of entropy for better counter synchronization. Note that the counter
+            /// will still be reseeded on millisecond boundaries, even though some of its storage will be
+            /// dedicated to the timestamp.
+            pub fn with_nanosecond_precision(mut self) -> Self {
+                self.additional_precision_bits = 12;
+                self
+            }
+        }
+
+        impl ClockSequence for ContextV7 {
+            type Output = u64;
+
+            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
+                self.generate_timestamp_sequence(seconds, subsec_nanos).0
+            }
+
+            fn generate_timestamp_sequence(
+                &self,
+                seconds: u64,
+                subsec_nanos: u32,
+            ) -> (Self::Output, u64, u32) {
+                let (seconds, subsec_nanos) = self.adjust.apply(seconds, subsec_nanos);
+
+                let mut counter;
+                let (mut timestamp, should_reseed) =
+                    self.timestamp.get().advance(seconds, subsec_nanos);
+
+                if should_reseed {
+                    // If the observed system time has shifted forwards then regenerate the counter
+                    counter = Counter::reseed(self.additional_precision_bits, &timestamp);
+                } else {
+                    // If the observed system time has not shifted forwards then increment the counter
+
+                    // If the incoming timestamp is earlier than the last observed one then
+                    // use it instead. This may happen if the system clock jitters, or if the counter
+                    // has wrapped and the timestamp is artificially incremented
+
+                    counter = self
+                        .counter
+                        .get()
+                        .increment(self.additional_precision_bits, &timestamp);
+
+                    // Unlikely: If the counter has overflowed its 42-bit storage then wrap it
+                    // and increment the timestamp. Until the observed system time shifts past
+                    // this incremented value, all timestamps will use it to maintain monotonicity
+                    if counter.has_overflowed() {
+                        // Increment the timestamp by 1 milli and reseed the counter
+                        timestamp = timestamp.increment();
+                        counter = Counter::reseed(self.additional_precision_bits, &timestamp);
+                    }
+                };
+
+                self.timestamp.set(timestamp);
+                self.counter.set(counter);
+
+                (counter.value, timestamp.seconds, timestamp.subsec_nanos)
+            }
+
+            fn usable_bits(&self) -> usize {
+                USABLE_BITS
+            }
         }
 
         #[derive(Debug, Default, Clone, Copy)]
-        struct LastReseed {
-            ts_millis: u64,
-            ts_seconds: u64,
-            ts_subsec_nanos: u32,
+        struct ReseedingTimestamp {
+            last_seed: u64,
+            seconds: u64,
+            subsec_nanos: u32,
         }
 
-        impl LastReseed {
+        impl ReseedingTimestamp {
             #[inline]
-            fn from_ts(ts_seconds: u64, ts_subsec_nanos: u32) -> Self {
-                let ts_millis =
-                    (ts_seconds * 1_000).saturating_add(ts_subsec_nanos as u64 / 1_000_000);
+            fn advance(&self, seconds: u64, subsec_nanos: u32) -> (Self, bool) {
+                let incoming = ReseedingTimestamp::from_ts(seconds, subsec_nanos);
 
-                LastReseed {
-                    ts_millis,
-                    ts_seconds,
-                    ts_subsec_nanos,
+                if incoming.last_seed > self.last_seed {
+                    // The incoming value is part of a new millisecond
+                    (incoming, true)
+                } else {
+                    // The incoming value is part of the same or an earlier millisecond
+                    // We may still have advanced the subsecond portion, so use the larger value
+                    let mut value = *self;
+                    value.subsec_nanos = cmp::max(self.subsec_nanos, subsec_nanos);
+
+                    (value, false)
                 }
             }
 
             #[inline]
-            fn should_reseed(&self, ts_seconds: u64, ts_subsec_nanos: u32) -> bool {
-                let incoming = LastReseed::from_ts(ts_seconds, ts_subsec_nanos);
+            fn from_ts(seconds: u64, subsec_nanos: u32) -> Self {
+                // Reseed when the millisecond advances
+                let last_seed = (seconds * 1_000) + (subsec_nanos as u64 / 1_000_000);
 
-                self.ts_millis < incoming.ts_millis
+                ReseedingTimestamp {
+                    last_seed,
+                    seconds,
+                    subsec_nanos,
+                }
             }
 
             #[inline]
             fn increment(&self) -> Self {
-                let (ts_seconds, ts_subsec_nanos) =
-                    Shift::by_millis(1).apply(self.ts_seconds, self.ts_subsec_nanos);
+                let (seconds, subsec_nanos) =
+                    Adjust::by_millis(1).apply(self.seconds, self.subsec_nanos);
 
-                LastReseed::from_ts(ts_seconds, ts_subsec_nanos)
+                ReseedingTimestamp::from_ts(seconds, subsec_nanos)
             }
 
             #[inline]
             fn submilli_nanos(&self) -> u32 {
-                self.ts_subsec_nanos % 1_000_000
+                self.subsec_nanos % 1_000_000
             }
         }
 
         #[derive(Debug)]
-        struct Shift {
+        struct Adjust {
             by_ns: u32,
         }
 
-        impl Shift {
+        impl Adjust {
             #[inline]
             fn by_millis(millis: u32) -> Self {
-                Shift {
+                Adjust {
                     by_ns: millis.saturating_mul(1_000_000),
                 }
             }
@@ -793,110 +893,59 @@ pub mod context {
             }
         }
 
-        impl RefUnwindSafe for ContextV7 {}
-
-        impl ContextV7 {
-            /// Construct a new context that will reseed its counter on the first
-            /// non-zero timestamp it receives.
-            pub const fn new() -> Self {
-                ContextV7 {
-                    last_reseed: Cell::new(LastReseed {
-                        ts_millis: 0,
-                        ts_seconds: 0,
-                        ts_subsec_nanos: 0,
-                    }),
-                    counter: Cell::new(0),
-                    shift: Shift { by_ns: 0 },
-                    additional_precision_bits: 0,
-                }
-            }
-
-            /// Specify an amount to shift timestamps by to obfuscate their actual generation time.
-            pub fn with_shift_millis(mut self, shift: u32) -> Self {
-                self.shift = Shift::by_millis(shift);
-                self
-            }
-
-            /// Use the leftmost 12 bits of the counter for additional timestamp precision.
-            ///
-            /// This method can provide better sorting for distributed applications that generate frequent UUIDs
-            /// by trading a small amount of entropy for better counter synchronization. Note that the counter
-            /// will still be reseeded on millisecond boundaries, even though some of its storage will be
-            /// dedicated to the timestamp.
-            pub fn with_nano_precision(mut self) -> Self {
-                self.additional_precision_bits = 12;
-                self
-            }
+        #[derive(Debug, Clone, Copy)]
+        struct Counter {
+            value: u64,
         }
 
-        impl ClockSequence for ContextV7 {
-            type Output = u64;
+        impl Counter {
+            #[inline]
+            fn new(
+                value: u64,
+                additional_precision_bits: usize,
+                timestamp: &ReseedingTimestamp,
+            ) -> Self {
+                Counter {
+                    value: if additional_precision_bits != 0 {
+                        let precision_mask =
+                            u64::MAX >> (64 - USABLE_BITS + additional_precision_bits);
+                        let precision_shift = USABLE_BITS - additional_precision_bits;
 
-            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
-                self.generate_timestamp_sequence(seconds, subsec_nanos).0
+                        let precision = timestamp.submilli_nanos() as u64;
+
+                        (value & precision_mask) | (precision << precision_shift)
+                    } else {
+                        value
+                    },
+                }
             }
 
-            fn generate_timestamp_sequence(
+            #[inline]
+            fn reseed(additional_precision_bits: usize, timestamp: &ReseedingTimestamp) -> Self {
+                Counter::new(
+                    crate::rng::u64() & RESEED_MASK,
+                    additional_precision_bits,
+                    timestamp,
+                )
+            }
+
+            #[inline]
+            fn increment(
                 &self,
-                seconds: u64,
-                subsec_nanos: u32,
-            ) -> (Self::Output, u64, u32) {
-                let (seconds, subsec_nanos) = self.shift.apply(seconds, subsec_nanos);
+                additional_precision_bits: usize,
+                timestamp: &ReseedingTimestamp,
+            ) -> Self {
+                let mut counter = Counter::new(self.value, additional_precision_bits, timestamp);
 
-                let mut last_reseed = self.last_reseed.get();
-                let mut counter;
+                // Guaranteed to never overflow u64
+                counter.value += 1;
 
-                // If the observed system time has shifted forwards then regenerate the counter
-                if last_reseed.should_reseed(seconds, subsec_nanos) {
-                    last_reseed = LastReseed::from_ts(seconds, subsec_nanos);
-                    self.last_reseed.set(last_reseed);
-
-                    counter = crate::rng::u64() & RESEED_MASK;
-                    self.counter.set(counter);
-                }
-                // If the observed system time has not shifted forwards then increment the counter
-                else {
-                    // If the incoming timestamp is earlier than the last observed one then
-                    // use it instead. This may happen if the system clock jitters, or if the counter
-                    // has wrapped and the timestamp is artificially incremented
-
-                    // Guaranteed to never overflow u64
-                    counter = self.counter.get() + 1;
-
-                    // If the counter has not overflowed its 42-bit storage then return it
-                    if counter <= MAX_COUNTER {
-                        self.counter.set(counter);
-                    }
-                    // Unlikely: If the counter has overflowed its 42-bit storage then wrap it
-                    // and increment the timestamp. Until the observed system time shifts past
-                    // this incremented value, all timestamps will use it to maintain monotonicity
-                    else {
-                        // Increment the timestamp by 1 milli
-                        last_reseed = last_reseed.increment();
-                        self.last_reseed.set(last_reseed);
-
-                        // Reseed the counter
-                        counter = crate::rng::u64() & RESEED_MASK;
-                        self.counter.set(counter);
-                    }
-                };
-
-                // If we're using additional precision then mask it into the front of the counter
-                if self.additional_precision_bits != 0 {
-                    let precision_mask =
-                        u64::MAX >> (64 - USABLE_BITS + self.additional_precision_bits);
-                    let precision_shift = USABLE_BITS - self.additional_precision_bits;
-
-                    let precision = last_reseed.submilli_nanos() as u64;
-
-                    counter = (counter & precision_mask) | (precision << precision_shift);
-                }
-
-                (counter, last_reseed.ts_seconds, last_reseed.ts_subsec_nanos)
+                counter
             }
 
-            fn usable_bits(&self) -> usize {
-                USABLE_BITS
+            #[inline]
+            fn has_overflowed(&self) -> bool {
+                self.value > MAX_COUNTER
             }
         }
 
@@ -973,10 +1022,12 @@ pub mod context {
 
                 // This context will wrap
                 let context = ContextV7 {
-                    last_reseed: Cell::new(LastReseed::from_ts(seconds, subsec_nanos)),
-                    shift: Shift::by_millis(0),
+                    timestamp: Cell::new(ReseedingTimestamp::from_ts(seconds, subsec_nanos)),
+                    adjust: Adjust::by_millis(0),
                     additional_precision_bits: 0,
-                    counter: Cell::new(u64::MAX >> 22),
+                    counter: Cell::new(Counter {
+                        value: u64::MAX >> 22,
+                    }),
                 };
 
                 let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
@@ -996,7 +1047,7 @@ pub mod context {
                 let seconds = 1_496_854_535;
                 let subsec_nanos = 812_946_000;
 
-                let context = ContextV7::new().with_shift_millis(1);
+                let context = ContextV7::new().with_adjust_millis(1);
 
                 let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
 
@@ -1008,7 +1059,7 @@ pub mod context {
                 let seconds = 1_496_854_535;
                 let subsec_nanos = 812_946_000;
 
-                let context = ContextV7::new().with_nano_precision();
+                let context = ContextV7::new().with_nanosecond_precision();
 
                 let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
 
