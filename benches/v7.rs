@@ -25,6 +25,13 @@ fn new_v7_context(b: &mut Bencher) {
 }
 
 #[bench]
+fn new_v7_context_additional_precision(b: &mut Bencher) {
+    let ctxt = ContextV7::new().with_additional_precision();
+
+    b.iter(|| Uuid::new_v7(Timestamp::now(&ctxt)));
+}
+
+#[bench]
 fn v7_raw(b: &mut Bencher) {
     let now = SystemTime::UNIX_EPOCH.elapsed().unwrap();
     let secs = now.as_secs();
