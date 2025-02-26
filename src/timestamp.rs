@@ -697,6 +697,12 @@ pub mod context {
         /// 2. Wrapping the counter back to zero if it overflows its 42-bit storage and adding a
         ///    millisecond to the timestamp.
         ///
+        /// The counter can use additional sub-millisecond precision from the timestamp to better
+        /// synchronize UUID sorting in distributed systems. In these cases, the additional precision
+        /// is masked into the left-most 12 bits of the counter. The counter is still reseeded on
+        /// each new millisecond, and incremented within the millisecond. This behavior may change
+        /// in the future. The only guarantee is monotonicity.
+        ///
         /// This type can be used when constructing version 7 UUIDs. When used to construct a
         /// version 7 UUID, the 42-bit counter will be padded with random data. This type can
         /// be used to maintain ordering of UUIDs within the same millisecond.
@@ -736,7 +742,7 @@ pub mod context {
             }
 
             /// Specify an amount to shift timestamps by to obfuscate their actual generation time.
-            pub fn with_adjust_millis(mut self, millis: u32) -> Self {
+            pub fn with_adjust_by_millis(mut self, millis: u32) -> Self {
                 self.adjust = Adjust::by_millis(millis);
                 self
             }
@@ -1074,7 +1080,7 @@ pub mod context {
                 let seconds = 1_496_854_535;
                 let subsec_nanos = 812_946_000;
 
-                let context = ContextV7::new().with_adjust_millis(1);
+                let context = ContextV7::new().with_adjust_by_millis(1);
 
                 let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
 
