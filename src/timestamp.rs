@@ -557,6 +557,17 @@ pub mod context {
                 let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
                 assert_eq!(1, ts.counter);
             }
+
+            #[test]
+            fn context_overflow() {
+                let seconds = u64::MAX;
+                let subsec_nanos = u32::MAX;
+
+                let context = Context::new(u16::MAX);
+
+                // Ensure we don't panic
+                Timestamp::from_unix(&context, seconds, subsec_nanos);
+            }
         }
     }
 
@@ -812,14 +823,14 @@ pub mod context {
 
         #[derive(Debug)]
         struct Adjust {
-            by_ns: u32,
+            by_ns: u128,
         }
 
         impl Adjust {
             #[inline]
             fn by_millis(millis: u32) -> Self {
                 Adjust {
-                    by_ns: millis.saturating_mul(1_000_000),
+                    by_ns: (millis as u128).saturating_mul(1_000_000),
                 }
             }
 
@@ -830,23 +841,12 @@ pub mod context {
                     return (seconds, subsec_nanos);
                 }
 
-                let mut shifted_subsec_nanos =
-                    subsec_nanos.checked_add(self.by_ns).unwrap_or(subsec_nanos);
+                let ts = (seconds as u128)
+                    .saturating_mul(1_000_000_000)
+                    .saturating_add(subsec_nanos as u128)
+                    .saturating_add(self.by_ns as u128);
 
-                if shifted_subsec_nanos < 1_000_000_000 {
-                    // The shift hasn't overflowed into the next second
-                    (seconds, shifted_subsec_nanos)
-                } else {
-                    // The shift has overflowed into the next second
-                    shifted_subsec_nanos -= 1_000_000_000;
-
-                    if seconds < u64::MAX {
-                        (seconds + 1, shifted_subsec_nanos)
-                    } else {
-                        // The next second would overflow a `u64`
-                        (seconds, subsec_nanos)
-                    }
-                }
+                ((ts / 1_000_000_000) as u64, (ts % 1_000_000_000) as u32)
             }
         }
 
@@ -878,7 +878,9 @@ pub mod context {
             #[inline]
             fn from_ts(seconds: u64, subsec_nanos: u32) -> Self {
                 // Reseed when the millisecond advances
-                let last_seed = (seconds * 1_000) + (subsec_nanos as u64 / 1_000_000);
+                let last_seed = seconds
+                    .saturating_mul(1_000)
+                    .saturating_add((subsec_nanos / 1_000_000) as u64);
 
                 ReseedingTimestamp {
                     last_seed,
@@ -918,7 +920,7 @@ pub mod context {
 
                 // The factor reduces the size of the sub-millisecond precision to
                 // fit into the specified number of bits
-                let factor = (999_999u64 / 2u64.pow(bits as u32)) + 1;
+                let factor = (999_999 / u64::pow(2, bits as u32)) + 1;
 
                 Precision {
                     bits,
@@ -1112,6 +1114,21 @@ pub mod context {
                 let ts3 = Timestamp::from_unix(&context, seconds, subsec_nanos);
 
                 assert!(Uuid::new_v7(ts3) > Uuid::new_v7(ts2));
+            }
+
+            #[test]
+            fn context_overflow() {
+                let seconds = u64::MAX;
+                let subsec_nanos = u32::MAX;
+
+                // Ensure we don't panic
+                for context in [
+                    ContextV7::new(),
+                    ContextV7::new().with_additional_precision(),
+                    ContextV7::new().with_adjust_by_millis(u32::MAX),
+                ] {
+                    Timestamp::from_unix(&context, seconds, subsec_nanos);
+                }
             }
         }
     }
