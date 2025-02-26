@@ -709,7 +709,7 @@ pub mod context {
             timestamp: Cell<ReseedingTimestamp>,
             counter: Cell<Counter>,
             adjust: Adjust,
-            additional_precision_bits: usize,
+            precision: Precision,
         }
 
         impl RefUnwindSafe for ContextV7 {}
@@ -726,7 +726,12 @@ pub mod context {
                     }),
                     counter: Cell::new(Counter { value: 0 }),
                     adjust: Adjust { by_ns: 0 },
-                    additional_precision_bits: 0,
+                    precision: Precision {
+                        bits: 0,
+                        mask: 0,
+                        factor: 0,
+                        shift: 0,
+                    },
                 }
             }
 
@@ -742,8 +747,8 @@ pub mod context {
             /// by trading a small amount of entropy for better counter synchronization. Note that the counter
             /// will still be reseeded on millisecond boundaries, even though some of its storage will be
             /// dedicated to the timestamp.
-            pub fn with_nanosecond_precision(mut self) -> Self {
-                self.additional_precision_bits = 12;
+            pub fn with_additional_precision(mut self) -> Self {
+                self.precision = Precision::new(12);
                 self
             }
         }
@@ -768,7 +773,7 @@ pub mod context {
 
                 if should_reseed {
                     // If the observed system time has shifted forwards then regenerate the counter
-                    counter = Counter::reseed(self.additional_precision_bits, &timestamp);
+                    counter = Counter::reseed(&self.precision, &timestamp);
                 } else {
                     // If the observed system time has not shifted forwards then increment the counter
 
@@ -776,10 +781,7 @@ pub mod context {
                     // use it instead. This may happen if the system clock jitters, or if the counter
                     // has wrapped and the timestamp is artificially incremented
 
-                    counter = self
-                        .counter
-                        .get()
-                        .increment(self.additional_precision_bits, &timestamp);
+                    counter = self.counter.get().increment(&self.precision, &timestamp);
 
                     // Unlikely: If the counter has overflowed its 42-bit storage then wrap it
                     // and increment the timestamp. Until the observed system time shifts past
@@ -787,7 +789,7 @@ pub mod context {
                     if counter.has_overflowed() {
                         // Increment the timestamp by 1 milli and reseed the counter
                         timestamp = timestamp.increment();
-                        counter = Counter::reseed(self.additional_precision_bits, &timestamp);
+                        counter = Counter::reseed(&self.precision, &timestamp);
                     }
                 };
 
@@ -799,6 +801,46 @@ pub mod context {
 
             fn usable_bits(&self) -> usize {
                 USABLE_BITS
+            }
+        }
+
+        #[derive(Debug)]
+        struct Adjust {
+            by_ns: u32,
+        }
+
+        impl Adjust {
+            #[inline]
+            fn by_millis(millis: u32) -> Self {
+                Adjust {
+                    by_ns: millis.saturating_mul(1_000_000),
+                }
+            }
+
+            #[inline]
+            fn apply(&self, seconds: u64, subsec_nanos: u32) -> (u64, u32) {
+                if self.by_ns == 0 {
+                    // No shift applied
+                    return (seconds, subsec_nanos);
+                }
+
+                let mut shifted_subsec_nanos =
+                    subsec_nanos.checked_add(self.by_ns).unwrap_or(subsec_nanos);
+
+                if shifted_subsec_nanos < 1_000_000_000 {
+                    // The shift hasn't overflowed into the next second
+                    (seconds, shifted_subsec_nanos)
+                } else {
+                    // The shift has overflowed into the next second
+                    shifted_subsec_nanos -= 1_000_000_000;
+
+                    if seconds < u64::MAX {
+                        (seconds + 1, shifted_subsec_nanos)
+                    } else {
+                        // The next second would overflow a `u64`
+                        (seconds, subsec_nanos)
+                    }
+                }
             }
         }
 
@@ -854,42 +896,42 @@ pub mod context {
         }
 
         #[derive(Debug)]
-        struct Adjust {
-            by_ns: u32,
+        struct Precision {
+            bits: usize,
+            factor: u64,
+            mask: u64,
+            shift: u64,
         }
 
-        impl Adjust {
-            #[inline]
-            fn by_millis(millis: u32) -> Self {
-                Adjust {
-                    by_ns: millis.saturating_mul(1_000_000),
+        impl Precision {
+            fn new(bits: usize) -> Self {
+                // The mask and shift are used to paste the sub-millisecond precision
+                // into the most significant bits of the counter
+                let mask = u64::MAX >> (64 - USABLE_BITS + bits);
+                let shift = (USABLE_BITS - bits) as u64;
+
+                // The factor reduces the size of the sub-millisecond precision to
+                // fit into the specified number of bits
+                let factor = (999_999u64 / 2u64.pow(bits as u32)) + 1;
+
+                Precision {
+                    bits,
+                    factor,
+                    mask,
+                    shift,
                 }
             }
 
             #[inline]
-            fn apply(&self, seconds: u64, subsec_nanos: u32) -> (u64, u32) {
-                if self.by_ns == 0 {
-                    // No shift applied
-                    return (seconds, subsec_nanos);
+            fn apply(&self, value: u64, timestamp: &ReseedingTimestamp) -> u64 {
+                if self.bits == 0 {
+                    // No additional precision is being used
+                    return value;
                 }
 
-                let mut shifted_subsec_nanos =
-                    subsec_nanos.checked_add(self.by_ns).unwrap_or(subsec_nanos);
+                let additional = timestamp.submilli_nanos() as u64 / self.factor;
 
-                if shifted_subsec_nanos < 1_000_000_000 {
-                    // The shift hasn't overflowed into the next second
-                    (seconds, shifted_subsec_nanos)
-                } else {
-                    // The shift has overflowed into the next second
-                    shifted_subsec_nanos -= 1_000_000_000;
-
-                    if seconds < u64::MAX {
-                        (seconds + 1, shifted_subsec_nanos)
-                    } else {
-                        // The next second would overflow a `u64`
-                        (seconds, subsec_nanos)
-                    }
-                }
+                (value & self.mask) | (additional << self.shift)
             }
         }
 
@@ -900,42 +942,22 @@ pub mod context {
 
         impl Counter {
             #[inline]
-            fn new(
-                value: u64,
-                additional_precision_bits: usize,
-                timestamp: &ReseedingTimestamp,
-            ) -> Self {
+            fn reseed(precision: &Precision, timestamp: &ReseedingTimestamp) -> Self {
                 Counter {
-                    value: if additional_precision_bits != 0 {
-                        let precision_mask =
-                            u64::MAX >> (64 - USABLE_BITS + additional_precision_bits);
-                        let precision_shift = USABLE_BITS - additional_precision_bits;
-
-                        let precision = timestamp.submilli_nanos() as u64;
-
-                        (value & precision_mask) | (precision << precision_shift)
-                    } else {
-                        value
-                    },
+                    value: precision.apply(crate::rng::u64() & RESEED_MASK, timestamp),
                 }
             }
 
             #[inline]
-            fn reseed(additional_precision_bits: usize, timestamp: &ReseedingTimestamp) -> Self {
-                Counter::new(
-                    crate::rng::u64() & RESEED_MASK,
-                    additional_precision_bits,
-                    timestamp,
-                )
-            }
+            fn increment(&self, precision: &Precision, timestamp: &ReseedingTimestamp) -> Self {
+                let mut counter = Counter {
+                    value: precision.apply(self.value, timestamp),
+                };
 
-            #[inline]
-            fn increment(
-                &self,
-                additional_precision_bits: usize,
-                timestamp: &ReseedingTimestamp,
-            ) -> Self {
-                let mut counter = Counter::new(self.value, additional_precision_bits, timestamp);
+                // We unconditionally increment the counter even though the precision
+                // may have set higher bits already. This could technically be avoided,
+                // but the higher bits are a coarse approximation so we just avoid the
+                // `if` branch and increment it either way
 
                 // Guaranteed to never overflow u64
                 counter.value += 1;
@@ -982,7 +1004,7 @@ pub mod context {
 
             use super::*;
 
-            use crate::Timestamp;
+            use crate::{Timestamp, Uuid};
 
             #[test]
             fn context() {
@@ -1024,7 +1046,12 @@ pub mod context {
                 let context = ContextV7 {
                     timestamp: Cell::new(ReseedingTimestamp::from_ts(seconds, subsec_nanos)),
                     adjust: Adjust::by_millis(0),
-                    additional_precision_bits: 0,
+                    precision: Precision {
+                        bits: 0,
+                        mask: 0,
+                        factor: 0,
+                        shift: 0,
+                    },
                     counter: Cell::new(Counter {
                         value: u64::MAX >> 22,
                     }),
@@ -1059,15 +1086,26 @@ pub mod context {
                 let seconds = 1_496_854_535;
                 let subsec_nanos = 812_946_000;
 
-                let context = ContextV7::new().with_nanosecond_precision();
+                let context = ContextV7::new().with_additional_precision();
 
-                let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
+                let ts1 = Timestamp::from_unix(&context, seconds, subsec_nanos);
 
-                let (counter, width) = ts.counter();
+                // NOTE: Future changes in rounding may change this value slightly
+                assert_eq!(3861, ts1.counter >> 30);
 
-                assert_eq!(946_000, counter >> 30);
+                assert!(ts1.counter < (u64::MAX >> 22) as u128);
 
-                assert_eq!(42, width);
+                // Generate another timestamp; it should continue to sort
+                let ts2 = Timestamp::from_unix(&context, seconds, subsec_nanos);
+
+                assert!(Uuid::new_v7(ts2) > Uuid::new_v7(ts1));
+
+                // Generate another timestamp with an extra nanosecond
+                let subsec_nanos = subsec_nanos + 1;
+
+                let ts3 = Timestamp::from_unix(&context, seconds, subsec_nanos);
+
+                assert!(Uuid::new_v7(ts3) > Uuid::new_v7(ts2));
             }
         }
     }
