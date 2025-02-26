@@ -33,12 +33,18 @@ use crate::{
 /// may change. It is currently only guaranteed that `NonNilUuid` and `Option<NonNilUuid>`
 /// are the same size as `Uuid`.
 #[repr(transparent)]
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Copy, Clone, PartialEq, Eq, Hash)]
 pub struct NonNilUuid(NonZeroU128);
+
+impl fmt::Debug for NonNilUuid {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(&Uuid::from(*self), f)
+    }
+}
 
 impl fmt::Display for NonNilUuid {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", Uuid::from(*self))
+        fmt::Display::fmt(&Uuid::from(*self), f)
     }
 }
 
@@ -138,5 +144,14 @@ mod tests {
 
         assert!(NonNilUuid::try_from(Uuid::nil()).is_err());
         assert!(NonNilUuid::new(Uuid::nil()).is_none());
+    }
+
+    #[test]
+    fn test_non_nil_formatting() {
+        let uuid = Uuid::from_u128(0x0123456789abcdef0123456789abcdef);
+        let non_nil = NonNilUuid::try_from(uuid).unwrap();
+
+        assert_eq!(format!("{uuid}"), format!("{non_nil}"));
+        assert_eq!(format!("{uuid:?}"), format!("{non_nil:?}"));
     }
 }
