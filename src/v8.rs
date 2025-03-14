@@ -25,7 +25,7 @@ impl Uuid {
     /// # References
     ///
     /// * [UUID Version 8 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.8)
-    pub fn new_v8(buf: [u8; 16]) -> Uuid {
+    pub const fn new_v8(buf: [u8; 16]) -> Uuid {
         Builder::from_custom_bytes(buf).into_uuid()
     }
 }
