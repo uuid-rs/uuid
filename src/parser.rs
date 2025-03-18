@@ -19,6 +19,9 @@ use crate::{
     Uuid,
 };
 
+#[cfg(feature = "std")]
+use crate::std::string::String;
+
 impl str::FromStr for Uuid {
     type Err = Error;
 
@@ -32,6 +35,15 @@ impl TryFrom<&'_ str> for Uuid {
 
     fn try_from(uuid_str: &'_ str) -> Result<Self, Self::Error> {
         Uuid::parse_str(uuid_str)
+    }
+}
+
+#[cfg(feature = "std")]
+impl TryFrom<String> for Uuid {
+    type Error = Error;
+
+    fn try_from(uuid_str: String) -> Result<Self, Self::Error> {
+        Uuid::try_from(uuid_str.as_ref())
     }
 }
 
