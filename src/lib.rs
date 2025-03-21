@@ -455,6 +455,7 @@ pub enum Variant {
     feature = "bytemuck",
     derive(bytemuck::Zeroable, bytemuck::Pod, bytemuck::TransparentWrapper)
 )]
+#[cfg_attr(feature = "bincode2", derive(bincode::Decode, bincode::Encode))]
 pub struct Uuid(Bytes);
 
 impl Uuid {
