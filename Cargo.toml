@@ -29,17 +29,17 @@ homepage = "https://github.com/uuid-rs/uuid"
 name = "uuid"
 readme = "README.md"
 repository = "https://github.com/uuid-rs/uuid"
-version = "1.16.0" # remember to update html_root_url in lib.rs
+version = "1.16.1" # remember to update html_root_url in lib.rs
 rust-version = "1.63.0"
 
 [package.metadata.docs.rs]
 rustc-args = ["--cfg", "uuid_unstable"]
 rustdoc-args = ["--cfg", "uuid_unstable"]
 targets = ["x86_64-unknown-linux-gnu"]
-features = ["serde", "arbitrary", "slog", "borsh", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
+features = ["serde", "bincode", "arbitrary", "slog", "borsh", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
 
 [package.metadata.playground]
-features = ["serde", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
+features = ["serde", "bincode", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
 
 [lints.rust]
 unexpected_cfgs = { level = "allow", check-cfg = ['cfg(uuid_unstable)'] }
@@ -93,6 +93,12 @@ features = ["derive"]
 default-features = false
 optional = true
 version = "1.0.56"
+
+# Public: Used in trait impls on `Uuid`
+[dependencies.bincode]
+default-features = false
+optional = true
+version = "2.0.1"
 
 # Public: Used in trait impls on `Uuid`
 [dependencies.slog]
@@ -179,7 +185,7 @@ version = "0.3"
 optional = true
 
 [dev-dependencies.bincode]
-version = "1.0"
+version = "2.0.1"
 
 [dev-dependencies.serde_derive]
 version = "1.0.79"
