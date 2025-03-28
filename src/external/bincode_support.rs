@@ -19,7 +19,7 @@ use bincode::{
     de::{BorrowDecoder, Decoder},
     enc::Encoder,
     error::{DecodeError, EncodeError},
-    Decode, Encode,
+    BorrowDecode, Decode, Encode,
 };
 use std::string::ToString;
 
@@ -31,33 +31,31 @@ impl Encode for Uuid {
 
 impl Encode for NonNilUuid {
     fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
-        let uuid = Uuid::from(*self);
-
-        Encode::encode(uuid.as_bytes(), encoder)
+        self.get().encode(encoder)
     }
 }
 
 impl Encode for Hyphenated {
     fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
-        Encode::encode(self.as_uuid().as_bytes(), encoder)
+        self.as_uuid().encode(encoder)
     }
 }
 
 impl Encode for Simple {
     fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
-        Encode::encode(self.as_uuid().as_bytes(), encoder)
+        self.as_uuid().encode(encoder)
     }
 }
 
 impl Encode for Urn {
     fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
-        Encode::encode(self.as_uuid().as_bytes(), encoder)
+        self.as_uuid().encode(encoder)
     }
 }
 
 impl Encode for Braced {
     fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
-        Encode::encode(self.as_uuid().as_bytes(), encoder)
+        self.as_uuid().encode(encoder)
     }
 }
 
@@ -66,11 +64,11 @@ impl<Context> Decode<Context> for Uuid {
         Ok(Uuid::from_bytes(Decode::decode(decoder)?))
     }
 }
-impl<'de, Context> bincode::BorrowDecode<'de, Context> for Uuid {
+impl<'de, Context> BorrowDecode<'de, Context> for Uuid {
     fn borrow_decode<D: BorrowDecoder<'de, Context = Context>>(
         decoder: &mut D,
-    ) -> core::result::Result<Self, bincode::error::DecodeError> {
-        Ok(Uuid::from_bytes(Decode::decode(decoder)?))
+    ) -> Result<Self, DecodeError> {
+        Ok(Uuid::from_bytes(BorrowDecode::borrow_decode(decoder)?))
     }
 }
 
@@ -81,11 +79,11 @@ impl<Context> Decode<Context> for NonNilUuid {
         NonNilUuid::try_from(uuid).map_err(|e| DecodeError::OtherString(e.to_string()))
     }
 }
-impl<'de, Context> bincode::BorrowDecode<'de, Context> for NonNilUuid {
+impl<'de, Context> BorrowDecode<'de, Context> for NonNilUuid {
     fn borrow_decode<D: BorrowDecoder<'de, Context = Context>>(
         decoder: &mut D,
-    ) -> core::result::Result<Self, bincode::error::DecodeError> {
-        let uuid = Uuid::decode(decoder)?;
+    ) -> Result<Self, DecodeError> {
+        let uuid = Uuid::borrow_decode(decoder)?;
 
         NonNilUuid::try_from(uuid).map_err(|e| DecodeError::OtherString(e.to_string()))
     }
@@ -99,71 +97,79 @@ mod bincode_tests {
     #[test]
     fn test_encode_readable_string() {
         let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
-        let u = Uuid::parse_str(uuid_str).unwrap();
+        let uuid = Uuid::parse_str(uuid_str).unwrap();
 
-        bincode::encode_to_vec(&u, config::standard())
+        let bytes = bincode::encode_to_vec(&uuid, config::standard())
             .expect(&format!("Failed to encode {uuid_str}."));
+        let (decoded_uuid, _) = bincode::decode_from_slice::<Uuid, _>(&bytes, config::standard())
+            .expect(&format!("Failed to decode {bytes:?}."));
+
+        assert_eq!(uuid, decoded_uuid);
     }
 
     #[test]
     fn test_encode_hyphenated() {
         let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
-        let u = Uuid::parse_str(uuid_str).unwrap();
+        let uuid = Uuid::parse_str(uuid_str).unwrap();
 
-        bincode::encode_to_vec(&u, config::standard())
+        let bytes = bincode::encode_to_vec(&uuid, config::standard())
             .expect(&format!("Failed to encode {uuid_str}."));
+        let (decoded_uuid, _) = bincode::decode_from_slice::<Uuid, _>(&bytes, config::standard())
+            .expect(&format!("Failed to decode {bytes:?}."));
+
+        assert_eq!(uuid, decoded_uuid);
     }
 
     #[test]
     fn test_encode_simple() {
         let uuid_str = "f9168c5eceb24faab6bf329bf39fa1e4";
-        let u = Uuid::parse_str(uuid_str).unwrap();
+        let uuid = Uuid::parse_str(uuid_str).unwrap();
 
-        bincode::encode_to_vec(&u, config::standard())
+        let bytes = bincode::encode_to_vec(&uuid, config::standard())
             .expect(&format!("Failed to encode {uuid_str}."));
+        let (decoded_uuid, _) = bincode::decode_from_slice::<Uuid, _>(&bytes, config::standard())
+            .expect(&format!("Failed to decode {bytes:?}."));
+
+        assert_eq!(uuid, decoded_uuid);
     }
 
     #[test]
     fn test_encode_urn() {
         let uuid_str = "urn:uuid:f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
-        let u = Uuid::parse_str(uuid_str).unwrap();
+        let uuid = Uuid::parse_str(uuid_str).unwrap();
 
-        bincode::encode_to_vec(&u, config::standard())
+        let bytes = bincode::encode_to_vec(&uuid, config::standard())
             .expect(&format!("Failed to encode {uuid_str}."));
+        let (decoded_uuid, _) = bincode::decode_from_slice::<Uuid, _>(&bytes, config::standard())
+            .expect(&format!("Failed to decode {bytes:?}."));
+
+        assert_eq!(uuid, decoded_uuid);
     }
 
     #[test]
     fn test_encode_braced() {
         let uuid_str = "{f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4}";
-        let u = Uuid::parse_str(uuid_str).unwrap();
+        let uuid = Uuid::parse_str(uuid_str).unwrap();
 
-        bincode::encode_to_vec(&u, config::standard())
+        let bytes = bincode::encode_to_vec(&uuid, config::standard())
             .expect(&format!("Failed to encode {uuid_str}."));
+        let (decoded_uuid, _) = bincode::decode_from_slice::<Uuid, _>(&bytes, config::standard())
+            .expect(&format!("Failed to decode {bytes:?}."));
+
+        assert_eq!(uuid, decoded_uuid);
     }
 
     #[test]
     fn test_encode_non_human_readable() {
         let uuid_bytes = b"F9168C5E-CEB2-4F";
-        let u = Uuid::from_slice(uuid_bytes).unwrap();
+        let uuid = Uuid::from_slice(uuid_bytes).unwrap();
 
-        bincode::encode_to_vec(&u, config::standard())
+        let bytes = bincode::encode_to_vec(&uuid, config::standard())
             .expect(&format!("{:?} failed to encode.", uuid_bytes));
-    }
+        let (decoded_uuid, _) = bincode::decode_from_slice::<Uuid, _>(&bytes, config::standard())
+            .expect(&format!("Failed to decode {bytes:?}."));
 
-    #[test]
-    fn test_decode() {
-        let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
-        let u = Uuid::parse_str(uuid_str).unwrap();
-
-        let bytes = bincode::encode_to_vec(&u, config::standard())
-            .expect(&format!("Failed to encode {uuid_str}."));
-
-        let (decoded_uuid, decoded_size) =
-            bincode::decode_from_slice::<Uuid, _>(&bytes, config::standard())
-                .expect(&format!("Failed to decode {bytes:?}."));
-
-        assert_eq!(u, decoded_uuid);
-        assert_eq!(16, decoded_size);
+        assert_eq!(uuid, decoded_uuid);
     }
 
     #[test]
