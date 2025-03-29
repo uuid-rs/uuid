@@ -15,10 +15,8 @@ use crate::{
     non_nil::NonNilUuid,
     Uuid,
 };
-use bincode::config::Config;
-use bincode::config::Endianness;
-use bincode::config::IntEncoding;
 use bincode::{
+    config::{Config, IntEncoding},
     de::{BorrowDecoder, Decoder},
     enc::Encoder,
     error::{DecodeError, EncodeError},
@@ -28,17 +26,13 @@ use std::string::ToString;
 
 impl Encode for Uuid {
     fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
-        let config = encoder.config();
-
-        // Legacy serde/bincode 1.0
-        if config.endianness() == Endianness::Little
-            && config.int_encoding() == IntEncoding::Fixed
-            && config.limit().is_none()
-        {
+        if encoder.config().int_encoding() == IntEncoding::Fixed {
+            usize::encode(&16, encoder)?;
+        } else {
             u8::encode(&16, encoder)?;
         }
 
-        self.as_bytes().encode(encoder)?;
+        <&[u8; 16]>::encode(&self.as_bytes(), encoder)?;
 
         Ok(())
     }
@@ -76,18 +70,11 @@ impl Encode for Braced {
 
 impl<Context> Decode<Context> for Uuid {
     fn decode<D: Decoder<Context = Context>>(decoder: &mut D) -> Result<Self, DecodeError> {
-        let config = decoder.config();
-
-        // Legacy serde/bincode 1.0
-        if config.endianness() == Endianness::Little
-            && config.int_encoding() == IntEncoding::Fixed
-            && config.limit().is_none()
-        {
-            let length = u8::decode(decoder)? as usize;
-            decoder.claim_bytes_read(length + 1)?;
+        if decoder.config().int_encoding() == IntEncoding::Fixed {
+            usize::decode(decoder)?;
         } else {
-            decoder.claim_bytes_read(16)?;
-        }
+            u8::decode(decoder)?;
+        };
 
         Ok(Uuid::from_bytes(Decode::decode(decoder)?))
     }
@@ -96,18 +83,11 @@ impl<'de, Context> BorrowDecode<'de, Context> for Uuid {
     fn borrow_decode<D: BorrowDecoder<'de, Context = Context>>(
         decoder: &mut D,
     ) -> Result<Self, DecodeError> {
-        let config = decoder.config();
-
-        // Legacy serde/bincode 1.0
-        if config.endianness() == Endianness::Little
-            && config.int_encoding() == IntEncoding::Fixed
-            && config.limit().is_none()
-        {
-            let length = u8::borrow_decode(decoder)? as usize;
-            decoder.claim_bytes_read(length + 1)?;
+        if decoder.config().int_encoding() == IntEncoding::Fixed {
+            usize::borrow_decode(decoder)?;
         } else {
-            decoder.claim_bytes_read(16)?;
-        }
+            u8::borrow_decode(decoder)?;
+        };
 
         Ok(Uuid::from_bytes(BorrowDecode::borrow_decode(decoder)?))
     }
@@ -135,30 +115,21 @@ mod bincode_tests {
 
     #[test]
     fn test_legacy() {
-        let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
-        let uuid = Uuid::parse_str(uuid_str).unwrap();
+        let uuid = Uuid::parse_str("f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4").unwrap();
 
-        #[derive(Encode, Decode)]
-        struct V2Container(Uuid);
-        #[derive(Encode, Decode)]
-        struct LegacyContainer(#[bincode(with_serde)] Uuid);
+        let legacy_bytes = bincodev1::serialize(&uuid).expect(&format!(
+            "Should have been able to encode {} with bincode v1.",
+            uuid.to_string()
+        ));
+        let (decoded, _) = bincode::decode_from_slice::<Uuid, _>(&legacy_bytes, config::legacy())
+            .expect("Bincode v2 should have been able to decode bytes encoded by bincode v1.");
+        assert_eq!(uuid, decoded);
 
-        let v2_bytes = bincode::encode_to_vec(&V2Container(uuid), config::standard()).expect(
-            &format!("Should have been able to encode V2Container({uuid_str})."),
-        );
-        let v2_legacy_bytes = bincode::encode_to_vec(&V2Container(uuid), config::legacy()).expect(
-            &format!("Should have been able to encode V2Container({uuid_str}) & legacy config."),
-        );
-        let legacy_bytes = bincode::encode_to_vec(&LegacyContainer(uuid), config::standard())
-            .expect(&format!(
-                "Should have been able to encode LegacyContainer({uuid_str})."
-            ));
-
-        assert_eq!(legacy_bytes, v2_legacy_bytes);
-        assert_eq!(17, v2_legacy_bytes.len());
-
-        assert_eq!(legacy_bytes[1..], v2_bytes);
-        assert_eq!(16, v2_bytes.len());
+        let new_bytes = bincode::encode_to_vec(&decoded, config::legacy())
+            .expect("Bincode v2 should have been able to encode uuid using legacy config.");
+        let decoded = bincodev1::deserialize::<Uuid>(&new_bytes)
+            .expect("Bincode v1 should have been able to decode bytes encoded by bincode v1.");
+        assert_eq!(uuid, decoded);
     }
 
     #[test]
