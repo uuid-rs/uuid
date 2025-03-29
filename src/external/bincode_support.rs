@@ -138,14 +138,27 @@ mod bincode_tests {
         let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
         let uuid = Uuid::parse_str(uuid_str).unwrap();
 
-        let bytes = bincode::encode_to_vec(&uuid, config::legacy())
-            .expect(&format!("Failed to encode {uuid_str}."));
-        let (decoded_uuid, decoded_length) =
-            bincode::decode_from_slice::<Uuid, _>(&bytes, config::legacy())
-                .expect(&format!("Failed to decode {bytes:?}."));
+        #[derive(Encode, Decode)]
+        struct V2Container(Uuid);
+        #[derive(Encode, Decode)]
+        struct LegacyContainer(#[bincode(with_serde)] Uuid);
 
-        assert_eq!(uuid, decoded_uuid);
-        assert_eq!(17, decoded_length);
+        let v2_bytes = bincode::encode_to_vec(&V2Container(uuid), config::standard()).expect(
+            &format!("Should have been able to encode V2Container({uuid_str})."),
+        );
+        let v2_legacy_bytes = bincode::encode_to_vec(&V2Container(uuid), config::legacy()).expect(
+            &format!("Should have been able to encode V2Container({uuid_str}) & legacy config."),
+        );
+        let legacy_bytes = bincode::encode_to_vec(&LegacyContainer(uuid), config::standard())
+            .expect(&format!(
+                "Should have been able to encode LegacyContainer({uuid_str})."
+            ));
+
+        assert_eq!(legacy_bytes, v2_legacy_bytes);
+        assert_eq!(17, v2_legacy_bytes.len());
+
+        assert_eq!(legacy_bytes[1..], v2_bytes);
+        assert_eq!(16, v2_bytes.len());
     }
 
     #[test]

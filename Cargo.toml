@@ -186,6 +186,7 @@ optional = true
 
 [dev-dependencies.bincode]
 version = "2.0.1"
+features = ["serde"]
 
 [dev-dependencies.serde_derive]
 version = "1.0.79"
