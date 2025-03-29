@@ -15,6 +15,9 @@ use crate::{
     non_nil::NonNilUuid,
     Uuid,
 };
+use bincode::config::Config;
+use bincode::config::Endianness;
+use bincode::config::IntEncoding;
 use bincode::{
     de::{BorrowDecoder, Decoder},
     enc::Encoder,
@@ -25,7 +28,19 @@ use std::string::ToString;
 
 impl Encode for Uuid {
     fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
-        Encode::encode(self.as_bytes(), encoder)
+        let config = encoder.config();
+
+        // Legacy serde/bincode 1.0
+        if config.endianness() == Endianness::Little
+            && config.int_encoding() == IntEncoding::Fixed
+            && config.limit().is_none()
+        {
+            u8::encode(&16, encoder)?;
+        }
+
+        self.as_bytes().encode(encoder)?;
+
+        Ok(())
     }
 }
 
@@ -61,6 +76,19 @@ impl Encode for Braced {
 
 impl<Context> Decode<Context> for Uuid {
     fn decode<D: Decoder<Context = Context>>(decoder: &mut D) -> Result<Self, DecodeError> {
+        let config = decoder.config();
+
+        // Legacy serde/bincode 1.0
+        if config.endianness() == Endianness::Little
+            && config.int_encoding() == IntEncoding::Fixed
+            && config.limit().is_none()
+        {
+            let length = u8::decode(decoder)? as usize;
+            decoder.claim_bytes_read(length + 1)?;
+        } else {
+            decoder.claim_bytes_read(16)?;
+        }
+
         Ok(Uuid::from_bytes(Decode::decode(decoder)?))
     }
 }
@@ -68,6 +96,19 @@ impl<'de, Context> BorrowDecode<'de, Context> for Uuid {
     fn borrow_decode<D: BorrowDecoder<'de, Context = Context>>(
         decoder: &mut D,
     ) -> Result<Self, DecodeError> {
+        let config = decoder.config();
+
+        // Legacy serde/bincode 1.0
+        if config.endianness() == Endianness::Little
+            && config.int_encoding() == IntEncoding::Fixed
+            && config.limit().is_none()
+        {
+            let length = u8::borrow_decode(decoder)? as usize;
+            decoder.claim_bytes_read(length + 1)?;
+        } else {
+            decoder.claim_bytes_read(16)?;
+        }
+
         Ok(Uuid::from_bytes(BorrowDecode::borrow_decode(decoder)?))
     }
 }
@@ -75,7 +116,6 @@ impl<'de, Context> BorrowDecode<'de, Context> for Uuid {
 impl<Context> Decode<Context> for NonNilUuid {
     fn decode<D: Decoder<Context = Context>>(decoder: &mut D) -> Result<Self, DecodeError> {
         let uuid = Uuid::decode(decoder)?;
-
         NonNilUuid::try_from(uuid).map_err(|e| DecodeError::OtherString(e.to_string()))
     }
 }
@@ -84,7 +124,6 @@ impl<'de, Context> BorrowDecode<'de, Context> for NonNilUuid {
         decoder: &mut D,
     ) -> Result<Self, DecodeError> {
         let uuid = Uuid::borrow_decode(decoder)?;
-
         NonNilUuid::try_from(uuid).map_err(|e| DecodeError::OtherString(e.to_string()))
     }
 }
@@ -93,6 +132,21 @@ impl<'de, Context> BorrowDecode<'de, Context> for NonNilUuid {
 mod bincode_tests {
     use super::*;
     use bincode::config;
+
+    #[test]
+    fn test_legacy() {
+        let uuid_str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
+        let uuid = Uuid::parse_str(uuid_str).unwrap();
+
+        let bytes = bincode::encode_to_vec(&uuid, config::legacy())
+            .expect(&format!("Failed to encode {uuid_str}."));
+        let (decoded_uuid, decoded_length) =
+            bincode::decode_from_slice::<Uuid, _>(&bytes, config::legacy())
+                .expect(&format!("Failed to decode {bytes:?}."));
+
+        assert_eq!(uuid, decoded_uuid);
+        assert_eq!(17, decoded_length);
+    }
 
     #[test]
     fn test_encode_readable_string() {
