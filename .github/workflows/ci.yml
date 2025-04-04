@@ -27,11 +27,11 @@ jobs:
         - os: macos-latest
           rust_target: x86_64-msvc
         - os: windows-latest
-          rust_target: x86_64-apple-darwin
+          rust_target: aarch64-apple-darwin
         - os: ubuntu-latest
           rust_target: x86_64-msvc
         - os: ubuntu-latest
-          rust_target: x86_64-apple-darwin
+          rust_target: aarch64-apple-darwin
         channel:
         - stable
         - beta
@@ -43,7 +43,7 @@ jobs:
         rust_target:
         - x86_64-gnu
         - x86_64-msvc
-        - x86_64-apple-darwin
+        - aarch64-apple-darwin
 
     steps:
     - name: Checkout repository
