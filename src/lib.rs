@@ -231,6 +231,7 @@ mod parser;
 pub mod fmt;
 pub mod timestamp;
 
+use core::hash::{Hash, Hasher};
 pub use timestamp::{context::NoContext, ClockSequence, Timestamp};
 
 #[cfg(any(feature = "v1", feature = "v6"))]
@@ -434,7 +435,7 @@ pub enum Variant {
 /// # ABI
 ///
 /// The `Uuid` type is always guaranteed to be have the same ABI as [`Bytes`].
-#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd)]
 #[repr(transparent)]
 // NOTE: Also check `NonNilUuid` when ading new derives here
 #[cfg_attr(
@@ -934,6 +935,12 @@ impl Uuid {
             }
             _ => None,
         }
+    }
+}
+
+impl Hash for Uuid {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        state.write(&self.0);
     }
 }
 
