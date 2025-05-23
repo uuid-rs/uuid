@@ -1,5 +1,7 @@
 #[cfg(feature = "arbitrary")]
 pub(crate) mod arbitrary_support;
+#[cfg(feature = "bincode")]
+pub(crate) mod bincode_support;
 #[cfg(feature = "borsh")]
 pub(crate) mod borsh_support;
 #[cfg(feature = "serde")]
