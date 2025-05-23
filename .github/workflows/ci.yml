@@ -259,7 +259,7 @@ jobs:
         uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
 
       - name: Install Rust toolchain
-        run: rustup update nightly && rustup target add --toolchain stable wasm32v1-none
+        run: rustup update nightly && rustup target add --toolchain nightly wasm32v1-none
 
       - name: No features
         run: cargo +nightly build -Z avoid-dev-deps --target wasm32v1-none --no-default-features
