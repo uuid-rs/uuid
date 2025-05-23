@@ -197,12 +197,9 @@ version = "1.0"
 version = "1.0.56"
 
 [target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))'.dev-dependencies.wasm-bindgen]
-default-features = false
-features = ["msrv"]
 version = "0.2"
 
 [target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))'.dev-dependencies.wasm-bindgen-test]
-default-features = false
 version = "0.3"
 
 [dev-dependencies.trybuild]
