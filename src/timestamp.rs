@@ -308,11 +308,7 @@ pub(crate) const fn decode_unix_timestamp_millis(uuid: &Uuid) -> u64 {
 #[cfg(all(
     feature = "std",
     feature = "js",
-    all(
-        target_arch = "wasm32",
-        target_vendor = "unknown",
-        target_os = "unknown"
-    )
+    all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))
 ))]
 fn now() -> (u64, u32) {
     use wasm_bindgen::prelude::*;
@@ -337,11 +333,7 @@ fn now() -> (u64, u32) {
     not(miri),
     any(
         not(feature = "js"),
-        not(all(
-            target_arch = "wasm32",
-            target_vendor = "unknown",
-            target_os = "unknown"
-        ))
+        not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))
     )
 ))]
 fn now() -> (u64, u32) {
@@ -1166,20 +1158,12 @@ pub mod context {
 mod tests {
     use super::*;
 
-    #[cfg(all(
-        target_arch = "wasm32",
-        target_vendor = "unknown",
-        target_os = "unknown"
-    ))]
+    #[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]
     use wasm_bindgen_test::*;
 
     #[test]
     #[cfg_attr(
-        all(
-            target_arch = "wasm32",
-            target_vendor = "unknown",
-            target_os = "unknown"
-        ),
+        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
         wasm_bindgen_test
     )]
     fn gregorian_unix_does_not_panic() {
@@ -1193,11 +1177,7 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(
-            target_arch = "wasm32",
-            target_vendor = "unknown",
-            target_os = "unknown"
-        ),
+        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
         wasm_bindgen_test
     )]
     fn to_gregorian_truncates_to_usable_bits() {

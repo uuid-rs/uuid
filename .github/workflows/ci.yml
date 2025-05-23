@@ -250,3 +250,19 @@ jobs:
 
       - name: Powerset
         run: cargo hack check --each-feature -Z avoid-dev-deps
+
+  wasm32v1-none:
+    name: Build / MVP Web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+
+      - name: Install Rust toolchain
+        run: rustup update nightly && rustup target add --toolchain nightly wasm32v1-none
+
+      - name: No features
+        run: cargo +nightly build -Z avoid-dev-deps --target wasm32v1-none --no-default-features
+
+      - name: Version features
+        run: cargo +nightly build -Z avoid-dev-deps --target wasm32v1-none --no-default-features --features "js v1 v3 v4 v5 v6 v7 v8 serde"
