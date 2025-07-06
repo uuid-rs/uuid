@@ -41,29 +41,20 @@ impl Serialize for NonNilUuid {
     }
 }
 
-impl Serialize for Hyphenated {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
-    }
+macro_rules! serialize_uuid_proxy {
+    ($type:ty) => {
+        impl Serialize for $type {
+            fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+                serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
+            }
+        }
+    };
 }
 
-impl Serialize for Simple {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
-    }
-}
-
-impl Serialize for Urn {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
-    }
-}
-
-impl Serialize for Braced {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(self.encode_lower(&mut Uuid::encode_buffer()))
-    }
-}
+serialize_uuid_proxy!(Hyphenated);
+serialize_uuid_proxy!(Simple);
+serialize_uuid_proxy!(Urn);
+serialize_uuid_proxy!(Braced);
 
 impl<'de> Deserialize<'de> for Uuid {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
@@ -137,6 +128,24 @@ impl<'de> Deserialize<'de> for Uuid {
         }
     }
 }
+
+macro_rules! deserialize_uuid_proxy {
+    ($type:ty) => {
+        impl<'de> Deserialize<'de> for $type {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                Ok(Uuid::deserialize(deserializer)?.into())
+            }
+        }
+    };
+}
+
+deserialize_uuid_proxy!(Hyphenated);
+deserialize_uuid_proxy!(Simple);
+deserialize_uuid_proxy!(Urn);
+deserialize_uuid_proxy!(Braced);
 
 impl<'de> Deserialize<'de> for NonNilUuid {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
