@@ -138,6 +138,24 @@ impl<'de> Deserialize<'de> for Uuid {
     }
 }
 
+macro_rules! deserialize_uuid_proxy {
+    ($type:ty) => {
+        impl<'de> Deserialize<'de> for $type {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                Ok(Uuid::deserialize(deserializer)?.into())
+            }
+        }
+    };
+}
+
+deserialize_uuid_proxy!(Hyphenated);
+deserialize_uuid_proxy!(Simple);
+deserialize_uuid_proxy!(Urn);
+deserialize_uuid_proxy!(Braced);
+
 impl<'de> Deserialize<'de> for NonNilUuid {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
