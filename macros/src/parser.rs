@@ -12,7 +12,7 @@
 use crate::error::InvalidUuid;
 
 #[inline]
-pub const fn try_parse(input: &str) -> Result<[u8; 16], InvalidUuid> {
+pub const fn try_parse(input: &'_ str) -> Result<[u8; 16], InvalidUuid<'_>> {
     let result = match (input.len(), input.as_bytes()) {
         // Inputs of 32 bytes must be a non-hyphenated UUID
         (32, s) => parse_simple(s),

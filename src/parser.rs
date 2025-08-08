@@ -144,7 +144,7 @@ impl Uuid {
     }
 }
 
-const fn try_parse(input: &[u8]) -> Result<[u8; 16], InvalidUuid> {
+const fn try_parse(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> {
     match (input.len(), input) {
         // Inputs of 32 bytes must be a non-hyphenated UUID
         (32, s) => parse_simple(s),
@@ -164,7 +164,7 @@ const fn try_parse(input: &[u8]) -> Result<[u8; 16], InvalidUuid> {
 
 #[inline]
 #[allow(dead_code)]
-pub(crate) const fn parse_braced(input: &[u8]) -> Result<[u8; 16], InvalidUuid> {
+pub(crate) const fn parse_braced(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> {
     if let (38, [b'{', s @ .., b'}']) = (input.len(), input) {
         parse_hyphenated(s)
     } else {
@@ -174,7 +174,7 @@ pub(crate) const fn parse_braced(input: &[u8]) -> Result<[u8; 16], InvalidUuid> 
 
 #[inline]
 #[allow(dead_code)]
-pub(crate) const fn parse_urn(input: &[u8]) -> Result<[u8; 16], InvalidUuid> {
+pub(crate) const fn parse_urn(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> {
     if let (45, [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..]) =
         (input.len(), input)
     {
@@ -185,7 +185,7 @@ pub(crate) const fn parse_urn(input: &[u8]) -> Result<[u8; 16], InvalidUuid> {
 }
 
 #[inline]
-pub(crate) const fn parse_simple(s: &[u8]) -> Result<[u8; 16], InvalidUuid> {
+pub(crate) const fn parse_simple(s: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> {
     // This length check here removes all other bounds
     // checks in this function
     if s.len() != 32 {
@@ -217,7 +217,7 @@ pub(crate) const fn parse_simple(s: &[u8]) -> Result<[u8; 16], InvalidUuid> {
 }
 
 #[inline]
-pub(crate) const fn parse_hyphenated(s: &[u8]) -> Result<[u8; 16], InvalidUuid> {
+pub(crate) const fn parse_hyphenated(s: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> {
     // This length check here removes all other bounds
     // checks in this function
     if s.len() != 36 {
