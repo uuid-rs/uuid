@@ -139,7 +139,7 @@ impl Uuid {
             Ok(bytes) => Ok(Uuid::from_bytes(bytes)),
             // If parsing fails then we don't know exactly what went wrong
             // In this case, we just return a generic error
-            Err(_) => Err(Error(ErrorKind::Other)),
+            Err(_) => Err(Error(ErrorKind::ParseOther)),
         }
     }
 }
@@ -341,12 +341,12 @@ mod tests {
         // Invalid
         assert_eq!(
             Uuid::parse_str(""),
-            Err(Error(ErrorKind::SimpleLength { len: 0 }))
+            Err(Error(ErrorKind::ParseSimpleLength { len: 0 }))
         );
 
         assert_eq!(
             Uuid::parse_str("!"),
-            Err(Error(ErrorKind::Char {
+            Err(Error(ErrorKind::ParseChar {
                 character: '!',
                 index: 1,
             }))
@@ -354,7 +354,7 @@ mod tests {
 
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF-329BF39FA1E45"),
-            Err(Error(ErrorKind::GroupLength {
+            Err(Error(ErrorKind::ParseGroupLength {
                 group: 4,
                 len: 13,
                 index: 25,
@@ -363,7 +363,7 @@ mod tests {
 
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa-BBF-329BF39FA1E4"),
-            Err(Error(ErrorKind::GroupLength {
+            Err(Error(ErrorKind::ParseGroupLength {
                 group: 3,
                 len: 3,
                 index: 20,
@@ -372,7 +372,7 @@ mod tests {
 
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa-BGBF-329BF39FA1E4"),
-            Err(Error(ErrorKind::Char {
+            Err(Error(ErrorKind::ParseChar {
                 character: 'G',
                 index: 21,
             }))
@@ -380,27 +380,27 @@ mod tests {
 
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2F4faaFB6BFF329BF39FA1E4"),
-            Err(Error(ErrorKind::GroupCount { count: 2 }))
+            Err(Error(ErrorKind::ParseGroupCount { count: 2 }))
         );
 
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faaFB6BFF329BF39FA1E4"),
-            Err(Error(ErrorKind::GroupCount { count: 3 }))
+            Err(Error(ErrorKind::ParseGroupCount { count: 3 }))
         );
 
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa-B6BFF329BF39FA1E4"),
-            Err(Error(ErrorKind::GroupCount { count: 4 }))
+            Err(Error(ErrorKind::ParseGroupCount { count: 4 }))
         );
 
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa"),
-            Err(Error(ErrorKind::GroupCount { count: 3 }))
+            Err(Error(ErrorKind::ParseGroupCount { count: 3 }))
         );
 
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faaXB6BFF329BF39FA1E4"),
-            Err(Error(ErrorKind::Char {
+            Err(Error(ErrorKind::ParseChar {
                 character: 'X',
                 index: 19,
             }))
@@ -408,7 +408,7 @@ mod tests {
 
         assert_eq!(
             Uuid::parse_str("{F9168C5E-CEB2-4faa9B6BFF329BF39FA1E41"),
-            Err(Error(ErrorKind::Char {
+            Err(Error(ErrorKind::ParseChar {
                 character: '{',
                 index: 1,
             }))
@@ -416,12 +416,12 @@ mod tests {
 
         assert_eq!(
             Uuid::parse_str("{F9168C5E-CEB2-4faa9B6BFF329BF39FA1E41}"),
-            Err(Error(ErrorKind::GroupCount { count: 3 }))
+            Err(Error(ErrorKind::ParseGroupCount { count: 3 }))
         );
 
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB-24fa-eB6BFF32-BF39FA1E4"),
-            Err(Error(ErrorKind::GroupLength {
+            Err(Error(ErrorKind::ParseGroupLength {
                 group: 1,
                 len: 3,
                 index: 10,
@@ -432,7 +432,7 @@ mod tests {
         // //
         assert_eq!(
             Uuid::parse_str("01020304-1112-2122-3132-41424344"),
-            Err(Error(ErrorKind::GroupLength {
+            Err(Error(ErrorKind::ParseGroupLength {
                 group: 4,
                 len: 8,
                 index: 25,
@@ -441,17 +441,17 @@ mod tests {
 
         assert_eq!(
             Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"),
-            Err(Error(ErrorKind::SimpleLength { len: 31 }))
+            Err(Error(ErrorKind::ParseSimpleLength { len: 31 }))
         );
 
         assert_eq!(
             Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c88"),
-            Err(Error(ErrorKind::SimpleLength { len: 33 }))
+            Err(Error(ErrorKind::ParseSimpleLength { len: 33 }))
         );
 
         assert_eq!(
             Uuid::parse_str("67e5504410b1426f9247bb680e5fe0cg8"),
-            Err(Error(ErrorKind::Char {
+            Err(Error(ErrorKind::ParseChar {
                 character: 'g',
                 index: 32,
             }))
@@ -459,7 +459,7 @@ mod tests {
 
         assert_eq!(
             Uuid::parse_str("67e5504410b1426%9247bb680e5fe0c8"),
-            Err(Error(ErrorKind::Char {
+            Err(Error(ErrorKind::ParseChar {
                 character: '%',
                 index: 16,
             }))
@@ -467,22 +467,22 @@ mod tests {
 
         assert_eq!(
             Uuid::parse_str("231231212212423424324323477343246663"),
-            Err(Error(ErrorKind::SimpleLength { len: 36 }))
+            Err(Error(ErrorKind::ParseSimpleLength { len: 36 }))
         );
 
         assert_eq!(
             Uuid::parse_str("{00000000000000000000000000000000}"),
-            Err(Error(ErrorKind::GroupCount { count: 1 }))
+            Err(Error(ErrorKind::ParseGroupCount { count: 1 }))
         );
 
         assert_eq!(
             Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"),
-            Err(Error(ErrorKind::SimpleLength { len: 31 }))
+            Err(Error(ErrorKind::ParseSimpleLength { len: 31 }))
         );
 
         assert_eq!(
             Uuid::parse_str("67e550X410b1426f9247bb680e5fe0cd"),
-            Err(Error(ErrorKind::Char {
+            Err(Error(ErrorKind::ParseChar {
                 character: 'X',
                 index: 7,
             }))
@@ -490,12 +490,12 @@ mod tests {
 
         assert_eq!(
             Uuid::parse_str("67e550-4105b1426f9247bb680e5fe0c"),
-            Err(Error(ErrorKind::GroupCount { count: 2 }))
+            Err(Error(ErrorKind::ParseGroupCount { count: 2 }))
         );
 
         assert_eq!(
             Uuid::parse_str("F9168C5E-CEB2-4faa-B6BF1-02BF39FA1E4"),
-            Err(Error(ErrorKind::GroupLength {
+            Err(Error(ErrorKind::ParseGroupLength {
                 group: 3,
                 len: 5,
                 index: 20,
@@ -504,7 +504,7 @@ mod tests {
 
         assert_eq!(
             Uuid::parse_str("\u{bcf3c}"),
-            Err(Error(ErrorKind::Char {
+            Err(Error(ErrorKind::ParseChar {
                 character: '\u{bcf3c}',
                 index: 1
             }))

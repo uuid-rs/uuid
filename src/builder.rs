@@ -286,7 +286,7 @@ impl Uuid {
     /// ```
     pub fn from_slice(b: &[u8]) -> Result<Uuid, Error> {
         if b.len() != 16 {
-            return Err(Error(ErrorKind::ByteLength { len: b.len() }));
+            return Err(Error(ErrorKind::ParseByteLength { len: b.len() }));
         }
 
         let mut bytes: Bytes = [0; 16];
@@ -327,7 +327,7 @@ impl Uuid {
     /// ```
     pub fn from_slice_le(b: &[u8]) -> Result<Uuid, Error> {
         if b.len() != 16 {
-            return Err(Error(ErrorKind::ByteLength { len: b.len() }));
+            return Err(Error(ErrorKind::ParseByteLength { len: b.len() }));
         }
 
         let mut bytes: Bytes = [0; 16];
