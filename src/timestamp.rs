@@ -187,6 +187,32 @@ impl Timestamp {
     }
 }
 
+#[cfg(all(feature = "std", not(miri)))]
+impl std::convert::TryFrom<std::time::SystemTime> for Timestamp {
+    type Error = std::time::SystemTimeError;
+
+    /// If the system time is before the Unix epoch then an error is returned.
+    fn try_from(st: std::time::SystemTime) -> Result<Self, Self::Error> {
+        let dur = st.duration_since(std::time::UNIX_EPOCH)?;
+
+        Ok(Self::from_unix_time(
+            dur.as_secs(),
+            dur.subsec_nanos(),
+            0,
+            0,
+        ))
+    }
+}
+
+#[cfg(all(feature = "std", not(miri)))]
+impl From<Timestamp> for std::time::SystemTime {
+    fn from(ts: Timestamp) -> Self {
+        let (seconds, subsec_nanos) = ts.to_unix();
+
+        Self::UNIX_EPOCH + std::time::Duration::new(seconds, subsec_nanos)
+    }
+}
+
 pub(crate) const fn encode_gregorian_timestamp(
     ticks: u64,
     counter: u16,
@@ -1184,5 +1210,58 @@ mod tests {
         let ts = Timestamp::from_gregorian(123, u16::MAX);
 
         assert_eq!((123, u16::MAX >> 2), ts.to_gregorian());
+    }
+}
+
+/// Tests for conversion between `std::time::SystemTime` and `Timestamp`.
+#[cfg(all(test, feature = "std", not(miri)))]
+mod test_conversion {
+    use std::{
+        convert::{TryFrom, TryInto},
+        time::{Duration, SystemTime},
+    };
+
+    use super::Timestamp;
+
+    // Components of an arbitrary timestamp with non-zero nanoseconds.
+    const KNOWN_SECONDS: u64 = 1_501_520_400;
+    const KNOWN_NANOS: u32 = 1_000;
+
+    fn known_system_time() -> SystemTime {
+        SystemTime::UNIX_EPOCH
+            .checked_add(Duration::new(KNOWN_SECONDS, KNOWN_NANOS))
+            .unwrap()
+    }
+
+    fn known_timestamp() -> Timestamp {
+        Timestamp::from_unix_time(KNOWN_SECONDS, KNOWN_NANOS, 0, 0)
+    }
+
+    #[test]
+    fn to_system_time() {
+        let st: SystemTime = known_timestamp().into();
+
+        assert_eq!(known_system_time(), st);
+    }
+
+    #[test]
+    fn from_system_time() {
+        let ts: Timestamp = known_system_time().try_into().unwrap();
+
+        assert_eq!(known_timestamp(), ts);
+    }
+
+    #[test]
+    fn from_system_time_before_epoch() {
+        let before_epoch = match SystemTime::UNIX_EPOCH.checked_sub(Duration::from_nanos(1_000)) {
+            Some(st) => st,
+            None => {
+                println!("SystemTime before UNIX_EPOCH is not supported on this platform");
+                return;
+            }
+        };
+
+        Timestamp::try_from(before_epoch)
+            .expect_err("Timestamp should not be created from before epoch");
     }
 }
