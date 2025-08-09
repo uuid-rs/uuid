@@ -196,9 +196,7 @@ impl std::convert::TryFrom<std::time::SystemTime> for Timestamp {
     /// This method will fail if the system time is earlier than the Unix Epoch.
     /// On some platforms it may panic instead.
     fn try_from(st: std::time::SystemTime) -> Result<Self, Self::Error> {
-        use crate::std::string::ToString;
-
-        let dur = st.duration_since(std::time::UNIX_EPOCH).map_err(|e| crate::Error(crate::error::ErrorKind::InvalidSystemTime(e.to_string())))?;
+        let dur = st.duration_since(std::time::UNIX_EPOCH).map_err(|_| crate::Error(crate::error::ErrorKind::InvalidSystemTime("unable to convert the system tie into a Unix timestamp")))?;
 
         Ok(Self::from_unix_time(
             dur.as_secs(),
@@ -1260,10 +1258,7 @@ mod test_conversion {
     fn from_system_time_before_epoch() {
         let before_epoch = match SystemTime::UNIX_EPOCH.checked_sub(Duration::from_nanos(1_000)) {
             Some(st) => st,
-            None => {
-                println!("SystemTime before UNIX_EPOCH is not supported on this platform");
-                return;
-            }
+            None => return,
         };
 
         Timestamp::try_from(before_epoch)

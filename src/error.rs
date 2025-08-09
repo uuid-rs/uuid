@@ -36,7 +36,7 @@ pub(crate) enum ErrorKind {
     Nil,
     /// A system time was invalid.
     #[cfg(feature = "std")]
-    InvalidSystemTime(crate::std::string::String),
+    InvalidSystemTime(&'static str),
 }
 
 /// A string that is guaranteed to fail to parse to a [`Uuid`].
