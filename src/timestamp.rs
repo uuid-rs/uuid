@@ -187,13 +187,16 @@ impl Timestamp {
     }
 }
 
-#[cfg(all(feature = "std", not(miri)))]
+#[cfg(feature = "std")]
 impl std::convert::TryFrom<std::time::SystemTime> for Timestamp {
-    type Error = std::time::SystemTimeError;
+    type Error = crate::Error;
 
-    /// If the system time is before the Unix epoch then an error is returned.
+    /// Perform the conversion.
+    /// 
+    /// This method will fail if the system time is earlier than the Unix Epoch.
+    /// On some platforms it may panic instead.
     fn try_from(st: std::time::SystemTime) -> Result<Self, Self::Error> {
-        let dur = st.duration_since(std::time::UNIX_EPOCH)?;
+        let dur = st.duration_since(std::time::UNIX_EPOCH).map_err(|_| crate::Error(crate::error::ErrorKind::InvalidSystemTime("unable to convert the system tie into a Unix timestamp")))?;
 
         Ok(Self::from_unix_time(
             dur.as_secs(),
@@ -204,7 +207,7 @@ impl std::convert::TryFrom<std::time::SystemTime> for Timestamp {
     }
 }
 
-#[cfg(all(feature = "std", not(miri)))]
+#[cfg(feature = "std")]
 impl From<Timestamp> for std::time::SystemTime {
     fn from(ts: Timestamp) -> Self {
         let (seconds, subsec_nanos) = ts.to_unix();
@@ -1255,10 +1258,7 @@ mod test_conversion {
     fn from_system_time_before_epoch() {
         let before_epoch = match SystemTime::UNIX_EPOCH.checked_sub(Duration::from_nanos(1_000)) {
             Some(st) => st,
-            None => {
-                println!("SystemTime before UNIX_EPOCH is not supported on this platform");
-                return;
-            }
+            None => return,
         };
 
         Timestamp::try_from(before_epoch)
