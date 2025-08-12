@@ -439,22 +439,19 @@ pub enum Variant {
 #[repr(transparent)]
 // NOTE: Also check `NonNilUuid` when ading new derives here
 #[cfg_attr(
-    all(uuid_unstable, feature = "zerocopy"),
-    derive(
-        zerocopy::IntoBytes,
-        zerocopy::FromBytes,
-        zerocopy::KnownLayout,
-        zerocopy::Immutable,
-        zerocopy::Unaligned
-    )
-)]
-#[cfg_attr(
     feature = "borsh",
     derive(borsh_derive::BorshDeserialize, borsh_derive::BorshSerialize)
 )]
 #[cfg_attr(
     feature = "bytemuck",
     derive(bytemuck::Zeroable, bytemuck::Pod, bytemuck::TransparentWrapper)
+)]
+#[derive(
+    zerocopy::IntoBytes,
+    zerocopy::FromBytes,
+    zerocopy::KnownLayout,
+    zerocopy::Immutable,
+    zerocopy::Unaligned,
 )]
 pub struct Uuid(Bytes);
 
