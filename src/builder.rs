@@ -431,7 +431,7 @@ impl Uuid {
     /// ```
     #[inline]
     pub fn from_bytes_ref(bytes: &Bytes) -> &Uuid {
-        zerocopy::transmute_ref!(bytes)
+        unsafe_transmute_ref!(bytes)
     }
 
     // NOTE: There is no `from_u128_ref` because in little-endian

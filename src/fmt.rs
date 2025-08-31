@@ -13,8 +13,6 @@
 
 use core::{convert::TryInto as _, str::FromStr};
 
-use zerocopy::{transmute_ref, FromBytes, Immutable, IntoBytes, KnownLayout, Unaligned};
-
 use crate::{
     std::{borrow::Borrow, fmt, str},
     Error, Uuid, Variant,
@@ -79,11 +77,16 @@ impl fmt::UpperHex for Uuid {
     Ord,
     PartialEq,
     PartialOrd,
-    IntoBytes,
-    FromBytes,
-    KnownLayout,
-    Immutable,
-    Unaligned,
+)]
+#[cfg_attr(
+    all(uuid_unstable, feature = "zerocopy"),
+    derive(
+        zerocopy::IntoBytes,
+        zerocopy::FromBytes,
+        zerocopy::KnownLayout,
+        zerocopy::Immutable,
+        zerocopy::Unaligned
+    )
 )]
 #[repr(transparent)]
 pub struct Hyphenated(Uuid);
@@ -100,11 +103,16 @@ pub struct Hyphenated(Uuid);
     Ord,
     PartialEq,
     PartialOrd,
-    IntoBytes,
-    FromBytes,
-    KnownLayout,
-    Immutable,
-    Unaligned,
+)]
+#[cfg_attr(
+    all(uuid_unstable, feature = "zerocopy"),
+    derive(
+        zerocopy::IntoBytes,
+        zerocopy::FromBytes,
+        zerocopy::KnownLayout,
+        zerocopy::Immutable,
+        zerocopy::Unaligned
+    )
 )]
 #[repr(transparent)]
 pub struct Simple(Uuid);
@@ -121,11 +129,16 @@ pub struct Simple(Uuid);
     Ord,
     PartialEq,
     PartialOrd,
-    IntoBytes,
-    FromBytes,
-    KnownLayout,
-    Immutable,
-    Unaligned,
+)]
+#[cfg_attr(
+    all(uuid_unstable, feature = "zerocopy"),
+    derive(
+        zerocopy::IntoBytes,
+        zerocopy::FromBytes,
+        zerocopy::KnownLayout,
+        zerocopy::Immutable,
+        zerocopy::Unaligned
+    )
 )]
 #[repr(transparent)]
 pub struct Urn(Uuid);
@@ -142,11 +155,16 @@ pub struct Urn(Uuid);
     Ord,
     PartialEq,
     PartialOrd,
-    IntoBytes,
-    FromBytes,
-    KnownLayout,
-    Immutable,
-    Unaligned,
+)]
+#[cfg_attr(
+    all(uuid_unstable, feature = "zerocopy"),
+    derive(
+        zerocopy::IntoBytes,
+        zerocopy::FromBytes,
+        zerocopy::KnownLayout,
+        zerocopy::Immutable,
+        zerocopy::Unaligned
+    )
 )]
 #[repr(transparent)]
 pub struct Braced(Uuid);
@@ -161,7 +179,7 @@ impl Uuid {
     /// Get a borrowed [`Hyphenated`] formatter.
     #[inline]
     pub fn as_hyphenated(&self) -> &Hyphenated {
-        transmute_ref!(self)
+        unsafe_transmute_ref!(self)
     }
 
     /// Get a [`Simple`] formatter.
@@ -173,7 +191,7 @@ impl Uuid {
     /// Get a borrowed [`Simple`] formatter.
     #[inline]
     pub fn as_simple(&self) -> &Simple {
-        transmute_ref!(self)
+        unsafe_transmute_ref!(self)
     }
 
     /// Get a [`Urn`] formatter.
@@ -185,7 +203,7 @@ impl Uuid {
     /// Get a borrowed [`Urn`] formatter.
     #[inline]
     pub fn as_urn(&self) -> &Urn {
-        transmute_ref!(self)
+        unsafe_transmute_ref!(self)
     }
 
     /// Get a [`Braced`] formatter.
@@ -197,7 +215,7 @@ impl Uuid {
     /// Get a borrowed [`Braced`] formatter.
     #[inline]
     pub fn as_braced(&self) -> &Braced {
-        transmute_ref!(self)
+        unsafe_transmute_ref!(self)
     }
 }
 
@@ -274,7 +292,10 @@ fn encode_braced<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b m
     let buf = &mut buffer[..Hyphenated::LENGTH + 2];
     let buf: &mut [u8; Hyphenated::LENGTH + 2] = buf.try_into().unwrap();
 
-    #[derive(IntoBytes)]
+    #[cfg_attr(
+        all(uuid_unstable, feature = "zerocopy"),
+        derive(zerocopy::IntoBytes)
+    )]
     #[repr(C)]
     struct Braced {
         open_curly: u8,
@@ -288,7 +309,7 @@ fn encode_braced<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b m
         close_curly: b'}',
     };
 
-    *buf = zerocopy::transmute!(braced);
+    *buf = unsafe_transmute!(braced);
 
     // SAFETY: The encoded buffer is ASCII encoded
     unsafe { str::from_utf8_unchecked_mut(buf) }

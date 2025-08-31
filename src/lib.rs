@@ -223,6 +223,9 @@ extern crate std;
 #[macro_use]
 extern crate core as std;
 
+#[macro_use]
+mod macros;
+
 mod builder;
 mod error;
 mod non_nil;
@@ -266,9 +269,6 @@ mod rng;
 mod sha1;
 
 mod external;
-
-#[macro_use]
-mod macros;
 
 #[doc(hidden)]
 #[cfg(feature = "macro-diagnostics")]
@@ -446,12 +446,15 @@ pub enum Variant {
     feature = "bytemuck",
     derive(bytemuck::Zeroable, bytemuck::Pod, bytemuck::TransparentWrapper)
 )]
-#[derive(
-    zerocopy::IntoBytes,
-    zerocopy::FromBytes,
-    zerocopy::KnownLayout,
-    zerocopy::Immutable,
-    zerocopy::Unaligned,
+#[cfg_attr(
+    all(uuid_unstable, feature = "zerocopy"),
+    derive(
+        zerocopy::IntoBytes,
+        zerocopy::FromBytes,
+        zerocopy::KnownLayout,
+        zerocopy::Immutable,
+        zerocopy::Unaligned
+    )
 )]
 pub struct Uuid(Bytes);
 
