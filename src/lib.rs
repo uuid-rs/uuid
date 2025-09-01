@@ -223,6 +223,9 @@ extern crate std;
 #[macro_use]
 extern crate core as std;
 
+#[macro_use]
+mod macros;
+
 mod builder;
 mod error;
 mod non_nil;
@@ -266,9 +269,6 @@ mod rng;
 mod sha1;
 
 mod external;
-
-#[macro_use]
-mod macros;
 
 #[doc(hidden)]
 #[cfg(feature = "macro-diagnostics")]
@@ -439,6 +439,14 @@ pub enum Variant {
 #[repr(transparent)]
 // NOTE: Also check `NonNilUuid` when ading new derives here
 #[cfg_attr(
+    feature = "borsh",
+    derive(borsh_derive::BorshDeserialize, borsh_derive::BorshSerialize)
+)]
+#[cfg_attr(
+    feature = "bytemuck",
+    derive(bytemuck::Zeroable, bytemuck::Pod, bytemuck::TransparentWrapper)
+)]
+#[cfg_attr(
     all(uuid_unstable, feature = "zerocopy"),
     derive(
         zerocopy::IntoBytes,
@@ -447,14 +455,6 @@ pub enum Variant {
         zerocopy::Immutable,
         zerocopy::Unaligned
     )
-)]
-#[cfg_attr(
-    feature = "borsh",
-    derive(borsh_derive::BorshDeserialize, borsh_derive::BorshSerialize)
-)]
-#[cfg_attr(
-    feature = "bytemuck",
-    derive(bytemuck::Zeroable, bytemuck::Pod, bytemuck::TransparentWrapper)
 )]
 pub struct Uuid(Bytes);
 

@@ -431,8 +431,7 @@ impl Uuid {
     /// ```
     #[inline]
     pub fn from_bytes_ref(bytes: &Bytes) -> &Uuid {
-        // SAFETY: `Bytes` and `Uuid` have the same ABI
-        unsafe { &*(bytes as *const Bytes as *const Uuid) }
+        unsafe_transmute_ref!(bytes)
     }
 
     // NOTE: There is no `from_u128_ref` because in little-endian
