@@ -17,7 +17,7 @@ use crate::{
     std::fmt,
     Uuid,
 };
-use serde::{
+use serde_core::{
     de::{self, Error as _},
     Deserialize, Deserializer, Serialize, Serializer,
 };
@@ -35,7 +35,7 @@ impl Serialize for Uuid {
 impl Serialize for NonNilUuid {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: serde_core::Serializer,
     {
         Uuid::from(*self).serialize(serializer)
     }
@@ -141,7 +141,7 @@ impl<'de> Deserialize<'de> for Uuid {
 impl<'de> Deserialize<'de> for NonNilUuid {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: serde_core::Deserializer<'de>,
     {
         let uuid = Uuid::deserialize(deserializer)?;
 
@@ -188,9 +188,9 @@ pub mod compact {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn serialize<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: serde_core::Serializer,
     {
-        serde::Serialize::serialize(u.as_bytes(), serializer)
+        serde_core::Serialize::serialize(u.as_bytes(), serializer)
     }
 
     /// Deserialize a `[u8; 16]` as a [`Uuid`]
@@ -198,9 +198,9 @@ pub mod compact {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: serde_core::Deserializer<'de>,
     {
-        let bytes: [u8; 16] = serde::Deserialize::deserialize(deserializer)?;
+        let bytes: [u8; 16] = serde_core::Deserialize::deserialize(deserializer)?;
 
         Ok(crate::Uuid::from_bytes(bytes))
     }
@@ -280,7 +280,7 @@ pub mod compact {
 /// }
 /// ```
 pub mod simple {
-    use serde::{de, Deserialize};
+    use serde_core::{de, Deserialize};
 
     use crate::{parser::parse_simple, Uuid};
 
@@ -303,9 +303,9 @@ pub mod simple {
     /// ```
     pub fn serialize<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: serde_core::Serializer,
     {
-        serde::Serialize::serialize(u.as_simple(), serializer)
+        serde_core::Serialize::serialize(u.as_simple(), serializer)
     }
 
     /// Deserialize a simple Uuid string as a [`Uuid`]
@@ -313,7 +313,7 @@ pub mod simple {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Uuid, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: serde_core::Deserializer<'de>,
     {
         let s = <&str as Deserialize>::deserialize(deserializer)?;
         let bytes = parse_simple(s.as_bytes()).map_err(|_| {
@@ -412,7 +412,7 @@ pub mod simple {
 /// }
 /// ```
 pub mod braced {
-    use serde::{de, Deserialize};
+    use serde_core::{de, Deserialize};
 
     use crate::parser::parse_braced;
 
@@ -435,9 +435,9 @@ pub mod braced {
     /// ```
     pub fn serialize<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: serde_core::Serializer,
     {
-        serde::Serialize::serialize(u.as_braced(), serializer)
+        serde_core::Serialize::serialize(u.as_braced(), serializer)
     }
 
     /// Deserialize a braced Uuid string as a [`Uuid`]
@@ -445,7 +445,7 @@ pub mod braced {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: serde_core::Deserializer<'de>,
     {
         let s = <&str as Deserialize>::deserialize(deserializer)?;
         let bytes = parse_braced(s.as_bytes()).map_err(|_| {
@@ -544,7 +544,7 @@ pub mod braced {
 /// }
 /// ```
 pub mod urn {
-    use serde::{de, Deserialize};
+    use serde_core::{de, Deserialize};
 
     use crate::parser::parse_urn;
 
@@ -567,9 +567,9 @@ pub mod urn {
     /// ```
     pub fn serialize<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: serde::Serializer,
+        S: serde_core::Serializer,
     {
-        serde::Serialize::serialize(u.as_urn(), serializer)
+        serde_core::Serialize::serialize(u.as_urn(), serializer)
     }
 
     /// Deserialize a urn Uuid string as a [`Uuid`]
@@ -577,7 +577,7 @@ pub mod urn {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
     where
-        D: serde::Deserializer<'de>,
+        D: serde_core::Deserializer<'de>,
     {
         let s = <&str as Deserialize>::deserialize(deserializer)?;
         let bytes = parse_urn(s.as_bytes())
