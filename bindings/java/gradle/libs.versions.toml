@@ -1,0 +1,26 @@
+[versions]
+version = "0.0.1"
+jspecify = "1.0.0"
+junit = "5.13.4"
+central-publish = "0.34.0"
+jmh = "1.37"
+
+[libraries.jspecify]
+module = "org.jspecify:jspecify"
+version.ref = "jspecify"
+
+[libraries.junit]
+module = "org.junit:junit-bom"
+version.ref = "junit"
+
+[libraries.jmh-core]
+module = "org.openjdk.jmh:jmh-core"
+version.ref = "jmh"
+
+[libraries.jmh-generator-annprocess]
+module = "org.openjdk.jmh:jmh-generator-annprocess"
+version.ref = "jmh"
+
+[plugins.publish]
+id = "com.vanniktech.maven.publish"
+version.ref = "central-publish"

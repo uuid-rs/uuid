@@ -219,4 +219,5 @@ members = [
     "examples",
     "tests/smoke-test",
     "tests/wasm32-getrandom-test",
+    "bindings/java",
 ]

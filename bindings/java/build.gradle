@@ -1,0 +1,124 @@
+plugins {
+    id 'java'
+    id 'signing'
+    alias libs.plugins.publish
+}
+
+group = 'io.github.honhimw'
+version = libs.versions.version.get()
+description = 'Generate UUIDs via Rust FFI integration.'
+
+def title = 'UUID generator'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly libs.jspecify
+
+    testImplementation platform(libs.junit)
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation 'org.junit.platform:junit-platform-engine'
+    testImplementation 'org.junit.platform:junit-platform-launcher'
+
+    testImplementation libs.jmh.core
+    testAnnotationProcessor libs.jmh.generator.annprocess
+}
+
+tasks.register('buildRust', Exec) {
+    def target = System.getenv('BUILD_TARGET')
+    if (target != null && !target.isEmpty()) {
+        commandLine 'cargo', 'build', '--release', '--target', target
+    } else {
+        commandLine 'cargo', 'build', '--release', '--target', 'x86_64-unknown-linux-gnu'
+        commandLine 'cargo', 'build', '--release', '--target', 'aarch64-unknown-linux-gnu'
+        commandLine 'cargo', 'build', '--release', '--target', 'x86_64-pc-windows-msvc'
+        commandLine 'cargo', 'build', '--release', '--target', 'aarch64-pc-windows-msvc'
+        commandLine 'cargo', 'build', '--release', '--target', 'aarch64-apple-darwin'
+        commandLine 'cargo', 'build', '--release', '--target', 'x86_64-apple-darwin'
+    }
+    workingDir "${projectDir}"
+    environment CARGO_TERM_COLOR: 'always'
+}
+
+tasks.register('cleanRust', Exec) {
+    commandLine 'cargo', 'clean'
+    workingDir "${projectDir}"
+    environment CARGO_TERM_COLOR: 'always'
+}
+
+tasks.register('copyNativeLib', Copy) {
+    dependsOn 'buildRust'
+    def targets = [
+            'x86_64-unknown-linux-gnu',
+            'aarch64-unknown-linux-gnu',
+            'x86_64-pc-windows-msvc',
+            'aarch64-pc-windows-msvc',
+            'aarch64-apple-darwin',
+            'x86_64-apple-darwin'
+    ]
+
+    targets.each { target ->
+        from("${projectDir}/../../target/${target}/release") {
+            include "*.dll", "*.so", "*.dylib"
+
+            eachFile { fileCopyDetails ->
+                def ext = fileCopyDetails.name.substring(fileCopyDetails.name.lastIndexOf('.') + 1)
+                def base = fileCopyDetails.name.substring(0, fileCopyDetails.name.lastIndexOf('.'))
+                fileCopyDetails.name = "${base}-${target}.${ext}"
+            }
+        }
+    }
+    into sourceSets.main.output.resourcesDir
+}
+
+jar {
+    dependsOn 'copyNativeLib'
+}
+
+clean {
+    dependsOn 'cleanRust'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+mavenPublishing {
+    publishToMavenCentral()
+    signAllPublications()
+
+    coordinates(group as String, name, version as String)
+
+    pom {
+        name = title
+        description = project.description
+        url = 'https://github.com/honhimW/uuid'
+        licenses {
+            license {
+                name = 'The Apache License, Version 2.0'
+                url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                distribution = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+            }
+        }
+        developers {
+            developer {
+                id = 'honhimw'
+                name = 'honhimw'
+                url = 'https://honhimW.github.io'
+                email = 'honhimw@outlook.com'
+            }
+        }
+        scm {
+            url = 'https://github.com/honhimW/uuid'
+            connection = 'scm:git:git://github.com/honhimW/uuid.git'
+            developerConnection = 'scm:git:ssh://github.com/honhimW/uuid.git'
+        }
+    }
+
+}
+
+jar {
+    enabled(true)
+}

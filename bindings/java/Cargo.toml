@@ -1,0 +1,30 @@
+[package]
+name = "uuid-java"
+version = "0.0.1"
+edition = "2018"
+
+[lib]
+path = "src/main/rs/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies.uuid]
+path = "../.."
+features = [
+    "v1",
+    "v3",
+    "v4",
+    "v5",
+    "v6",
+    "v7",
+    "v8",
+]
+
+[dependencies]
+jni = "0.21.1"
+
+[profile.release]
+lto = "fat"
+opt-level = 3
+codegen-units = 1
+strip = "symbols"
+panic = "abort"
