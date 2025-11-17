@@ -55,7 +55,7 @@ status = "actively-developed"
 
 [features]
 default = ["std"]
-std = ["wasm-bindgen?/std", "js-sys?/std"]
+std = ["wasm-bindgen?/std", "js-sys?/std", "miniserde?/std"]
 macro-diagnostics = ["dep:uuid-macro-internal"]
 
 # NOTE: When adding new features, check the `ci.yml` workflow
@@ -83,11 +83,19 @@ atomic = ["dep:atomic"]
 
 borsh = ["dep:borsh", "dep:borsh-derive"]
 
+miniserde = ["dep:miniserde"]
+
 # Public: Used in trait impls on `Uuid`
 [dependencies.bytemuck]
 version = "1.18.1"
 optional = true
 features = ["derive"]
+
+# Public: Used in trait impls on `Uuid`
+[dependencies.miniserde]
+default-features = false
+optional = true
+version = "0.1.43"
 
 # Public: Used in trait impls on `Uuid`
 [dependencies.serde_core]

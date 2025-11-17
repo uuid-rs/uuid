@@ -2,6 +2,8 @@
 pub(crate) mod arbitrary_support;
 #[cfg(feature = "borsh")]
 pub(crate) mod borsh_support;
+#[cfg(feature = "miniserde")]
+pub(crate) mod miniserde_support;
 #[cfg(feature = "serde")]
 pub(crate) mod serde_support;
 #[cfg(feature = "slog")]
