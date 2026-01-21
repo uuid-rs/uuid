@@ -36,7 +36,7 @@ rust-version = "1.63.0"
 rustc-args = ["--cfg", "uuid_unstable"]
 rustdoc-args = ["--cfg", "uuid_unstable"]
 targets = ["x86_64-unknown-linux-gnu"]
-features = ["serde", "arbitrary", "slog", "borsh", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
+features = ["serde", "arbitrary", "slog", "borsh", "wincode", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
 
 [package.metadata.playground]
 features = ["serde", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
@@ -83,6 +83,8 @@ atomic = ["dep:atomic"]
 
 borsh = ["dep:borsh", "dep:borsh-derive"]
 
+wincode = ["dep:wincode"]
+
 # Public: Used in trait impls on `Uuid`
 [dependencies.bytemuck]
 version = "1.19.0"
@@ -126,6 +128,16 @@ default-features = false
 optional = true
 version = "1"
 default-features = false
+
+# Public (unstable): Used in `wincode` derive
+# Unstable: also need RUSTFLAGS="--cfg uuid_unstable" to work
+# This feature may break between releases, or be removed entirely before
+# stabilization.
+[dependencies.wincode]
+optional = true
+version = "0.2"
+default-features = false
+features = ["derive"]
 
 # NOTE: `getrandom` will throw a compiler error for the following target configuration when `wasm_js` is not enabled:
 # all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))
@@ -211,6 +223,9 @@ version = "1.0.52"
 
 [dev-dependencies.rustversion]
 version = "1"
+
+[dev-dependencies.wincode]
+version = "0.2"
 
 [workspace]
 members = [

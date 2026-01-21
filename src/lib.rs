@@ -120,6 +120,8 @@
 //!
 //! * `zerocopy` - adds support for zero-copy deserialization using the
 //!   `zerocopy` library.
+//! * `wincode` - adds the ability to serialize and deserialize a UUID using
+//!   `wincode`.
 //!
 //! Unstable features may break between minor releases.
 //!
@@ -453,6 +455,10 @@ pub enum Variant {
         zerocopy::Immutable,
         zerocopy::Unaligned
     )
+)]
+#[cfg_attr(
+    all(uuid_unstable, feature = "wincode"),
+    derive(wincode::SchemaWrite, wincode::SchemaRead)
 )]
 pub struct Uuid(Bytes);
 
