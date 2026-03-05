@@ -146,7 +146,7 @@ optional = true
 
 # Private
 [target.'cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))'.dependencies.rand]
-version = "0.9"
+version = "0.10"
 optional = true
 
 # Private
