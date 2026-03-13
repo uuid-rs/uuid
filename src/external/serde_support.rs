@@ -369,7 +369,7 @@ pub mod compact {
 /// ```rust
 /// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 /// struct StructA {
-///     // This will change both serailization and deserialization
+///     // This will change both serialization and deserialization
 ///     #[serde(with = "uuid::serde::simple")]
 ///     id: uuid::Uuid,
 /// }
@@ -460,7 +460,7 @@ pub mod simple {
         }
 
         #[test]
-        fn test_de_reject_hypenated() {
+        fn test_de_reject_hyphenated() {
             #[derive(PartialEq, Debug, serde_derive::Deserialize)]
             struct Struct(#[serde(with = "super")] crate::Uuid);
             serde_test::assert_de_tokens_error::<Readable<Struct>>(
@@ -487,14 +487,14 @@ pub mod simple {
 /// ```rust
 /// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 /// struct StructA {
-///     // This will change both serailization and deserialization
+///     // This will change both serialization and deserialization
 ///     #[serde(with = "uuid::serde::braced")]
 ///     id: uuid::Uuid,
 /// }
 ///
 /// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 /// struct StructB {
-///     // This will be serialized as uuid::fmt::Urn and deserialize from all valid formats
+///     // This will be serialized as uuid::fmt::Braced and deserialize from all valid formats
 ///     #[serde(serialize_with = "uuid::serde::braced::serialize")]
 ///     id: uuid::Uuid,
 /// }
@@ -579,7 +579,7 @@ pub mod braced {
         }
 
         #[test]
-        fn test_de_reject_hypenated() {
+        fn test_de_reject_hyphenated() {
             #[derive(PartialEq, Debug, serde_derive::Deserialize)]
             struct Struct(#[serde(with = "super")] crate::Uuid);
             serde_test::assert_de_tokens_error::<Readable<Struct>>(
@@ -597,6 +597,126 @@ pub mod braced {
     }
 }
 
+/// Serialize from a [`Uuid`] as a `uuid::fmt::Hyphenated`
+///
+/// [`Uuid`]: ../../struct.Uuid.html
+///
+/// ## Example
+///
+/// ```rust
+/// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
+/// struct StructA {
+///     // This will change both serialization and deserialization
+///     #[serde(with = "uuid::serde::hyphenated")]
+///     id: uuid::Uuid,
+/// }
+///
+/// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
+/// struct StructB {
+///     // This will be serialized as uuid::fmt::Hyphenated and deserialize from all valid formats
+///     #[serde(serialize_with = "uuid::serde::hyphenated::serialize")]
+///     id: uuid::Uuid,
+/// }
+/// ```
+pub mod hyphenated {
+
+    use super::*;
+
+    /// Serialize from a [`Uuid`] as a `uuid::fmt::Hyphenated`
+    ///
+    /// [`Uuid`]: ../../struct.Uuid.html
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// #[derive(serde_derive::Serialize)]
+    /// struct Struct {
+    ///     // This will be serialized as uuid::fmt::Hyphenated
+    ///     #[serde(serialize_with = "uuid::serde::hyphenated::serialize")]
+    ///     id: uuid::Uuid,
+    /// }
+    ///
+    /// ```
+    pub fn serialize<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
+    where
+      S: serde_core::Serializer,
+    {
+        serde_core::Serialize::serialize(u.as_hyphenated(), serializer)
+    }
+
+    /// Deserialize a hyphenated Uuid string as a [`Uuid`]
+    ///
+    /// [`Uuid`]: ../../struct.Uuid.html
+    pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
+    where
+      D: serde_core::Deserializer<'de>,
+    {
+        Ok(Hyphenated::deserialize(deserializer)?.into())
+    }
+
+    #[cfg(test)]
+    mod tests {
+
+        use serde::de::{self, Error};
+        use serde_test::{Readable, Token};
+
+        use super::*;
+
+        const HYPHENATED_UUID_STR: &str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
+        const BRACED_UUID_STR: &str = "{f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4}";
+
+        #[test]
+        fn test_serialize_as_hyphenated() {
+            #[derive(serde_derive::Serialize)]
+            struct Struct(#[serde(with = "super")] crate::Uuid);
+
+            let u = Struct(Uuid::parse_str(HYPHENATED_UUID_STR).unwrap());
+            serde_test::assert_ser_tokens(
+                &u,
+                &[
+                    Token::NewtypeStruct { name: "Struct" },
+                    Token::Str(HYPHENATED_UUID_STR),
+                ],
+            );
+        }
+
+        #[test]
+        fn test_de_from_hyphenated() {
+            #[derive(PartialEq, Debug, serde_derive::Deserialize)]
+            struct Struct(#[serde(with = "super")] crate::Uuid);
+            let s = Struct(HYPHENATED_UUID_STR.parse().unwrap());
+            serde_test::assert_de_tokens::<Struct>(
+                &s,
+                &[
+                    Token::TupleStruct {
+                        name: "Struct",
+                        len: 1,
+                    },
+                    Token::BorrowedStr(HYPHENATED_UUID_STR),
+                    Token::TupleStructEnd,
+                ],
+            );
+        }
+
+        #[test]
+        fn test_de_reject_braced() {
+            #[derive(PartialEq, Debug, serde_derive::Deserialize)]
+            struct Struct(#[serde(with = "super")] crate::Uuid);
+            serde_test::assert_de_tokens_error::<Readable<Struct>>(
+                &[
+                    Token::TupleStruct {
+                        name: "Struct",
+                        len: 1,
+                    },
+                    Token::BorrowedStr(BRACED_UUID_STR),
+                    Token::TupleStructEnd,
+                ],
+                &format!("{}", de::value::Error::custom("UUID parsing failed: invalid group length in group 4: expected 12, found 14")),
+            );
+        }
+    }
+}
+
 /// Serialize from a [`Uuid`] as a `uuid::fmt::Urn`
 ///
 /// [`Uuid`]: ../../struct.Uuid.html
@@ -606,7 +726,7 @@ pub mod braced {
 /// ```rust
 /// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 /// struct StructA {
-///     // This will change both serailization and deserialization
+///     // This will change both serialization and deserialization
 ///     #[serde(with = "uuid::serde::urn")]
 ///     id: uuid::Uuid,
 /// }
@@ -697,7 +817,7 @@ pub mod urn {
         }
 
         #[test]
-        fn test_de_reject_hypenated() {
+        fn test_de_reject_hyphenated() {
             #[derive(PartialEq, Debug, serde_derive::Deserialize)]
             struct Struct(#[serde(with = "super")] crate::Uuid);
             serde_test::assert_de_tokens_error::<Readable<Struct>>(
