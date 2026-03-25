@@ -237,7 +237,11 @@ use core::hash::{Hash, Hasher};
 pub use timestamp::{context::NoContext, ClockSequence, Timestamp};
 
 #[cfg(any(feature = "v1", feature = "v6"))]
+#[allow(deprecated)]
 pub use timestamp::context::Context;
+
+#[cfg(any(feature = "v1", feature = "v6"))]
+pub use timestamp::context::ContextV1;
 
 #[cfg(feature = "v7")]
 pub use timestamp::context::ContextV7;
@@ -894,12 +898,12 @@ impl Uuid {
             Some(Version::Mac) => {
                 let (ticks, counter) = timestamp::decode_gregorian_timestamp(self);
 
-                Some(Timestamp::from_gregorian(ticks, counter))
+                Some(Timestamp::from_gregorian_time(ticks, counter))
             }
             Some(Version::SortMac) => {
                 let (ticks, counter) = timestamp::decode_sorted_gregorian_timestamp(self);
 
-                Some(Timestamp::from_gregorian(ticks, counter))
+                Some(Timestamp::from_gregorian_time(ticks, counter))
             }
             Some(Version::SortRand) => {
                 let millis = timestamp::decode_unix_timestamp_millis(self);

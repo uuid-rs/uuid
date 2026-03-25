@@ -76,7 +76,7 @@ impl Timestamp {
     ///
     /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
-    pub const fn from_gregorian(ticks: u64, counter: u16) -> Self {
+    pub const fn from_gregorian_time(ticks: u64, counter: u16) -> Self {
         let (seconds, subsec_nanos) = Self::gregorian_to_unix(ticks);
 
         Timestamp {
@@ -170,7 +170,7 @@ impl Timestamp {
         note = "use `Timestamp::from_gregorian(ticks, counter)`"
     )]
     pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
-        Timestamp::from_gregorian(ticks, counter)
+        Timestamp::from_gregorian_time(ticks, counter)
     }
 
     #[deprecated(since = "1.10.0", note = "use `Timestamp::to_gregorian()`")]
@@ -184,6 +184,14 @@ impl Timestamp {
     )]
     pub const fn to_unix_nanos(&self) -> u32 {
         panic!("`Timestamp::to_unix_nanos()` is deprecated and will be removed: use `Timestamp::to_unix()`")
+    }
+
+    #[deprecated(
+        since = "1.23.0",
+        note = "use `Timestamp::from_gregorian(ticks, counter)`"
+    )]
+    pub const fn from_gregorian(ticks: u64, counter: u16) -> Self {
+        Timestamp::from_gregorian_time(ticks, counter)
     }
 }
 
@@ -477,7 +485,7 @@ pub mod context {
         use atomic::{Atomic, Ordering};
 
         #[cfg(all(feature = "std", feature = "rng"))]
-        static CONTEXT: Context = Context {
+        static CONTEXT: ContextV1 = ContextV1 {
             count: Atomic::new(0),
         };
 
@@ -485,7 +493,7 @@ pub mod context {
         static CONTEXT_INITIALIZED: Atomic<bool> = Atomic::new(false);
 
         #[cfg(all(feature = "std", feature = "rng"))]
-        pub(crate) fn shared_context() -> &'static Context {
+        pub(crate) fn shared_context() -> &'static ContextV1 {
             // If the context is in its initial state then assign it to a random value
             // It doesn't matter if multiple threads observe `false` here and initialize the context
             if CONTEXT_INITIALIZED
@@ -513,16 +521,16 @@ pub mod context {
         /// 42-bit counter when working at millisecond precision. This type doesn't attempt
         /// to adjust the timestamp on overflow.
         #[derive(Debug)]
-        pub struct Context {
+        pub struct ContextV1 {
             count: Atomic<u16>,
         }
 
-        impl Context {
+        impl ContextV1 {
             /// Construct a new context that's initialized with the given value.
             ///
             /// The starting value should be a random number, so that UUIDs from
             /// different systems with the same timestamps are less likely to collide.
-            /// When the `rng` feature is enabled, prefer the [`Context::new_random`] method.
+            /// When the `rng` feature is enabled, prefer the [`ContextV1::new_random`] method.
             pub const fn new(count: u16) -> Self {
                 Self {
                     count: Atomic::<u16>::new(count),
@@ -538,7 +546,7 @@ pub mod context {
             }
         }
 
-        impl ClockSequence for Context {
+        impl ClockSequence for ContextV1 {
             type Output = u16;
 
             fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
@@ -555,6 +563,13 @@ pub mod context {
             }
         }
 
+        #[deprecated(
+            since = "1.23.0",
+            note = "renamed to `ContextV1`"
+        )]
+        #[doc(hidden)]
+        pub type Context = ContextV1;
+
         #[cfg(test)]
         mod tests {
             use crate::Timestamp;
@@ -566,7 +581,7 @@ pub mod context {
                 let seconds = 1_496_854_535;
                 let subsec_nanos = 812_946_000;
 
-                let context = Context::new(u16::MAX >> 2);
+                let context = ContextV1::new(u16::MAX >> 2);
 
                 let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
                 assert_eq!(16383, ts.counter);
@@ -588,7 +603,7 @@ pub mod context {
                 let seconds = u64::MAX;
                 let subsec_nanos = u32::MAX;
 
-                let context = Context::new(u16::MAX);
+                let context = ContextV1::new(u16::MAX);
 
                 // Ensure we don't panic
                 Timestamp::from_unix(&context, seconds, subsec_nanos);
@@ -1214,7 +1229,7 @@ mod tests {
         wasm_bindgen_test
     )]
     fn to_gregorian_truncates_to_usable_bits() {
-        let ts = Timestamp::from_gregorian(123, u16::MAX);
+        let ts = Timestamp::from_gregorian_time(123, u16::MAX);
 
         assert_eq!((123, u16::MAX >> 2), ts.to_gregorian());
     }

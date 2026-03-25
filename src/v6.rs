@@ -99,7 +99,8 @@ impl Uuid {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{Context, Variant, Version};
+
+    use crate::{ContextV1, Variant, Version};
     use std::string::ToString;
 
     #[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]
@@ -114,7 +115,7 @@ mod tests {
         let time: u64 = 1_496_854_535;
         let time_fraction: u32 = 812_946_000;
         let node = [1, 2, 3, 4, 5, 6];
-        let context = Context::new(0);
+        let context = ContextV1::new(0);
 
         let uuid = Uuid::new_v6(Timestamp::from_unix(context, time, time_fraction), &node);
 
