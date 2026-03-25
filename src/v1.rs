@@ -100,7 +100,7 @@ impl Uuid {
 mod tests {
     use super::*;
 
-    use crate::{std::string::ToString, Variant, Version, ContextV1};
+    use crate::{std::string::ToString, ContextV1, Variant, Version};
 
     #[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]
     use wasm_bindgen_test::*;

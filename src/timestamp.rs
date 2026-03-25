@@ -447,7 +447,7 @@ pub trait ClockSequence {
     where
         Self::Output: Sized,
     {
-        cmp::min(128, core::mem::size_of::<Self::Output>())
+        cmp::min(128, core::mem::size_of::<Self::Output>() * 8)
     }
 }
 
@@ -506,12 +506,13 @@ pub mod context {
             &CONTEXT
         }
 
-        /// A thread-safe, wrapping counter that produces 14-bit values.
+        /// An internally synchronized, wrapping counter that produces 14-bit values for version 1 and version 6 UUIDs.
         ///
-        /// This type works by:
+        /// This type is:
         ///
-        /// 1. Atomically incrementing the counter value for each timestamp.
-        /// 2. Wrapping the counter back to zero if it overflows its 14-bit storage.
+        /// - **Non-reseeding:** The counter is not reseeded on each time interval (100ns).
+        /// - **Non-adjusting:** The timestamp is not incremented when the counter wraps within a time interval (100ns).
+        /// - **Thread-safe:** The underlying counter is atomic, so can be shared across threads.
         ///
         /// This type should be used when constructing versions 1 and 6 UUIDs.
         ///
@@ -563,10 +564,7 @@ pub mod context {
             }
         }
 
-        #[deprecated(
-            since = "1.23.0",
-            note = "renamed to `ContextV1`"
-        )]
+        #[deprecated(since = "1.23.0", note = "renamed to `ContextV1`")]
         #[doc(hidden)]
         pub type Context = ContextV1;
 
@@ -739,14 +737,17 @@ pub mod context {
         const RESEED_MASK: u64 = u64::MAX >> 23;
         const MAX_COUNTER: u64 = u64::MAX >> 22;
 
-        /// An unsynchronized, reseeding counter that produces 42-bit values.
+        /// An unsynchronized, reseeding counter that produces 42-bit values for version 7 UUIDs.
         ///
-        /// This type works by:
+        /// This type is:
         ///
-        /// 1. Reseeding the counter each millisecond with a random 41-bit value. The 42nd bit
-        ///    is left unset so the counter can safely increment over the millisecond.
-        /// 2. Wrapping the counter back to zero if it overflows its 42-bit storage and adding a
-        ///    millisecond to the timestamp.
+        /// - **Reseeding:** The counter is reseeded on each time interval (1ms) with a random 41-bit value.
+        ///   The 42nd bit is left unset so the counter can safely increment over the millisecond.
+        /// - **Adjusting:** The timestamp is incremented when the counter wraps within a time interval (1ms).
+        ///   All subsequent timestamps in that same interval will also be incremented until it changes and
+        ///   the counter is reseeded.
+        /// - **Non-thread-safe:** The underlying counter uses unsynchronized cells, so needs to be wrapped in
+        ///   a mutex to share.
         ///
         /// The counter can use additional sub-millisecond precision from the timestamp to better
         /// synchronize UUID sorting in distributed systems. In these cases, the additional precision
@@ -1233,51 +1234,70 @@ mod tests {
 
         assert_eq!((123, u16::MAX >> 2), ts.to_gregorian());
     }
-}
-
-/// Tests for conversion between `std::time::SystemTime` and `Timestamp`.
-#[cfg(all(test, feature = "std", not(miri)))]
-mod test_conversion {
-    use std::time::{Duration, SystemTime};
-
-    use super::Timestamp;
-
-    // Components of an arbitrary timestamp with non-zero nanoseconds.
-    const KNOWN_SECONDS: u64 = 1_501_520_400;
-    const KNOWN_NANOS: u32 = 1_000;
-
-    fn known_system_time() -> SystemTime {
-        SystemTime::UNIX_EPOCH
-            .checked_add(Duration::new(KNOWN_SECONDS, KNOWN_NANOS))
-            .unwrap()
-    }
-
-    fn known_timestamp() -> Timestamp {
-        Timestamp::from_unix_time(KNOWN_SECONDS, KNOWN_NANOS, 0, 0)
-    }
 
     #[test]
-    fn to_system_time() {
-        let st: SystemTime = known_timestamp().into();
+    #[cfg_attr(
+        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        wasm_bindgen_test
+    )]
+    fn clock_sequence_usable_bits() {
+        struct MyContext;
 
-        assert_eq!(known_system_time(), st);
+        impl ClockSequence for MyContext {
+            type Output = u16;
+
+            fn generate_sequence(&self, _: u64, _: u32) -> Self::Output {
+                0
+            }
+        }
+
+        assert_eq!(16, MyContext.usable_bits());
     }
 
-    #[test]
-    fn from_system_time() {
-        let ts: Timestamp = known_system_time().try_into().unwrap();
+    #[cfg(all(test, feature = "std", not(miri)))]
+    mod std_support {
+        use super::*;
 
-        assert_eq!(known_timestamp(), ts);
-    }
+        use std::time::{Duration, SystemTime};
 
-    #[test]
-    fn from_system_time_before_epoch() {
-        let before_epoch = match SystemTime::UNIX_EPOCH.checked_sub(Duration::from_nanos(1_000)) {
-            Some(st) => st,
-            None => return,
-        };
+        // Components of an arbitrary timestamp with non-zero nanoseconds.
+        const KNOWN_SECONDS: u64 = 1_501_520_400;
+        const KNOWN_NANOS: u32 = 1_000;
 
-        Timestamp::try_from(before_epoch)
-            .expect_err("Timestamp should not be created from before epoch");
+        fn known_system_time() -> SystemTime {
+            SystemTime::UNIX_EPOCH
+                .checked_add(Duration::new(KNOWN_SECONDS, KNOWN_NANOS))
+                .unwrap()
+        }
+
+        fn known_timestamp() -> Timestamp {
+            Timestamp::from_unix_time(KNOWN_SECONDS, KNOWN_NANOS, 0, 0)
+        }
+
+        #[test]
+        fn to_system_time() {
+            let st: SystemTime = known_timestamp().into();
+
+            assert_eq!(known_system_time(), st);
+        }
+
+        #[test]
+        fn from_system_time() {
+            let ts: Timestamp = known_system_time().try_into().unwrap();
+
+            assert_eq!(known_timestamp(), ts);
+        }
+
+        #[test]
+        fn from_system_time_before_epoch() {
+            let before_epoch = match SystemTime::UNIX_EPOCH.checked_sub(Duration::from_nanos(1_000))
+            {
+                Some(st) => st,
+                None => return,
+            };
+
+            Timestamp::try_from(before_epoch)
+                .expect_err("Timestamp should not be created from before epoch");
+        }
     }
 }

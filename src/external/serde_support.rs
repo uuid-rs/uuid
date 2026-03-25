@@ -639,7 +639,7 @@ pub mod hyphenated {
     /// ```
     pub fn serialize<S>(u: &crate::Uuid, serializer: S) -> Result<S::Ok, S::Error>
     where
-      S: serde_core::Serializer,
+        S: serde_core::Serializer,
     {
         serde_core::Serialize::serialize(u.as_hyphenated(), serializer)
     }
@@ -649,7 +649,7 @@ pub mod hyphenated {
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
     where
-      D: serde_core::Deserializer<'de>,
+        D: serde_core::Deserializer<'de>,
     {
         Ok(Hyphenated::deserialize(deserializer)?.into())
     }

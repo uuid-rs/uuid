@@ -62,9 +62,9 @@ impl Uuid {
     /// * [UUID Version 7 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.7)
     pub fn new_v7(ts: Timestamp) -> Self {
         let (secs, nanos) = ts.to_unix();
-        let millis = (secs * 1000).saturating_add(nanos as u64 / 1_000_000);
-
-        let mut counter_and_random = rng::u128();
+        let millis = secs
+            .saturating_mul(1000)
+            .saturating_add(nanos as u64 / 1_000_000);
 
         let (mut counter, counter_bits) = ts.counter();
 
@@ -83,10 +83,25 @@ impl Uuid {
             counter_bits += 2;
         }
 
-        counter_and_random &= u128::MAX.overflowing_shr(counter_bits).0;
-        counter_and_random |= counter
-            .overflowing_shl(128u32.saturating_sub(counter_bits))
-            .0;
+        let counter_and_random = match counter_bits {
+            0 => {
+                // The counter doesn't contribute any bits
+                rng::u128()
+            }
+            ..128 => {
+                // The counter assigns some number of bits
+                let mut counter_and_random = rng::u128();
+
+                counter_and_random &= u128::MAX >> counter_bits;
+                counter_and_random |= counter << (128 - counter_bits);
+
+                counter_and_random
+            }
+            128.. => {
+                // The counter overrides all bits
+                counter
+            }
+        };
 
         Builder::from_unix_timestamp_millis(
             millis,
@@ -187,7 +202,6 @@ mod tests {
     fn test_new_max_context() {
         struct MaxContext;
 
-        #[cfg(test)]
         impl ClockSequence for MaxContext {
             type Output = u128;
 
@@ -214,5 +228,47 @@ mod tests {
         let decoded_ts = uuid.get_timestamp().unwrap();
 
         assert_eq!(ts.to_unix(), decoded_ts.to_unix());
+    }
+
+    #[test]
+    #[cfg_attr(
+        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        wasm_bindgen_test
+    )]
+    fn test_new_min_counter() {
+        let zero_width = Timestamp::from_unix_time(1_700_000_000, 0, u128::MAX, 0);
+
+        let zero_a = Uuid::new_v7(zero_width);
+        let zero_b = Uuid::new_v7(zero_width);
+
+        assert_ne!(zero_a.as_fields().3, zero_b.as_fields().3);
+    }
+
+    #[test]
+    #[cfg_attr(
+        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        wasm_bindgen_test
+    )]
+    fn test_new_max_counter() {
+        let full_width = Timestamp::from_unix_time(1_700_000_000, 0, 0, 128);
+
+        let full_a = Uuid::new_v7(full_width);
+        let full_b = Uuid::new_v7(full_width);
+
+        assert_eq!(full_a.as_fields().3, full_b.as_fields().3);
+    }
+
+    #[test]
+    #[cfg_attr(
+        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        wasm_bindgen_test
+    )]
+    fn test_new_max() {
+        let ts = Timestamp::from_unix_time(u64::MAX, 0, 0, 0);
+        let uuid = Uuid::new_v7(ts);
+
+        let decoded_ts = uuid.get_timestamp().unwrap();
+
+        assert_eq!((281474976710, 655000000), decoded_ts.to_unix());
     }
 }
