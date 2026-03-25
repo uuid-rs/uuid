@@ -28,6 +28,12 @@ impl Uuid {
     /// Also see [`Uuid::now_v7`] for a convenient way to generate version 7
     /// UUIDs using the current system time.
     ///
+    /// # Counter treatment
+    ///
+    /// This method accepts a [`Timestamp`] which may include a counter value.
+    /// Only up to 72 bits of the counter value will be used when constructing
+    /// the UUID. Any unused counter bits will be filled with random data.
+    ///
     /// # Examples
     ///
     /// A v7 UUID can be created from a unix [`Timestamp`] plus a 128 bit
@@ -88,7 +94,8 @@ impl Uuid {
                 // The counter doesn't contribute any bits
                 rng::u128()
             }
-            ..128 => {
+            // `rand_a` (12 bits) + `rand_b` (62 bits) + `var` (2 bits) = 74 bits
+            ..74 => {
                 // The counter assigns some number of bits
                 let mut counter_and_random = rng::u128();
 
@@ -97,7 +104,7 @@ impl Uuid {
 
                 counter_and_random
             }
-            128.. => {
+            74.. => {
                 // The counter overrides all bits
                 counter
             }
@@ -235,27 +242,23 @@ mod tests {
         all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
         wasm_bindgen_test
     )]
-    fn test_new_min_counter() {
-        let zero_width = Timestamp::from_unix_time(1_700_000_000, 0, u128::MAX, 0);
+    fn test_new_counter_range() {
+        for (width, eq) in [(0, false), (43, false), (72, true), (128, true)] {
+            for counter in [0u128, u128::MAX] {
+                let ts = Timestamp::from_unix_time(1_700_000_000, 0, counter, width);
 
-        let zero_a = Uuid::new_v7(zero_width);
-        let zero_b = Uuid::new_v7(zero_width);
+                let a = Uuid::new_v7(ts);
+                let b = Uuid::new_v7(ts);
 
-        assert_ne!(zero_a.as_fields().3, zero_b.as_fields().3);
-    }
-
-    #[test]
-    #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
-        wasm_bindgen_test
-    )]
-    fn test_new_max_counter() {
-        let full_width = Timestamp::from_unix_time(1_700_000_000, 0, 0, 128);
-
-        let full_a = Uuid::new_v7(full_width);
-        let full_b = Uuid::new_v7(full_width);
-
-        assert_eq!(full_a.as_fields().3, full_b.as_fields().3);
+                assert_eq!(
+                    eq,
+                    a == b,
+                    "{:>032x} = {:>032x} with counter {counter:x} should be {eq:?}",
+                    a.as_u128(),
+                    b.as_u128()
+                );
+            }
+        }
     }
 
     #[test]
