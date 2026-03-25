@@ -1322,7 +1322,6 @@ mod tests {
     fn test_get_variant() {
         fn assert_variant(uuid: Uuid, expected: Variant) {
             assert_eq!(uuid.get_variant(), expected);
-            //assert_eq!(uuid.get_variant_num(), expected as usize);
         }
 
         let uuid1 = new();
