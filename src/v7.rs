@@ -31,7 +31,7 @@ impl Uuid {
     /// # Counter treatment
     ///
     /// This method accepts a [`Timestamp`] which may include a counter value.
-    /// Only up to 72 bits of the counter value will be used when constructing
+    /// Only up to 74 bits of the counter value will be used when constructing
     /// the UUID. Any unused counter bits will be filled with random data.
     ///
     /// # Examples
@@ -95,7 +95,7 @@ impl Uuid {
                 rng::u128()
             }
             // `rand_a` (12 bits) + `rand_b` (62 bits) + `var` (2 bits) = 74 bits
-            ..74 => {
+            ..76 => {
                 // The counter assigns some number of bits
                 let mut counter_and_random = rng::u128();
 
@@ -104,7 +104,7 @@ impl Uuid {
 
                 counter_and_random
             }
-            74.. => {
+            76.. => {
                 // The counter overrides all bits
                 counter
             }
@@ -243,7 +243,7 @@ mod tests {
         wasm_bindgen_test
     )]
     fn test_new_counter_range() {
-        for (width, eq) in [(0, false), (43, false), (72, true), (128, true)] {
+        for (width, eq) in [(0, false), (43, false), (74, true), (128, true)] {
             for counter in [0u128, u128::MAX] {
                 let ts = Timestamp::from_unix_time(1_700_000_000, 0, counter, width);
 
