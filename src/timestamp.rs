@@ -76,7 +76,7 @@ impl Timestamp {
     ///
     /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
     /// it will wrap.
-    pub const fn from_gregorian(ticks: u64, counter: u16) -> Self {
+    pub const fn from_gregorian_time(ticks: u64, counter: u16) -> Self {
         let (seconds, subsec_nanos) = Self::gregorian_to_unix(ticks);
 
         Timestamp {
@@ -170,7 +170,7 @@ impl Timestamp {
         note = "use `Timestamp::from_gregorian(ticks, counter)`"
     )]
     pub const fn from_rfc4122(ticks: u64, counter: u16) -> Self {
-        Timestamp::from_gregorian(ticks, counter)
+        Timestamp::from_gregorian_time(ticks, counter)
     }
 
     #[deprecated(since = "1.10.0", note = "use `Timestamp::to_gregorian()`")]
@@ -184,6 +184,14 @@ impl Timestamp {
     )]
     pub const fn to_unix_nanos(&self) -> u32 {
         panic!("`Timestamp::to_unix_nanos()` is deprecated and will be removed: use `Timestamp::to_unix()`")
+    }
+
+    #[deprecated(
+        since = "1.23.0",
+        note = "use `Timestamp::from_gregorian(ticks, counter)`"
+    )]
+    pub const fn from_gregorian(ticks: u64, counter: u16) -> Self {
+        Timestamp::from_gregorian_time(ticks, counter)
     }
 }
 
@@ -439,7 +447,7 @@ pub trait ClockSequence {
     where
         Self::Output: Sized,
     {
-        cmp::min(128, core::mem::size_of::<Self::Output>())
+        cmp::min(128, core::mem::size_of::<Self::Output>() * 8)
     }
 }
 
@@ -477,7 +485,7 @@ pub mod context {
         use atomic::{Atomic, Ordering};
 
         #[cfg(all(feature = "std", feature = "rng"))]
-        static CONTEXT: Context = Context {
+        static CONTEXT: ContextV1 = ContextV1 {
             count: Atomic::new(0),
         };
 
@@ -485,7 +493,7 @@ pub mod context {
         static CONTEXT_INITIALIZED: Atomic<bool> = Atomic::new(false);
 
         #[cfg(all(feature = "std", feature = "rng"))]
-        pub(crate) fn shared_context() -> &'static Context {
+        pub(crate) fn shared_context() -> &'static ContextV1 {
             // If the context is in its initial state then assign it to a random value
             // It doesn't matter if multiple threads observe `false` here and initialize the context
             if CONTEXT_INITIALIZED
@@ -498,12 +506,13 @@ pub mod context {
             &CONTEXT
         }
 
-        /// A thread-safe, wrapping counter that produces 14-bit values.
+        /// An internally synchronized, wrapping counter that produces 14-bit values for version 1 and version 6 UUIDs.
         ///
-        /// This type works by:
+        /// This type is:
         ///
-        /// 1. Atomically incrementing the counter value for each timestamp.
-        /// 2. Wrapping the counter back to zero if it overflows its 14-bit storage.
+        /// - **Non-reseeding:** The counter is not reseeded on each time interval (100ns).
+        /// - **Non-adjusting:** The timestamp is not incremented when the counter wraps within a time interval (100ns).
+        /// - **Thread-safe:** The underlying counter is atomic, so can be shared across threads.
         ///
         /// This type should be used when constructing versions 1 and 6 UUIDs.
         ///
@@ -513,16 +522,16 @@ pub mod context {
         /// 42-bit counter when working at millisecond precision. This type doesn't attempt
         /// to adjust the timestamp on overflow.
         #[derive(Debug)]
-        pub struct Context {
+        pub struct ContextV1 {
             count: Atomic<u16>,
         }
 
-        impl Context {
+        impl ContextV1 {
             /// Construct a new context that's initialized with the given value.
             ///
             /// The starting value should be a random number, so that UUIDs from
             /// different systems with the same timestamps are less likely to collide.
-            /// When the `rng` feature is enabled, prefer the [`Context::new_random`] method.
+            /// When the `rng` feature is enabled, prefer the [`ContextV1::new_random`] method.
             pub const fn new(count: u16) -> Self {
                 Self {
                     count: Atomic::<u16>::new(count),
@@ -538,7 +547,7 @@ pub mod context {
             }
         }
 
-        impl ClockSequence for Context {
+        impl ClockSequence for ContextV1 {
             type Output = u16;
 
             fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
@@ -555,6 +564,10 @@ pub mod context {
             }
         }
 
+        #[deprecated(since = "1.23.0", note = "renamed to `ContextV1`")]
+        #[doc(hidden)]
+        pub type Context = ContextV1;
+
         #[cfg(test)]
         mod tests {
             use crate::Timestamp;
@@ -566,7 +579,7 @@ pub mod context {
                 let seconds = 1_496_854_535;
                 let subsec_nanos = 812_946_000;
 
-                let context = Context::new(u16::MAX >> 2);
+                let context = ContextV1::new(u16::MAX >> 2);
 
                 let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
                 assert_eq!(16383, ts.counter);
@@ -588,7 +601,7 @@ pub mod context {
                 let seconds = u64::MAX;
                 let subsec_nanos = u32::MAX;
 
-                let context = Context::new(u16::MAX);
+                let context = ContextV1::new(u16::MAX);
 
                 // Ensure we don't panic
                 Timestamp::from_unix(&context, seconds, subsec_nanos);
@@ -724,14 +737,17 @@ pub mod context {
         const RESEED_MASK: u64 = u64::MAX >> 23;
         const MAX_COUNTER: u64 = u64::MAX >> 22;
 
-        /// An unsynchronized, reseeding counter that produces 42-bit values.
+        /// An unsynchronized, reseeding counter that produces 42-bit values for version 7 UUIDs.
         ///
-        /// This type works by:
+        /// This type is:
         ///
-        /// 1. Reseeding the counter each millisecond with a random 41-bit value. The 42nd bit
-        ///    is left unset so the counter can safely increment over the millisecond.
-        /// 2. Wrapping the counter back to zero if it overflows its 42-bit storage and adding a
-        ///    millisecond to the timestamp.
+        /// - **Reseeding:** The counter is reseeded on each time interval (1ms) with a random 41-bit value.
+        ///   The 42nd bit is left unset so the counter can safely increment over the millisecond.
+        /// - **Adjusting:** The timestamp is incremented when the counter wraps within a time interval (1ms).
+        ///   All subsequent timestamps in that same interval will also be incremented until it changes and
+        ///   the counter is reseeded.
+        /// - **Non-thread-safe:** The underlying counter uses unsynchronized cells, so needs to be wrapped in
+        ///   a mutex to share.
         ///
         /// The counter can use additional sub-millisecond precision from the timestamp to better
         /// synchronize UUID sorting in distributed systems. In these cases, the additional precision
@@ -1214,55 +1230,74 @@ mod tests {
         wasm_bindgen_test
     )]
     fn to_gregorian_truncates_to_usable_bits() {
-        let ts = Timestamp::from_gregorian(123, u16::MAX);
+        let ts = Timestamp::from_gregorian_time(123, u16::MAX);
 
         assert_eq!((123, u16::MAX >> 2), ts.to_gregorian());
     }
-}
-
-/// Tests for conversion between `std::time::SystemTime` and `Timestamp`.
-#[cfg(all(test, feature = "std", not(miri)))]
-mod test_conversion {
-    use std::time::{Duration, SystemTime};
-
-    use super::Timestamp;
-
-    // Components of an arbitrary timestamp with non-zero nanoseconds.
-    const KNOWN_SECONDS: u64 = 1_501_520_400;
-    const KNOWN_NANOS: u32 = 1_000;
-
-    fn known_system_time() -> SystemTime {
-        SystemTime::UNIX_EPOCH
-            .checked_add(Duration::new(KNOWN_SECONDS, KNOWN_NANOS))
-            .unwrap()
-    }
-
-    fn known_timestamp() -> Timestamp {
-        Timestamp::from_unix_time(KNOWN_SECONDS, KNOWN_NANOS, 0, 0)
-    }
 
     #[test]
-    fn to_system_time() {
-        let st: SystemTime = known_timestamp().into();
+    #[cfg_attr(
+        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        wasm_bindgen_test
+    )]
+    fn clock_sequence_usable_bits() {
+        struct MyContext;
 
-        assert_eq!(known_system_time(), st);
+        impl ClockSequence for MyContext {
+            type Output = u16;
+
+            fn generate_sequence(&self, _: u64, _: u32) -> Self::Output {
+                0
+            }
+        }
+
+        assert_eq!(16, MyContext.usable_bits());
     }
 
-    #[test]
-    fn from_system_time() {
-        let ts: Timestamp = known_system_time().try_into().unwrap();
+    #[cfg(all(test, feature = "std", not(miri)))]
+    mod std_support {
+        use super::*;
 
-        assert_eq!(known_timestamp(), ts);
-    }
+        use std::time::{Duration, SystemTime};
 
-    #[test]
-    fn from_system_time_before_epoch() {
-        let before_epoch = match SystemTime::UNIX_EPOCH.checked_sub(Duration::from_nanos(1_000)) {
-            Some(st) => st,
-            None => return,
-        };
+        // Components of an arbitrary timestamp with non-zero nanoseconds.
+        const KNOWN_SECONDS: u64 = 1_501_520_400;
+        const KNOWN_NANOS: u32 = 1_000;
 
-        Timestamp::try_from(before_epoch)
-            .expect_err("Timestamp should not be created from before epoch");
+        fn known_system_time() -> SystemTime {
+            SystemTime::UNIX_EPOCH
+                .checked_add(Duration::new(KNOWN_SECONDS, KNOWN_NANOS))
+                .unwrap()
+        }
+
+        fn known_timestamp() -> Timestamp {
+            Timestamp::from_unix_time(KNOWN_SECONDS, KNOWN_NANOS, 0, 0)
+        }
+
+        #[test]
+        fn to_system_time() {
+            let st: SystemTime = known_timestamp().into();
+
+            assert_eq!(known_system_time(), st);
+        }
+
+        #[test]
+        fn from_system_time() {
+            let ts: Timestamp = known_system_time().try_into().unwrap();
+
+            assert_eq!(known_timestamp(), ts);
+        }
+
+        #[test]
+        fn from_system_time_before_epoch() {
+            let before_epoch = match SystemTime::UNIX_EPOCH.checked_sub(Duration::from_nanos(1_000))
+            {
+                Some(st) => st,
+                None => return,
+            };
+
+            Timestamp::try_from(before_epoch)
+                .expect_err("Timestamp should not be created from before epoch");
+        }
     }
 }

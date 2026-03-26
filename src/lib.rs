@@ -237,7 +237,11 @@ use core::hash::{Hash, Hasher};
 pub use timestamp::{context::NoContext, ClockSequence, Timestamp};
 
 #[cfg(any(feature = "v1", feature = "v6"))]
+#[allow(deprecated)]
 pub use timestamp::context::Context;
+
+#[cfg(any(feature = "v1", feature = "v6"))]
+pub use timestamp::context::ContextV1;
 
 #[cfg(feature = "v7")]
 pub use timestamp::context::ContextV7;
@@ -311,10 +315,14 @@ pub enum Version {
     /// Version 8: Custom.
     Custom = 8,
     /// The "max" (all ones) UUID.
-    Max = 0xff,
+    Max = 0x0f,
 }
 
 /// The reserved variants of UUIDs.
+///
+/// Unlike the version field, which is a strict set of values, the variant
+/// behaves more like a mask. Multiple bit patterns in a UUID's variant field may correspond
+/// to the same variant value.
 ///
 /// # References
 ///
@@ -324,13 +332,18 @@ pub enum Version {
 #[repr(u8)]
 pub enum Variant {
     /// Reserved by the NCS for backward compatibility.
+    ///
+    /// The Nil UUID will return this variant.
     NCS = 0u8,
-    /// As described in the RFC 9562 Specification (default).
-    /// (for backward compatibility it is not yet renamed)
+    /// The variant specified in RFC9562.
+    ///
+    /// The majority of UUIDs use this variant.
     RFC4122,
     /// Reserved by Microsoft for backward compatibility.
     Microsoft,
     /// Reserved for future expansion.
+    ///
+    /// The Max UUID will return this variant.
     Future,
 }
 
@@ -575,7 +588,7 @@ impl Uuid {
             6 => Some(Version::SortMac),
             7 => Some(Version::SortRand),
             8 => Some(Version::Custom),
-            0xf => Some(Version::Max),
+            0xf if self.is_max() => Some(Version::Max),
             _ => None,
         }
     }
@@ -894,12 +907,12 @@ impl Uuid {
             Some(Version::Mac) => {
                 let (ticks, counter) = timestamp::decode_gregorian_timestamp(self);
 
-                Some(Timestamp::from_gregorian(ticks, counter))
+                Some(Timestamp::from_gregorian_time(ticks, counter))
             }
             Some(Version::SortMac) => {
                 let (ticks, counter) = timestamp::decode_sorted_gregorian_timestamp(self);
 
-                Some(Timestamp::from_gregorian(ticks, counter))
+                Some(Timestamp::from_gregorian_time(ticks, counter))
             }
             Some(Version::SortRand) => {
                 let millis = timestamp::decode_unix_timestamp_millis(self);
@@ -1148,6 +1161,8 @@ mod tests {
         assert!(!not_nil.is_nil());
 
         assert_eq!(nil.get_version(), Some(Version::Nil));
+        assert_eq!(nil.get_variant(), Variant::NCS);
+
         assert_eq!(not_nil.get_version(), Some(Version::Random));
 
         assert_eq!(
@@ -1171,6 +1186,8 @@ mod tests {
         assert!(!not_max.is_max());
 
         assert_eq!(max.get_version(), Some(Version::Max));
+        assert_eq!(max.get_variant(), Variant::Future);
+
         assert_eq!(not_max.get_version(), Some(Version::Random));
 
         assert_eq!(
@@ -1203,19 +1220,6 @@ mod tests {
             Uuid::NAMESPACE_X500.hyphenated().to_string(),
             "6ba7b814-9dad-11d1-80b4-00c04fd430c8"
         );
-    }
-
-    #[cfg(feature = "v3")]
-    #[test]
-    #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
-        wasm_bindgen_test
-    )]
-    fn test_get_version_v3() {
-        let uuid = Uuid::new_v3(&Uuid::NAMESPACE_DNS, "rust-lang.org".as_bytes());
-
-        assert_eq!(uuid.get_version().unwrap(), Version::Md5);
-        assert_eq!(uuid.get_version_num(), 3);
     }
 
     #[test]
@@ -1252,7 +1256,74 @@ mod tests {
         all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
         wasm_bindgen_test
     )]
+    fn test_get_version() {
+        fn assert_version(uuid: Uuid, expected: Version) {
+            assert_eq!(
+                uuid.get_version().unwrap(),
+                expected,
+                "{uuid} version doesn't match {expected:?}"
+            );
+            assert_eq!(
+                uuid.get_version_num(),
+                expected as usize,
+                "{uuid} version doesn't match {}",
+                expected as usize
+            );
+        }
+
+        let uuidnil = Uuid::parse_str("00000000-0000-0000-0000-000000000000").unwrap();
+        let uuid1 = Uuid::parse_str("20616934-4ba2-11e7-8000-010203040506").unwrap();
+        let uuid3 = Uuid::parse_str("bcee7a9c-52f1-30c6-a3cc-8c72ba634990").unwrap();
+        let uuid4 = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").unwrap();
+        let uuid5 = Uuid::parse_str("b11f79a5-1e6d-57ce-a4b5-ba8531ea03d0").unwrap();
+        let uuid6 = Uuid::parse_str("1e74ba22-0616-6934-8000-010203040506").unwrap();
+        let uuid7 = Uuid::parse_str("015c837b-9e84-7db5-b059-c75a84585688").unwrap();
+        let uuid8 = Uuid::parse_str("0f0e0d0c-0b0a-8908-8706-050403020100").unwrap();
+        let uuidmax = Uuid::parse_str("ffffffff-ffff-ffff-ffff-ffffffffffff").unwrap();
+
+        assert_version(uuidnil, Version::Nil);
+        assert_version(uuid1, Version::Mac);
+        assert_version(uuid3, Version::Md5);
+        assert_version(uuid4, Version::Random);
+        assert_version(uuid5, Version::Sha1);
+        assert_version(uuid6, Version::SortMac);
+        assert_version(uuid7, Version::SortRand);
+        assert_version(uuid8, Version::Custom);
+        assert_version(uuidmax, Version::Max);
+    }
+
+    #[test]
+    #[cfg_attr(
+        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        wasm_bindgen_test
+    )]
+    fn test_get_version_almost_nil() {
+        let uuidnil = Uuid::parse_str("00000000-0000-0000-0000-00000000000f").unwrap();
+
+        assert!(uuidnil.get_version().is_none());
+    }
+
+    #[test]
+    #[cfg_attr(
+        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        wasm_bindgen_test
+    )]
+    fn test_get_version_almost_max() {
+        let uuidmax = Uuid::parse_str("ffffffff-ffff-ffff-ffff-fffffffffff0").unwrap();
+
+        assert!(uuidmax.get_version().is_none());
+    }
+
+    #[test]
+    #[cfg_attr(
+        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        wasm_bindgen_test
+    )]
     fn test_get_variant() {
+        fn assert_variant(uuid: Uuid, expected: Variant) {
+            assert_eq!(uuid.get_variant(), expected);
+        }
+
         let uuid1 = new();
         let uuid2 = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000").unwrap();
         let uuid3 = Uuid::parse_str("67e55044-10b1-426f-9247-bb680e5fe0c8").unwrap();
@@ -1260,12 +1331,12 @@ mod tests {
         let uuid5 = Uuid::parse_str("F9168C5E-CEB2-4faa-D6BF-329BF39FA1E4").unwrap();
         let uuid6 = Uuid::parse_str("f81d4fae-7dec-11d0-7765-00a0c91e6bf6").unwrap();
 
-        assert_eq!(uuid1.get_variant(), Variant::RFC4122);
-        assert_eq!(uuid2.get_variant(), Variant::RFC4122);
-        assert_eq!(uuid3.get_variant(), Variant::RFC4122);
-        assert_eq!(uuid4.get_variant(), Variant::Microsoft);
-        assert_eq!(uuid5.get_variant(), Variant::Microsoft);
-        assert_eq!(uuid6.get_variant(), Variant::NCS);
+        assert_variant(uuid1, Variant::RFC4122);
+        assert_variant(uuid2, Variant::RFC4122);
+        assert_variant(uuid3, Variant::RFC4122);
+        assert_variant(uuid4, Variant::Microsoft);
+        assert_variant(uuid5, Variant::Microsoft);
+        assert_variant(uuid6, Variant::NCS);
     }
 
     #[test]

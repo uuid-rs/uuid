@@ -28,6 +28,12 @@ impl Uuid {
     /// Also see [`Uuid::now_v7`] for a convenient way to generate version 7
     /// UUIDs using the current system time.
     ///
+    /// # Counter treatment
+    ///
+    /// This method accepts a [`Timestamp`] which may include a counter value.
+    /// Only up to 74 bits of the counter value will be used when constructing
+    /// the UUID. Any unused counter bits will be filled with random data.
+    ///
     /// # Examples
     ///
     /// A v7 UUID can be created from a unix [`Timestamp`] plus a 128 bit
@@ -62,9 +68,9 @@ impl Uuid {
     /// * [UUID Version 7 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.7)
     pub fn new_v7(ts: Timestamp) -> Self {
         let (secs, nanos) = ts.to_unix();
-        let millis = (secs * 1000).saturating_add(nanos as u64 / 1_000_000);
-
-        let mut counter_and_random = rng::u128();
+        let millis = secs
+            .saturating_mul(1000)
+            .saturating_add(nanos as u64 / 1_000_000);
 
         let (mut counter, counter_bits) = ts.counter();
 
@@ -83,10 +89,26 @@ impl Uuid {
             counter_bits += 2;
         }
 
-        counter_and_random &= u128::MAX.overflowing_shr(counter_bits).0;
-        counter_and_random |= counter
-            .overflowing_shl(128u32.saturating_sub(counter_bits))
-            .0;
+        let counter_and_random = match counter_bits {
+            0 => {
+                // The counter doesn't contribute any bits
+                rng::u128()
+            }
+            // `rand_a` (12 bits) + `rand_b` (62 bits) + `var` (2 bits)
+            ..76 => {
+                // The counter assigns some number of bits
+                let mut counter_and_random = rng::u128();
+
+                counter_and_random &= u128::MAX >> counter_bits;
+                counter_and_random |= counter << (128 - counter_bits);
+
+                counter_and_random
+            }
+            76.. => {
+                // The counter overrides all bits
+                counter
+            }
+        };
 
         Builder::from_unix_timestamp_millis(
             millis,
@@ -187,7 +209,6 @@ mod tests {
     fn test_new_max_context() {
         struct MaxContext;
 
-        #[cfg(test)]
         impl ClockSequence for MaxContext {
             type Output = u128;
 
@@ -214,5 +235,46 @@ mod tests {
         let decoded_ts = uuid.get_timestamp().unwrap();
 
         assert_eq!(ts.to_unix(), decoded_ts.to_unix());
+    }
+
+    #[test]
+    #[cfg_attr(
+        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        wasm_bindgen_test
+    )]
+    fn test_new_counter_range() {
+        for (width, eq) in [(0, false), (43, false), (74, true), (128, true)] {
+            for counter in [0u128, u128::MAX] {
+                let ts = Timestamp::from_unix_time(1_700_000_000, 0, counter, width);
+
+                let a = Uuid::new_v7(ts);
+                let b = Uuid::new_v7(ts);
+
+                assert_eq!((1_700_000_000, 0), a.get_timestamp().unwrap().to_unix());
+                assert_eq!((1_700_000_000, 0), b.get_timestamp().unwrap().to_unix());
+
+                assert_eq!(
+                    eq,
+                    a == b,
+                    "{:>032x} = {:>032x} with counter {counter:x} should be {eq:?}",
+                    a.as_u128(),
+                    b.as_u128()
+                );
+            }
+        }
+    }
+
+    #[test]
+    #[cfg_attr(
+        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        wasm_bindgen_test
+    )]
+    fn test_new_max() {
+        let ts = Timestamp::from_unix_time(u64::MAX, 0, 0, 0);
+        let uuid = Uuid::new_v7(ts);
+
+        let decoded_ts = uuid.get_timestamp().unwrap();
+
+        assert_eq!((281474976710, 655000000), decoded_ts.to_unix());
     }
 }
