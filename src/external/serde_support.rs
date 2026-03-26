@@ -360,23 +360,28 @@ pub mod compact {
     }
 }
 
-/// Serialize from a [`Uuid`] as a `uuid::fmt::Simple`
+/// Serialize a [`Uuid`] as [`uuid::fmt::Simple`].
 ///
 /// [`Uuid`]: ../../struct.Uuid.html
 ///
-/// ## Example
+/// ## Examples
 ///
-/// ```rust
+/// Serialize and deserialize using the simple format, failing to deserialize
+/// any other format:
+///
+/// ```
 /// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 /// struct StructA {
-///     // This will change both serialization and deserialization
 ///     #[serde(with = "uuid::serde::simple")]
 ///     id: uuid::Uuid,
 /// }
+/// ```
 ///
+/// Serialize using the simple format, but deserialize any format:
+///
+/// ```
 /// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 /// struct StructB {
-///     // This will be serialized as uuid::fmt::Simple and deserialize from all valid formats
 ///     #[serde(serialize_with = "uuid::serde::simple::serialize")]
 ///     id: uuid::Uuid,
 /// }
@@ -384,16 +389,15 @@ pub mod compact {
 pub mod simple {
     use super::*;
 
-    /// Serialize from a [`Uuid`] as a `uuid::fmt::Simple`
+    /// Serialize a [`Uuid`] as a simple string.
     ///
     /// [`Uuid`]: ../../struct.Uuid.html
     ///
-    /// # Example
+    /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// #[derive(serde_derive::Serialize)]
     /// struct Struct {
-    ///     // This will be serialize as uuid::fmt::Simple
     ///     #[serde(serialize_with = "uuid::serde::simple::serialize")]
     ///     id: uuid::Uuid,
     /// }
@@ -406,7 +410,7 @@ pub mod simple {
         serde_core::Serialize::serialize(u.as_simple(), serializer)
     }
 
-    /// Deserialize a simple Uuid string as a [`Uuid`]
+    /// Deserialize a simple-formatted string as a [`Uuid`].
     ///
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Uuid, D::Error>
@@ -478,23 +482,28 @@ pub mod simple {
     }
 }
 
-/// Serialize from a [`Uuid`] as a `uuid::fmt::Braced`
+/// Serialize a [`Uuid`] as [`uuid::fmt::Braced`].
 ///
 /// [`Uuid`]: ../../struct.Uuid.html
 ///
-/// ## Example
+/// ## Examples
 ///
-/// ```rust
+/// Serialize and deserialize using the braced format, failing to deserialize
+/// any other format:
+///
+/// ```
 /// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 /// struct StructA {
-///     // This will change both serialization and deserialization
 ///     #[serde(with = "uuid::serde::braced")]
 ///     id: uuid::Uuid,
 /// }
+/// ```
 ///
+/// Serialize using the braced format, but deserialize any format:
+///
+/// ```
 /// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 /// struct StructB {
-///     // This will be serialized as uuid::fmt::Braced and deserialize from all valid formats
 ///     #[serde(serialize_with = "uuid::serde::braced::serialize")]
 ///     id: uuid::Uuid,
 /// }
@@ -502,16 +511,15 @@ pub mod simple {
 pub mod braced {
     use super::*;
 
-    /// Serialize from a [`Uuid`] as a `uuid::fmt::Braced`
+    /// Serialize a [`Uuid`] as a braced string.
     ///
     /// [`Uuid`]: ../../struct.Uuid.html
     ///
-    /// # Example
+    /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// #[derive(serde_derive::Serialize)]
     /// struct Struct {
-    ///     // This will be serialize as uuid::fmt::Braced
     ///     #[serde(serialize_with = "uuid::serde::braced::serialize")]
     ///     id: uuid::Uuid,
     /// }
@@ -524,7 +532,7 @@ pub mod braced {
         serde_core::Serialize::serialize(u.as_braced(), serializer)
     }
 
-    /// Deserialize a braced Uuid string as a [`Uuid`]
+    /// Deserialize a braced-formatted string as a [`Uuid`].
     ///
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
@@ -597,23 +605,28 @@ pub mod braced {
     }
 }
 
-/// Serialize from a [`Uuid`] as a `uuid::fmt::Hyphenated`
+/// Serialize a [`Uuid`] as [`uuid::fmt::Hyphenated`].
 ///
 /// [`Uuid`]: ../../struct.Uuid.html
 ///
-/// ## Example
+/// ## Examples
 ///
-/// ```rust
+/// Serialize and deserialize using the hyphenated format, failing to deserialize
+/// any other format:
+///
+/// ```
 /// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 /// struct StructA {
-///     // This will change both serialization and deserialization
 ///     #[serde(with = "uuid::serde::hyphenated")]
 ///     id: uuid::Uuid,
 /// }
+/// ```
 ///
+/// Serialize using the hyphenated format, but deserialize any format:
+///
+/// ```
 /// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 /// struct StructB {
-///     // This will be serialized as uuid::fmt::Hyphenated and deserialize from all valid formats
 ///     #[serde(serialize_with = "uuid::serde::hyphenated::serialize")]
 ///     id: uuid::Uuid,
 /// }
@@ -622,16 +635,15 @@ pub mod hyphenated {
 
     use super::*;
 
-    /// Serialize from a [`Uuid`] as a `uuid::fmt::Hyphenated`
+    /// Serialize a [`Uuid`] as a hyphenated string.
     ///
     /// [`Uuid`]: ../../struct.Uuid.html
     ///
-    /// # Example
+    /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// #[derive(serde_derive::Serialize)]
     /// struct Struct {
-    ///     // This will be serialized as uuid::fmt::Hyphenated
     ///     #[serde(serialize_with = "uuid::serde::hyphenated::serialize")]
     ///     id: uuid::Uuid,
     /// }
@@ -644,7 +656,7 @@ pub mod hyphenated {
         serde_core::Serialize::serialize(u.as_hyphenated(), serializer)
     }
 
-    /// Deserialize a hyphenated Uuid string as a [`Uuid`]
+    /// Deserialize a hyphenated-formatted string as a [`Uuid`].
     ///
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
@@ -717,23 +729,28 @@ pub mod hyphenated {
     }
 }
 
-/// Serialize from a [`Uuid`] as a `uuid::fmt::Urn`
+/// Serialize a [`Uuid`] as [`uuid::fmt::Urn`].
 ///
 /// [`Uuid`]: ../../struct.Uuid.html
 ///
-/// ## Example
+/// ## Examples
 ///
-/// ```rust
+/// Serialize and deserialize using the URN format, failing to deserialize
+/// any other format:
+///
+/// ```
 /// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 /// struct StructA {
-///     // This will change both serialization and deserialization
 ///     #[serde(with = "uuid::serde::urn")]
 ///     id: uuid::Uuid,
 /// }
+/// ```
 ///
+/// Serialize using the URN format, but deserialize any format:
+///
+/// ```
 /// #[derive(serde_derive::Serialize, serde_derive::Deserialize)]
 /// struct StructB {
-///     // This will be serialized as uuid::fmt::Urn and deserialize from all valid formats
 ///     #[serde(serialize_with = "uuid::serde::urn::serialize")]
 ///     id: uuid::Uuid,
 /// }
@@ -741,16 +758,15 @@ pub mod hyphenated {
 pub mod urn {
     use super::*;
 
-    /// Serialize from a [`Uuid`] as a `uuid::fmt::Urn`
+    /// Serialize a [`Uuid`] as a URN string.
     ///
     /// [`Uuid`]: ../../struct.Uuid.html
     ///
-    /// # Example
+    /// # Examples
     ///
-    /// ```rust
+    /// ```
     /// #[derive(serde_derive::Serialize)]
     /// struct Struct {
-    ///     // This will be serialize as uuid::fmt::Urn
     ///     #[serde(serialize_with = "uuid::serde::urn::serialize")]
     ///     id: uuid::Uuid,
     /// }
@@ -763,7 +779,7 @@ pub mod urn {
         serde_core::Serialize::serialize(u.as_urn(), serializer)
     }
 
-    /// Deserialize a urn Uuid string as a [`Uuid`]
+    /// Deserialize a URN-formatted string as a [`Uuid`].
     ///
     /// [`Uuid`]: ../../struct.Uuid.html
     pub fn deserialize<'de, D>(deserializer: D) -> Result<crate::Uuid, D::Error>
