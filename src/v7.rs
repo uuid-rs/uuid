@@ -3,7 +3,9 @@
 //! Note that you need to enable the `v7` Cargo feature
 //! in order to use this module.
 
-use crate::{rng, std::cmp, timestamp::Timestamp, Builder, Uuid};
+use core::cmp;
+
+use crate::{rng, timestamp::Timestamp, Builder, Uuid};
 
 impl Uuid {
     /// Create a new version 7 UUID using the current time value.
