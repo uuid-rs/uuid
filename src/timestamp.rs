@@ -851,35 +851,7 @@ pub mod context {
             }
         }
 
-        #[derive(Debug)]
-        struct Adjust {
-            by_ns: u128,
-        }
-
-        impl Adjust {
-            #[inline]
-            fn by_millis(millis: u32) -> Self {
-                Adjust {
-                    by_ns: (millis as u128).saturating_mul(1_000_000),
-                }
-            }
-
-            #[inline]
-            fn apply(&self, seconds: u64, subsec_nanos: u32) -> (u64, u32) {
-                if self.by_ns == 0 {
-                    // No shift applied
-                    return (seconds, subsec_nanos);
-                }
-
-                let ts = (seconds as u128)
-                    .saturating_mul(1_000_000_000)
-                    .saturating_add(subsec_nanos as u128)
-                    .saturating_add(self.by_ns);
-
-                ((ts / 1_000_000_000) as u64, (ts % 1_000_000_000) as u32)
-            }
-        }
-
+        /// A timestamp that keeps track of whether a reseed is necessary.
         #[derive(Debug, Default, Clone, Copy)]
         struct ReseedingTimestamp {
             last_seed: u64,
@@ -888,6 +860,21 @@ pub mod context {
         }
 
         impl ReseedingTimestamp {
+            #[inline]
+            fn from_ts(seconds: u64, subsec_nanos: u32) -> Self {
+                // Reseed when the millisecond advances
+                let last_seed = seconds
+                    .saturating_mul(1_000)
+                    .saturating_add((subsec_nanos / 1_000_000) as u64);
+
+                ReseedingTimestamp {
+                    last_seed,
+                    seconds,
+                    subsec_nanos,
+                }
+            }
+
+            /// Advance the timestamp to a new value, returning whether a reseed is necessary.
             #[inline]
             fn advance(&self, seconds: u64, subsec_nanos: u32) -> (Self, bool) {
                 let incoming = ReseedingTimestamp::from_ts(seconds, subsec_nanos);
@@ -905,20 +892,7 @@ pub mod context {
                 }
             }
 
-            #[inline]
-            fn from_ts(seconds: u64, subsec_nanos: u32) -> Self {
-                // Reseed when the millisecond advances
-                let last_seed = seconds
-                    .saturating_mul(1_000)
-                    .saturating_add((subsec_nanos / 1_000_000) as u64);
-
-                ReseedingTimestamp {
-                    last_seed,
-                    seconds,
-                    subsec_nanos,
-                }
-            }
-
+            /// Advance the timestamp by a millisecond.
             #[inline]
             fn increment(&self) -> Self {
                 let (seconds, subsec_nanos) =
@@ -933,6 +907,76 @@ pub mod context {
             }
         }
 
+        /// A counter that initializes to a safe random seed and tracks overflow.
+        #[derive(Debug, Clone, Copy)]
+        struct Counter {
+            value: u64,
+        }
+
+        impl Counter {
+            #[inline]
+            fn reseed(precision: &Precision, timestamp: &ReseedingTimestamp) -> Self {
+                Counter {
+                    value: precision.apply(crate::rng::u64() & RESEED_MASK, timestamp),
+                }
+            }
+
+            /// Advance the counter.
+            #[inline]
+            fn increment(&self, precision: &Precision, timestamp: &ReseedingTimestamp) -> Self {
+                let mut counter = Counter {
+                    value: precision.apply(self.value, timestamp),
+                };
+
+                // We unconditionally increment the counter even though the precision
+                // may have set higher bits already. This could technically be avoided,
+                // but the higher bits are a coarse approximation so we just avoid the
+                // `if` branch and increment it either way
+
+                // Guaranteed to never overflow u64
+                counter.value += 1;
+
+                counter
+            }
+
+            #[inline]
+            fn has_overflowed(&self) -> bool {
+                self.value > MAX_COUNTER
+            }
+        }
+
+        /// A utility that adjusts an input timestamp by a given number of nanoseconds.
+        #[derive(Debug)]
+        struct Adjust {
+            by_ns: u128,
+        }
+
+        impl Adjust {
+            #[inline]
+            fn by_millis(millis: u32) -> Self {
+                Adjust {
+                    by_ns: (millis as u128).saturating_mul(1_000_000),
+                }
+            }
+
+            /// Apply the adjustment, returning the adjusted timestamp.
+            #[inline]
+            fn apply(&self, seconds: u64, subsec_nanos: u32) -> (u64, u32) {
+                if self.by_ns == 0 {
+                    // No shift applied
+                    return (seconds, subsec_nanos);
+                }
+
+                let ts = (seconds as u128)
+                    .saturating_mul(1_000_000_000)
+                    .saturating_add(subsec_nanos as u128)
+                    .saturating_add(self.by_ns);
+
+                ((ts / 1_000_000_000) as u64, (ts % 1_000_000_000) as u32)
+            }
+        }
+
+        /// A utility that overwrites some number of counter bits with additional timestamp precision.
         #[derive(Debug)]
         struct Precision {
             bits: usize,
@@ -960,52 +1004,17 @@ pub mod context {
                 }
             }
 
+            /// Apply additional precision from the given timestamp to the counter.
             #[inline]
-            fn apply(&self, value: u64, timestamp: &ReseedingTimestamp) -> u64 {
+            fn apply(&self, counter: u64, timestamp: &ReseedingTimestamp) -> u64 {
                 if self.bits == 0 {
                     // No additional precision is being used
-                    return value;
+                    return counter;
                 }
 
                 let additional = timestamp.submilli_nanos() as u64 / self.factor;
 
-                (value & self.mask) | (additional << self.shift)
-            }
-        }
-
-        #[derive(Debug, Clone, Copy)]
-        struct Counter {
-            value: u64,
-        }
-
-        impl Counter {
-            #[inline]
-            fn reseed(precision: &Precision, timestamp: &ReseedingTimestamp) -> Self {
-                Counter {
-                    value: precision.apply(crate::rng::u64() & RESEED_MASK, timestamp),
-                }
-            }
-
-            #[inline]
-            fn increment(&self, precision: &Precision, timestamp: &ReseedingTimestamp) -> Self {
-                let mut counter = Counter {
-                    value: precision.apply(self.value, timestamp),
-                };
-
-                // We unconditionally increment the counter even though the precision
-                // may have set higher bits already. This could technically be avoided,
-                // but the higher bits are a coarse approximation so we just avoid the
-                // `if` branch and increment it either way
-
-                // Guaranteed to never overflow u64
-                counter.value += 1;
-
-                counter
-            }
-
-            #[inline]
-            fn has_overflowed(&self) -> bool {
-                self.value > MAX_COUNTER
+                (counter & self.mask) | (additional << self.shift)
             }
         }
 
