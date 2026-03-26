@@ -3,7 +3,7 @@
 //! Note that you need to enable the `v7` Cargo feature
 //! in order to use this module.
 
-use crate::{rng, timestamp::Timestamp, Builder, Uuid};
+use crate::{rng, std::cmp, timestamp::Timestamp, Builder, Uuid};
 
 impl Uuid {
     /// Create a new version 7 UUID using the current time value.
@@ -72,40 +72,49 @@ impl Uuid {
             .saturating_mul(1000)
             .saturating_add(nanos as u64 / 1_000_000);
 
-        let (mut counter, counter_bits) = ts.counter();
-
-        debug_assert!(counter_bits <= 128);
-
-        let mut counter_bits = counter_bits as u32;
+        let (counter, counter_bits) = ts.counter();
 
         // If the counter intersects the variant field then shift around it.
         // This ensures that any bits set in the counter that would intersect
         // the variant are still preserved
-        if counter_bits > 12 {
-            let mask = u128::MAX << (counter_bits - 12);
-
+        let shift_counter_over_variant = |mut counter: u128, mut counter_bits: u32| {
+            let mask = u128::MAX << (cmp::min(128, counter_bits) - 12);
             counter = (counter & !mask) | ((counter & mask) << 2);
-
             counter_bits += 2;
-        }
+
+            (counter, counter_bits)
+        };
+
+        // Mask `counter_bits` of the `counter` into `dst`
+        let mask_counter_into_random = |mut dst: u128, counter: u128, counter_bits: u32| {
+            dst &= u128::MAX >> counter_bits;
+            dst |= counter << (128 - counter_bits);
+
+            dst
+        };
 
         let counter_and_random = match counter_bits {
-            0 => {
-                // The counter doesn't contribute any bits
-                rng::u128()
+            // The counter doesn't contribute any bits
+            0 => rng::u128(),
+            // The counter doesn't intersect the variant field
+            // It needs to be merged with random data
+            ..12 => {
+                let counter_bits = counter_bits as u32;
+
+                mask_counter_into_random(rng::u128(), counter, counter_bits)
             }
             // `rand_a` (12 bits) + `rand_b` (62 bits) + `var` (2 bits)
-            ..76 => {
-                // The counter assigns some number of bits
-                let mut counter_and_random = rng::u128();
+            // The counter needs to be shifted around the variant and merged with random data
+            ..74 => {
+                let (counter, counter_bits) =
+                    shift_counter_over_variant(counter, counter_bits as u32);
 
-                counter_and_random &= u128::MAX >> counter_bits;
-                counter_and_random |= counter << (128 - counter_bits);
-
-                counter_and_random
+                mask_counter_into_random(rng::u128(), counter, counter_bits)
             }
-            76.. => {
-                // The counter overrides all bits
+            // The counter overrides all bits
+            74.. => {
+                let (counter, _) = shift_counter_over_variant(counter, counter_bits as u32);
+
                 counter
             }
         };
@@ -243,7 +252,13 @@ mod tests {
         wasm_bindgen_test
     )]
     fn test_new_counter_range() {
-        for (width, eq) in [(0, false), (43, false), (74, true), (128, true)] {
+        for (width, eq) in [
+            (0, false),
+            (3, false),
+            (43, false),
+            (74, true),
+            (u8::MAX, true),
+        ] {
             for counter in [0u128, u128::MAX] {
                 let ts = Timestamp::from_unix_time(1_700_000_000, 0, counter, width);
 
