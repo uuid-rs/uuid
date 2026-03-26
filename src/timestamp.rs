@@ -482,28 +482,17 @@ pub mod context {
     mod v1_support {
         use super::*;
 
+        #[cfg(all(feature = "std", feature = "rng"))]
+        use crate::std::sync::LazyLock;
+
         use atomic::{Atomic, Ordering};
 
         #[cfg(all(feature = "std", feature = "rng"))]
-        static CONTEXT: ContextV1 = ContextV1 {
-            count: Atomic::new(0),
-        };
+        static CONTEXT: LazyLock<ContextV1> = LazyLock::new(ContextV1::new_random);
 
         #[cfg(all(feature = "std", feature = "rng"))]
-        static CONTEXT_INITIALIZED: Atomic<bool> = Atomic::new(false);
-
-        #[cfg(all(feature = "std", feature = "rng"))]
-        pub(crate) fn shared_context() -> &'static ContextV1 {
-            // If the context is in its initial state then assign it to a random value
-            // It doesn't matter if multiple threads observe `false` here and initialize the context
-            if CONTEXT_INITIALIZED
-                .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed)
-                .is_ok()
-            {
-                CONTEXT.count.store(crate::rng::u16(), Ordering::Release);
-            }
-
-            &CONTEXT
+        pub(crate) fn shared_context_v1() -> &'static ContextV1 {
+            &*CONTEXT
         }
 
         /// An internally synchronized, wrapping counter that produces 14-bit values for version 1 and version 6 UUIDs.

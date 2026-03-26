@@ -21,7 +21,7 @@ impl Uuid {
     /// to be enabled.
     #[cfg(all(feature = "std", feature = "rng"))]
     pub fn now_v1(node_id: &[u8; 6]) -> Self {
-        let ts = Timestamp::now(crate::timestamp::context::shared_context());
+        let ts = Timestamp::now(crate::timestamp::context::shared_context_v1());
 
         Self::new_v1(ts, node_id)
     }
