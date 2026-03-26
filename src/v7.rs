@@ -250,6 +250,9 @@ mod tests {
                 let a = Uuid::new_v7(ts);
                 let b = Uuid::new_v7(ts);
 
+                assert_eq!((1_700_000_000, 0), a.get_timestamp().unwrap().to_unix());
+                assert_eq!((1_700_000_000, 0), b.get_timestamp().unwrap().to_unix());
+
                 assert_eq!(
                     eq,
                     a == b,
