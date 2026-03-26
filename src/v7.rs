@@ -94,7 +94,7 @@ impl Uuid {
                 // The counter doesn't contribute any bits
                 rng::u128()
             }
-            // `rand_a` (12 bits) + `rand_b` (62 bits) + `var` (2 bits) = 74 bits
+            // `rand_a` (12 bits) + `rand_b` (62 bits) + `var` (2 bits)
             ..76 => {
                 // The counter assigns some number of bits
                 let mut counter_and_random = rng::u128();
