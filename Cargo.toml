@@ -170,7 +170,6 @@ version = "0.6"
 # Private
 [target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))'.dependencies.wasm-bindgen]
 default-features = false
-features = ["msrv"]
 version = "0.2"
 optional = true
 
