@@ -10,10 +10,6 @@ pub(crate) enum ErrorKind {
     ///
     /// [`Uuid`]: ../struct.Uuid.html
     ParseChar { character: char, index: usize },
-    /// A simple [`Uuid`] didn't contain 32 characters.
-    ///
-    /// [`Uuid`]: ../struct.Uuid.html
-    ParseSimpleLength { len: usize },
     /// A byte array didn't contain 16 bytes.
     ParseByteLength { len: usize },
     /// A hyphenated [`Uuid`] didn't contain 5 groups
@@ -74,7 +70,7 @@ impl<'a> InvalidUuid<'a> {
             Err(_) => return Error(ErrorKind::ParseInvalidUTF8),
         };
 
-        let (bounds, format) = match (self.1, self.0) {
+        let (bounds, mut format) = match (self.1, self.0) {
             (RequestedUuid::Any | RequestedUuid::Braced, [b'{', s @ .., b'}']) => {
                 (1..s.len() - 1, RequestedUuid::Braced)
             }
@@ -101,7 +97,6 @@ impl<'a> InvalidUuid<'a> {
                     index: 0,
                 })
             }
-            (RequestedUuid::Any, s) => (0..s.len(), RequestedUuid::Simple),
             (r, s) => (0..s.len(), r),
         };
 
@@ -120,10 +115,14 @@ impl<'a> InvalidUuid<'a> {
                 (RequestedUuid::Simple, b'-') => {
                     return Error(ErrorKind::ParseChar {
                         character: '-',
-                        index: index + bounds.start + 1,
+                        index: index + bounds.start,
                     })
                 }
                 (_, b'-') => {
+                    if format == RequestedUuid::Any {
+                        format = RequestedUuid::Hyphenated;
+                    }
+
                     if hyphen_count < 4 {
                         // While we search, also count group breaks
                         group_bounds[hyphen_count] = index;
@@ -132,18 +131,18 @@ impl<'a> InvalidUuid<'a> {
                 }
                 _ => {
                     return Error(ErrorKind::ParseChar {
-                        character: byte as char,
-                        index: index + bounds.start + 1,
+                        character,
+                        index: index + bounds.start,
                     })
                 }
             }
         }
 
-        if format == RequestedUuid::Simple {
+        if format == RequestedUuid::Any || format == RequestedUuid::Simple {
             // This means that we tried and failed to parse a simple uuid.
             // Since we verified that all the characters are valid, this means
             // that it MUST have an invalid length.
-            Error(ErrorKind::ParseSimpleLength {
+            Error(ErrorKind::ParseLength {
                 len: input_str.len(),
             })
         } else if hyphen_count != 4 {
@@ -183,13 +182,6 @@ impl fmt::Display for Error {
                 character, index, ..
             } => {
                 write!(f, "invalid character: found `{}` at {}", character, index)
-            }
-            ErrorKind::ParseSimpleLength { len } => {
-                write!(
-                    f,
-                    "invalid length: expected length 32 for simple format, found {}",
-                    len
-                )
             }
             ErrorKind::ParseByteLength { len } => {
                 write!(f, "invalid length: expected 16 bytes, found {}", len)

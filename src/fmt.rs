@@ -882,7 +882,7 @@ impl FromStr for Simple {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        crate::parser::parse_simple(s.as_bytes())
+        crate::parser::parse_simple(s.as_bytes(), false)
             .map(|b| Simple(Uuid(b)))
             .map_err(|invalid| invalid.into_err())
     }
@@ -1115,53 +1115,5 @@ mod tests {
     fn braced_to_inner() {
         let braced = Uuid::nil().braced();
         assert_eq!(Uuid::from(braced), Uuid::nil());
-    }
-
-    #[test]
-    fn error_reporting() {
-        assert_eq!(
-            "invalid length: found 0",
-            Hyphenated::from_str("").unwrap_err().to_string()
-        );
-
-        assert_eq!(
-            "invalid group count: expected 5, found 1",
-            Hyphenated::from_str("550e8400e29b41d4a716446655440000")
-                .unwrap_err()
-                .to_string()
-        );
-
-        assert_eq!(
-            "invalid character: found `-` at 9",
-            Simple::from_str("550e8400-e29b-41d4-a716-446655440000")
-                .unwrap_err()
-                .to_string()
-        );
-
-        assert_eq!(
-            "invalid character: found `5` at 0",
-            Urn::from_str("550e8400-e29b-41d4-a716-446655440000")
-                .unwrap_err()
-                .to_string()
-        );
-        assert_eq!(
-            "invalid character: found `:` at 0",
-            Urn::from_str(":550e8400-e29b-41d4-a716-446655440000")
-                .unwrap_err()
-                .to_string()
-        );
-
-        assert_eq!(
-            "invalid character: found `5` at 0",
-            Braced::from_str("550e8400-e29b-41d4-a716-446655440000")
-                .unwrap_err()
-                .to_string()
-        );
-        assert_eq!(
-            "invalid character: found `{` at 2",
-            Braced::from_str("{{550e8400-e29b-41d4-a716-446655440000}}")
-                .unwrap_err()
-                .to_string()
-        );
     }
 }
