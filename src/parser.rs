@@ -158,7 +158,7 @@ const fn try_parse(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> {
             parse_hyphenated(s)
         }
         // Any other shaped input is immediately invalid
-        _ => Err(InvalidUuid(input)),
+        _ => Err(InvalidUuid(input, RequestedUuid::Any)),
     }
 }
 
@@ -168,7 +168,7 @@ pub(crate) const fn parse_braced(input: &'_ [u8]) -> Result<[u8; 16], InvalidUui
     if let (38, [b'{', s @ .., b'}']) = (input.len(), input) {
         parse_hyphenated(s)
     } else {
-        Err(InvalidUuid(input))
+        Err(InvalidUuid(input, RequestedUuid::Braced))
     }
 }
 
@@ -180,7 +180,7 @@ pub(crate) const fn parse_urn(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'
     {
         parse_hyphenated(s)
     } else {
-        Err(InvalidUuid(input))
+        Err(InvalidUuid(input, RequestedUuid::Urn))
     }
 }
 
@@ -189,7 +189,7 @@ pub(crate) const fn parse_simple(s: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_
     // This length check here removes all other bounds
     // checks in this function
     if s.len() != 32 {
-        return Err(InvalidUuid(s));
+        return Err(InvalidUuid(s, RequestedUuid::Simple));
     }
 
     let mut buf: [u8; 16] = [0; 16];
@@ -204,7 +204,7 @@ pub(crate) const fn parse_simple(s: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_
         // We use `0xff` as a sentinel value to indicate
         // an invalid hex character sequence (like the letter `G`)
         if h1 | h2 == 0xff {
-            return Err(InvalidUuid(s));
+            return Err(InvalidUuid(s, RequestedUuid::Simple));
         }
 
         // The upper nibble needs to be shifted into position
@@ -221,7 +221,7 @@ pub(crate) const fn parse_hyphenated(s: &'_ [u8]) -> Result<[u8; 16], InvalidUui
     // This length check here removes all other bounds
     // checks in this function
     if s.len() != 36 {
-        return Err(InvalidUuid(s));
+        return Err(InvalidUuid(s, RequestedUuid::Hyphenated));
     }
 
     // We look at two hex-encoded values (4 chars) at a time because
@@ -236,7 +236,7 @@ pub(crate) const fn parse_hyphenated(s: &'_ [u8]) -> Result<[u8; 16], InvalidUui
     // First, ensure the hyphens appear in the right places
     match [s[8], s[13], s[18], s[23]] {
         [b'-', b'-', b'-', b'-'] => {}
-        _ => return Err(InvalidUuid(s)),
+        _ => return Err(InvalidUuid(s, RequestedUuid::Hyphenated)),
     }
 
     let positions: [u8; 8] = [0, 4, 9, 14, 19, 24, 28, 32];
@@ -254,7 +254,7 @@ pub(crate) const fn parse_hyphenated(s: &'_ [u8]) -> Result<[u8; 16], InvalidUui
         let h4 = HEX_TABLE[s[(i + 3) as usize] as usize];
 
         if h1 | h2 | h3 | h4 == 0xff {
-            return Err(InvalidUuid(s));
+            return Err(InvalidUuid(s, RequestedUuid::Hyphenated));
         }
 
         buf[j * 2] = SHL4_TABLE[h1 as usize] | h2;
@@ -341,7 +341,7 @@ mod tests {
         // Invalid
         assert_eq!(
             Uuid::parse_str(""),
-            Err(Error(ErrorKind::ParseSimpleLength { len: 0 }))
+            Err(Error(ErrorKind::ParseLength { len: 0 }))
         );
 
         assert_eq!(
@@ -429,7 +429,6 @@ mod tests {
         );
 
         // // (group, found, expecting)
-        // //
         assert_eq!(
             Uuid::parse_str("01020304-1112-2122-3132-41424344"),
             Err(Error(ErrorKind::ParseGroupLength {
