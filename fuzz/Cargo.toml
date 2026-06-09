@@ -1,25 +1,21 @@
 [package]
-name = "uuid-fuzz"
+name = "uuid_fuzz"
 version = "0.0.0"
-authors = ["Automatically generated"]
+edition = "2024"
 publish = false
-edition = "2018"
 
-[package.metadata]
-cargo-fuzz = true
-
-[dependencies]
-libfuzzer-sys = "0.4"
-
-[dependencies.uuid]
-path = ".."
-
-# Prevent this from interfering with workspaces
 [workspace]
-members = ["."]
+
+[features]
+force = []
 
 [[bin]]
-name = "fuzz_target_parse"
-path = "fuzz_targets/fuzz_target_parse.rs"
-test = false
-doc = false
+name = "parse"
+path = "parse/main.rs"
+
+[dependencies.uuid]
+path = "../"
+
+[dependencies.afl]
+version = "~0.17"
+optional = true
