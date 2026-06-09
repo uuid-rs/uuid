@@ -366,6 +366,11 @@ mod tests {
         );
 
         assert_eq!(
+            Uuid::parse_str("{}"),
+            Err(Error(ErrorKind::ParseGroupCount { count: 1 }))
+        );
+
+        assert_eq!(
             Uuid::parse_str("!"),
             Err(Error(ErrorKind::ParseChar {
                 character: '!',
@@ -576,6 +581,23 @@ mod tests {
                 index: 1
             })),
             Braced::from_str("{{550e8400-e29b-41d4-a716-446655440000}}")
+        );
+
+        // Unicode
+        assert_eq!(
+            Uuid::from_str("{6e0----------9=4O-0e5\u{14}e0c4\u{ec2f}8}"),
+            Err(Error(ErrorKind::ParseChar {
+                character: '=',
+                index: 15,
+            }))
+        );
+
+        assert_eq!(
+            Uuid::from_str("urn:uuid:urae0c8"),
+            Err(Error(ErrorKind::ParseChar {
+                character: 'u',
+                index: 9,
+            }))
         );
     }
 

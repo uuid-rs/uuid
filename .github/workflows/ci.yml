@@ -266,3 +266,21 @@ jobs:
 
       - name: Version features
         run: cargo +nightly build -Z avoid-dev-deps --target wasm32v1-none --no-default-features --features "js v1 v3 v4 v5 v6 v7 v8 serde"
+
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+
+      - name: Install Rust toolchain
+        run: rustup default nightly
+
+      - name: Install cargo-afl
+        run: cargo install cargo-afl
+
+      - name: Configure AFL
+        run: cargo afl config --build --force && cargo afl system-config
+
+      - name: Canary
+        run: fuzz/canary.sh
