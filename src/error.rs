@@ -71,8 +71,8 @@ impl<'a> InvalidUuid<'a> {
         };
 
         let (bounds, mut format) = match (self.1, self.0) {
-            (RequestedUuid::Any | RequestedUuid::Braced, [b'{', s @ .., b'}']) => {
-                (1..s.len() - 1, RequestedUuid::Braced)
+            (RequestedUuid::Any | RequestedUuid::Braced, [b'{', .., b'}']) => {
+                (1..self.0.len() - 1, RequestedUuid::Braced)
             }
             (RequestedUuid::Braced, _) => {
                 if self.0[0] != b'{' {
@@ -89,8 +89,8 @@ impl<'a> InvalidUuid<'a> {
             }
             (
                 RequestedUuid::Any | RequestedUuid::Urn,
-                [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..],
-            ) => ("urn:uuid:".len()..s.len(), RequestedUuid::Urn),
+                [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', ..],
+            ) => ("urn:uuid:".len()..self.0.len(), RequestedUuid::Urn),
             (RequestedUuid::Urn, _) => {
                 return Error(ErrorKind::ParseChar {
                     character: input_str.chars().next().unwrap(),
@@ -103,11 +103,7 @@ impl<'a> InvalidUuid<'a> {
         let mut hyphen_count = 0;
         let mut group_bounds = [0; 4];
 
-        // SAFETY: the byte array came from a valid utf8 string,
-        // and is aligned along char boundaries.
-        let uuid_str = unsafe { std::str::from_utf8_unchecked(self.0) };
-
-        for (index, character) in uuid_str[bounds.clone()].char_indices() {
+        for (index, character) in input_str[bounds.clone()].char_indices() {
             let byte = character as u8;
 
             match (format, byte.to_ascii_lowercase()) {
