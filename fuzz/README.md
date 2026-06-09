@@ -6,7 +6,7 @@ This directory contains some fuzz testing infrastructure for `uuid`, using AFL++
 
 1. Add a `fuzz/$TARGET_NAME/main.rs`, where `$TARGET_NAME` is a name for the test, like `parse`. See existing cases for the content to include in this file.
 2. Add a `[[bin]]` to `fuzz/Cargo.toml` with the new target included.
-3. Add an entry to the `fuzz/quickcheck.sh` to run it.
+3. Add an entry to the `fuzz/canary.sh` to run it.
 
 ## Running fuzz cases
 
