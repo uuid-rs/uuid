@@ -360,7 +360,7 @@ pub mod compact {
     }
 }
 
-/// Serialize a [`Uuid`] as [`uuid::fmt::Simple`].
+/// Serialize a [`Uuid`] as [`uuid::fmt::Simple`]([crate::fmt::Simple]).
 ///
 /// [`Uuid`]: ../../struct.Uuid.html
 ///
@@ -487,7 +487,7 @@ pub mod simple {
     }
 }
 
-/// Serialize a [`Uuid`] as [`uuid::fmt::Braced`].
+/// Serialize a [`Uuid`] as [`uuid::fmt::Braced`](crate::fmt::Braced).
 ///
 /// [`Uuid`]: ../../struct.Uuid.html
 ///
@@ -615,7 +615,7 @@ pub mod braced {
     }
 }
 
-/// Serialize a [`Uuid`] as [`uuid::fmt::Hyphenated`].
+/// Serialize a [`Uuid`] as [`uuid::fmt::Hyphenated`](crate::fmt::Hyphenated).
 ///
 /// [`Uuid`]: ../../struct.Uuid.html
 ///
@@ -744,7 +744,7 @@ pub mod hyphenated {
     }
 }
 
-/// Serialize a [`Uuid`] as [`uuid::fmt::Urn`].
+/// Serialize a [`Uuid`] as [`uuid::fmt::Urn`](crate::fmt::Urn).
 ///
 /// [`Uuid`]: ../../struct.Uuid.html
 ///
