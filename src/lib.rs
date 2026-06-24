@@ -205,6 +205,8 @@
 //!
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 #![no_std]
 #![deny(missing_debug_implementations, missing_docs)]
 #![allow(clippy::mixed_attributes_style)]
