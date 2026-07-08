@@ -11,7 +11,7 @@
 
 //! Adapters for alternative string formats.
 
-use core::str::FromStr;
+use core::{mem::MaybeUninit, slice, str::FromStr};
 
 use crate::{
     std::{borrow::Borrow, fmt, str},
@@ -230,59 +230,124 @@ const fn format_hyphenated(src: &[u8; 16], upper: bool) -> [u8; 36] {
 #[inline]
 fn encode_simple<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b mut str {
     let buf = &mut buffer[..Simple::LENGTH];
-    let buf: &mut [u8; Simple::LENGTH] = buf.try_into().unwrap();
-    *buf = format_simple(src, upper);
 
-    // SAFETY: The encoded buffer is ASCII encoded
-    unsafe { str::from_utf8_unchecked_mut(buf) }
+    encode_simple_uninit(src, slice_as_uninit_mut(buf), upper)
 }
 
 #[inline]
 fn encode_hyphenated<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b mut str {
     let buf = &mut buffer[..Hyphenated::LENGTH];
-    let buf: &mut [u8; Hyphenated::LENGTH] = buf.try_into().unwrap();
-    *buf = format_hyphenated(src, upper);
 
-    // SAFETY: The encoded buffer is ASCII encoded
-    unsafe { str::from_utf8_unchecked_mut(buf) }
+    encode_hyphenated_uninit(src, slice_as_uninit_mut(buf), upper)
 }
 
 #[inline]
 fn encode_braced<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b mut str {
     let buf = &mut buffer[..Hyphenated::LENGTH + 2];
-    let buf: &mut [u8; Hyphenated::LENGTH + 2] = buf.try_into().unwrap();
 
-    #[cfg_attr(all(uuid_unstable, feature = "zerocopy"), derive(zerocopy::IntoBytes))]
-    #[repr(C)]
-    struct Braced {
-        open_curly: u8,
-        hyphenated: [u8; Hyphenated::LENGTH],
-        close_curly: u8,
-    }
-
-    let braced = Braced {
-        open_curly: b'{',
-        hyphenated: format_hyphenated(src, upper),
-        close_curly: b'}',
-    };
-
-    *buf = unsafe_transmute!(braced);
-
-    // SAFETY: The encoded buffer is ASCII encoded
-    unsafe { str::from_utf8_unchecked_mut(buf) }
+    encode_braced_uninit(src, slice_as_uninit_mut(buf), upper)
 }
 
 #[inline]
 fn encode_urn<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b mut str {
     let buf = &mut buffer[..Urn::LENGTH];
-    buf[..9].copy_from_slice(b"urn:uuid:");
+
+    encode_urn_uninit(src, slice_as_uninit_mut(buf), upper)
+}
+
+#[inline]
+fn encode_simple_uninit<'b>(
+    src: &[u8; 16],
+    buffer: &'b mut [MaybeUninit<u8>],
+    upper: bool,
+) -> &'b mut str {
+    let buf = &mut buffer[..Simple::LENGTH];
+    write_bytes(buf, &format_simple(src, upper));
+
+    // SAFETY: The encoded buffer is fully initialized and ASCII encoded.
+    unsafe { assume_init_ascii_mut(buf) }
+}
+
+#[inline]
+fn encode_hyphenated_uninit<'b>(
+    src: &[u8; 16],
+    buffer: &'b mut [MaybeUninit<u8>],
+    upper: bool,
+) -> &'b mut str {
+    let buf = &mut buffer[..Hyphenated::LENGTH];
+    write_bytes(buf, &format_hyphenated(src, upper));
+
+    // SAFETY: The encoded buffer is fully initialized and ASCII encoded.
+    unsafe { assume_init_ascii_mut(buf) }
+}
+
+#[inline]
+fn encode_braced_uninit<'b>(
+    src: &[u8; 16],
+    buffer: &'b mut [MaybeUninit<u8>],
+    upper: bool,
+) -> &'b mut str {
+    let buf = &mut buffer[..Hyphenated::LENGTH + 2];
+
+    #[cfg_attr(all(uuid_unstable, feature = "zerocopy"), derive(zerocopy::IntoBytes))]
+    #[repr(C)]
+    struct BracedBytes {
+        open_curly: u8,
+        hyphenated: [u8; Hyphenated::LENGTH],
+        close_curly: u8,
+    }
+
+    let braced = BracedBytes {
+        open_curly: b'{',
+        hyphenated: format_hyphenated(src, upper),
+        close_curly: b'}',
+    };
+    let braced: [u8; Hyphenated::LENGTH + 2] = unsafe_transmute!(braced);
+
+    write_bytes(buf, &braced);
+
+    // SAFETY: The encoded buffer is fully initialized and ASCII encoded.
+    unsafe { assume_init_ascii_mut(buf) }
+}
+
+#[inline]
+fn encode_urn_uninit<'b>(
+    src: &[u8; 16],
+    buffer: &'b mut [MaybeUninit<u8>],
+    upper: bool,
+) -> &'b mut str {
+    let buf = &mut buffer[..Urn::LENGTH];
+    write_bytes(&mut buf[..9], b"urn:uuid:");
 
     let dst = &mut buf[9..(9 + Hyphenated::LENGTH)];
-    let dst: &mut [u8; Hyphenated::LENGTH] = dst.try_into().unwrap();
-    *dst = format_hyphenated(src, upper);
+    write_bytes(dst, &format_hyphenated(src, upper));
 
-    // SAFETY: The encoded buffer is ASCII encoded
-    unsafe { str::from_utf8_unchecked_mut(buf) }
+    // SAFETY: The encoded buffer is fully initialized and ASCII encoded.
+    unsafe { assume_init_ascii_mut(buf) }
+}
+
+#[inline]
+fn write_bytes(dst: &mut [MaybeUninit<u8>], src: &[u8]) {
+    debug_assert_eq!(dst.len(), src.len());
+
+    for (dst, src) in dst.iter_mut().zip(src) {
+        dst.write(*src);
+    }
+}
+
+#[inline]
+fn slice_as_uninit_mut(buffer: &mut [u8]) -> &mut [MaybeUninit<u8>] {
+    // SAFETY: `MaybeUninit<u8>` has the same layout as `u8`.
+    unsafe { slice::from_raw_parts_mut(buffer.as_mut_ptr().cast(), buffer.len()) }
+}
+
+#[inline]
+unsafe fn assume_init_ascii_mut(buffer: &mut [MaybeUninit<u8>]) -> &mut str {
+    // SAFETY: The caller guarantees that `buffer` has been initialized.
+    let buffer = unsafe { slice::from_raw_parts_mut(buffer.as_mut_ptr().cast(), buffer.len()) };
+
+    // SAFETY: The caller guarantees that `buffer` is ASCII encoded.
+    unsafe { str::from_utf8_unchecked_mut(buffer) }
 }
 
 impl Hyphenated {
@@ -350,6 +415,26 @@ impl Hyphenated {
         encode_hyphenated(self.0.as_bytes(), buffer, false)
     }
 
+    /// Writes the [`Uuid`] as a lower-case hyphenated string to a
+    /// possibly-uninitialized `buffer`, and returns the subslice of the buffer
+    /// that contains the encoded UUID.
+    ///
+    /// This initializes the returned subslice of `buffer`. Bytes outside of the
+    /// returned subslice are not written.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    ///
+    /// # Panics
+    ///
+    /// Panics if the buffer is not large enough: it must have length at least
+    /// [`LENGTH`].
+    ///
+    /// [`LENGTH`]: #associatedconstant.LENGTH
+    #[inline]
+    pub fn encode_lower_uninit<'buf>(&self, buffer: &'buf mut [MaybeUninit<u8>]) -> &'buf mut str {
+        encode_hyphenated_uninit(self.0.as_bytes(), buffer, false)
+    }
+
     /// Writes the [`Uuid`] as an upper-case hyphenated string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
@@ -399,6 +484,26 @@ impl Hyphenated {
     #[inline]
     pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode_hyphenated(self.0.as_bytes(), buffer, true)
+    }
+
+    /// Writes the [`Uuid`] as an upper-case hyphenated string to a
+    /// possibly-uninitialized `buffer`, and returns the subslice of the buffer
+    /// that contains the encoded UUID.
+    ///
+    /// This initializes the returned subslice of `buffer`. Bytes outside of the
+    /// returned subslice are not written.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    ///
+    /// # Panics
+    ///
+    /// Panics if the buffer is not large enough: it must have length at least
+    /// [`LENGTH`].
+    ///
+    /// [`LENGTH`]: #associatedconstant.LENGTH
+    #[inline]
+    pub fn encode_upper_uninit<'buf>(&self, buffer: &'buf mut [MaybeUninit<u8>]) -> &'buf mut str {
+        encode_hyphenated_uninit(self.0.as_bytes(), buffer, true)
     }
 
     /// Get a reference to the underlying [`Uuid`].
@@ -495,6 +600,26 @@ impl Braced {
         encode_braced(self.0.as_bytes(), buffer, false)
     }
 
+    /// Writes the [`Uuid`] as a lower-case hyphenated string surrounded by
+    /// braces to a possibly-uninitialized `buffer`, and returns the subslice of
+    /// the buffer that contains the encoded UUID.
+    ///
+    /// This initializes the returned subslice of `buffer`. Bytes outside of the
+    /// returned subslice are not written.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    ///
+    /// # Panics
+    ///
+    /// Panics if the buffer is not large enough: it must have length at least
+    /// [`LENGTH`].
+    ///
+    /// [`LENGTH`]: #associatedconstant.LENGTH
+    #[inline]
+    pub fn encode_lower_uninit<'buf>(&self, buffer: &'buf mut [MaybeUninit<u8>]) -> &'buf mut str {
+        encode_braced_uninit(self.0.as_bytes(), buffer, false)
+    }
+
     /// Writes the [`Uuid`] as an upper-case hyphenated string surrounded by
     /// braces to `buffer`, and returns the subslice of the buffer that contains
     /// the encoded UUID.
@@ -544,6 +669,26 @@ impl Braced {
     #[inline]
     pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode_braced(self.0.as_bytes(), buffer, true)
+    }
+
+    /// Writes the [`Uuid`] as an upper-case hyphenated string surrounded by
+    /// braces to a possibly-uninitialized `buffer`, and returns the subslice of
+    /// the buffer that contains the encoded UUID.
+    ///
+    /// This initializes the returned subslice of `buffer`. Bytes outside of the
+    /// returned subslice are not written.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    ///
+    /// # Panics
+    ///
+    /// Panics if the buffer is not large enough: it must have length at least
+    /// [`LENGTH`].
+    ///
+    /// [`LENGTH`]: #associatedconstant.LENGTH
+    #[inline]
+    pub fn encode_upper_uninit<'buf>(&self, buffer: &'buf mut [MaybeUninit<u8>]) -> &'buf mut str {
+        encode_braced_uninit(self.0.as_bytes(), buffer, true)
     }
 
     /// Get a reference to the underlying [`Uuid`].
@@ -641,6 +786,26 @@ impl Simple {
         encode_simple(self.0.as_bytes(), buffer, false)
     }
 
+    /// Writes the [`Uuid`] as a lower-case simple string to a
+    /// possibly-uninitialized `buffer`, and returns the subslice of the buffer
+    /// that contains the encoded UUID.
+    ///
+    /// This initializes the returned subslice of `buffer`. Bytes outside of the
+    /// returned subslice are not written.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    ///
+    /// # Panics
+    ///
+    /// Panics if the buffer is not large enough: it must have length at least
+    /// [`LENGTH`].
+    ///
+    /// [`LENGTH`]: #associatedconstant.LENGTH
+    #[inline]
+    pub fn encode_lower_uninit<'buf>(&self, buffer: &'buf mut [MaybeUninit<u8>]) -> &'buf mut str {
+        encode_simple_uninit(self.0.as_bytes(), buffer, false)
+    }
+
     /// Writes the [`Uuid`] as an upper-case simple string to `buffer`,
     /// and returns the subslice of the buffer that contains the encoded UUID.
     ///
@@ -687,6 +852,26 @@ impl Simple {
     #[inline]
     pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode_simple(self.0.as_bytes(), buffer, true)
+    }
+
+    /// Writes the [`Uuid`] as an upper-case simple string to a
+    /// possibly-uninitialized `buffer`, and returns the subslice of the buffer
+    /// that contains the encoded UUID.
+    ///
+    /// This initializes the returned subslice of `buffer`. Bytes outside of the
+    /// returned subslice are not written.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    ///
+    /// # Panics
+    ///
+    /// Panics if the buffer is not large enough: it must have length at least
+    /// [`LENGTH`].
+    ///
+    /// [`LENGTH`]: #associatedconstant.LENGTH
+    #[inline]
+    pub fn encode_upper_uninit<'buf>(&self, buffer: &'buf mut [MaybeUninit<u8>]) -> &'buf mut str {
+        encode_simple_uninit(self.0.as_bytes(), buffer, true)
     }
 
     /// Get a reference to the underlying [`Uuid`].
@@ -786,6 +971,26 @@ impl Urn {
         encode_urn(self.0.as_bytes(), buffer, false)
     }
 
+    /// Writes the [`Uuid`] as a lower-case URN string to a
+    /// possibly-uninitialized `buffer`, and returns the subslice of the buffer
+    /// that contains the encoded UUID.
+    ///
+    /// This initializes the returned subslice of `buffer`. Bytes outside of the
+    /// returned subslice are not written.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    ///
+    /// # Panics
+    ///
+    /// Panics if the buffer is not large enough: it must have length at least
+    /// [`LENGTH`].
+    ///
+    /// [`LENGTH`]: #associatedconstant.LENGTH
+    #[inline]
+    pub fn encode_lower_uninit<'buf>(&self, buffer: &'buf mut [MaybeUninit<u8>]) -> &'buf mut str {
+        encode_urn_uninit(self.0.as_bytes(), buffer, false)
+    }
+
     /// Writes the [`Uuid`] as an upper-case URN string to
     /// `buffer`, and returns the subslice of the buffer that contains the
     /// encoded UUID.
@@ -837,6 +1042,26 @@ impl Urn {
     #[inline]
     pub fn encode_upper<'buf>(&self, buffer: &'buf mut [u8]) -> &'buf mut str {
         encode_urn(self.0.as_bytes(), buffer, true)
+    }
+
+    /// Writes the [`Uuid`] as an upper-case URN string to a
+    /// possibly-uninitialized `buffer`, and returns the subslice of the buffer
+    /// that contains the encoded UUID.
+    ///
+    /// This initializes the returned subslice of `buffer`. Bytes outside of the
+    /// returned subslice are not written.
+    ///
+    /// [`Uuid`]: ../struct.Uuid.html
+    ///
+    /// # Panics
+    ///
+    /// Panics if the buffer is not large enough: it must have length at least
+    /// [`LENGTH`].
+    ///
+    /// [`LENGTH`]: #associatedconstant.LENGTH
+    #[inline]
+    pub fn encode_upper_uninit<'buf>(&self, buffer: &'buf mut [MaybeUninit<u8>]) -> &'buf mut str {
+        encode_urn_uninit(self.0.as_bytes(), buffer, true)
     }
 
     /// Get a reference to the underlying [`Uuid`].
@@ -1004,6 +1229,98 @@ impl_fmt_traits! {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use core::mem::MaybeUninit;
+
+    #[test]
+    fn encode_lower_uninit() {
+        let uuid = Uuid::parse_str("936DA01f9abd4d9d80c702af85c822a8").unwrap();
+
+        let mut buf = [MaybeUninit::new(b'x'); 100];
+        let len = {
+            let encoded = uuid.hyphenated().encode_lower_uninit(&mut buf);
+            assert_eq!(encoded, "936da01f-9abd-4d9d-80c7-02af85c822a8");
+            encoded.len()
+        };
+        assert_eq!(len, Hyphenated::LENGTH);
+        assert_uninit_tail_unchanged(&buf, len);
+
+        let mut buf = [MaybeUninit::new(b'x'); 100];
+        let len = {
+            let encoded = uuid.simple().encode_lower_uninit(&mut buf);
+            assert_eq!(encoded, "936da01f9abd4d9d80c702af85c822a8");
+            encoded.len()
+        };
+        assert_eq!(len, Simple::LENGTH);
+        assert_uninit_tail_unchanged(&buf, len);
+
+        let mut buf = [MaybeUninit::new(b'x'); 100];
+        let len = {
+            let encoded = uuid.urn().encode_lower_uninit(&mut buf);
+            assert_eq!(encoded, "urn:uuid:936da01f-9abd-4d9d-80c7-02af85c822a8");
+            encoded.len()
+        };
+        assert_eq!(len, Urn::LENGTH);
+        assert_uninit_tail_unchanged(&buf, len);
+
+        let mut buf = [MaybeUninit::new(b'x'); 100];
+        let len = {
+            let encoded = uuid.braced().encode_lower_uninit(&mut buf);
+            assert_eq!(encoded, "{936da01f-9abd-4d9d-80c7-02af85c822a8}");
+            encoded.len()
+        };
+        assert_eq!(len, Braced::LENGTH);
+        assert_uninit_tail_unchanged(&buf, len);
+    }
+
+    #[test]
+    fn encode_upper_uninit() {
+        let uuid = Uuid::parse_str("936da01f9abd4d9d80c702af85c822a8").unwrap();
+
+        let mut buf = [MaybeUninit::new(b'x'); 100];
+        let len = {
+            let encoded = uuid.hyphenated().encode_upper_uninit(&mut buf);
+            assert_eq!(encoded, "936DA01F-9ABD-4D9D-80C7-02AF85C822A8");
+            encoded.len()
+        };
+        assert_eq!(len, Hyphenated::LENGTH);
+        assert_uninit_tail_unchanged(&buf, len);
+
+        let mut buf = [MaybeUninit::new(b'x'); 100];
+        let len = {
+            let encoded = uuid.simple().encode_upper_uninit(&mut buf);
+            assert_eq!(encoded, "936DA01F9ABD4D9D80C702AF85C822A8");
+            encoded.len()
+        };
+        assert_eq!(len, Simple::LENGTH);
+        assert_uninit_tail_unchanged(&buf, len);
+
+        let mut buf = [MaybeUninit::new(b'x'); 100];
+        let len = {
+            let encoded = uuid.urn().encode_upper_uninit(&mut buf);
+            assert_eq!(encoded, "urn:uuid:936DA01F-9ABD-4D9D-80C7-02AF85C822A8");
+            encoded.len()
+        };
+        assert_eq!(len, Urn::LENGTH);
+        assert_uninit_tail_unchanged(&buf, len);
+
+        let mut buf = [MaybeUninit::new(b'x'); 100];
+        let len = {
+            let encoded = uuid.braced().encode_upper_uninit(&mut buf);
+            assert_eq!(encoded, "{936DA01F-9ABD-4D9D-80C7-02AF85C822A8}");
+            encoded.len()
+        };
+        assert_eq!(len, Braced::LENGTH);
+        assert_uninit_tail_unchanged(&buf, len);
+    }
+
+    fn assert_uninit_tail_unchanged(buffer: &[MaybeUninit<u8>], initialized: usize) {
+        // SAFETY: The test initializes the full buffer before encoding.
+        let buffer: &[u8] =
+            unsafe { core::slice::from_raw_parts(buffer.as_ptr().cast(), buffer.len()) };
+
+        assert!(buffer[initialized..].iter().all(|b| *b == b'x'));
+    }
 
     #[test]
     fn hyphenated_trailing() {
