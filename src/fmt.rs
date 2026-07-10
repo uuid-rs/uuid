@@ -179,22 +179,22 @@ impl Uuid {
     }
 }
 
-const UPPER: [u8; 16] = [
-    b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'A', b'B', b'C', b'D', b'E', b'F',
-];
-const LOWER: [u8; 16] = [
-    b'0', b'1', b'2', b'3', b'4', b'5', b'6', b'7', b'8', b'9', b'a', b'b', b'c', b'd', b'e', b'f',
-];
+// Maps a hex nibble (0..=15) to its ASCII character. `alpha_offset` is added
+// for values above 9: 0x27 for lowercase, 0x07 for uppercase.
+#[inline]
+const fn nibble_to_hex(nibble: u8, alpha_offset: u8) -> u8 {
+    nibble + b'0' + if nibble > 9 { alpha_offset } else { 0 }
+}
 
 #[inline]
 const fn format_simple(src: &[u8; 16], upper: bool) -> [u8; 32] {
-    let lut = if upper { &UPPER } else { &LOWER };
+    let alpha_offset = if upper { 0x07 } else { 0x27 };
     let mut dst = [0; 32];
     let mut i = 0;
     while i < 16 {
         let x = src[i];
-        dst[i * 2] = lut[(x >> 4) as usize];
-        dst[i * 2 + 1] = lut[(x & 0x0f) as usize];
+        dst[i * 2] = nibble_to_hex(x >> 4, alpha_offset);
+        dst[i * 2 + 1] = nibble_to_hex(x & 0x0f, alpha_offset);
         i += 1;
     }
     dst
@@ -202,27 +202,33 @@ const fn format_simple(src: &[u8; 16], upper: bool) -> [u8; 32] {
 
 #[inline]
 const fn format_hyphenated(src: &[u8; 16], upper: bool) -> [u8; 36] {
-    let lut = if upper { &UPPER } else { &LOWER };
-    let groups = [(0, 8), (9, 13), (14, 18), (19, 23), (24, 36)];
+    let simple = format_simple(src, upper);
     let mut dst = [0; 36];
 
-    let mut group_idx = 0;
     let mut i = 0;
-    while group_idx < 5 {
-        let (start, end) = groups[group_idx];
-        let mut j = start;
-        while j < end {
-            let x = src[i];
-            i += 1;
-
-            dst[j] = lut[(x >> 4) as usize];
-            dst[j + 1] = lut[(x & 0x0f) as usize];
-            j += 2;
-        }
-        if group_idx < 4 {
-            dst[end] = b'-';
-        }
-        group_idx += 1;
+    while i < 8 {
+        dst[i] = simple[i];
+        i += 1;
+    }
+    dst[8] = b'-';
+    while i < 12 {
+        dst[i + 1] = simple[i];
+        i += 1;
+    }
+    dst[13] = b'-';
+    while i < 16 {
+        dst[i + 2] = simple[i];
+        i += 1;
+    }
+    dst[18] = b'-';
+    while i < 20 {
+        dst[i + 3] = simple[i];
+        i += 1;
+    }
+    dst[23] = b'-';
+    while i < 32 {
+        dst[i + 4] = simple[i];
+        i += 1;
     }
     dst
 }
