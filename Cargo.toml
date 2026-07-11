@@ -203,6 +203,25 @@ version = "1.0.52"
 [dev-dependencies.rustversion]
 version = "1"
 
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.gungraun]
+version = "=0.19.2"
+
+[[bench]]
+name = "gungraun_format_str"
+harness = false
+
+[[bench]]
+name = "gungraun_parse_str"
+harness = false
+
+[[bench]]
+name = "gungraun_v4"
+harness = false
+
+[[bench]]
+name = "gungraun_v7"
+harness = false
+
 [workspace]
 members = [
     "rng",
