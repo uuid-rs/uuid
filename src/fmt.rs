@@ -11,7 +11,7 @@
 
 //! Adapters for alternative string formats.
 
-use core::{mem::MaybeUninit, slice, str::FromStr};
+use core::{mem::MaybeUninit, ptr, slice, str::FromStr};
 
 use crate::{
     std::{borrow::Borrow, fmt, str},
@@ -329,9 +329,12 @@ fn encode_urn_uninit<'b>(
 #[inline]
 fn write_bytes(dst: &mut [MaybeUninit<u8>], src: &[u8]) {
     debug_assert_eq!(dst.len(), src.len());
+    let dst = &mut dst[..src.len()];
 
-    for (dst, src) in dst.iter_mut().zip(src) {
-        dst.write(*src);
+    // SAFETY: `dst` and `src` are distinct slices, and `dst` has been sliced to
+    // the same length as `src`. `MaybeUninit<u8>` has the same layout as `u8`.
+    unsafe {
+        ptr::copy_nonoverlapping(src.as_ptr(), dst.as_mut_ptr().cast(), src.len());
     }
 }
 
