@@ -81,10 +81,10 @@ impl Uuid {
         // so the counter is placed directly below the version nibble and shifted
         // around the variant:
         //
-        // bit 127                                                            bit 48
-        // | ver (4) | rand_a (12) | var (2) |          rand_b (62)         | ...
+        // bit 127                                                       bit 48
+        // | ver (4) |    rand_a (12)    | var (2) |       rand_b (62)        | ...
         //           |<- counter <= 12 ->|
-        //           |<----- counter > 12: shifted by 2 over the variant ---->|
+        //           |<---- counter > 12: shifted by 2 over the variant ---->|
         const RAND_A_BITS: u32 = 12;
         const PAYLOAD_BITS: u32 = RAND_A_BITS + 62;
 
