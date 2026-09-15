@@ -231,8 +231,11 @@ impl From<Timestamp> for std::time::SystemTime {
 
         // NOTE: The actual value on overflow is undefined and may change
         // See: https://github.com/rust-lang/rust/issues/151199
-        Self::UNIX_EPOCH
-            .checked_add(std::time::Duration::new(seconds, subsec_nanos))
+        // `Duration::new` panics if the nanoseconds carry overflows the seconds, so build
+        // the duration from its parts using checked arithmetic instead
+        std::time::Duration::from_secs(seconds)
+            .checked_add(std::time::Duration::from_nanos(subsec_nanos as u64))
+            .and_then(|duration| Self::UNIX_EPOCH.checked_add(duration))
             .unwrap_or(std::time::SystemTime::UNIX_EPOCH)
     }
 }
@@ -1369,6 +1372,28 @@ mod tests {
 
             // Just make sure we don't panic
             let _: SystemTime = ts.into();
+        }
+
+        #[test]
+        fn from_system_time_nanos_carry() {
+            // The nanoseconds may carry into the seconds and overflow them
+            for (seconds, subsec_nanos) in
+                [(u64::MAX, 1_000_000_000), (u64::MAX - 3, 4_000_000_000)]
+            {
+                let ts = Timestamp::from_unix_time(seconds, subsec_nanos, 0, 0);
+
+                // Just make sure we don't panic
+                let _: SystemTime = ts.into();
+            }
+
+            // A carry that doesn't overflow is still converted
+            let ts = Timestamp::from_unix_time(10, 2_500_000_000, 0, 0);
+            let st: SystemTime = ts.into();
+
+            assert_eq!(
+                Duration::new(12, 500_000_000),
+                st.duration_since(SystemTime::UNIX_EPOCH).unwrap()
+            );
         }
     }
 }
