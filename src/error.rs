@@ -87,10 +87,11 @@ impl<'a> InvalidUuid<'a> {
                     return Error(ErrorKind::ParseChar { character, index });
                 }
             }
-            (
-                RequestedUuid::Any | RequestedUuid::Urn,
-                [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', ..],
-            ) => ("urn:uuid:".len()..self.0.len(), RequestedUuid::Urn),
+            (RequestedUuid::Any | RequestedUuid::Urn, bytes)
+                if crate::parser::is_urn_prefix(bytes) =>
+            {
+                ("urn:uuid:".len()..self.0.len(), RequestedUuid::Urn)
+            }
             (RequestedUuid::Urn, _) => {
                 return Error(ErrorKind::ParseChar {
                     character: input_str.chars().next().unwrap(),
