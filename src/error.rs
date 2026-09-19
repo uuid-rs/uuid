@@ -88,7 +88,7 @@ impl<'a> InvalidUuid<'a> {
                 }
             }
             (RequestedUuid::Any | RequestedUuid::Urn, bytes)
-                if bytes.len() >= 9 && bytes.split_at(9).0.eq_ignore_ascii_case(b"urn:uuid:") =>
+                if bytes.len() >= 9 && bytes[..9].eq_ignore_ascii_case(b"urn:uuid:") =>
             {
                 ("urn:uuid:".len()..self.0.len(), RequestedUuid::Urn)
             }

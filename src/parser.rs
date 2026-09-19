@@ -153,8 +153,14 @@ const fn try_parse(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> {
         // - `urn:uuid:UUID` for URNs
         // - `UUID` for a regular hyphenated UUID
         (36, s) | (38, [b'{', s @ .., b'}']) => parse_hyphenated(s),
-        (45, s) if s.split_at(9).0.eq_ignore_ascii_case(b"urn:uuid:") => {
-            parse_hyphenated(s.split_at(9).1)
+        (45, s) => {
+            let (prefix, s) = s.split_at(9);
+
+            if prefix.eq_ignore_ascii_case(b"urn:uuid:") {
+                parse_hyphenated(s)
+            } else {
+                Err(InvalidUuid(input, RequestedUuid::Any))
+            }
         }
         // Any other shaped input is immediately invalid
         _ => Err(InvalidUuid(input, RequestedUuid::Any)),
