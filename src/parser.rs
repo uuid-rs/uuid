@@ -144,20 +144,18 @@ impl Uuid {
     }
 }
 
-pub(crate) const fn is_urn_prefix(bytes: &[u8]) -> bool {
-    bytes.len() >= 9 && bytes.split_at(9).0.eq_ignore_ascii_case(b"urn:uuid:")
-}
-
 const fn try_parse(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> {
     match (input.len(), input) {
         // Inputs of 32 bytes must be a non-hyphenated UUID
         (32, s) => parse_simple(s, true),
         // Hyphenated UUIDs may be wrapped in various ways:
         // - `{UUID}` for braced UUIDs
-        // - `urn:uuid:UUID` for URNs (`urn:` and the NID are case-insensitive)
+        // - `urn:uuid:UUID` for URNs
         // - `UUID` for a regular hyphenated UUID
         (36, s) | (38, [b'{', s @ .., b'}']) => parse_hyphenated(s),
-        (45, s) if is_urn_prefix(s) => parse_hyphenated(s.split_at(9).1),
+        (45, s) if s.split_at(9).0.eq_ignore_ascii_case(b"urn:uuid:") => {
+            parse_hyphenated(s.split_at(9).1)
+        }
         // Any other shaped input is immediately invalid
         _ => Err(InvalidUuid(input, RequestedUuid::Any)),
     }
@@ -176,7 +174,7 @@ pub(crate) const fn parse_braced(input: &'_ [u8]) -> Result<[u8; 16], InvalidUui
 #[inline]
 #[allow(dead_code)]
 pub(crate) const fn parse_urn(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> {
-    if input.len() == 45 && is_urn_prefix(input) {
+    if input.len() == 45 && input.split_at(9).0.eq_ignore_ascii_case(b"urn:uuid:") {
         parse_hyphenated(input.split_at(9).1)
     } else {
         Err(InvalidUuid(input, RequestedUuid::Urn))
