@@ -770,6 +770,12 @@ pub mod context {
 
         impl RefUnwindSafe for ContextV7 {}
 
+        impl Default for ContextV7 {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
+
         impl ContextV7 {
             /// Construct a new context that will reseed its counter on the first
             /// non-zero timestamp it receives.
