@@ -28,7 +28,7 @@ license = "Apache-2.0 OR MIT"
 name = "uuid"
 repository = "https://github.com/uuid-rs/uuid"
 version = "1.26.1" # remember to update html_root_url in lib.rs
-rust-version = "1.85.0"
+rust-version = "1.89.0"
 
 [package.metadata.docs.rs]
 rustc-args = ["--cfg", "uuid_unstable"]
