@@ -307,6 +307,29 @@ pub mod compact {
         Ok(crate::Uuid::from_bytes(bytes))
     }
 
+    /// Serialize and deserialize an optional [`Uuid`](crate::Uuid) as an optional `[u8; 16]`.
+    pub mod option {
+        /// Serialize an optional [`Uuid`](crate::Uuid) as an optional `[u8; 16]`.
+        pub fn serialize<S>(u: &Option<crate::Uuid>, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde_core::Serializer,
+        {
+            match u {
+                Some(u) => serializer.serialize_some(u.as_bytes()),
+                None => serializer.serialize_none(),
+            }
+        }
+
+        /// Deserialize an optional `[u8; 16]` as an optional [`Uuid`](crate::Uuid).
+        pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<crate::Uuid>, D::Error>
+        where
+            D: serde_core::Deserializer<'de>,
+        {
+            <Option<[u8; 16]> as serde_core::Deserialize>::deserialize(deserializer)
+                .map(|bytes| bytes.map(crate::Uuid::from_bytes))
+        }
+    }
+
     #[cfg(test)]
     mod tests {
         use serde_derive::*;
@@ -407,6 +430,49 @@ pub mod bytes {
         })
     }
 
+    /// Serialize and deserialize an optional [`Uuid`](crate::Uuid) as an optional byte string.
+    pub mod option {
+        use super::*;
+
+        struct ByteUuid(crate::Uuid);
+
+        impl serde_core::Serialize for ByteUuid {
+            fn serialize<S: serde_core::Serializer>(
+                &self,
+                serializer: S,
+            ) -> Result<S::Ok, S::Error> {
+                super::serialize(&self.0, serializer)
+            }
+        }
+
+        impl<'de> serde_core::Deserialize<'de> for ByteUuid {
+            fn deserialize<D: serde_core::Deserializer<'de>>(
+                deserializer: D,
+            ) -> Result<Self, D::Error> {
+                super::deserialize(deserializer).map(Self)
+            }
+        }
+
+        /// Serialize an optional [`Uuid`](crate::Uuid) as an optional byte string.
+        pub fn serialize<S>(u: &Option<crate::Uuid>, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde_core::Serializer,
+        {
+            match u {
+                Some(u) => serializer.serialize_some(&ByteUuid(*u)),
+                None => serializer.serialize_none(),
+            }
+        }
+
+        /// Deserialize an optional byte string as an optional [`Uuid`](crate::Uuid).
+        pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<crate::Uuid>, D::Error>
+        where
+            D: serde_core::Deserializer<'de>,
+        {
+            Option::<ByteUuid>::deserialize(deserializer).map(|u| u.map(|u| u.0))
+        }
+    }
+
     #[cfg(test)]
     mod tests {
         use serde_derive::*;
@@ -498,6 +564,30 @@ pub mod simple {
         D: serde_core::Deserializer<'de>,
     {
         Ok(Simple::deserialize(deserializer)?.into())
+    }
+
+    /// Serialize and deserialize an optional [`Uuid`](crate::Uuid) in the simple format.
+    pub mod option {
+        use super::*;
+
+        /// Serialize an optional [`Uuid`](crate::Uuid) in the simple format.
+        pub fn serialize<S>(u: &Option<Uuid>, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde_core::Serializer,
+        {
+            match u {
+                Some(u) => serializer.serialize_some(u.as_simple()),
+                None => serializer.serialize_none(),
+            }
+        }
+
+        /// Deserialize an optional simple string as an optional [`Uuid`](crate::Uuid).
+        pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Uuid>, D::Error>
+        where
+            D: serde_core::Deserializer<'de>,
+        {
+            Option::<Simple>::deserialize(deserializer).map(|u| u.map(Into::into))
+        }
     }
 
     #[cfg(test)]
@@ -625,6 +715,30 @@ pub mod braced {
         D: serde_core::Deserializer<'de>,
     {
         Ok(Braced::deserialize(deserializer)?.into())
+    }
+
+    /// Serialize and deserialize an optional [`Uuid`](crate::Uuid) in the braced format.
+    pub mod option {
+        use super::*;
+
+        /// Serialize an optional [`Uuid`](crate::Uuid) in the braced format.
+        pub fn serialize<S>(u: &Option<Uuid>, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde_core::Serializer,
+        {
+            match u {
+                Some(u) => serializer.serialize_some(u.as_braced()),
+                None => serializer.serialize_none(),
+            }
+        }
+
+        /// Deserialize an optional braced string as an optional [`Uuid`](crate::Uuid).
+        pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Uuid>, D::Error>
+        where
+            D: serde_core::Deserializer<'de>,
+        {
+            Option::<Braced>::deserialize(deserializer).map(|u| u.map(Into::into))
+        }
     }
 
     #[cfg(test)]
@@ -756,6 +870,30 @@ pub mod hyphenated {
         Ok(Hyphenated::deserialize(deserializer)?.into())
     }
 
+    /// Serialize and deserialize an optional [`Uuid`](crate::Uuid) in the hyphenated format.
+    pub mod option {
+        use super::*;
+
+        /// Serialize an optional [`Uuid`](crate::Uuid) in the hyphenated format.
+        pub fn serialize<S>(u: &Option<Uuid>, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde_core::Serializer,
+        {
+            match u {
+                Some(u) => serializer.serialize_some(u.as_hyphenated()),
+                None => serializer.serialize_none(),
+            }
+        }
+
+        /// Deserialize an optional hyphenated string as an optional [`Uuid`](crate::Uuid).
+        pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Uuid>, D::Error>
+        where
+            D: serde_core::Deserializer<'de>,
+        {
+            Option::<Hyphenated>::deserialize(deserializer).map(|u| u.map(Into::into))
+        }
+    }
+
     #[cfg(test)]
     mod tests {
 
@@ -882,6 +1020,30 @@ pub mod urn {
         D: serde_core::Deserializer<'de>,
     {
         Ok(Urn::deserialize(deserializer)?.into())
+    }
+
+    /// Serialize and deserialize an optional [`Uuid`](crate::Uuid) in the URN format.
+    pub mod option {
+        use super::*;
+
+        /// Serialize an optional [`Uuid`](crate::Uuid) in the URN format.
+        pub fn serialize<S>(u: &Option<Uuid>, serializer: S) -> Result<S::Ok, S::Error>
+        where
+            S: serde_core::Serializer,
+        {
+            match u {
+                Some(u) => serializer.serialize_some(u.as_urn()),
+                None => serializer.serialize_none(),
+            }
+        }
+
+        /// Deserialize an optional URN string as an optional [`Uuid`](crate::Uuid).
+        pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Uuid>, D::Error>
+        where
+            D: serde_core::Deserializer<'de>,
+        {
+            Option::<Urn>::deserialize(deserializer).map(|u| u.map(Into::into))
+        }
     }
 
     #[cfg(test)]
