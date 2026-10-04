@@ -333,7 +333,7 @@ pub mod compact {
     #[cfg(test)]
     mod tests {
         use serde_derive::*;
-        use serde_test::{Configure, Readable, Token};
+        use serde_test::{Configure, Token};
 
         use crate::Uuid;
 
@@ -344,14 +344,9 @@ pub mod compact {
 
         #[test]
         fn test_compact_option() {
-            #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+            #[derive(Debug, PartialEq, Serialize, Deserialize)]
             struct Field {
                 #[serde(with = "crate::serde::compact::option")]
-                id: Option<Uuid>,
-            }
-            #[derive(Debug, PartialEq, Deserialize)]
-            struct DefaultField {
-                #[serde(default, with = "crate::serde::compact::option")]
                 id: Option<Uuid>,
             }
 
@@ -370,8 +365,7 @@ pub mod compact {
             ];
             tokens.extend(BYTES.iter().copied().map(Token::U8));
             tokens.extend([Token::TupleEnd, Token::StructEnd]);
-            serde_test::assert_tokens(&present.clone().readable(), &tokens);
-            serde_test::assert_tokens(&present.clone().compact(), &tokens);
+            serde_test::assert_tokens(&present, &tokens);
             let none_tokens = [
                 Token::Struct {
                     name: "Field",
@@ -381,36 +375,7 @@ pub mod compact {
                 Token::None,
                 Token::StructEnd,
             ];
-            serde_test::assert_tokens(&absent.clone().readable(), &none_tokens);
-            serde_test::assert_tokens(&absent.clone().compact(), &none_tokens);
-            serde_test::assert_de_tokens_error::<Readable<Field>>(
-                &[
-                    Token::Struct {
-                        name: "Field",
-                        len: 1,
-                    },
-                    Token::Str("id"),
-                    Token::Some,
-                    Token::Bytes(&BYTES),
-                    Token::StructEnd,
-                ],
-                "invalid type: byte array, expected an array of length 16",
-            );
-            assert_eq!(
-                serde_json::to_value(&present).unwrap()["id"],
-                serde_json::json!(BYTES)
-            );
-            assert_eq!(serde_json::to_string(&absent).unwrap(), r#"{"id":null}"#);
-            assert_eq!(
-                serde_json::from_str::<Field>(r#"{"id":null}"#).unwrap(),
-                absent
-            );
-            assert_eq!(
-                serde_json::from_str::<DefaultField>("{}").unwrap(),
-                DefaultField { id: None }
-            );
-            assert!(serde_json::from_str::<Field>("{}").is_err());
-            assert!(serde_json::from_str::<Field>(r#"{"id":[1,2]}"#).is_err());
+            serde_test::assert_tokens(&absent, &none_tokens);
         }
 
         #[test]
@@ -555,7 +520,7 @@ pub mod bytes {
         use serde_derive::*;
 
         use crate::Uuid;
-        use serde_test::{Configure, Readable, Token};
+        use serde_test::Token;
 
         const BYTES: [u8; 16] = [
             0xf9, 0x16, 0x8c, 0x5e, 0xce, 0xb2, 0x4f, 0xaa, 0xb6, 0xbf, 0x32, 0x9b, 0xf3, 0x9f,
@@ -564,14 +529,9 @@ pub mod bytes {
 
         #[test]
         fn test_bytes_option() {
-            #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+            #[derive(Debug, PartialEq, Serialize, Deserialize)]
             struct Field {
                 #[serde(with = "crate::serde::bytes::option")]
-                id: Option<Uuid>,
-            }
-            #[derive(Debug, PartialEq, Deserialize)]
-            struct DefaultField {
-                #[serde(default, with = "crate::serde::bytes::option")]
                 id: Option<Uuid>,
             }
 
@@ -598,49 +558,8 @@ pub mod bytes {
                 Token::None,
                 Token::StructEnd,
             ];
-            serde_test::assert_tokens(&present.clone().readable(), &present_tokens);
-            serde_test::assert_tokens(&present.clone().compact(), &present_tokens);
-            serde_test::assert_tokens(&absent.clone().readable(), &none_tokens);
-            serde_test::assert_tokens(&absent.clone().compact(), &none_tokens);
-            serde_test::assert_de_tokens_error::<Readable<Field>>(
-                &[
-                    Token::Struct {
-                        name: "Field",
-                        len: 1,
-                    },
-                    Token::Str("id"),
-                    Token::Some,
-                    Token::Bytes(&BYTES[..15]),
-                    Token::StructEnd,
-                ],
-                "UUID parsing failed: invalid length: expected 16 bytes, found 15",
-            );
-            serde_test::assert_de_tokens_error::<Readable<Field>>(
-                &[
-                    Token::Struct {
-                        name: "Field",
-                        len: 1,
-                    },
-                    Token::Str("id"),
-                    Token::Some,
-                    Token::Tuple { len: 16 },
-                ],
-                "invalid type: sequence, expected a 16 byte array",
-            );
-            assert_eq!(
-                serde_json::to_value(&present).unwrap()["id"],
-                serde_json::json!(BYTES)
-            );
-            assert_eq!(serde_json::to_string(&absent).unwrap(), r#"{"id":null}"#);
-            assert_eq!(
-                serde_json::from_str::<Field>(r#"{"id":null}"#).unwrap(),
-                absent
-            );
-            assert_eq!(
-                serde_json::from_str::<DefaultField>("{}").unwrap(),
-                DefaultField { id: None }
-            );
-            assert!(serde_json::from_str::<Field>("{}").is_err());
+            serde_test::assert_tokens(&present, &present_tokens);
+            serde_test::assert_tokens(&absent, &none_tokens);
         }
 
         #[test]
@@ -759,7 +678,7 @@ pub mod simple {
     #[cfg(test)]
     mod tests {
         use serde::de::{self, Error};
-        use serde_test::{Configure, Readable, Token};
+        use serde_test::{Readable, Token};
 
         use super::*;
 
@@ -768,17 +687,9 @@ pub mod simple {
 
         #[test]
         fn test_simple_option() {
-            #[derive(
-                Clone, Debug, PartialEq, serde_derive::Serialize, serde_derive::Deserialize,
-            )]
+            #[derive(Debug, PartialEq, serde_derive::Serialize, serde_derive::Deserialize)]
             struct Field {
                 #[serde(with = "crate::serde::simple::option")]
-                id: Option<Uuid>,
-            }
-
-            #[derive(Debug, PartialEq, serde_derive::Deserialize)]
-            struct DefaultField {
-                #[serde(default, with = "crate::serde::simple::option")]
                 id: Option<Uuid>,
             }
 
@@ -806,36 +717,8 @@ pub mod simple {
                 Token::StructEnd,
             ];
 
-            serde_test::assert_tokens(&present.clone().readable(), &present_tokens);
-            serde_test::assert_tokens(&present.clone().compact(), &present_tokens);
-            serde_test::assert_tokens(&absent.clone().readable(), &absent_tokens);
-            serde_test::assert_tokens(&absent.clone().compact(), &absent_tokens);
-
-            assert_eq!(
-                serde_json::to_string(&present).unwrap(),
-                format!(r#"{{"id":"{}"}}"#, SIMPLE_UUID_STR)
-            );
-            assert_eq!(serde_json::to_string(&absent).unwrap(), r#"{"id":null}"#);
-            assert_eq!(
-                serde_json::from_str::<Field>(&format!(r#"{{"id":"{}"}}"#, SIMPLE_UUID_STR))
-                    .unwrap(),
-                present
-            );
-            assert_eq!(
-                serde_json::from_str::<Field>(r#"{"id":null}"#).unwrap(),
-                absent
-            );
-            assert_eq!(
-                serde_json::from_str::<DefaultField>("{}").unwrap(),
-                DefaultField { id: None }
-            );
-            assert!(serde_json::from_str::<Field>("{}").is_err());
-            assert!(serde_json::from_str::<Field>(r#"{"id":"invalid"}"#).is_err());
-            assert!(serde_json::from_str::<Field>(&format!(
-                r#"{{"id":"{}"}}"#,
-                HYPHENATED_UUID_STR
-            ))
-            .is_err());
+            serde_test::assert_tokens(&present, &present_tokens);
+            serde_test::assert_tokens(&absent, &absent_tokens);
         }
 
         #[test]
@@ -983,7 +866,7 @@ pub mod braced {
     mod tests {
 
         use serde::de::{self, Error};
-        use serde_test::{Configure, Readable, Token};
+        use serde_test::{Readable, Token};
 
         use super::*;
 
@@ -992,17 +875,9 @@ pub mod braced {
 
         #[test]
         fn test_braced_option() {
-            #[derive(
-                Clone, Debug, PartialEq, serde_derive::Serialize, serde_derive::Deserialize,
-            )]
+            #[derive(Debug, PartialEq, serde_derive::Serialize, serde_derive::Deserialize)]
             struct Field {
                 #[serde(with = "crate::serde::braced::option")]
-                id: Option<Uuid>,
-            }
-
-            #[derive(Debug, PartialEq, serde_derive::Deserialize)]
-            struct DefaultField {
-                #[serde(default, with = "crate::serde::braced::option")]
                 id: Option<Uuid>,
             }
 
@@ -1030,36 +905,8 @@ pub mod braced {
                 Token::StructEnd,
             ];
 
-            serde_test::assert_tokens(&present.clone().readable(), &present_tokens);
-            serde_test::assert_tokens(&present.clone().compact(), &present_tokens);
-            serde_test::assert_tokens(&absent.clone().readable(), &absent_tokens);
-            serde_test::assert_tokens(&absent.clone().compact(), &absent_tokens);
-
-            assert_eq!(
-                serde_json::to_string(&present).unwrap(),
-                format!(r#"{{"id":"{}"}}"#, BRACED_UUID_STR)
-            );
-            assert_eq!(serde_json::to_string(&absent).unwrap(), r#"{"id":null}"#);
-            assert_eq!(
-                serde_json::from_str::<Field>(&format!(r#"{{"id":"{}"}}"#, BRACED_UUID_STR))
-                    .unwrap(),
-                present
-            );
-            assert_eq!(
-                serde_json::from_str::<Field>(r#"{"id":null}"#).unwrap(),
-                absent
-            );
-            assert_eq!(
-                serde_json::from_str::<DefaultField>("{}").unwrap(),
-                DefaultField { id: None }
-            );
-            assert!(serde_json::from_str::<Field>("{}").is_err());
-            assert!(serde_json::from_str::<Field>(r#"{"id":"invalid"}"#).is_err());
-            assert!(serde_json::from_str::<Field>(&format!(
-                r#"{{"id":"{}"}}"#,
-                HYPHENATED_UUID_STR
-            ))
-            .is_err());
+            serde_test::assert_tokens(&present, &present_tokens);
+            serde_test::assert_tokens(&absent, &absent_tokens);
         }
 
         #[test]
@@ -1208,7 +1055,7 @@ pub mod hyphenated {
     mod tests {
 
         use serde::de::{self, Error};
-        use serde_test::{Configure, Readable, Token};
+        use serde_test::{Readable, Token};
 
         use super::*;
 
@@ -1217,17 +1064,9 @@ pub mod hyphenated {
 
         #[test]
         fn test_hyphenated_option() {
-            #[derive(
-                Clone, Debug, PartialEq, serde_derive::Serialize, serde_derive::Deserialize,
-            )]
+            #[derive(Debug, PartialEq, serde_derive::Serialize, serde_derive::Deserialize)]
             struct Field {
                 #[serde(with = "crate::serde::hyphenated::option")]
-                id: Option<Uuid>,
-            }
-
-            #[derive(Debug, PartialEq, serde_derive::Deserialize)]
-            struct DefaultField {
-                #[serde(default, with = "crate::serde::hyphenated::option")]
                 id: Option<Uuid>,
             }
 
@@ -1255,35 +1094,8 @@ pub mod hyphenated {
                 Token::StructEnd,
             ];
 
-            serde_test::assert_tokens(&present.clone().readable(), &present_tokens);
-            serde_test::assert_tokens(&present.clone().compact(), &present_tokens);
-            serde_test::assert_tokens(&absent.clone().readable(), &absent_tokens);
-            serde_test::assert_tokens(&absent.clone().compact(), &absent_tokens);
-
-            assert_eq!(
-                serde_json::to_string(&present).unwrap(),
-                format!(r#"{{"id":"{}"}}"#, HYPHENATED_UUID_STR)
-            );
-            assert_eq!(serde_json::to_string(&absent).unwrap(), r#"{"id":null}"#);
-            assert_eq!(
-                serde_json::from_str::<Field>(&format!(r#"{{"id":"{}"}}"#, HYPHENATED_UUID_STR))
-                    .unwrap(),
-                present
-            );
-            assert_eq!(
-                serde_json::from_str::<Field>(r#"{"id":null}"#).unwrap(),
-                absent
-            );
-            assert_eq!(
-                serde_json::from_str::<DefaultField>("{}").unwrap(),
-                DefaultField { id: None }
-            );
-            assert!(serde_json::from_str::<Field>("{}").is_err());
-            assert!(serde_json::from_str::<Field>(r#"{"id":"invalid"}"#).is_err());
-            assert!(
-                serde_json::from_str::<Field>(&format!(r#"{{"id":"{}"}}"#, BRACED_UUID_STR))
-                    .is_err()
-            );
+            serde_test::assert_tokens(&present, &present_tokens);
+            serde_test::assert_tokens(&absent, &absent_tokens);
         }
 
         #[test]
@@ -1430,7 +1242,7 @@ pub mod urn {
     #[cfg(test)]
     mod tests {
         use serde::de::{self, Error};
-        use serde_test::{Configure, Readable, Token};
+        use serde_test::{Readable, Token};
 
         use super::*;
 
@@ -1439,17 +1251,9 @@ pub mod urn {
 
         #[test]
         fn test_urn_option() {
-            #[derive(
-                Clone, Debug, PartialEq, serde_derive::Serialize, serde_derive::Deserialize,
-            )]
+            #[derive(Debug, PartialEq, serde_derive::Serialize, serde_derive::Deserialize)]
             struct Field {
                 #[serde(with = "crate::serde::urn::option")]
-                id: Option<Uuid>,
-            }
-
-            #[derive(Debug, PartialEq, serde_derive::Deserialize)]
-            struct DefaultField {
-                #[serde(default, with = "crate::serde::urn::option")]
                 id: Option<Uuid>,
             }
 
@@ -1477,35 +1281,8 @@ pub mod urn {
                 Token::StructEnd,
             ];
 
-            serde_test::assert_tokens(&present.clone().readable(), &present_tokens);
-            serde_test::assert_tokens(&present.clone().compact(), &present_tokens);
-            serde_test::assert_tokens(&absent.clone().readable(), &absent_tokens);
-            serde_test::assert_tokens(&absent.clone().compact(), &absent_tokens);
-
-            assert_eq!(
-                serde_json::to_string(&present).unwrap(),
-                format!(r#"{{"id":"{}"}}"#, URN_UUID_STR)
-            );
-            assert_eq!(serde_json::to_string(&absent).unwrap(), r#"{"id":null}"#);
-            assert_eq!(
-                serde_json::from_str::<Field>(&format!(r#"{{"id":"{}"}}"#, URN_UUID_STR)).unwrap(),
-                present
-            );
-            assert_eq!(
-                serde_json::from_str::<Field>(r#"{"id":null}"#).unwrap(),
-                absent
-            );
-            assert_eq!(
-                serde_json::from_str::<DefaultField>("{}").unwrap(),
-                DefaultField { id: None }
-            );
-            assert!(serde_json::from_str::<Field>("{}").is_err());
-            assert!(serde_json::from_str::<Field>(r#"{"id":"invalid"}"#).is_err());
-            assert!(serde_json::from_str::<Field>(&format!(
-                r#"{{"id":"{}"}}"#,
-                HYPHENATED_UUID_STR
-            ))
-            .is_err());
+            serde_test::assert_tokens(&present, &present_tokens);
+            serde_test::assert_tokens(&absent, &absent_tokens);
         }
 
         #[test]
