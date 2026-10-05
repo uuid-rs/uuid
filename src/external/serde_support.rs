@@ -354,7 +354,7 @@ pub mod compact {
                 id: Some(Uuid::from_bytes(BYTES)),
             };
             let absent = Field { id: None };
-            let mut tokens = vec![
+            let tokens = [
                 Token::Struct {
                     name: "Field",
                     len: 1,
@@ -362,9 +362,25 @@ pub mod compact {
                 Token::Str("id"),
                 Token::Some,
                 Token::Tuple { len: 16 },
+                Token::U8(BYTES[0]),
+                Token::U8(BYTES[1]),
+                Token::U8(BYTES[2]),
+                Token::U8(BYTES[3]),
+                Token::U8(BYTES[4]),
+                Token::U8(BYTES[5]),
+                Token::U8(BYTES[6]),
+                Token::U8(BYTES[7]),
+                Token::U8(BYTES[8]),
+                Token::U8(BYTES[9]),
+                Token::U8(BYTES[10]),
+                Token::U8(BYTES[11]),
+                Token::U8(BYTES[12]),
+                Token::U8(BYTES[13]),
+                Token::U8(BYTES[14]),
+                Token::U8(BYTES[15]),
+                Token::TupleEnd,
+                Token::StructEnd,
             ];
-            tokens.extend(BYTES.iter().copied().map(Token::U8));
-            tokens.extend([Token::TupleEnd, Token::StructEnd]);
             serde_test::assert_tokens(&present, &tokens);
             let none_tokens = [
                 Token::Struct {
