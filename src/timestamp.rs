@@ -501,7 +501,7 @@ pub mod context {
 
         #[cfg(all(feature = "std", feature = "rng"))]
         pub(crate) fn shared_context_v1() -> &'static ContextV1 {
-            &*CONTEXT
+            &CONTEXT
         }
 
         /// An internally synchronized, wrapping counter that produces 14-bit values for version 1 and version 6 UUIDs.
@@ -760,7 +760,7 @@ pub mod context {
         /// This type should not be used when constructing version 1 or version 6 UUIDs.
         /// When used to construct a version 1 or version 6 UUID, only the 14 least significant
         /// bits of the counter will be used.
-        #[derive(Debug)]
+        #[derive(Debug, Default)]
         pub struct ContextV7 {
             timestamp: Cell<ReseedingTimestamp>,
             counter: Cell<Counter>,
@@ -938,7 +938,7 @@ pub mod context {
         }
 
         /// A counter that initializes to a safe random seed and tracks overflow.
-        #[derive(Debug, Clone, Copy)]
+        #[derive(Debug, Default, Clone, Copy)]
         struct Counter {
             value: u64,
         }
@@ -976,7 +976,7 @@ pub mod context {
         }
 
         /// A utility that adjusts an input timestamp by a given number of nanoseconds.
-        #[derive(Debug)]
+        #[derive(Debug, Default)]
         struct Adjust {
             by_ns: u128,
         }
@@ -1007,7 +1007,7 @@ pub mod context {
         }
 
         /// A utility that overwrites some number of counter bits with additional timestamp precision.
-        #[derive(Debug)]
+        #[derive(Debug, Default)]
         struct Precision {
             bits: usize,
             factor: u64,

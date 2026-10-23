@@ -209,11 +209,6 @@
 #![no_std]
 #![deny(missing_debug_implementations, missing_docs)]
 #![allow(clippy::mixed_attributes_style)]
-#![doc(
-    html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
-    html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-    html_root_url = "https://docs.rs/uuid/1.29.0"
-)]
 
 #[cfg(any(feature = "std", test))]
 #[macro_use]
