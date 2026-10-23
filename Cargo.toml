@@ -197,7 +197,7 @@ version = "1.0.52"
 version = "1"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.gungraun]
-version = "=0.19.2"
+version = "0.20"
 
 [[bench]]
 name = "gungraun_format_str"
