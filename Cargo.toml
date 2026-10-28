@@ -49,8 +49,6 @@ status = "actively-developed"
 [features]
 default = ["std"]
 std = ["wasm-bindgen?/std", "js-sys?/std"]
-# Deprecated; now a no-op
-macro-diagnostics = []
 
 # NOTE: When adding new features, check the `ci.yml` workflow
 # and include them where necessary (you can follow along with existing features)
@@ -64,17 +62,20 @@ v8 = []
 
 js = ["dep:wasm-bindgen", "dep:js-sys"]
 
+serde = ["dep:serde_core"]
+
 rng = ["dep:getrandom"]
 rng-getrandom = ["rng", "dep:getrandom", "uuid-rng-internal-lib", "uuid-rng-internal-lib/getrandom"]
 rng-rand = ["rng", "dep:rand", "uuid-rng-internal-lib", "uuid-rng-internal-lib/rand"]
-serde = ["dep:serde_core"]
-
 fast-rng = ["rng", "dep:rand"]
 
 sha1 = ["dep:sha1_smol"]
 md5 = ["dep:md-5"]
 atomic = ["dep:atomic"]
 
+# Deprecated; now a no-op
+macro-diagnostics = []
+# Deprecated; use the `uuid` feature of `borsh`
 borsh = ["dep:borsh", "dep:borsh-derive"]
 
 # Public: Used in trait impls on `Uuid`

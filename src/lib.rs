@@ -101,8 +101,6 @@
 //!
 //! * `serde` - adds the ability to serialize and deserialize a UUID using
 //!   `serde`.
-//! * `borsh` - adds the ability to serialize and deserialize a UUID using
-//!   `borsh`.
 //! * `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid` for
 //!   fuzzing.
 //! * `fast-rng` - uses a faster algorithm for generating random UUIDs when available.
@@ -441,10 +439,6 @@ pub enum Variant {
 #[repr(transparent)]
 // NOTE: Also check `NonNilUuid` when ading new derives here
 #[cfg_attr(
-    feature = "borsh",
-    derive(borsh_derive::BorshDeserialize, borsh_derive::BorshSerialize)
-)]
-#[cfg_attr(
     feature = "bytemuck",
     derive(bytemuck::Zeroable, bytemuck::Pod, bytemuck::TransparentWrapper)
 )]
@@ -457,6 +451,11 @@ pub enum Variant {
         zerocopy::Immutable,
         zerocopy::Unaligned
     )
+)]
+// NOTE: `borsh` support is deprecated; use the `uuid` feature of `borsh` instead
+#[cfg_attr(
+    feature = "borsh",
+    derive(borsh_derive::BorshDeserialize, borsh_derive::BorshSerialize)
 )]
 pub struct Uuid(Bytes);
 
