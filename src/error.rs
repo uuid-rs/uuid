@@ -162,7 +162,7 @@ impl<'a> InvalidUuid<'a> {
             // The last group must be too long
             Error(ErrorKind::ParseGroupLength {
                 group: 4,
-                len: input_str.len() - BLOCK_STARTS[4],
+                len: bounds.len() - BLOCK_STARTS[4],
                 index: bounds.start + BLOCK_STARTS[4] + 1,
             })
         }

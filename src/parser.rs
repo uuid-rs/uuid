@@ -483,6 +483,33 @@ mod tests {
         );
 
         assert_eq!(
+            Uuid::parse_str("{F9168C5E-CEB2-4faa-B6BF-329BF39FA1E45}"),
+            Err(Error(ErrorKind::ParseGroupLength {
+                group: 4,
+                len: 13,
+                index: 26,
+            }))
+        );
+
+        assert_eq!(
+            Uuid::parse_str("{01020304-1112-2122-3132-41424344}"),
+            Err(Error(ErrorKind::ParseGroupLength {
+                group: 4,
+                len: 8,
+                index: 26,
+            }))
+        );
+
+        assert_eq!(
+            Uuid::parse_str("urn:uuid:01020304-1112-2122-3132-41424344"),
+            Err(Error(ErrorKind::ParseGroupLength {
+                group: 4,
+                len: 8,
+                index: 34,
+            }))
+        );
+
+        assert_eq!(
             Uuid::parse_str("67e5504410b1426f9247bb680e5fe0c"),
             Err(Error(ErrorKind::ParseLength { len: 31 }))
         );
