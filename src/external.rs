@@ -6,3 +6,5 @@ pub(crate) mod borsh_support;
 pub(crate) mod serde_support;
 #[cfg(feature = "slog")]
 pub(crate) mod slog_support;
+#[cfg(all(uuid_unstable, feature = "valuable"))]
+pub(crate) mod valuable_support;

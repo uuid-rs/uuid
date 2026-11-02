@@ -29,7 +29,7 @@ rust-version = "1.89.0"
 rustc-args = ["--cfg", "uuid_unstable"]
 rustdoc-args = ["--cfg", "uuid_unstable"]
 targets = ["x86_64-unknown-linux-gnu"]
-features = ["serde", "arbitrary", "slog", "borsh", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
+features = ["serde", "arbitrary", "slog", "borsh", "valuable", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
 
 [package.metadata.playground]
 features = ["serde", "v1", "v3", "v4", "v5", "v6", "v7", "v8"]
@@ -109,6 +109,16 @@ version = "1.1.3"
 optional = true
 version = "0.8"
 features = ["derive"]
+
+# Public (unstable): Used in a `Valuable` trait impl on `Uuid`
+# Unstable: also need RUSTFLAGS="--cfg uuid_unstable" to work
+# This feature may break between releases, or be removed entirely before
+# stabilization.
+# See: https://github.com/uuid-rs/uuid/issues/583
+[target."cfg(uuid_unstable)".dependencies.valuable]
+default-features = false
+optional = true
+version = "0.1"
 
 # Public: Used in trait impls on `Uuid`
 [dependencies.borsh]

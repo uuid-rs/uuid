@@ -117,6 +117,8 @@
 //!
 //! * `zerocopy` - adds support for zero-copy deserialization using the
 //!   `zerocopy` library.
+//! * `valuable` - adds a `Valuable` trait implementation to `Uuid`, exposing
+//!   the UUID as its unsigned 128-bit value.
 //!
 //! Unstable features may break between minor releases.
 //!
