@@ -22,7 +22,7 @@ keywords = [
 license = "Apache-2.0 OR MIT"
 name = "uuid"
 repository = "https://github.com/uuid-rs/uuid"
-version = "1.29.0"
+version = "1.29.1"
 rust-version = "1.89.0"
 
 [package.metadata.docs.rs]
@@ -134,7 +134,7 @@ optional = true
 [target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))'.dependencies.uuid-rng-internal-lib]
 # Work-around lack of support for both `dep:x` and `x/` in MSRV
 package = "uuid-rng-internal"
-version = "1.29.0"
+version = "1.29.1"
 path = "rng"
 optional = true
 
