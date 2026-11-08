@@ -150,6 +150,22 @@ jobs:
         working-directory: ./tests/wasm32-getrandom-test
         run: wasm-pack test --node -- --features "rand"
 
+  wasm64-unknown-unknown:
+    name: Build / wasm64
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab
+
+      - name: Install Rust toolchain
+        run: rustup update nightly && rustup component add --toolchain nightly rust-src
+
+      - name: Default features
+        run: cargo +nightly build -Z avoid-dev-deps -Z build-std=std,panic_abort --target wasm64-unknown-unknown
+
+      - name: Version features
+        run: cargo +nightly build -Z avoid-dev-deps -Z build-std=std,panic_abort --target wasm64-unknown-unknown --features "js v1 v3 v4 v5 v6 v7 v8 serde"
+
   wasi:
     name: Tests / WebAssembly (WASI)
     runs-on: ubuntu-latest
