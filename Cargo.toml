@@ -123,15 +123,15 @@ version = "1"
 default-features = false
 
 # NOTE: `getrandom` will throw a compiler error for the following target configuration when `wasm_js` is not enabled:
-# all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))
+# all(target_family = "wasm", any(target_os = "unknown", target_os = "none"))
 
 # Private
 # (Formally public)
-[target.'cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))'.dependencies.getrandom]
+[target.'cfg(not(all(target_family = "wasm", any(target_os = "unknown", target_os = "none"))))'.dependencies.getrandom]
 version = "0.4"
 optional = true
 
-[target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))'.dependencies.uuid-rng-internal-lib]
+[target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dependencies.uuid-rng-internal-lib]
 # Work-around lack of support for both `dep:x` and `x/` in MSRV
 package = "uuid-rng-internal"
 version = "1.29.1"
@@ -139,7 +139,7 @@ path = "rng"
 optional = true
 
 # Private
-[target.'cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))'.dependencies.rand]
+[target.'cfg(not(all(target_family = "wasm", any(target_os = "unknown", target_os = "none"))))'.dependencies.rand]
 version = "0.10"
 optional = true
 
@@ -162,13 +162,13 @@ optional = true
 version = "0.6"
 
 # Private
-[target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))'.dependencies.wasm-bindgen]
+[target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dependencies.wasm-bindgen]
 default-features = false
 version = "0.2"
 optional = true
 
 # Private
-[target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"), target_feature = "atomics"))'.dependencies.js-sys]
+[target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none"), target_feature = "atomics"))'.dependencies.js-sys]
 default-features = false
 version = "0.3"
 optional = true
@@ -185,10 +185,10 @@ version = "1.0"
 [dev-dependencies.serde_test]
 version = "1.0.56"
 
-[target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))'.dev-dependencies.wasm-bindgen]
+[target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dev-dependencies.wasm-bindgen]
 version = "0.2"
 
-[target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))'.dev-dependencies.wasm-bindgen-test]
+[target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dev-dependencies.wasm-bindgen-test]
 version = "0.3"
 
 [dev-dependencies.trybuild]
