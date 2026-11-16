@@ -128,6 +128,22 @@ impl<'vi, T: UuidDeserialize> de::Visitor<'vi> for UuidBytesVisitor<T> {
     fn visit_bytes<E: de::Error>(self, value: &[u8]) -> Result<T, E> {
         T::from_slice(value).map_err(de_error)
     }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<T, A::Error>
+    where
+        A: de::SeqAccess<'vi>,
+    {
+        let mut bytes = [0; 16];
+
+        for (i, byte) in bytes.iter_mut().enumerate() {
+            *byte = match seq.next_element()? {
+                Some(e) => e,
+                None => return Err(A::Error::invalid_length(i, &self)),
+            };
+        }
+
+        T::from_bytes(bytes).map_err(de_error)
+    }
 }
 
 fn de_error<E: de::Error>(e: Error) -> E {
@@ -603,6 +619,37 @@ pub mod bytes {
                     serde_test::Token::StructEnd,
                 ],
             )
+        }
+
+        #[test]
+        fn test_de_bytes_from_seq() {
+            #[derive(Serialize, Debug, Deserialize, PartialEq)]
+            struct UuidContainer {
+                #[serde(with = "crate::serde::bytes")]
+                u: crate::Uuid,
+            }
+
+            let container = UuidContainer {
+                u: Uuid::from_bytes(BYTES),
+            };
+
+            // Formats without a byte string type, like JSON, serialize bytes as a sequence
+            let json = serde_json::to_string(&container).unwrap();
+            assert_eq!(container, serde_json::from_str(&json).unwrap());
+
+            serde_test::assert_de_tokens_error::<UuidContainer>(
+                &[
+                    Token::Struct {
+                        name: "UuidContainer",
+                        len: 1,
+                    },
+                    Token::Str("u"),
+                    Token::Seq { len: Some(1) },
+                    Token::U8(BYTES[0]),
+                    Token::SeqEnd,
+                ],
+                "invalid length 1, expected a 16 byte array",
+            );
         }
     }
 }
