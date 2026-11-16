@@ -52,11 +52,11 @@ std = ["wasm-bindgen?/std", "js-sys?/std"]
 
 # NOTE: When adding new features, check the `ci.yml` workflow
 # and include them where necessary (you can follow along with existing features)
-v1 = ["atomic"]
+v1 = []
 v3 = ["md5"]
 v4 = ["rng"]
 v5 = ["sha1"]
-v6 = ["atomic"]
+v6 = []
 v7 = ["rng"]
 v8 = []
 
@@ -71,7 +71,6 @@ fast-rng = ["rng", "dep:rand"]
 
 sha1 = ["dep:sha1_smol"]
 md5 = ["dep:md-5"]
-atomic = ["dep:atomic"]
 
 # Deprecated; now a no-op
 macro-diagnostics = []

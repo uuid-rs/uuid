@@ -534,8 +534,6 @@ pub mod context {
         #[cfg(all(feature = "std", feature = "rng"))]
         use crate::std::sync::LazyLock;
 
-        use atomic::{Atomic, Ordering};
-
         #[cfg(all(feature = "std", feature = "rng"))]
         static CONTEXT: LazyLock<ContextV1> = LazyLock::new(ContextV1::new_random);
 
@@ -561,7 +559,7 @@ pub mod context {
         /// to adjust the timestamp on overflow.
         #[derive(Debug)]
         pub struct ContextV1 {
-            count: Atomic<u16>,
+            count: AtomicU16,
         }
 
         impl ContextV1 {
@@ -572,7 +570,7 @@ pub mod context {
             /// When the `rng` feature is enabled, prefer the [`ContextV1::new_random`] method.
             pub const fn new(count: u16) -> Self {
                 Self {
-                    count: Atomic::<u16>::new(count),
+                    count: AtomicU16::new(count),
                 }
             }
 
@@ -580,7 +578,7 @@ pub mod context {
             #[cfg(feature = "rng")]
             pub fn new_random() -> Self {
                 Self {
-                    count: Atomic::<u16>::new(crate::rng::u16()),
+                    count: AtomicU16::new(crate::rng::u16()),
                 }
             }
         }
@@ -594,11 +592,27 @@ pub mod context {
                 // increment the clock sequence we want to wrap once it becomes larger
                 // than what we can represent in a "u14". Otherwise there'd be patches
                 // where the clock sequence doesn't change regardless of the timestamp
-                self.count.fetch_add(1, Ordering::AcqRel) & (u16::MAX >> 2)
+                fetch_increment(&self.count) & (u16::MAX >> 2)
             }
 
             fn usable_bits(&self) -> usize {
                 14
+            }
+        }
+
+        #[cfg(target_has_atomic = "16")]
+        type AtomicU16 = crate::std::sync::atomic::AtomicU16;
+        #[cfg(not(target_has_atomic = "16"))]
+        type AtomicU16 = crate::std::cell::Cell<u16>;
+
+        fn fetch_increment(slot: &AtomicU16) -> u16 {
+            #[cfg(target_has_atomic = "16")]
+            {
+                slot.fetch_add(1, crate::std::sync::atomic::Ordering::AcqRel)
+            }
+            #[cfg(not(target_has_atomic = "16"))]
+            {
+                slot.replace(slot.get().wrapping_add(1))
             }
         }
 
