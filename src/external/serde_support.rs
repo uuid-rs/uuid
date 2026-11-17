@@ -66,8 +66,124 @@ impl Serialize for Braced {
     }
 }
 
+impl UuidDeserialize for Uuid {
+    fn expecting() -> &'static str {
+        "a formatted UUID string"
+    }
+
+    fn from_str<E: de::Error>(formatted: &str) -> Result<Self, E> {
+        formatted.parse().map_err(de_error)
+    }
+
+    fn from_slice<E: de::Error>(bytes: &[u8]) -> Result<Self, E> {
+        Uuid::from_slice(bytes).map_err(de_error)
+    }
+
+    fn from_bytes<E: de::Error>(bytes: Bytes) -> Result<Self, E> {
+        Ok(Uuid::from_bytes(bytes))
+    }
+}
+
+impl<'de> Deserialize<'de> for Uuid {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        if deserializer.is_human_readable() {
+            deserializer.deserialize_str(UuidReadableVisitor {
+                _marker: PhantomData::<Uuid>,
+            })
+        } else {
+            deserializer.deserialize_bytes(UuidBytesVisitor {
+                _marker: PhantomData::<Uuid>,
+            })
+        }
+    }
+}
+
+impl UuidDeserialize for Braced {
+    fn expecting() -> &'static str {
+        "a UUID string in the braced format"
+    }
+
+    fn from_str<E: de::Error>(formatted: &str) -> Result<Self, E> {
+        formatted.parse().map_err(de_error)
+    }
+}
+
+impl<'de> Deserialize<'de> for Braced {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        deserializer.deserialize_str(UuidReadableVisitor {
+            _marker: PhantomData::<Braced>,
+        })
+    }
+}
+
+impl UuidDeserialize for Hyphenated {
+    fn expecting() -> &'static str {
+        "a UUID string in the hyphenated format"
+    }
+
+    fn from_str<E: de::Error>(formatted: &str) -> Result<Self, E> {
+        formatted.parse().map_err(de_error)
+    }
+}
+
+impl<'de> Deserialize<'de> for Hyphenated {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        deserializer.deserialize_str(UuidReadableVisitor {
+            _marker: PhantomData::<Hyphenated>,
+        })
+    }
+}
+
+impl UuidDeserialize for Simple {
+    fn expecting() -> &'static str {
+        "a UUID string in the simple format"
+    }
+
+    fn from_str<E: de::Error>(formatted: &str) -> Result<Self, E> {
+        formatted.parse().map_err(de_error)
+    }
+}
+
+impl<'de> Deserialize<'de> for Simple {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        deserializer.deserialize_str(UuidReadableVisitor {
+            _marker: PhantomData::<Simple>,
+        })
+    }
+}
+
+impl UuidDeserialize for Urn {
+    fn expecting() -> &'static str {
+        "a UUID string in the URN format"
+    }
+
+    fn from_str<E: de::Error>(formatted: &str) -> Result<Self, E> {
+        formatted.parse().map_err(de_error)
+    }
+}
+
+impl<'de> Deserialize<'de> for Urn {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        deserializer.deserialize_str(UuidReadableVisitor {
+            _marker: PhantomData::<Urn>,
+        })
+    }
+}
+
+impl<'de> Deserialize<'de> for NonNilUuid {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let uuid = Uuid::deserialize(deserializer)?;
+
+        NonNilUuid::try_from(uuid).map_err(|_| {
+            de::Error::invalid_value(de::Unexpected::Other("nil UUID"), &"a non-nil UUID")
+        })
+    }
+}
+
 struct UuidReadableVisitor<T> {
-    expecting: &'static str,
     _marker: PhantomData<T>,
 }
 
@@ -75,42 +191,25 @@ impl<'vi, T: UuidDeserialize> de::Visitor<'vi> for UuidReadableVisitor<T> {
     type Value = T;
 
     fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        formatter.write_str(self.expecting)
+        formatter.write_str(T::expecting())
     }
 
     fn visit_str<E: de::Error>(self, value: &str) -> Result<T, E> {
-        T::from_str(value).map_err(de_error)
+        T::from_str(value)
     }
 
     fn visit_bytes<E: de::Error>(self, value: &[u8]) -> Result<T, E> {
-        T::from_slice(value).map_err(de_error)
+        T::from_slice(value)
     }
 
-    fn visit_seq<A>(self, mut seq: A) -> Result<T, A::Error>
+    fn visit_seq<A>(self, seq: A) -> Result<T, A::Error>
     where
         A: de::SeqAccess<'vi>,
     {
-        #[rustfmt::skip]
-        let bytes = [
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(0, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(1, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(2, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(3, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(4, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(5, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(6, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(7, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(8, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(9, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(10, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(11, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(12, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(13, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(14, &self)) },
-            match seq.next_element()? { Some(e) => e, None => return Err(A::Error::invalid_length(15, &self)) },
-        ];
-
-        T::from_bytes(bytes).map_err(de_error)
+        UuidBytesVisitor {
+            _marker: PhantomData,
+        }
+        .visit_seq(seq)
     }
 }
 
@@ -126,7 +225,7 @@ impl<'vi, T: UuidDeserialize> de::Visitor<'vi> for UuidBytesVisitor<T> {
     }
 
     fn visit_bytes<E: de::Error>(self, value: &[u8]) -> Result<T, E> {
-        T::from_slice(value).map_err(de_error)
+        T::from_slice(value)
     }
 
     fn visit_seq<A>(self, mut seq: A) -> Result<T, A::Error>
@@ -135,14 +234,26 @@ impl<'vi, T: UuidDeserialize> de::Visitor<'vi> for UuidBytesVisitor<T> {
     {
         let mut bytes = [0; 16];
 
-        for (i, byte) in bytes.iter_mut().enumerate() {
-            *byte = match seq.next_element()? {
-                Some(e) => e,
-                None => return Err(A::Error::invalid_length(i, &self)),
+        let mut i = 0;
+        for byte in bytes.iter_mut() {
+            let Some(e) = seq.next_element()? else {
+                break;
             };
+
+            *byte = e;
+
+            i += 1;
         }
 
-        T::from_bytes(bytes).map_err(de_error)
+        while seq.next_element::<de::IgnoredAny>()?.is_some() {
+            i += 1;
+        }
+
+        if i != 16 {
+            return Err(A::Error::invalid_length(i, &self));
+        }
+
+        T::from_bytes(bytes)
     }
 }
 
@@ -151,148 +262,33 @@ fn de_error<E: de::Error>(e: Error) -> E {
 }
 
 trait UuidDeserialize {
-    fn from_str(formatted: &str) -> Result<Self, Error>
+    fn expecting() -> &'static str;
+
+    fn from_str<E: de::Error>(formatted: &str) -> Result<Self, E>
     where
-        Self: Sized;
-    fn from_slice(bytes: &[u8]) -> Result<Self, Error>
-    where
-        Self: Sized;
-    fn from_bytes(bytes: Bytes) -> Result<Self, Error>
-    where
-        Self: Sized;
-}
-
-impl UuidDeserialize for Uuid {
-    fn from_str(formatted: &str) -> Result<Self, Error> {
-        formatted.parse()
-    }
-
-    fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
-        Uuid::from_slice(bytes)
-    }
-
-    fn from_bytes(bytes: Bytes) -> Result<Self, Error> {
-        Ok(Uuid::from_bytes(bytes))
-    }
-}
-
-impl<'de> Deserialize<'de> for Uuid {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        if deserializer.is_human_readable() {
-            deserializer.deserialize_str(UuidReadableVisitor {
-                expecting: "a formatted UUID string",
-                _marker: PhantomData::<Uuid>,
-            })
-        } else {
-            deserializer.deserialize_bytes(UuidBytesVisitor {
-                _marker: PhantomData::<Uuid>,
-            })
-        }
-    }
-}
-
-impl UuidDeserialize for Braced {
-    fn from_str(formatted: &str) -> Result<Self, Error> {
-        formatted.parse()
-    }
-
-    fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
-        Ok(Uuid::from_slice(bytes)?.into())
-    }
-
-    fn from_bytes(bytes: Bytes) -> Result<Self, Error> {
-        Ok(Uuid::from_bytes(bytes).into())
-    }
-}
-
-impl<'de> Deserialize<'de> for Braced {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        deserializer.deserialize_str(UuidReadableVisitor {
-            expecting: "a UUID string in the braced format",
-            _marker: PhantomData::<Braced>,
-        })
-    }
-}
-
-impl UuidDeserialize for Hyphenated {
-    fn from_str(formatted: &str) -> Result<Self, Error> {
-        formatted.parse()
-    }
-
-    fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
-        Ok(Uuid::from_slice(bytes)?.into())
-    }
-
-    fn from_bytes(bytes: Bytes) -> Result<Self, Error> {
-        Ok(Uuid::from_bytes(bytes).into())
-    }
-}
-
-impl<'de> Deserialize<'de> for Hyphenated {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        deserializer.deserialize_str(UuidReadableVisitor {
-            expecting: "a UUID string in the hyphenated format",
-            _marker: PhantomData::<Hyphenated>,
-        })
-    }
-}
-
-impl UuidDeserialize for Simple {
-    fn from_str(formatted: &str) -> Result<Self, Error> {
-        formatted.parse()
-    }
-
-    fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
-        Ok(Uuid::from_slice(bytes)?.into())
-    }
-
-    fn from_bytes(bytes: Bytes) -> Result<Self, Error> {
-        Ok(Uuid::from_bytes(bytes).into())
-    }
-}
-
-impl<'de> Deserialize<'de> for Simple {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        deserializer.deserialize_str(UuidReadableVisitor {
-            expecting: "a UUID string in the simple format",
-            _marker: PhantomData::<Simple>,
-        })
-    }
-}
-
-impl UuidDeserialize for Urn {
-    fn from_str(formatted: &str) -> Result<Self, Error> {
-        formatted.parse()
-    }
-
-    fn from_slice(bytes: &[u8]) -> Result<Self, Error> {
-        Ok(Uuid::from_slice(bytes)?.into())
-    }
-
-    fn from_bytes(bytes: Bytes) -> Result<Self, Error> {
-        Ok(Uuid::from_bytes(bytes).into())
-    }
-}
-
-impl<'de> Deserialize<'de> for Urn {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        deserializer.deserialize_str(UuidReadableVisitor {
-            expecting: "a UUID string in the URN format",
-            _marker: PhantomData::<Urn>,
-        })
-    }
-}
-
-impl<'de> Deserialize<'de> for NonNilUuid {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde_core::Deserializer<'de>,
+        Self: Sized,
     {
-        let uuid = Uuid::deserialize(deserializer)?;
+        Err(E::invalid_type(
+            de::Unexpected::Str(formatted),
+            &Self::expecting(),
+        ))
+    }
 
-        NonNilUuid::try_from(uuid).map_err(|_| {
-            de::Error::invalid_value(de::Unexpected::Other("nil UUID"), &"a non-nil UUID")
-        })
+    fn from_slice<E: de::Error>(bytes: &[u8]) -> Result<Self, E>
+    where
+        Self: Sized,
+    {
+        Err(E::invalid_type(
+            de::Unexpected::Bytes(bytes),
+            &Self::expecting(),
+        ))
+    }
+
+    fn from_bytes<E: de::Error>(bytes: Bytes) -> Result<Self, E>
+    where
+        Self: Sized,
+    {
+        Self::from_slice(bytes.as_ref())
     }
 }
 
@@ -428,30 +424,30 @@ pub mod compact {
             serde_test::assert_tokens(
                 &container.compact(),
                 &[
-                    serde_test::Token::Struct {
+                    Token::Struct {
                         name: "UuidContainer",
                         len: 1,
                     },
-                    serde_test::Token::Str("u"),
-                    serde_test::Token::Tuple { len: 16 },
-                    serde_test::Token::U8(uuid_bytes[0]),
-                    serde_test::Token::U8(uuid_bytes[1]),
-                    serde_test::Token::U8(uuid_bytes[2]),
-                    serde_test::Token::U8(uuid_bytes[3]),
-                    serde_test::Token::U8(uuid_bytes[4]),
-                    serde_test::Token::U8(uuid_bytes[5]),
-                    serde_test::Token::U8(uuid_bytes[6]),
-                    serde_test::Token::U8(uuid_bytes[7]),
-                    serde_test::Token::U8(uuid_bytes[8]),
-                    serde_test::Token::U8(uuid_bytes[9]),
-                    serde_test::Token::U8(uuid_bytes[10]),
-                    serde_test::Token::U8(uuid_bytes[11]),
-                    serde_test::Token::U8(uuid_bytes[12]),
-                    serde_test::Token::U8(uuid_bytes[13]),
-                    serde_test::Token::U8(uuid_bytes[14]),
-                    serde_test::Token::U8(uuid_bytes[15]),
-                    serde_test::Token::TupleEnd,
-                    serde_test::Token::StructEnd,
+                    Token::Str("u"),
+                    Token::Tuple { len: 16 },
+                    Token::U8(uuid_bytes[0]),
+                    Token::U8(uuid_bytes[1]),
+                    Token::U8(uuid_bytes[2]),
+                    Token::U8(uuid_bytes[3]),
+                    Token::U8(uuid_bytes[4]),
+                    Token::U8(uuid_bytes[5]),
+                    Token::U8(uuid_bytes[6]),
+                    Token::U8(uuid_bytes[7]),
+                    Token::U8(uuid_bytes[8]),
+                    Token::U8(uuid_bytes[9]),
+                    Token::U8(uuid_bytes[10]),
+                    Token::U8(uuid_bytes[11]),
+                    Token::U8(uuid_bytes[12]),
+                    Token::U8(uuid_bytes[13]),
+                    Token::U8(uuid_bytes[14]),
+                    Token::U8(uuid_bytes[15]),
+                    Token::TupleEnd,
+                    Token::StructEnd,
                 ],
             )
         }
@@ -838,6 +834,30 @@ pub mod simple {
                 ),
             );
         }
+
+        #[test]
+        fn test_de_reject_seq() {
+            let uuid_bytes = b"F9168C5E-CEB2-4F";
+
+            #[derive(PartialEq, Debug, serde_derive::Deserialize)]
+            struct Struct(#[serde(with = "super")] crate::Uuid);
+            serde_test::assert_de_tokens_error::<Readable<Struct>>(
+                &[
+                    Token::TupleStruct {
+                        name: "Struct",
+                        len: 1,
+                    },
+                    Token::Bytes(uuid_bytes),
+                    Token::TupleStructEnd,
+                ],
+                &format!(
+                    "{}",
+                    de::value::Error::custom(
+                        "invalid type: byte array, expected a UUID string in the simple format"
+                    )
+                ),
+            );
+        }
     }
 }
 
@@ -928,10 +948,9 @@ pub mod braced {
     #[cfg(test)]
     mod tests {
 
+        use super::*;
         use serde::de::{self, Error};
         use serde_test::{Readable, Token};
-
-        use super::*;
 
         const HYPHENATED_UUID_STR: &str = "f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4";
         const BRACED_UUID_STR: &str = "{f9168c5e-ceb2-4faa-b6bf-329bf39fa1e4}";
@@ -1022,6 +1041,30 @@ pub mod braced {
                     "{}",
                     de::value::Error::custom(
                         "UUID parsing failed: invalid character: found `f` at 0"
+                    )
+                ),
+            );
+        }
+
+        #[test]
+        fn test_de_reject_seq() {
+            let uuid_bytes = b"F9168C5E-CEB2-4F";
+
+            #[derive(PartialEq, Debug, serde_derive::Deserialize)]
+            struct Struct(#[serde(with = "super")] crate::Uuid);
+            serde_test::assert_de_tokens_error::<Readable<Struct>>(
+                &[
+                    Token::TupleStruct {
+                        name: "Struct",
+                        len: 1,
+                    },
+                    Token::Bytes(uuid_bytes),
+                    Token::TupleStructEnd,
+                ],
+                &format!(
+                    "{}",
+                    de::value::Error::custom(
+                        "invalid type: byte array, expected a UUID string in the braced format"
                     )
                 ),
             );
@@ -1215,6 +1258,30 @@ pub mod hyphenated {
                 ),
             );
         }
+
+        #[test]
+        fn test_de_reject_seq() {
+            let uuid_bytes = b"F9168C5E-CEB2-4F";
+
+            #[derive(PartialEq, Debug, serde_derive::Deserialize)]
+            struct Struct(#[serde(with = "super")] crate::Uuid);
+            serde_test::assert_de_tokens_error::<Readable<Struct>>(
+                &[
+                    Token::TupleStruct {
+                        name: "Struct",
+                        len: 1,
+                    },
+                    Token::Bytes(uuid_bytes),
+                    Token::TupleStructEnd,
+                ],
+                &format!(
+                    "{}",
+                    de::value::Error::custom(
+                        "invalid type: byte array, expected a UUID string in the hyphenated format"
+                    )
+                ),
+            );
+        }
     }
 }
 
@@ -1402,6 +1469,30 @@ pub mod urn {
                 ),
             );
         }
+
+        #[test]
+        fn test_de_reject_seq() {
+            let uuid_bytes = b"F9168C5E-CEB2-4F";
+
+            #[derive(PartialEq, Debug, serde_derive::Deserialize)]
+            struct Struct(#[serde(with = "super")] crate::Uuid);
+            serde_test::assert_de_tokens_error::<Readable<Struct>>(
+                &[
+                    Token::TupleStruct {
+                        name: "Struct",
+                        len: 1,
+                    },
+                    Token::Bytes(uuid_bytes),
+                    Token::TupleStructEnd,
+                ],
+                &format!(
+                    "{}",
+                    de::value::Error::custom(
+                        "invalid type: byte array, expected a UUID string in the URN format"
+                    )
+                ),
+            );
+        }
     }
 }
 
@@ -1426,24 +1517,24 @@ mod serde_tests {
         serde_test::assert_de_tokens(
             &u.readable(),
             &[
-                serde_test::Token::Tuple { len: 16 },
-                serde_test::Token::U8(uuid_bytes[0]),
-                serde_test::Token::U8(uuid_bytes[1]),
-                serde_test::Token::U8(uuid_bytes[2]),
-                serde_test::Token::U8(uuid_bytes[3]),
-                serde_test::Token::U8(uuid_bytes[4]),
-                serde_test::Token::U8(uuid_bytes[5]),
-                serde_test::Token::U8(uuid_bytes[6]),
-                serde_test::Token::U8(uuid_bytes[7]),
-                serde_test::Token::U8(uuid_bytes[8]),
-                serde_test::Token::U8(uuid_bytes[9]),
-                serde_test::Token::U8(uuid_bytes[10]),
-                serde_test::Token::U8(uuid_bytes[11]),
-                serde_test::Token::U8(uuid_bytes[12]),
-                serde_test::Token::U8(uuid_bytes[13]),
-                serde_test::Token::U8(uuid_bytes[14]),
-                serde_test::Token::U8(uuid_bytes[15]),
-                serde_test::Token::TupleEnd,
+                Token::Tuple { len: 16 },
+                Token::U8(uuid_bytes[0]),
+                Token::U8(uuid_bytes[1]),
+                Token::U8(uuid_bytes[2]),
+                Token::U8(uuid_bytes[3]),
+                Token::U8(uuid_bytes[4]),
+                Token::U8(uuid_bytes[5]),
+                Token::U8(uuid_bytes[6]),
+                Token::U8(uuid_bytes[7]),
+                Token::U8(uuid_bytes[8]),
+                Token::U8(uuid_bytes[9]),
+                Token::U8(uuid_bytes[10]),
+                Token::U8(uuid_bytes[11]),
+                Token::U8(uuid_bytes[12]),
+                Token::U8(uuid_bytes[13]),
+                Token::U8(uuid_bytes[14]),
+                Token::U8(uuid_bytes[15]),
+                Token::TupleEnd,
             ],
         );
     }
@@ -1510,6 +1601,76 @@ mod serde_tests {
         serde_test::assert_de_tokens_error::<Compact<Uuid>>(
             &[Token::Bytes(b"hello_world")],
             "UUID parsing failed: invalid length: expected 16 bytes, found 11",
+        );
+
+        serde_test::assert_de_tokens_error::<Readable<Uuid>>(
+            &[
+                Token::Tuple { len: 2 },
+                Token::U8(70),
+                Token::U8(57),
+                Token::TupleEnd,
+            ],
+            "invalid length 2, expected a 16 byte array",
+        );
+
+        serde_test::assert_de_tokens_error::<Compact<Uuid>>(
+            &[
+                Token::Tuple { len: 2 },
+                Token::U8(70),
+                Token::U8(57),
+                Token::TupleEnd,
+            ],
+            "invalid length 2, expected a 16 byte array",
+        );
+
+        serde_test::assert_de_tokens_error::<Readable<Uuid>>(
+            &[
+                Token::Tuple { len: 17 },
+                Token::U8(70),
+                Token::U8(57),
+                Token::U8(49),
+                Token::U8(54),
+                Token::U8(56),
+                Token::U8(67),
+                Token::U8(53),
+                Token::U8(69),
+                Token::U8(45),
+                Token::U8(67),
+                Token::U8(69),
+                Token::U8(66),
+                Token::U8(50),
+                Token::U8(45),
+                Token::U8(52),
+                Token::U8(70),
+                Token::U8(70),
+                Token::TupleEnd,
+            ],
+            "invalid length 17, expected a 16 byte array",
+        );
+
+        serde_test::assert_de_tokens_error::<Compact<Uuid>>(
+            &[
+                Token::Tuple { len: 17 },
+                Token::U8(70),
+                Token::U8(57),
+                Token::U8(49),
+                Token::U8(54),
+                Token::U8(56),
+                Token::U8(67),
+                Token::U8(53),
+                Token::U8(69),
+                Token::U8(45),
+                Token::U8(67),
+                Token::U8(69),
+                Token::U8(66),
+                Token::U8(50),
+                Token::U8(45),
+                Token::U8(52),
+                Token::U8(70),
+                Token::U8(70),
+                Token::TupleEnd,
+            ],
+            "invalid length 17, expected a 16 byte array",
         );
     }
 

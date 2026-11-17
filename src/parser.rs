@@ -139,7 +139,7 @@ impl Uuid {
             Ok(bytes) => Ok(Uuid::from_bytes(bytes)),
             // If parsing fails then we don't know exactly what went wrong
             // In this case, we just return a generic error
-            Err(_) => Err(Error(ErrorKind::ParseOther)),
+            Err(_) => Err(Error(ErrorKind::ParseOther("failed to parse a UUID"))),
         }
     }
 }

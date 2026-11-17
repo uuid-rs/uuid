@@ -155,12 +155,6 @@ optional = true
 version = "1"
 
 # Private
-[dependencies.atomic]
-default-features = false
-optional = true
-version = "0.6"
-
-# Private
 [target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dependencies.wasm-bindgen]
 default-features = false
 version = "0.2"
