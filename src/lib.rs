@@ -38,7 +38,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1.29.2"
+//! version = "1.29.3"
 //! # Lets you generate random UUIDs
 //! features = [
 //!     "v4",
@@ -136,7 +136,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1.29.2"
+//! version = "1.29.3"
 //! features = [
 //!     "v4",
 //!     "v7",
@@ -151,7 +151,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1.29.2"
+//! version = "1.29.3"
 //! default-features = false
 //! ```
 //!
