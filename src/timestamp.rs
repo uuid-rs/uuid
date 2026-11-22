@@ -416,6 +416,13 @@ const fn nanos_to_parts(nanos: u128) -> (u64, u32) {
         return (u64::MAX, u32::MAX);
     }
 
+    // Most timestamps fit in 64 bits, where division is much cheaper than for 128 bits
+    if nanos <= u64::MAX as u128 {
+        let nanos = nanos as u64;
+
+        return (nanos / 1_000_000_000, (nanos % 1_000_000_000) as u32);
+    }
+
     let secs = nanos / 1_000_000_000;
 
     if secs > u64::MAX as u128 {
